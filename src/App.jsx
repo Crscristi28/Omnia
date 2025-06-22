@@ -97,6 +97,61 @@ function App() {
   // Detekce mobile zařízení
   const isMobile = window.innerWidth <= 768;
 
+  // Force light mode pro celou aplikaci
+  useEffect(() => {
+    // Přidej meta tag pro color-scheme
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]') || document.createElement('meta');
+    metaColorScheme.name = 'color-scheme';
+    metaColorScheme.content = 'light only';
+    if (!document.querySelector('meta[name="color-scheme"]')) {
+      document.head.appendChild(metaColorScheme);
+    }
+
+    // Přidej CSS pro force light mode
+    const darkModeOverride = document.getElementById('dark-mode-override') || document.createElement('style');
+    darkModeOverride.id = 'dark-mode-override';
+    darkModeOverride.innerHTML = `
+      html, body {
+        color-scheme: light only !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      
+      * {
+        color-scheme: light only !important;
+      }
+      
+      input, textarea, select, button {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-color: #cccccc !important;
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        html, body, #root {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+        }
+        
+        * {
+          background-color: inherit !important;
+          color: inherit !important;
+        }
+      }
+    `;
+    if (!document.getElementById('dark-mode-override')) {
+      document.head.appendChild(darkModeOverride);
+    }
+
+    return () => {
+      // Cleanup při unmount
+      const meta = document.querySelector('meta[name="color-scheme"]');
+      const style = document.getElementById('dark-mode-override');
+      if (meta) meta.remove();
+      if (style) style.remove();
+    };
+  }, []);
+
   // Načtení historie z localStorage při startu
   useEffect(() => {
     const navType = window.performance?.navigation?.type;
@@ -175,25 +230,32 @@ function App() {
   }, [messages]);
 
   return (
-    <div className="main-wrapper" style={{ 
-      minHeight: '100vh', 
-      height: '100%',
-      display: 'flex', 
-      flexDirection: 'column',
-      background: '#fff',
-      width: '100%'
-    }}>
+    <div 
+      className="main-wrapper" 
+      style={{ 
+        minHeight: '100vh', 
+        height: '100%',
+        display: 'flex', 
+        flexDirection: 'column',
+        background: '#ffffff',
+        color: '#000000',
+        width: '100%',
+        colorScheme: 'light only'
+      }}
+    >
       <div className="app light" style={{ 
         minHeight: '100vh',
         display: 'flex', 
         flexDirection: 'column',
-        background: '#fff'
+        background: '#ffffff',
+        color: '#000000'
       }}>
         
         {/* KOMPAKTNÍ HEADER PRO MOBILE */}
         <header style={{ 
           padding: isMobile ? '1rem 0.5rem 0.5rem' : '2rem 1rem 1rem',
-          background: '#fff',
+          background: '#ffffff',
+          color: '#000000',
           borderBottom: '1px solid #eee',
           position: 'relative',
           textAlign: 'center'
@@ -288,7 +350,8 @@ function App() {
           overflowY: 'auto',
           padding: '1rem',
           paddingBottom: isMobile ? '140px' : '120px', // více prostoru pro input
-          background: '#fff',
+          background: '#ffffff',
+          color: '#000000',
           WebkitOverflowScrolling: 'touch'
         }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', minHeight: '50vh' }}>
@@ -373,7 +436,8 @@ function App() {
           left: 0,
           right: 0,
           width: '100%',
-          background: '#fff', 
+          background: '#ffffff', 
+          color: '#000000',
           padding: isMobile ? '1rem' : '1rem',
           borderTop: '1px solid #eee',
           paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem',
@@ -400,9 +464,11 @@ function App() {
                 borderRadius: '1rem',
                 border: '1px solid #ccc',
                 outline: 'none',
-                backgroundColor: loading ? '#f5f5f5' : '#fff',
+                backgroundColor: loading ? '#f5f5f5' : '#ffffff',
+                color: '#000000',
                 width: '100%',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                colorScheme: 'light only'
               }}
             />
             <button 
