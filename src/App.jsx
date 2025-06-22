@@ -1,4 +1,4 @@
-// App.jsx - MOBILE OPTIMIZED VERZE s PŘERUŠITELNÝM AUDIO
+/// App.jsx - MOBILE OPTIMIZED VERZE s OKAMŽITOU AUDIO ODPOVĚDÍ
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -508,6 +508,249 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
+// 🚀 NOVÉ FUNKCE PRO OKAMŽITOU AUDIO ODPOVĚĎ
+
+// 🎵 OKAMŽITÉ AUDIO GENEROVÁNÍ - HLAVNÍ FUNKCE
+const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification) => {
+  try {
+    console.log('🚀 Generating INSTANT audio response...');
+    
+    // Spuštění TTS API okamžitě
+    const response = await fetch('/api/voice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: responseText })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Voice API failed: ${response.status}`);
+    }
+
+    setIsAudioPlaying(true);
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    
+    currentAudioRef.current = audio;
+    
+    audio.preload = 'auto';
+    audio.volume = 1.0;
+    
+    if (isIOS) {
+      audio.load();
+    }
+    
+    let playbackInterrupted = false;
+    
+    // Interrupt handler
+    const handleInterrupt = () => {
+      playbackInterrupted = true;
+      if (!audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(audioUrl);
+    };
+    
+    window.addEventListener('omnia-audio-start', handleInterrupt, { once: true });
+    
+    audio.onplay = () => {
+      if (!playbackInterrupted) {
+        console.log('🎵 INSTANT audio started - user hears response NOW!');
+        showNotification('🔊 Přehrávám odpověď okamžitě!', 'info');
+      }
+    };
+    
+    audio.onended = () => {
+      console.log('✅ Instant audio finished');
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(audioUrl);
+      window.removeEventListener('omnia-audio-start', handleInterrupt);
+    };
+    
+    audio.onerror = (e) => {
+      console.error('❌ Instant audio error:', e);
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(audioUrl);
+      window.removeEventListener('omnia-audio-start', handleInterrupt);
+    };
+    
+    // 🚀 OKAMŽITÉ PŘEHRÁNÍ
+    try {
+      await audio.play();
+      console.log('🎯 Audio plays IMMEDIATELY after AI response!');
+    } catch (playError) {
+      console.error('❌ Auto-play blocked:', playError);
+      showNotification('🔊 Klepněte pro přehrání odpovědi', 'info', () => {
+        audio.play().catch(console.error);
+      });
+    }
+    
+    return audio;
+    
+  } catch (error) {
+    console.error('💥 Instant audio generation failed:', error);
+    setIsAudioPlaying(false);
+    currentAudioRef.current = null;
+    showNotification('🔇 Audio se nepodařilo vygenerovat', 'error');
+    throw error;
+  }
+};
+
+// 📝 POSTUPNÉ ZOBRAZENÍ TEXTU (zatímco hraje audio)
+const displayResponseText = async (responseText, currentMessages, setMessages, showTempMessage = true) => {
+  if (showTempMessage) {
+    // Malá pauza aby user viděl audio feedback
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+  
+  console.log('📝 Displaying response text while audio plays...');
+  
+  // Nahraď placeholder skutečným textem
+  const finalMessages = [...currentMessages, { 
+    sender: 'bot', 
+    text: responseText 
+  }];
+  
+  setMessages(finalMessages);
+  localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+  
+  return true;
+};
+
+// 🎯 HLAVNÍ FUNKCE PRO PARALELNÍ ZPRACOVÁNÍ
+const handleInstantAudioResponse = async (
+  textInput, 
+  currentMessages, 
+  model, 
+  openaiService, 
+  claudeService, 
+  setMessages, 
+  setLoading,
+  setIsAudioPlaying,
+  currentAudioRef,
+  isIOS,
+  showNotification
+) => {
+  console.log('🚀 Starting INSTANT audio response strategy...');
+  
+  // 1. Zobraz "Připravuji odpověď..." placeholder
+  const tempMessages = [...currentMessages, { 
+    sender: 'bot', 
+    text: '🎵 Připravuji audio odpověď...',
+    isGenerating: true 
+  }];
+  setMessages(tempMessages);
+
+  try {
+    // 2. Zavolej AI API pro text odpověď
+    let responseText = '';
+    
+    if (model === 'gpt-4o') {
+      const openAiMessages = [
+        { 
+          role: 'system', 
+          content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.' 
+        },
+        ...currentMessages.map((msg) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        })),
+        { role: 'user', content: textInput }
+      ];
+
+      responseText = await openaiService.sendMessage(openAiMessages);
+    } else if (model === 'claude') {
+      responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
+    }
+
+    console.log('✅ AI odpověď získána:', responseText);
+
+    // 3. 🎯 PARALELNÍ SPUŠTĚNÍ: Audio generování + Text zobrazení
+    const audioPromise = generateInstantAudio(
+      responseText, 
+      setIsAudioPlaying, 
+      currentAudioRef, 
+      isIOS, 
+      showNotification
+    );
+    
+    const textPromise = displayResponseText(
+      responseText, 
+      currentMessages, 
+      setMessages, 
+      true
+    );
+
+    // 4. Audio se spustí okamžitě, text se zobrazí postupně
+    await Promise.allSettled([audioPromise, textPromise]);
+    
+    return responseText;
+    
+  } catch (error) {
+    console.error('💥 Instant audio response error:', error);
+    
+    // Fallback - zobraz chybu jako text
+    const errorText = `Chyba: ${error.message}`;
+    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
+    setMessages(errorMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
+    
+    throw error;
+  }
+};
+
+// 📄 KLASICKÝ TEXT FLOW (beze změn pro text mode)
+const handleClassicTextResponse = async (
+  textInput, 
+  currentMessages, 
+  model, 
+  openaiService, 
+  claudeService, 
+  setMessages,
+  autoPlay,
+  voiceMode,
+  playResponseAudio
+) => {
+  let responseText = '';
+  
+  if (model === 'gpt-4o') {
+    const openAiMessages = [
+      { 
+        role: 'system', 
+        content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.' 
+      },
+      ...currentMessages.map((msg) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      { role: 'user', content: textInput }
+    ];
+
+    responseText = await openaiService.sendMessage(openAiMessages);
+  } else if (model === 'claude') {
+    responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
+  }
+
+  const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+  setMessages(updatedMessages);
+  localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+  
+  // Klasické audio po textu
+  if (autoPlay && voiceMode === 'hybrid') {
+    setTimeout(() => {
+      playResponseAudio(responseText);
+    }, 1000);
+  }
+  
+  return responseText;
+};
+
 // ONLINE API SERVICES (pro Vercel)
 const claudeService = {
   async sendMessage(messages) {
@@ -619,7 +862,7 @@ function App() {
     console.log('🔇 Audio manually stopped');
   };
 
-  // 🔊 UPRAVENÁ FUNKCE PRO AUTO-PLAY
+  // 🔊 UPRAVENÁ FUNKCE PRO AUTO-PLAY (zachována pro hybrid mode)
   const playResponseAudio = async (text) => {
     try {
       console.log('🔊 Auto-play attempting:', text.substring(0, 50) + '...');
@@ -882,6 +1125,7 @@ function App() {
     }
   }, []);
 
+  // 🚀 NOVÁ HANDLESENД FUNKCE S OKAMŽITÝM AUDIEM
   const handleSend = async (textInput = input) => {
     if (!textInput.trim()) return;
 
@@ -895,53 +1139,59 @@ function App() {
     setInput('');
     setLoading(true);
 
-    let responseText = '';
-
     try {
-      if (model === 'gpt-4o') {
-        // OpenAI formát (nezměněno - funguje)
-        const openAiMessages = [
-          { 
-            role: 'system', 
-            content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nepředstavuj.' 
-          },
-          ...newMessages.map((msg) => ({
-            role: msg.sender === 'user' ? 'user' : 'assistant',
-            content: msg.text
-          }))
-        ];
-
-        responseText = await openaiService.sendMessage(openAiMessages);
-
-      } else if (model === 'claude') {
-        // Claude formát s pamětí (nově opraveno)
-        responseText = await claudeService.sendMessage(newMessages);
+      // 🎯 KLÍČOVÁ ZMĚNA: Rozhodnutí o strategii zpracování
+      if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
+        // 🚀 NOVÁ STRATEGIE: Okamžitá audio odpověď
+        console.log('🚀 Using INSTANT audio response strategy');
+        
+        await handleInstantAudioResponse(
+          textInput,
+          newMessages,
+          model,
+          openaiService,
+          claudeService,
+          setMessages,
+          setLoading,
+          setIsAudioPlaying,
+          currentAudioRef,
+          isIOS,
+          showNotification
+        );
+        
+      } else {
+        // 📄 KLASICKÁ STRATEGIE: Text první, pak audio
+        console.log('📄 Using classic text-first strategy');
+        
+        await handleClassicTextResponse(
+          textInput,
+          newMessages,
+          model,
+          openaiService,
+          claudeService,
+          setMessages,
+          autoPlay,
+          voiceMode,
+          playResponseAudio
+        );
       }
 
-      console.log('✅ Odpověď získána:', responseText);
+      console.log('✅ Response processing completed');
 
     } catch (err) {
       console.error('💥 Chyba při volání API:', err);
-      responseText = `Chyba: ${err.message}`;
-    }
-
-    const updatedMessages = [...newMessages, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-    setLoading(false);
-
-    // Auto-play pro conversation mode
-    if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
-      // Krátká pauza před přehráním
-      setTimeout(() => {
-        playResponseAudio(responseText);
-      }, 1000);
+      const responseText = `Chyba: ${err.message}`;
+      const updatedMessages = [...newMessages, { sender: 'bot', text: responseText }];
+      setMessages(updatedMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleTranscript = (text) => {
     if (voiceMode === 'conversation') {
-      // V conversation mode rovnou pošli
+      // V conversation mode rovnou pošli s INSTANT AUDIO!
       handleSend(text);
     } else {
       // V hybrid mode vlož do input pole
@@ -1193,7 +1443,7 @@ function App() {
                 fontWeight: 'bold',
                 minWidth: '120px'
               }}>
-                {isAudioPlaying ? '🔊 Hraje audio' : '🗣️ Conversation'}
+                {isAudioPlaying ? '🚀 Instant Audio!' : '🗣️ Conversation'}
               </div>
             )}
 
@@ -1296,6 +1546,7 @@ function App() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <OmniaLogo size={14} />
                         Omnia
+                        {msg.isGenerating && <span>🚀</span>}
                       </div>
                       {/* 🔊 VOICE BUTTON */}
                       <VoiceButton 
@@ -1338,7 +1589,7 @@ function App() {
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }}></div>
-                    Omnia přemýšlí...
+                    {voiceMode === 'conversation' ? 'Připravuji instant odpověď...' : 'Omnia přemýšlí...'}
                   </div>
                 </div>
               </div>
@@ -1424,14 +1675,14 @@ function App() {
                       animation: 'spin 1s linear infinite',
                       marginRight: '0.5rem'
                     }}></div>
-                    Omnia přemýšlí...
+                    🚀 Připravuji instant odpověď...
                   </>
                 ) : isAudioPlaying ? (
                   <>
-                    🔊 Hraje odpověď - {isMobile ? 'dotkněte se' : 'ESC/Space'} pro zastavení
+                    🔊 Instant audio hraje - {isMobile ? 'dotkněte se' : 'ESC/Space'} pro zastavení
                   </>
                 ) : (
-                  "🎤 Držte tlačítko a mluvte"
+                  "🎤 Držte tlačítko pro INSTANT audio odpověď"
                 )}
               </div>
             )}
@@ -1505,6 +1756,22 @@ function App() {
               padding: '0 1rem'
             }}>
               💡 {isMobile ? 'Klepněte kamkoli nebo na Stop tlačítko' : 'Stiskněte ESC, Space nebo Stop tlačítko'} pro zastavení
+            </div>
+          )}
+
+          {/* 🚀 INSTANT AUDIO INFO */}
+          {voiceMode === 'conversation' && !isAudioPlaying && !loading && (
+            <div style={{
+              textAlign: 'center',
+              fontSize: '0.8rem',
+              color: '#007bff',
+              marginTop: '0.5rem',
+              maxWidth: '800px',
+              margin: '0.5rem auto 0',
+              padding: '0 1rem',
+              fontWeight: 'bold'
+            }}>
+              🚀 Instant Audio Mode: Slyšíte odpověď o 2-3 sekundy rychleji!
             </div>
           )}
         </div>

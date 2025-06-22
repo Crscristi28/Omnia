@@ -1,21 +1,5 @@
-# Node.js
 node_modules/
-
-# Environment variables
 .env
-
-# macOS systémové soubory
 .DS_Store
-
-# Editor a IDE složky a soubory
-.vscode/
-.idea/
-
-# Build složky
 dist/
 build/
-
-# Logy
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
