@@ -1,4 +1,4 @@
-// App.jsx - OMNIA BRANDED VERZE
+// App.jsx - MOBILE OPTIMIZED VERZE
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -94,6 +94,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const endOfMessagesRef = useRef(null);
 
+  // Detekce mobile zařízení
+  const isMobile = window.innerWidth <= 768;
+
   // Načtení historie z localStorage při startu
   useEffect(() => {
     const navType = window.performance?.navigation?.type;
@@ -172,196 +175,232 @@ function App() {
   }, [messages]);
 
   return (
-    <div className="main-wrapper">
-      <div className="app light">
-        <div className="app-center-wrapper">
-          <div className="app-container">
-            <header className="app-header">
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img
-                  src="/omnia.png"
-                  alt="Omnia Logo"
-                  style={{ width: '300px', height: 'auto', marginBottom: '1.5rem' }}
-                />
-                
-                <div style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 1000 }}>
-                  <label style={{ marginRight: '0.5rem', fontWeight: 'bold' }}>Model:</label>
-                  <select 
-                    value={model} 
-                    onChange={(e) => setModel(e.target.value)}
-                    style={{ marginRight: '0.5rem' }}
-                  >
-                    <option value="gpt-4o">Omnia (GPT-4)</option>
-                    <option value="claude">Omnia (Claude)</option>
-                  </select>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('omnia-memory');
-                      setMessages([]);
-                    }}
-                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                  >
-                    Nový chat
-                  </button>
-                </div>
-
-                {/* Status indikátor */}
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '1rem', 
-                  right: '1rem', 
-                  fontSize: '0.8rem',
-                  color: '#666',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem'
-                }}>
-                  <div style={{ 
-                    width: '8px', 
-                    height: '8px', 
-                    backgroundColor: '#4CAF50', 
-                    borderRadius: '50%' 
-                  }}></div>
-                  Online
-                </div>
-              </div>
-            </header>
-
-            <main 
-              className="chat-container" 
+    <div className="main-wrapper" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="app light" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        
+        {/* KOMPAKTNÍ HEADER PRO MOBILE */}
+        <header style={{ 
+          padding: isMobile ? '1rem 0.5rem 0.5rem' : '2rem 1rem 1rem',
+          background: '#fff',
+          borderBottom: '1px solid #eee',
+          position: 'relative'
+        }}>
+          {/* Logo - menší na mobile */}
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '0.5rem' : '1rem' }}>
+            <img
+              src="/omnia.png"
+              alt="Omnia Logo"
               style={{ 
-                maxWidth: '800px', 
-                margin: '0 auto', 
-                paddingBottom: '200px', 
-                overflowY: 'auto', 
-                height: 'calc(100vh - 300px)', 
-                scrollBehavior: 'smooth' 
+                width: isMobile ? '200px' : '300px', 
+                height: 'auto' 
+              }}
+            />
+          </div>
+
+          {/* Controls - větší na mobile */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
+            {/* Model selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ 
+                fontSize: isMobile ? '0.9rem' : '1rem',
+                fontWeight: 'bold' 
+              }}>
+                Model:
+              </label>
+              <select 
+                value={model} 
+                onChange={(e) => setModel(e.target.value)}
+                style={{ 
+                  padding: isMobile ? '0.6rem' : '0.4rem',
+                  fontSize: isMobile ? '1rem' : '0.9rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #ccc',
+                  minWidth: isMobile ? '140px' : 'auto'
+                }}
+              >
+                <option value="gpt-4o">Omnia (GPT-4)</option>
+                <option value="claude">Omnia (Claude)</option>
+              </select>
+            </div>
+
+            {/* Online status */}
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontSize: isMobile ? '0.8rem' : '0.8rem',
+              color: '#666'
+            }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                backgroundColor: '#4CAF50', 
+                borderRadius: '50%' 
+              }}></div>
+              Online
+            </div>
+
+            {/* Nový chat button */}
+            <button
+              onClick={() => {
+                localStorage.removeItem('omnia-memory');
+                setMessages([]);
+              }}
+              style={{ 
+                padding: isMobile ? '0.6rem 1rem' : '0.5rem 1rem',
+                fontSize: isMobile ? '0.9rem' : '0.8rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #ccc',
+                backgroundColor: '#f8f9fa',
+                cursor: 'pointer'
               }}
             >
-              {messages.map((msg, idx) => (
+              Nový chat
+            </button>
+          </div>
+        </header>
+
+        {/* CHAT CONTAINER */}
+        <main style={{ 
+          flex: 1,
+          overflowY: 'auto',
+          padding: '1rem',
+          paddingBottom: isMobile ? '100px' : '120px' // prostor pro input
+        }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                  marginBottom: '1rem'
+                }}
+              >
                 <div
-                  key={idx}
-                  className={`chat-message ${msg.sender}`}
                   style={{
-                    display: 'flex',
-                    justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                    padding: '0.5rem',
-                    margin: '0.2rem 0'
+                    backgroundColor: msg.sender === 'user' ? '#DCF8C6' : '#F1F0F0',
+                    color: '#000',
+                    padding: isMobile ? '1rem' : '0.8rem 1rem',
+                    borderRadius: '1rem',
+                    maxWidth: isMobile ? '85%' : '70%',
+                    fontSize: isMobile ? '1.1rem' : '1rem',
+                    lineHeight: '1.4',
+                    whiteSpace: 'pre-wrap',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                   }}
                 >
-                  <div
-                    style={{
-                      backgroundColor: msg.sender === 'user' ? '#DCF8C6' : '#F1F0F0',
-                      color: '#000',
-                      padding: '0.8rem 1rem',
-                      borderRadius: '1rem',
-                      maxWidth: '70%',
-                      fontSize: '1rem',
-                      whiteSpace: 'pre-wrap',
-                      position: 'relative'
-                    }}
-                  >
-                    {/* AI indikátor */}
-                    {msg.sender === 'bot' && (
-                      <div style={{ 
-                        fontSize: '0.7rem', 
-                        opacity: 0.6, 
-                        marginBottom: '0.3rem' 
-                      }}>
-                        🔮 Omnia
-                      </div>
-                    )}
-                    
-                    {msg.sender === 'bot' ? (
-                      <TypewriterText text={msg.text} />
-                    ) : (
-                      msg.text
-                    )}
-                  </div>
-                </div>
-              ))}
-              
-              {loading && (
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'flex-start', 
-                  padding: '0.5rem' 
-                }}>
-                  <div style={{
-                    backgroundColor: '#F1F0F0',
-                    padding: '0.8rem 1rem',
-                    borderRadius: '1rem',
-                    fontSize: '1rem'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ 
-                        width: '12px', 
-                        height: '12px', 
-                        border: '2px solid #ccc', 
-                        borderTop: '2px solid #666',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite'
-                      }}></div>
-                      Omnia přemýšlí...
+                  {/* AI indikátor */}
+                  {msg.sender === 'bot' && (
+                    <div style={{ 
+                      fontSize: isMobile ? '0.8rem' : '0.7rem',
+                      opacity: 0.6, 
+                      marginBottom: '0.5rem'
+                    }}>
+                      🔮 Omnia
                     </div>
+                  )}
+                  
+                  {msg.sender === 'bot' ? (
+                    <TypewriterText text={msg.text} />
+                  ) : (
+                    msg.text
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {loading && (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'flex-start',
+                marginBottom: '1rem'
+              }}>
+                <div style={{
+                  backgroundColor: '#F1F0F0',
+                  padding: isMobile ? '1rem' : '0.8rem 1rem',
+                  borderRadius: '1rem',
+                  fontSize: isMobile ? '1.1rem' : '1rem',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      border: '2px solid #ccc', 
+                      borderTop: '2px solid #666',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    Omnia přemýšlí...
                   </div>
                 </div>
-              )}
-              
-              <div ref={endOfMessagesRef} />
-            </main>
+              </div>
+            )}
+            
+            <div ref={endOfMessagesRef} />
+          </div>
+        </main>
+
+        {/* FIXED INPUT AREA */}
+        <div style={{ 
+          position: 'fixed', 
+          bottom: 0, 
+          left: 0,
+          right: 0,
+          background: '#fff', 
+          padding: isMobile ? '1rem' : '1rem',
+          borderTop: '1px solid #eee',
+          paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem'
+        }}>
+          <div style={{ 
+            maxWidth: '800px',
+            margin: '0 auto',
+            display: 'flex', 
+            gap: isMobile ? '0.5rem' : '1rem'
+          }}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
+              placeholder="Zeptej se Omnie…"
+              disabled={loading}
+              style={{ 
+                flex: 1,
+                padding: isMobile ? '1.2rem' : '1rem',
+                fontSize: isMobile ? '1.1rem' : '1rem',
+                borderRadius: '1rem',
+                border: '1px solid #ccc',
+                outline: 'none',
+                backgroundColor: loading ? '#f5f5f5' : '#fff'
+              }}
+            />
+            <button 
+              onClick={handleSend} 
+              disabled={loading || !input.trim()}
+              style={{ 
+                padding: isMobile ? '1.2rem 1.5rem' : '1rem',
+                fontSize: isMobile ? '1.1rem' : '1rem',
+                borderRadius: '1rem',
+                backgroundColor: loading ? '#ccc' : '#007bff',
+                color: 'white',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold',
+                minWidth: isMobile ? '80px' : '100px'
+              }}
+            >
+              {loading ? '⏳' : 'Odeslat'}
+            </button>
           </div>
         </div>
-      </div>
-      
-      <div style={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        width: '100%', 
-        background: '#fff', 
-        paddingBottom: '1rem', 
-        zIndex: 1000,
-        borderTop: '1px solid #eee'
-      }}>
-        <footer className="chat-input-container" style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: '1rem', 
-          marginTop: '1rem', 
-          padding: '1rem' 
-        }}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-            placeholder="Zeptej se Omnie…"
-            disabled={loading}
-            style={{ 
-              flexGrow: 1, 
-              padding: '1rem', 
-              fontSize: '1rem', 
-              minWidth: 0,
-              borderRadius: '0.5rem',
-              border: '1px solid #ccc'
-            }}
-          />
-          <button 
-            onClick={handleSend} 
-            disabled={loading || !input.trim()}
-            style={{ 
-              padding: '1rem', 
-              fontSize: '1rem',
-              borderRadius: '0.5rem',
-              backgroundColor: loading ? '#ccc' : '#007bff',
-              color: 'white',
-              border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? '⏳' : 'Odeslat'}
-          </button>
-        </footer>
       </div>
     </div>
   );
