@@ -1,4 +1,7 @@
+/// App.jsx - MOBILE OPTIMIZED VERZE s OKAMŽITOU AUDIO ODPOVĚDÍ
+
 import React, { useState, useRef, useEffect } from 'react';
+import './App.css';
 
 // 🎨 GRADIENT LOGO KOMPONENTA
 const OmniaLogo = ({ size = 100, animate = false }) => {
@@ -28,6 +31,7 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
         transition: 'all 0.3s ease'
       }}
     >
+      {/* Inner highlight */}
       <div
         style={{
           position: 'absolute',
@@ -44,63 +48,24 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 FIXED VOICE RECORDER WITH BETTER ERROR HANDLING
+// 🎤 VOICE RECORDING KOMPONENTA - iOS PWA OPTIMIZED
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
-  const touchTimeRef = useRef(null);
-  
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  const showUserError = (message) => {
-    setError(message);
-    alert(message);
-    setTimeout(() => setError(null), 5000);
-  };
-
-  const getSupportedMimeType = () => {
-    const types = [
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/mp4',
-      'audio/aac',
-      'audio/ogg;codecs=opus',
-      'audio/wav'
-    ];
-    
-    for (let type of types) {
-      if (MediaRecorder.isTypeSupported(type)) {
-        console.log('🎵 Using MIME type:', type);
-        return type;
-      }
-    }
-    
-    console.warn('⚠️ No supported MIME type found, using default');
-    return '';
-  };
+  const touchStartTimeRef = useRef(null);
+  const isIOSPWA = window.navigator.standalone; // Detekce iOS PWA
 
   const startRecording = async () => {
     try {
-      console.log('🎙️ Starting recording...');
-      setError(null);
+      console.log('🎙️ Starting recording... iOS PWA:', isIOSPWA);
       
-      // Check if MediaRecorder is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Nahrávání zvuku není podporováno ve vašem prohlížeči');
-      }
-
-      if (!window.MediaRecorder) {
-        throw new Error('MediaRecorder není podporován ve vašem prohlížeči');
-      }
-
+      // 🍎 iOS PWA específická konfigurace
       const constraints = {
         audio: {
-          sampleRate: isMobile ? 44100 : 16000,
+          sampleRate: isIOSPWA ? 44100 : 16000, // iOS PWA preferuje 44100
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -108,35 +73,21 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         }
       };
 
-      // Request permission and get stream
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      // Check if stream has audio tracks
+      // 🍎 iOS PWA - kontrola stream aktivity
       const audioTracks = stream.getAudioTracks();
-      if (audioTracks.length === 0) {
-        throw new Error('Žádné audio stopy nenalezeny');
-      }
+      console.log('🎵 Audio tracks:', audioTracks.length, audioTracks[0]?.readyState);
 
-      console.log('🎵 Audio tracks:', audioTracks.length, audioTracks[0].readyState);
-
-      // Get supported MIME type
-      const mimeType = getSupportedMimeType();
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: isIOSPWA ? 'audio/mp4' : 'audio/webm;codecs=opus'
+      });
       
-      let mediaRecorder;
-      try {
-        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-      } catch (err) {
-        console.warn('⚠️ Failed to create MediaRecorder with MIME type, trying without:', err);
-        mediaRecorder = new MediaRecorder(stream);
-      }
-
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
-      // Set up event handlers
       mediaRecorder.ondataavailable = (event) => {
-        console.log('📦 Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
@@ -146,330 +97,243 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         console.log('🛑 Recording stopped, processing...');
         setIsProcessing(true);
         
-        // Stop all tracks immediately
+        // 🔧 IMMEDIATE iOS PWA CLEANUP
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => {
             track.stop();
-            console.log('🔇 Track stopped:', track.kind, track.readyState);
+            console.log('🔇 Track stopped (iOS PWA):', track.kind, track.readyState);
           });
           streamRef.current = null;
         }
         
         try {
-          if (audioChunksRef.current.length === 0) {
-            throw new Error('Žádná audio data nebyla nahrána');
-          }
-
-          // Create blob with detected MIME type
-          const finalMimeType = mimeType || 'audio/webm';
-          const audioBlob = new Blob(audioChunksRef.current, { type: finalMimeType });
-          console.log('🎵 Audio blob created:', audioBlob.size, 'bytes, type:', finalMimeType);
-          
-          if (audioBlob.size === 0) {
-            throw new Error('Audio soubor je prázdný');
-          }
-
+          const audioBlob = new Blob(audioChunksRef.current, { 
+            type: isIOSPWA ? 'audio/mp4' : 'audio/webm' 
+          });
           const arrayBuffer = await audioBlob.arrayBuffer();
 
-          // Send to Whisper API
-          console.log('📤 Sending to Whisper API...');
           const response = await fetch('/api/whisper', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/octet-stream' },
+            headers: {
+              'Content-Type': 'application/octet-stream',
+            },
             body: arrayBuffer
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Whisper API chyba (${response.status}): ${errorText}`);
+            throw new Error(`HTTP ${response.status}`);
           }
 
           const data = await response.json();
-          console.log('✅ Whisper response:', data);
+          console.log('✅ Transcribed:', data.text);
           
-          if (!data.text || data.text.trim().length === 0) {
-            showUserError('Nepodařilo se rozpoznat žádný text. Zkuste mluvit hlasitěji a jasněji.');
-            return;
-          }
-
-          onTranscript(data.text.trim());
+          onTranscript(data.text);
 
         } catch (error) {
-          console.error('💥 Processing error:', error);
-          showUserError(`Chyba při zpracování: ${error.message}`);
+          console.error('💥 Whisper error:', error);
         } finally {
           setIsProcessing(false);
         }
       };
 
-      mediaRecorder.onerror = (event) => {
-        console.error('💥 MediaRecorder error:', event.error);
-        showUserError(`Chyba nahrávání: ${event.error?.message || 'Neznámá chyba'}`);
-        cleanup();
-      };
-
-      // Start recording with appropriate timeslice
-      const timeslice = isMobile ? 100 : 250;
-      mediaRecorder.start(timeslice);
+      mediaRecorder.start();
       setIsRecording(true);
-      console.log('🎙️ Recording started with timeslice:', timeslice);
 
     } catch (error) {
-      console.error('💥 Start recording error:', error);
-      let userMessage = 'Nepodařilo se spustit nahrávání';
-      
-      if (error.name === 'NotAllowedError') {
-        userMessage = 'Přístup k mikrofonu byl zamítnut. Povolte mikrofon v nastavení prohlížeče.';
-      } else if (error.name === 'NotFoundError') {
-        userMessage = 'Mikrofon nenalezen. Zkontrolujte, zda je mikrofon připojen.';
-      } else if (error.name === 'NotReadableError') {
-        userMessage = 'Mikrofon je již používán jinou aplikací.';
-      } else {
-        userMessage = `${userMessage}: ${error.message}`;
+      console.error('💥 Recording error:', error);
+      alert('Nepodařilo se získat přístup k mikrofonu');
+      // Cleanup on error
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       }
-      
-      showUserError(userMessage);
-      cleanup();
+      setIsRecording(false);
     }
   };
 
-  const stopRecording = () => {
-    console.log('🛑 Stop recording requested');
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch (error) {
-        console.error('Error stopping recorder:', error);
-      }
-    }
-    setIsRecording(false);
-  };
-
-  const cleanup = () => {
-    console.log('🧹 Cleaning up...');
+  const forceStopRecording = () => {
+    console.log('🚨 Force stopping recording (iOS PWA)...');
     
+    // Aggressive cleanup pro iOS PWA
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state === 'recording') {
           mediaRecorderRef.current.stop();
         }
       } catch (error) {
-        console.error('Error stopping recorder during cleanup:', error);
+        console.error('Error stopping recorder:', error);
       }
       mediaRecorderRef.current = null;
     }
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => {
-        try {
+        if (track.readyState === 'live') {
           track.stop();
-        } catch (error) {
-          console.error('Error stopping track:', error);
+          console.log('🔇 Force stopped track:', track.kind);
         }
       });
       streamRef.current = null;
     }
     
     setIsRecording(false);
-    setIsProcessing(false);
   };
 
-  // Touch handlers
+  // 🍎 iOS PWA TOUCH HANDLERS
   const handleTouchStart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (disabled || isProcessing || isRecording) return;
+    touchStartTimeRef.current = Date.now();
     
-    touchTimeRef.current = Date.now();
-    
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
+    if (!disabled && !isProcessing && !isRecording) {
+      console.log('👆 Touch start - iOS PWA');
+      startRecording();
     }
-    
-    startRecording();
   };
 
   const handleTouchEnd = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const duration = Date.now() - (touchTimeRef.current || 0);
+    const touchDuration = Date.now() - (touchStartTimeRef.current || 0);
+    console.log('👆 Touch end - duration:', touchDuration, 'ms');
     
-    if (duration < 300) { // Increased minimum duration
-      console.log('⚠️ Touch too short:', duration, 'ms');
-      cleanup();
-      showUserError('Držte tlačítko déle pro nahrávání');
+    // iOS PWA - minimální doba dotyku
+    if (touchDuration < 100) {
+      console.log('⚠️ Touch too short, ignoring');
       return;
     }
     
     if (isRecording) {
-      stopRecording();
+      forceStopRecording();
     }
   };
 
   const handleTouchCancel = (e) => {
     e.preventDefault();
-    console.log('❌ Touch cancelled');
-    cleanup();
+    e.stopPropagation();
+    console.log('❌ Touch cancelled (iOS PWA)');
+    
+    if (isRecording) {
+      forceStopRecording();
+    }
   };
 
-  // Desktop handlers
+  // 🖱️ DESKTOP HANDLERS (fallback)
   const handleMouseDown = (e) => {
-    if (!isMobile && !disabled && !isProcessing && !isRecording) {
+    // Pouze pro desktop (ne iOS PWA)
+    if (!isIOSPWA && !disabled && !isProcessing && !isRecording) {
       startRecording();
     }
   };
 
   const handleMouseUp = (e) => {
-    if (!isMobile && isRecording) {
-      stopRecording();
+    if (!isIOSPWA && isRecording) {
+      forceStopRecording();
     }
   };
 
-  // Cleanup effects
+  // 🔧 EMERGENCY CLEANUP
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && (isRecording || streamRef.current)) {
-        console.log('🚨 Page hidden - cleaning up');
-        cleanup();
+      if (document.hidden && isRecording) {
+        console.log('🚨 Page hidden - force stop (iOS PWA)');
+        forceStopRecording();
       }
     };
 
     const handleBeforeUnload = () => {
-      cleanup();
+      if (isRecording) {
+        forceStopRecording();
+      }
+    };
+
+    // iOS PWA specific events
+    const handlePageShow = () => {
+      if (isRecording) {
+        console.log('🔄 Page shown - check recording state');
+        forceStopRecording();
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handleBeforeUnload);
+    window.addEventListener('pageshow', handlePageShow);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handleBeforeUnload);
-      cleanup();
+      window.removeEventListener('pageshow', handlePageShow);
     };
   }, [isRecording]);
 
+  // Component unmount cleanup
   useEffect(() => {
-    return cleanup;
+    return () => {
+      console.log('🧹 Component unmount - iOS PWA cleanup');
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const getButtonStyle = () => {
-    if (error) return { 
-      backgroundColor: '#ff6b6b', 
-      color: 'white',
-      boxShadow: '0 0 20px rgba(255, 107, 107, 0.5)'
-    };
-    if (isProcessing) return { 
-      backgroundColor: '#FFA500', 
-      color: 'white',
-      transform: 'scale(1.02)',
-      boxShadow: '0 0 20px rgba(255, 165, 0, 0.5)'
-    };
-    if (isRecording) return { 
-      backgroundColor: '#FF4444', 
-      color: 'white', 
-      transform: 'scale(1.1)',
-      boxShadow: '0 0 25px rgba(255, 68, 68, 0.6)'
-    };
-    return { 
-      backgroundColor: '#007bff', 
-      color: 'white',
-      boxShadow: '0 2px 8px rgba(0, 123, 255, 0.3)'
-    };
+    if (isProcessing) return { backgroundColor: '#FFA500', color: 'white' };
+    if (isRecording) return { backgroundColor: '#FF4444', color: 'white', transform: 'scale(1.05)' };
+    return { backgroundColor: '#007bff', color: 'white' };
   };
 
-  const getButtonContent = () => {
-    if (error) return '❌';
+  const getButtonText = () => {
     if (isProcessing) return '⏳';
     if (isRecording) return '🔴';
     return '🎤';
   };
 
-  const buttonSize = isMobile ? 80 : 70;
-
   return (
-    <div style={{ position: 'relative' }}>
-      <button
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={() => !isMobile && isRecording && stopRecording()}
-        disabled={disabled || isProcessing}
-        title={error ? error : "Držte pro mluvení"}
-        style={{
-          ...getButtonStyle(),
-          border: 'none',
-          borderRadius: '50%',
-          padding: 0,
-          fontSize: isMobile ? '1.8rem' : '1.4rem',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          width: buttonSize,
-          height: buttonSize,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          WebkitTouchCallout: 'none',
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'none',
-          position: 'relative',
-          fontWeight: 'bold'
-        }}
-      >
-        {getButtonContent()}
-        {isRecording && (
-          <div style={{
-            position: 'absolute',
-            top: -2,
-            left: -2,
-            right: -2,
-            bottom: -2,
-            borderRadius: '50%',
-            border: '3px solid #ff4444',
-            animation: 'pulse 1s infinite'
-          }} />
-        )}
-      </button>
-      
-      {/* Error display */}
-      {error && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: '#ff4444',
-          color: 'white',
-          padding: '0.5rem',
-          borderRadius: '0.5rem',
-          fontSize: '0.8rem',
-          marginTop: '0.5rem',
-          whiteSpace: 'nowrap',
-          zIndex: 1000
-        }}>
-          {error}
-        </div>
-      )}
-    </div>
+    <button
+      // iOS PWA - primárně touch eventy
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+      // Desktop fallback
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={() => !isIOSPWA && isRecording && forceStopRecording()}
+      disabled={disabled || isProcessing}
+      title="Držte pro mluvení"
+      style={{
+        ...getButtonStyle(),
+        border: 'none',
+        borderRadius: '1rem',
+        padding: '1.2rem',
+        fontSize: '1.2rem',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        minWidth: '70px',
+        minHeight: '70px',
+        transition: 'all 0.2s',
+        boxShadow: isRecording ? '0 0 25px rgba(255, 68, 68, 0.6)' : 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'none' // iOS PWA - zabránit scroll během touch
+      }}
+    >
+      {getButtonText()}
+    </button>
   );
 };
 
-// 🔊 VOICE BUTTON (unchanged)
+// 🎤 VOICE BUTTON KOMPONENTA - ANTI-OVERLAP
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef(null);
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
+  // 🔧 GLOBAL AUDIO MANAGER - zabránit překrývání
   useEffect(() => {
+    // Pokud se spustí nové audio, zastav všechna ostatní
     const handleNewAudio = () => {
       if (audioRef.current && !audioRef.current.paused) {
         audioRef.current.pause();
@@ -485,6 +349,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
   const handleSpeak = async () => {
     if (isPlaying) {
+      // Stop current audio
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -496,13 +361,17 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
     try {
       setIsLoading(true);
-      
+      console.log('🎤 Manual voice button clicked');
+
+      // 🔔 NOTIFY OTHER AUDIO TO STOP
       window.dispatchEvent(new CustomEvent('omnia-audio-start'));
       if (onAudioStart) onAudioStart();
 
       const response = await fetch('/api/voice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ text })
       });
 
@@ -513,15 +382,13 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
+      // Stop any existing audio
       if (audioRef.current) {
         audioRef.current.pause();
       }
 
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
-
-      audio.preload = 'auto';
-      audio.volume = 1.0;
 
       audio.onplay = () => setIsPlaying(true);
       audio.onended = () => {
@@ -531,16 +398,18 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       };
       audio.onerror = () => {
         setIsPlaying(false);
+        setIsLoading(false);
         if (onAudioEnd) onAudioEnd();
         URL.revokeObjectURL(audioUrl);
+        console.error('Audio playback error');
       };
 
       await audio.play();
+      console.log('🔊 Manual audio playback started');
 
     } catch (error) {
       console.error('💥 Voice error:', error);
       if (onAudioEnd) onAudioEnd();
-      alert(`Chyba při generování hlasu: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -554,30 +423,28 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
         background: 'none',
         border: 'none',
         cursor: isLoading ? 'wait' : 'pointer',
-        padding: isMobile ? '8px' : '4px',
-        borderRadius: '6px',
+        padding: '4px',
+        borderRadius: '4px',
         display: 'flex',
         alignItems: 'center',
-        fontSize: isMobile ? '1.2rem' : '1rem',
+        fontSize: '1rem',
         opacity: isLoading ? 0.5 : 0.7,
-        transition: 'all 0.2s',
-        minWidth: isMobile ? '40px' : '30px',
-        minHeight: isMobile ? '40px' : '30px',
-        justifyContent: 'center'
+        transition: 'opacity 0.2s'
       }}
+      onMouseEnter={(e) => e.target.style.opacity = '1'}
+      onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '0.7'}
     >
       {isLoading ? '⏳' : isPlaying ? '⏸️' : '🔊'}
     </button>
   );
 };
 
-// Typewriter effect (unchanged)
 function TypewriterText({ text }) {
-  const [displayedText, setDisplayedText] = useState('');
-  const [charIndex, setCharIndex] = useState(0);
+  const [displayedText, setDisplayedText] = React.useState('');
+  const [charIndex, setCharIndex] = React.useState(0);
   const chars = React.useMemo(() => Array.from(text), [text]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (charIndex >= chars.length) return;
 
     const timeout = setTimeout(() => {
@@ -591,40 +458,48 @@ function TypewriterText({ text }) {
   return <span>{displayedText}</span>;
 }
 
-// Helper functions (unchanged)
+// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
+    // Filtrovat pouze user/assistant messages
     const validMessages = messages.filter(msg => 
       msg.sender === 'user' || msg.sender === 'bot'
     );
 
+    // Konvertovat na Claude formát
     let claudeMessages = validMessages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text || ''
     }));
 
+    // Claude nesmí začínat assistant message
     if (claudeMessages.length > 0 && claudeMessages[0].role === 'assistant') {
       claudeMessages = claudeMessages.slice(1);
     }
 
+    // Claude nesmí mít dva stejné role za sebou - oprava
     const cleanMessages = [];
     for (let i = 0; i < claudeMessages.length; i++) {
       const current = claudeMessages[i];
       const previous = cleanMessages[cleanMessages.length - 1];
       
+      // Přidej pouze pokud není stejný role jako předchozí
       if (!previous || previous.role !== current.role) {
         cleanMessages.push(current);
       }
     }
 
+    // Claude musí končit user message (pokud posíláme novou zprávu)
     if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
       cleanMessages.pop();
     }
 
+    console.log('📝 Prepared Claude messages:', cleanMessages);
     return cleanMessages;
 
   } catch (error) {
     console.error('💥 Error preparing Claude messages:', error);
+    // Fallback - vrať jen poslední user message
     const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
     return lastUserMessage.map(msg => ({
       role: 'user',
@@ -633,8 +508,14 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, showNotification) => {
+// 🚀 NOVÉ FUNKCE PRO OKAMŽITOU AUDIO ODPOVĚĎ
+
+// 🎵 OKAMŽITÉ AUDIO GENEROVÁNÍ - HLAVNÍ FUNKCE
+const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification) => {
   try {
+    console.log('🚀 Generating INSTANT audio response...');
+    
+    // Spuštění TTS API okamžitě
     const response = await fetch('/api/voice', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -652,11 +533,17 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     const audio = new Audio(audioUrl);
     
     currentAudioRef.current = audio;
+    
     audio.preload = 'auto';
     audio.volume = 1.0;
     
+    if (isIOS) {
+      audio.load();
+    }
+    
     let playbackInterrupted = false;
     
+    // Interrupt handler
     const handleInterrupt = () => {
       playbackInterrupted = true;
       if (!audio.paused) {
@@ -672,185 +559,341 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     
     audio.onplay = () => {
       if (!playbackInterrupted) {
-        showNotification('🔊 Audio se přehrává!', 'success');
+        console.log('🎵 INSTANT audio started - user hears response NOW!');
+        showNotification('🔊 Přehrávám odpověď okamžitě!', 'info');
       }
     };
     
     audio.onended = () => {
+      console.log('✅ Instant audio finished');
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
       window.removeEventListener('omnia-audio-start', handleInterrupt);
     };
     
-    audio.onerror = () => {
+    audio.onerror = (e) => {
+      console.error('❌ Instant audio error:', e);
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
       window.removeEventListener('omnia-audio-start', handleInterrupt);
-      showNotification('🔇 Chyba přehrávání audio', 'error');
     };
     
+    // 🚀 OKAMŽITÉ PŘEHRÁNÍ
     try {
       await audio.play();
+      console.log('🎯 Audio plays IMMEDIATELY after AI response!');
     } catch (playError) {
-      showNotification('🔊 Klepněte zde pro přehrání', 'info', () => {
-        audio.play().catch(() => {
-          showNotification('🔇 Nepodařilo se přehrát audio', 'error');
-        });
+      console.error('❌ Auto-play blocked:', playError);
+      showNotification('🔊 Klepněte pro přehrání odpovědi', 'info', () => {
+        audio.play().catch(console.error);
       });
     }
     
     return audio;
     
   } catch (error) {
+    console.error('💥 Instant audio generation failed:', error);
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    showNotification(`🔇 Audio chyba: ${error.message}`, 'error');
+    showNotification('🔇 Audio se nepodařilo vygenerovat', 'error');
     throw error;
   }
 };
 
-// API Services (unchanged)
-const claudeService = {
-  async sendMessage(messages) {
-    const claudeMessages = prepareClaudeMessages(messages);
-    const systemPrompt = 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně.';
-    
-    const response = await fetch('/api/claude2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        messages: claudeMessages,
-        system: systemPrompt
-      })
-    });
+// 📝 POSTUPNÉ ZOBRAZENÍ TEXTU (zatímco hraje audio)
+const displayResponseText = async (responseText, currentMessages, setMessages, showTempMessage = true) => {
+  if (showTempMessage) {
+    // Malá pauza aby user viděl audio feedback
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+  
+  console.log('📝 Displaying response text while audio plays...');
+  
+  // Nahraď placeholder skutečným textem
+  const finalMessages = [...currentMessages, { 
+    sender: 'bot', 
+    text: responseText 
+  }];
+  
+  setMessages(finalMessages);
+  localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+  
+  return true;
+};
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP ${response.status}`);
+// 🎯 HLAVNÍ FUNKCE PRO PARALELNÍ ZPRACOVÁNÍ
+const handleInstantAudioResponse = async (
+  textInput, 
+  currentMessages, 
+  model, 
+  openaiService, 
+  claudeService, 
+  setMessages, 
+  setLoading,
+  setIsAudioPlaying,
+  currentAudioRef,
+  isIOS,
+  showNotification
+) => {
+  console.log('🚀 Starting INSTANT audio response strategy...');
+  
+  // 1. Zobraz "Připravuji odpověď..." placeholder
+  const tempMessages = [...currentMessages, { 
+    sender: 'bot', 
+    text: '🎵 Připravuji audio odpověď...',
+    isGenerating: true 
+  }];
+  setMessages(tempMessages);
+
+  try {
+    // 2. Zavolej AI API pro text odpověď
+    let responseText = '';
+    
+    if (model === 'gpt-4o') {
+      const openAiMessages = [
+        { 
+          role: 'system', 
+          content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.' 
+        },
+        ...currentMessages.map((msg) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        })),
+        { role: 'user', content: textInput }
+      ];
+
+      responseText = await openaiService.sendMessage(openAiMessages);
+    } else if (model === 'claude') {
+      responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
     }
 
-    const data = await response.json();
-    return data.content[0].text;
+    console.log('✅ AI odpověď získána:', responseText);
+
+    // 3. 🎯 PARALELNÍ SPUŠTĚNÍ: Audio generování + Text zobrazení
+    const audioPromise = generateInstantAudio(
+      responseText, 
+      setIsAudioPlaying, 
+      currentAudioRef, 
+      isIOS, 
+      showNotification
+    );
+    
+    const textPromise = displayResponseText(
+      responseText, 
+      currentMessages, 
+      setMessages, 
+      true
+    );
+
+    // 4. Audio se spustí okamžitě, text se zobrazí postupně
+    await Promise.allSettled([audioPromise, textPromise]);
+    
+    return responseText;
+    
+  } catch (error) {
+    console.error('💥 Instant audio response error:', error);
+    
+    // Fallback - zobraz chybu jako text
+    const errorText = `Chyba: ${error.message}`;
+    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
+    setMessages(errorMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
+    
+    throw error;
+  }
+};
+
+// 📄 KLASICKÝ TEXT FLOW (beze změn pro text mode)
+const handleClassicTextResponse = async (
+  textInput, 
+  currentMessages, 
+  model, 
+  openaiService, 
+  claudeService, 
+  setMessages,
+  autoPlay,
+  voiceMode,
+  playResponseAudio
+) => {
+  let responseText = '';
+  
+  if (model === 'gpt-4o') {
+    const openAiMessages = [
+      { 
+        role: 'system', 
+        content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.' 
+      },
+      ...currentMessages.map((msg) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      { role: 'user', content: textInput }
+    ];
+
+    responseText = await openaiService.sendMessage(openAiMessages);
+  } else if (model === 'claude') {
+    responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
+  }
+
+  const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+  setMessages(updatedMessages);
+  localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+  
+  // Klasické audio po textu
+  if (autoPlay && voiceMode === 'hybrid') {
+    setTimeout(() => {
+      playResponseAudio(responseText);
+    }, 1000);
+  }
+  
+  return responseText;
+};
+
+// ONLINE API SERVICES (pro Vercel)
+const claudeService = {
+  async sendMessage(messages) {
+    try {
+      console.log('🔄 Volám Claude přes Vercel API...');
+      
+      // Příprava bezpečných messages pro Claude
+      const claudeMessages = prepareClaudeMessages(messages);
+      
+      // System prompt pro Claude (samostatně)
+      const systemPrompt = 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
+      
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          messages: claudeMessages,
+          system: systemPrompt
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
+        throw new Error('Invalid response structure');
+      }
+
+      return data.content[0].text;
+    } catch (error) {
+      console.error('💥 Claude error:', error);
+      throw error;
+    }
   }
 };
 
 const openaiService = {
   async sendMessage(messages) {
-    const response = await fetch('/api/openai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages })
-    });
+    try {
+      console.log('🔄 Volám OpenAI přes Vercel API...');
+      
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response structure');
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('💥 OpenAI error:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   }
 };
 
-// Main App Component (rest unchanged, only using the fixed VoiceRecorder)
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('gpt-4o');
+  const [model, setModel] = useState('gpt-4o'); // 'gpt-4o' or 'claude'
   const [loading, setLoading] = useState(false);
-  const [voiceMode, setVoiceMode] = useState('text');
-  const [autoPlay, setAutoPlay] = useState(true);
+  const [voiceMode, setVoiceMode] = useState('text'); // 'text', 'hybrid', 'conversation'
+  const [autoPlay, setAutoPlay] = useState(true); // Default true pro conversation mode
+  
+  // 🔊 NOVÉ STAVY PRO AUDIO KONTROLU
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const currentAudioRef = useRef(null);
+  
   const endOfMessagesRef = useRef(null);
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  // Detekce mobile zařízení
+  const isMobile = window.innerWidth <= 768;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
 
+  // 🔇 FUNKCE PRO ZASTAVENÍ AUDIO
   const stopCurrentAudio = () => {
+    console.log('🔇 Stopping current audio...');
+    
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
       currentAudioRef.current = null;
     }
+    
     setIsAudioPlaying(false);
+    
+    // Notify all other audio components
     window.dispatchEvent(new CustomEvent('omnia-audio-start'));
+    
+    console.log('🔇 Audio manually stopped');
   };
 
-  const showNotification = (message, type = 'info', onClick = null) => {
-    const notification = document.createElement('div');
-    const bgColor = type === 'error' ? '#ff4444' : type === 'success' ? '#4CAF50' : '#007bff';
-    
-    notification.style.cssText = `
-      position: fixed;
-      top: ${isMobile ? '120px' : '100px'};
-      left: 50%;
-      transform: translateX(-50%);
-      background: ${bgColor};
-      color: white;
-      padding: ${isMobile ? '16px 20px' : '12px 16px'};
-      border-radius: ${isMobile ? '12px' : '8px'};
-      font-size: ${isMobile ? '16px' : '14px'};
-      font-weight: bold;
-      z-index: 10000;
-      cursor: ${onClick ? 'pointer' : 'default'};
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      max-width: ${isMobile ? '90vw' : '400px'};
-      text-align: center;
-    `;
-    notification.textContent = message;
-    
-    if (onClick) {
-      notification.addEventListener('click', () => {
-        onClick();
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      });
-    }
-    
-    document.body.appendChild(notification);
-    
-    if (isMobile && navigator.vibrate) {
-      navigator.vibrate(type === 'error' ? [100, 50, 100] : 50);
-    }
-    
-    setTimeout(() => {
-      if (document.body.contains(notification)) {
-        notification.style.opacity = '0';
-        setTimeout(() => {
-          if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-          }
-        }, 300);
-      }
-    }, onClick ? 8000 : 4000);
-  };
-
+  // 🔊 UPRAVENÁ FUNKCE PRO AUTO-PLAY (zachována pro hybrid mode)
   const playResponseAudio = async (text) => {
     try {
+      console.log('🔊 Auto-play attempting:', text.substring(0, 50) + '...');
+      
+      // Zastavit předchozí audio
       stopCurrentAudio();
       
       const response = await fetch('/api/voice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ text })
       });
 
       if (!response.ok) {
-        throw new Error(`Voice API failed: ${response.status}`);
+        console.error('❌ Voice API failed:', response.status);
+        showNotification('🔇 Hlas se nepodařilo přehrát', 'error');
+        return;
       }
 
-      setIsAudioPlaying(true);
+      setIsAudioPlaying(true); // 🔥 NASTAVIT STAV
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      currentAudioRef.current = audio;
-      audio.preload = 'auto';
-      audio.volume = 1.0;
+      currentAudioRef.current = audio; // 🔥 ULOŽIT REFERENCI
+      
+      // Track this as auto-play audio
+      audio.dataset.autoPlay = 'true';
       
       let playbackInterrupted = false;
       
@@ -867,173 +910,97 @@ function App() {
       
       window.addEventListener('omnia-audio-start', handleInterrupt, { once: true });
       
+      audio.preload = 'auto';
+      audio.volume = 1.0;
+      
+      if (isIOS) {
+        audio.load();
+      }
+      
+      let playStarted = false;
+      
+      audio.onplay = () => {
+        if (!playbackInterrupted) {
+          playStarted = true;
+          console.log('🎵 Auto-play started successfully');
+        }
+      };
+      
       audio.onended = () => {
-        setIsAudioPlaying(false);
+        console.log('✅ Auto-play finished');
+        setIsAudioPlaying(false); // 🔥 VYČISTIT STAV
         currentAudioRef.current = null;
         URL.revokeObjectURL(audioUrl);
         window.removeEventListener('omnia-audio-start', handleInterrupt);
       };
       
-      audio.onerror = () => {
-        setIsAudioPlaying(false);
+      audio.onerror = (e) => {
+        console.error('❌ Audio playback error:', e);
+        setIsAudioPlaying(false); // 🔥 VYČISTIT STAV
         currentAudioRef.current = null;
         URL.revokeObjectURL(audioUrl);
         showNotification('🔇 Chyba přehrávání hlasu', 'error');
         window.removeEventListener('omnia-audio-start', handleInterrupt);
       };
       
-      try {
-        await audio.play();
-      } catch (playError) {
-        if (!playbackInterrupted) {
-          showNotification('🔊 Klepněte pro přehrání odpovědi', 'info', () => {
-            audio.play().catch(() => {
-              showNotification('🔇 Nepodařilo se přehrát', 'error');
+      // 📱 MOBILE/DESKTOP STRATEGY
+      if (isMobile) {
+        if (voiceMode === 'conversation') {
+          try {
+            await audio.play();
+            if (!playStarted && !playbackInterrupted) {
+              throw new Error('Auto-play failed to start');
+            }
+          } catch (error) {
+            console.error('❌ Mobile auto-play failed:', error);
+            if (!playbackInterrupted) {
+              showNotification('🔊 Klepněte pro přehrání odpovědi', 'info', () => {
+                audio.play().catch(console.error);
+              });
+            }
+          }
+        } else {
+          if (!playbackInterrupted) {
+            showNotification('🔊 Klepněte pro přehrání odpovědi', 'info', () => {
+              audio.play().catch(console.error);
             });
-          });
+          }
+        }
+      } else {
+        try {
+          await audio.play();
+          if (!playStarted && !playbackInterrupted) {
+            throw new Error('Auto-play blocked');
+          }
+        } catch (error) {
+          console.error('❌ Desktop auto-play failed:', error);
+          if (!playbackInterrupted) {
+            showNotification('🔊 Klikněte pro přehrání odpovědi', 'info', () => {
+              audio.play().catch(console.error);
+            });
+          }
         }
       }
       
     } catch (error) {
+      console.error('💥 Auto-play error:', error);
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
-      showNotification(`🔇 Audio chyba: ${error.message}`, 'error');
+      showNotification('🔇 Chyba při generování hlasu', 'error');
     }
   };
 
-  const handleInstantAudioResponse = async (textInput, currentMessages) => {
-    const tempMessages = [...currentMessages, { 
-      sender: 'bot', 
-      text: '🎵 Připravuji audio odpověď...',
-      isGenerating: true 
-    }];
-    setMessages(tempMessages);
-
-    try {
-      let responseText = '';
-      
-      if (model === 'gpt-4o') {
-        const openAiMessages = [
-          { 
-            role: 'system', 
-            content: 'Jsi Omnia, chytrý český AI asistent. Odpovídej VÝHRADNĚ v češtině.' 
-          },
-          ...currentMessages.map((msg) => ({
-            role: msg.sender === 'user' ? 'user' : 'assistant',
-            content: msg.text
-          })),
-          { role: 'user', content: textInput }
-        ];
-
-        responseText = await openaiService.sendMessage(openAiMessages);
-      } else if (model === 'claude') {
-        responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
-      }
-
-      const audioPromise = generateInstantAudio(
-        responseText, 
-        setIsAudioPlaying, 
-        currentAudioRef, 
-        showNotification
-      );
-      
-      setTimeout(() => {
-        const finalMessages = [...currentMessages, { 
-          sender: 'bot', 
-          text: responseText 
-        }];
-        setMessages(finalMessages);
-        localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-      }, 800);
-
-      await audioPromise;
-      return responseText;
-      
-    } catch (error) {
-      const errorText = `Chyba: ${error.message}`;
-      const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
-      setMessages(errorMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
-      throw error;
-    }
-  };
-
-  const handleClassicTextResponse = async (textInput, currentMessages) => {
-    let responseText = '';
-    
-    if (model === 'gpt-4o') {
-      const openAiMessages = [
-        { 
-          role: 'system', 
-          content: 'Jsi Omnia, chytrý český AI asistent. Odpovídej VÝHRADNĚ v češtině.' 
-        },
-        ...currentMessages.map((msg) => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
-        })),
-        { role: 'user', content: textInput }
-      ];
-
-      responseText = await openaiService.sendMessage(openAiMessages);
-    } else if (model === 'claude') {
-      responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
-    }
-
-    const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-    
-    if (autoPlay && voiceMode === 'hybrid') {
-      setTimeout(() => {
-        playResponseAudio(responseText);
-      }, 1000);
-    }
-    
-    return responseText;
-  };
-
-  const handleSend = async (textInput = input) => {
-    if (!textInput.trim()) return;
-
-    if (isAudioPlaying) {
-      stopCurrentAudio();
-    }
-
-    const newMessages = [...messages, { sender: 'user', text: textInput }];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
-
-    try {
-      if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
-        await handleInstantAudioResponse(textInput, newMessages);
-      } else {
-        await handleClassicTextResponse(textInput, newMessages);
-      }
-    } catch (err) {
-      showNotification(`Chyba: ${err.message}`, 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTranscript = (text) => {
-    console.log('🎙️ Transcript received:', text);
-    if (voiceMode === 'conversation') {
-      handleSend(text);
-    } else {
-      setInput(text);
-    }
-  };
-
+  // 🎯 GLOBÁLNÍ KLAVESOVÉ ZKRATKY
   useEffect(() => {
     const handleKeyPress = (e) => {
+      // ESC = zastavit audio
       if (e.key === 'Escape' && isAudioPlaying) {
         e.preventDefault();
         stopCurrentAudio();
         showNotification('🔇 Audio zastaveno', 'info');
       }
       
+      // SPACE = zastavit audio (pouze pokud není focus na input)
       if (e.key === ' ' && isAudioPlaying && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         stopCurrentAudio();
@@ -1045,7 +1012,9 @@ function App() {
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [isAudioPlaying]);
 
+  // Force light mode pro celou aplikaci
   useEffect(() => {
+    // Přidej meta tag pro color-scheme
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]') || document.createElement('meta');
     metaColorScheme.name = 'color-scheme';
     metaColorScheme.content = 'light only';
@@ -1053,6 +1022,7 @@ function App() {
       document.head.appendChild(metaColorScheme);
     }
 
+    // Přidej CSS pro force light mode + LOGO ANIMATIONS
     const darkModeOverride = document.getElementById('dark-mode-override') || document.createElement('style');
     darkModeOverride.id = 'dark-mode-override';
     darkModeOverride.innerHTML = `
@@ -1067,6 +1037,26 @@ function App() {
         box-sizing: border-box !important;
       }
       
+      #root {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+      }
+      
+      * {
+        color-scheme: light only !important;
+        box-sizing: border-box !important;
+      }
+      
+      input, textarea, select, button {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-color: #cccccc !important;
+      }
+      
+      /* 🎨 LOGO ANIMATIONS */
       .omnia-logo:hover {
         transform: scale(1.05);
         filter: brightness(1.2);
@@ -1087,14 +1077,21 @@ function App() {
         }
       }
       
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-      }
-      
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        html, body, #root {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+        }
+        
+        * {
+          background-color: inherit !important;
+          color: inherit !important;
+        }
       }
     `;
     if (!document.getElementById('dark-mode-override')) {
@@ -1102,6 +1099,7 @@ function App() {
     }
 
     return () => {
+      // Cleanup při unmount
       const meta = document.querySelector('meta[name="color-scheme"]');
       const style = document.getElementById('dark-mode-override');
       if (meta) meta.remove();
@@ -1109,9 +1107,10 @@ function App() {
     };
   }, []);
 
+  // Načtení historie z localStorage při startu
   useEffect(() => {
     const navType = window.performance?.navigation?.type;
-    if (navType === 1) {
+    if (navType === 1) { // Reload
       localStorage.removeItem('omnia-memory');
       setMessages([]);
     } else {
@@ -1125,6 +1124,122 @@ function App() {
       }
     }
   }, []);
+
+  // 🚀 NOVÁ HANDLESENД FUNKCE S OKAMŽITÝM AUDIEM
+  const handleSend = async (textInput = input) => {
+    if (!textInput.trim()) return;
+
+    // Zastavit audio před odesláním nové zprávy
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+
+    const newMessages = [...messages, { sender: 'user', text: textInput }];
+    setMessages(newMessages);
+    setInput('');
+    setLoading(true);
+
+    try {
+      // 🎯 KLÍČOVÁ ZMĚNA: Rozhodnutí o strategii zpracování
+      if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
+        // 🚀 NOVÁ STRATEGIE: Okamžitá audio odpověď
+        console.log('🚀 Using INSTANT audio response strategy');
+        
+        await handleInstantAudioResponse(
+          textInput,
+          newMessages,
+          model,
+          openaiService,
+          claudeService,
+          setMessages,
+          setLoading,
+          setIsAudioPlaying,
+          currentAudioRef,
+          isIOS,
+          showNotification
+        );
+        
+      } else {
+        // 📄 KLASICKÁ STRATEGIE: Text první, pak audio
+        console.log('📄 Using classic text-first strategy');
+        
+        await handleClassicTextResponse(
+          textInput,
+          newMessages,
+          model,
+          openaiService,
+          claudeService,
+          setMessages,
+          autoPlay,
+          voiceMode,
+          playResponseAudio
+        );
+      }
+
+      console.log('✅ Response processing completed');
+
+    } catch (err) {
+      console.error('💥 Chyba při volání API:', err);
+      const responseText = `Chyba: ${err.message}`;
+      const updatedMessages = [...newMessages, { sender: 'bot', text: responseText }];
+      setMessages(updatedMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTranscript = (text) => {
+    if (voiceMode === 'conversation') {
+      // V conversation mode rovnou pošli s INSTANT AUDIO!
+      handleSend(text);
+    } else {
+      // V hybrid mode vlož do input pole
+      setInput(text);
+    }
+  };
+
+  // 🔔 HELPER FUNKCE PRO NOTIFIKACE
+  const showNotification = (message, type = 'info', onClick = null) => {
+    // Vytvoř dočasnou notifikaci
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: ${type === 'error' ? '#ff4444' : '#007bff'};
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10000;
+      cursor: ${onClick ? 'pointer' : 'default'};
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: opacity 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    if (onClick) {
+      notification.addEventListener('click', () => {
+        onClick();
+        document.body.removeChild(notification);
+      });
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove po 4 sekundách
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }
+    }, 4000);
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -1149,13 +1264,15 @@ function App() {
         width: '100vw',
         margin: 0,
         padding: 0,
+        colorScheme: 'light only',
+        boxSizing: 'border-box',
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
-        overflowX: 'hidden'
+        bottom: 0
       }}
+      // 🔇 CLICK ANYWHERE TO STOP AUDIO
       onClick={() => {
         if (isAudioPlaying && isMobile) {
           stopCurrentAudio();
@@ -1172,18 +1289,23 @@ function App() {
         color: '#000000',
         width: '100%',
         margin: 0,
-        padding: 0
+        padding: 0,
+        boxSizing: 'border-box'
       }}>
         
-        {/* HEADER */}
+        {/* KOMPAKTNÍ HEADER PRO MOBILE */}
         <header style={{ 
           padding: isMobile ? '1rem 0.5rem 0.5rem' : '2rem 1rem 1rem',
           background: '#ffffff',
+          color: '#000000',
           borderBottom: '1px solid #eee',
+          position: 'relative',
           textAlign: 'center',
           width: '100%',
+          boxSizing: 'border-box',
           flexShrink: 0
         }}>
+          {/* 🎨 GRADIENT LOGO */}
           <div style={{ 
             textAlign: 'center', 
             marginBottom: isMobile ? '0.5rem' : '1rem',
@@ -1200,7 +1322,7 @@ function App() {
               fontSize: isMobile ? '1.8rem' : '2.2rem',
               fontWeight: '700',
               margin: 0,
-              fontFamily: 'Inter, system-ui, sans-serif',
+              fontFamily: 'Inter, sans-serif',
               background: 'linear-gradient(135deg, #00aaff 0%, #6644ff 50%, #cc44aa 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -1211,34 +1333,46 @@ function App() {
             </h1>
           </div>
 
+          {/* Controls - větší na mobile */}
           <div style={{ 
             display: 'flex', 
             justifyContent: isMobile ? 'space-between' : 'space-around',
             alignItems: 'center',
-            flexWrap: isMobile ? 'wrap' : 'nowrap',
-            gap: isMobile ? '0.5rem' : '1rem',
+            flexWrap: 'wrap',
+            gap: '1rem',
             maxWidth: '800px',
             margin: '0 auto',
             padding: isMobile ? '0' : '0 2rem'
           }}>
+            {/* Voice Mode Selector */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem',
-              fontSize: isMobile ? '0.9rem' : '1rem'
+              minWidth: isMobile ? 'auto' : '150px',
+              justifyContent: isMobile ? 'flex-start' : 'center'
             }}>
-              <label style={{ fontWeight: 'bold' }}>Režim:</label>
+              <label style={{ 
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
+                fontWeight: 'bold' 
+              }}>
+                Režim:
+              </label>
               <select 
                 value={voiceMode} 
                 onChange={(e) => {
-                  if (isAudioPlaying) stopCurrentAudio();
+                  // Zastavit audio při změně režimu
+                  if (isAudioPlaying) {
+                    stopCurrentAudio();
+                  }
                   setVoiceMode(e.target.value);
                 }}
                 style={{ 
-                  padding: isMobile ? '0.5rem' : '0.3rem',
+                  padding: isMobile ? '0.4rem' : '0.3rem',
                   fontSize: isMobile ? '0.9rem' : '0.8rem',
                   borderRadius: '0.4rem',
-                  border: '1px solid #ccc'
+                  border: '1px solid #ccc',
+                  minWidth: isMobile ? '100px' : 'auto'
                 }}
               >
                 <option value="text">📝 Text</option>
@@ -1247,21 +1381,29 @@ function App() {
               </select>
             </div>
 
+            {/* Model selector */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem',
-              fontSize: isMobile ? '0.9rem' : '1rem'
+              minWidth: isMobile ? 'auto' : '200px',
+              justifyContent: isMobile ? 'flex-start' : 'center'
             }}>
-              <label style={{ fontWeight: 'bold' }}>Model:</label>
+              <label style={{ 
+                fontSize: isMobile ? '0.9rem' : '1rem',
+                fontWeight: 'bold' 
+              }}>
+                Model:
+              </label>
               <select 
                 value={model} 
                 onChange={(e) => setModel(e.target.value)}
                 style={{ 
-                  padding: isMobile ? '0.5rem' : '0.4rem',
-                  fontSize: isMobile ? '0.9rem' : '0.9rem',
+                  padding: isMobile ? '0.6rem' : '0.4rem',
+                  fontSize: isMobile ? '1rem' : '0.9rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #ccc'
+                  border: '1px solid #ccc',
+                  minWidth: isMobile ? '140px' : 'auto'
                 }}
               >
                 <option value="gpt-4o">Omnia (GPT-4)</option>
@@ -1269,14 +1411,20 @@ function App() {
               </select>
             </div>
 
+            {/* Skryj auto-play toggle - v conversation mode je vždy auto */}
             {voiceMode === 'hybrid' && !isMobile && (
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0.3rem',
-                fontSize: '0.9rem'
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
+                color: '#666',
+                minWidth: isMobile ? 'auto' : '120px',
+                justifyContent: 'center'
               }}>
-                <label>🔊 Auto:</label>
+                <label style={{ fontSize: isMobile ? '0.8rem' : '0.9rem' }}>
+                  🔊 Auto:
+                </label>
                 <input 
                   type="checkbox" 
                   checked={autoPlay} 
@@ -1286,22 +1434,58 @@ function App() {
               </div>
             )}
 
+            {/* Conversation mode info nebo audio status */}
+            {voiceMode === 'conversation' && (
+              <div style={{ 
+                fontSize: '0.8rem',
+                color: isAudioPlaying ? '#ff4444' : '#007bff',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                minWidth: '120px'
+              }}>
+                {isAudioPlaying ? '🚀 Instant Audio!' : '🗣️ Conversation'}
+              </div>
+            )}
+
+            {/* Online status */}
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontSize: isMobile ? '0.8rem' : '0.9rem',
+              color: '#666',
+              minWidth: isMobile ? 'auto' : '80px',
+              justifyContent: 'center'
+            }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                backgroundColor: '#4CAF50', 
+                borderRadius: '50%' 
+              }}></div>
+              Online
+            </div>
+
+            {/* Nový chat button */}
             <button
               onClick={() => {
-                if (isAudioPlaying) stopCurrentAudio();
+                if (isAudioPlaying) {
+                  stopCurrentAudio();
+                }
                 localStorage.removeItem('omnia-memory');
                 setMessages([]);
               }}
               style={{ 
-                padding: isMobile ? '0.5rem 0.8rem' : '0.6rem 1.2rem',
-                fontSize: isMobile ? '0.8rem' : '0.9rem',
+                padding: isMobile ? '0.6rem 1rem' : '0.6rem 1.2rem',
+                fontSize: isMobile ? '0.9rem' : '0.9rem',
                 borderRadius: '0.5rem',
                 border: '1px solid #ccc',
                 backgroundColor: '#f8f9fa',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minWidth: isMobile ? 'auto' : '120px'
               }}
             >
-              Nový
+              Nový chat
             </button>
           </div>
         </header>
@@ -1311,18 +1495,20 @@ function App() {
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
-          padding: isMobile ? '0.5rem' : '1rem',
-          paddingBottom: isMobile ? '160px' : '120px',
+          padding: '1rem',
+          paddingBottom: isMobile ? '140px' : '120px',
           background: '#ffffff',
+          color: '#000000',
           WebkitOverflowScrolling: 'touch',
-          width: '100%'
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
           <div style={{ 
             maxWidth: '800px', 
             margin: '0 auto', 
             minHeight: '50vh',
             width: '100%',
-            padding: isMobile ? '0 0.5rem' : '0'
+            boxSizing: 'border-box'
           }}>
             {messages.map((msg, idx) => (
               <div
@@ -1330,38 +1516,39 @@ function App() {
                 style={{
                   display: 'flex',
                   justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                  marginBottom: isMobile ? '1.5rem' : '1rem'
+                  marginBottom: '1rem'
                 }}
               >
                 <div
                   style={{
                     backgroundColor: msg.sender === 'user' ? '#DCF8C6' : '#F1F0F0',
                     color: '#000',
-                    padding: isMobile ? '1.2rem' : '1rem',
-                    borderRadius: isMobile ? '1.2rem' : '1rem',
-                    maxWidth: isMobile ? '90%' : '70%',
+                    padding: isMobile ? '1rem' : '0.8rem 1rem',
+                    borderRadius: '1rem',
+                    maxWidth: isMobile ? '85%' : '70%',
                     fontSize: isMobile ? '1.1rem' : '1rem',
-                    lineHeight: '1.5',
+                    lineHeight: '1.4',
                     whiteSpace: 'pre-wrap',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    wordBreak: 'break-word'
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                   }}
                 >
+                  {/* 🎨 AI indikátor s malým logem */}
                   {msg.sender === 'bot' && (
                     <div style={{ 
-                      fontSize: isMobile ? '0.9rem' : '0.8rem',
+                      fontSize: isMobile ? '0.8rem' : '0.7rem',
                       opacity: 0.7, 
                       marginBottom: '0.5rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '0.5rem'
+                      gap: '0.4rem'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <OmniaLogo size={16} />
+                        <OmniaLogo size={14} />
                         Omnia
                         {msg.isGenerating && <span>🚀</span>}
                       </div>
+                      {/* 🔊 VOICE BUTTON */}
                       <VoiceButton 
                         text={msg.text} 
                         onAudioStart={() => setIsAudioPlaying(true)}
@@ -1387,22 +1574,22 @@ function App() {
               }}>
                 <div style={{
                   backgroundColor: '#F1F0F0',
-                  padding: isMobile ? '1.2rem' : '1rem',
-                  borderRadius: isMobile ? '1.2rem' : '1rem',
+                  padding: isMobile ? '1rem' : '0.8rem 1rem',
+                  borderRadius: '1rem',
                   fontSize: isMobile ? '1.1rem' : '1rem',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <OmniaLogo size={14} animate={true} />
+                    <OmniaLogo size={12} animate={true} />
                     <div style={{ 
-                      width: '14px', 
-                      height: '14px', 
+                      width: '12px', 
+                      height: '12px', 
                       border: '2px solid #ccc', 
-                      borderTop: '2px solid #007bff',
+                      borderTop: '2px solid #666',
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }}></div>
-                    {voiceMode === 'conversation' ? 'Instant odpověď...' : 'Omnia přemýšlí...'}
+                    {voiceMode === 'conversation' ? 'Připravuji instant odpověď...' : 'Omnia přemýšlí...'}
                   </div>
                 </div>
               </div>
@@ -1412,7 +1599,7 @@ function App() {
           </div>
         </main>
 
-        {/* INPUT AREA */}
+        {/* FIXED INPUT AREA */}
         <div style={{ 
           position: 'fixed', 
           bottom: 0, 
@@ -1420,11 +1607,13 @@ function App() {
           right: 0,
           width: '100vw',
           background: '#ffffff', 
-          padding: isMobile ? '1rem 0.5rem' : '1rem',
+          color: '#000000',
+          padding: isMobile ? '1rem' : '1rem',
           borderTop: '1px solid #eee',
-          paddingBottom: isMobile ? 'max(1rem, env(safe-area-inset-bottom))' : '1rem',
+          paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem',
           zIndex: 1000,
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)'
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+          boxSizing: 'border-box'
         }}>
           <div style={{ 
             maxWidth: '800px',
@@ -1432,7 +1621,8 @@ function App() {
             display: 'flex', 
             gap: isMobile ? '0.5rem' : '1rem',
             width: '100%',
-            alignItems: 'flex-end'
+            boxSizing: 'border-box',
+            padding: '0 1rem'
           }}>
             {voiceMode !== 'conversation' && (
               <input
@@ -1440,18 +1630,20 @@ function App() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-                placeholder={voiceMode === 'hybrid' ? "Napište nebo mluvte..." : "Zeptej se Omnie…"}
+                placeholder={voiceMode === 'hybrid' ? "Napište nebo použijte mikrofon..." : "Zeptej se Omnie…"}
                 disabled={loading}
                 style={{ 
                   flex: 1,
                   padding: isMobile ? '1.2rem' : '1rem',
                   fontSize: isMobile ? '1.1rem' : '1rem',
-                  borderRadius: isMobile ? '1.2rem' : '1rem',
-                  border: '2px solid #e0e0e0',
+                  borderRadius: '1rem',
+                  border: '1px solid #ccc',
                   outline: 'none',
                   backgroundColor: loading ? '#f5f5f5' : '#ffffff',
                   color: '#000000',
-                  minHeight: isMobile ? '50px' : '45px'
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  colorScheme: 'light only'
                 }}
               />
             )}
@@ -1464,13 +1656,13 @@ function App() {
                 justifyContent: 'center',
                 padding: isMobile ? '1.2rem' : '1rem',
                 fontSize: isMobile ? '1.1rem' : '1rem',
-                borderRadius: isMobile ? '1.2rem' : '1rem',
+                borderRadius: '1rem',
                 border: isAudioPlaying ? '2px solid #ff4444' : '2px solid #007bff',
                 backgroundColor: isAudioPlaying ? '#fff5f5' : '#f8f9ff',
                 color: isAudioPlaying ? '#ff4444' : '#007bff',
                 textAlign: 'center',
                 fontWeight: 'bold',
-                minHeight: isMobile ? '70px' : '50px'
+                minHeight: '50px'
               }}>
                 {loading ? (
                   <>
@@ -1483,14 +1675,14 @@ function App() {
                       animation: 'spin 1s linear infinite',
                       marginRight: '0.5rem'
                     }}></div>
-                    🚀 Instant odpověď...
+                    🚀 Připravuji instant odpověď...
                   </>
                 ) : isAudioPlaying ? (
                   <>
-                    🔊 Audio hraje - {isMobile ? 'dotkněte se' : 'ESC'} pro stop
+                    🔊 Instant audio hraje - {isMobile ? 'dotkněte se' : 'ESC/Space'} pro zastavení
                   </>
                 ) : (
-                  "🎤 Držte pro INSTANT audio odpověď"
+                  "🎤 Držte tlačítko pro INSTANT audio odpověď"
                 )}
               </div>
             )}
@@ -1503,29 +1695,30 @@ function App() {
               />
             )}
 
+            {/* 🔇 STOP BUTTON - zobrazí se během přehrávání audio */}
             {isAudioPlaying && (
               <button 
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.stopPropagation(); // Zabránit propagaci do main wrapper
                   stopCurrentAudio();
                   showNotification('🔇 Audio zastaveno', 'info');
                 }}
-                style={{
+                style={{ 
                   padding: isMobile ? '1.2rem' : '1rem',
                   fontSize: isMobile ? '1.1rem' : '1rem',
-                  borderRadius: isMobile ? '1.2rem' : '1rem',
+                  borderRadius: '1rem',
                   backgroundColor: '#ff4444',
                   color: 'white',
                   border: 'none',
                   cursor: 'pointer',
                   fontWeight: 'bold',
-                  minWidth: isMobile ? '80px' : '80px',
+                  minWidth: isMobile ? '80px' : '100px',
                   flexShrink: 0,
                   boxShadow: '0 0 15px rgba(255, 68, 68, 0.5)',
-                  animation: 'pulse 2s ease-in-out infinite'
+                  animation: 'omnia-pulse 2s ease-in-out infinite'
                 }}
               >
-                ⏹️
+                ⏹️ Stop
               </button>
             )}
             
@@ -1536,42 +1729,49 @@ function App() {
                 style={{ 
                   padding: isMobile ? '1.2rem 1.5rem' : '1rem',
                   fontSize: isMobile ? '1.1rem' : '1rem',
-                  borderRadius: isMobile ? '1.2rem' : '1rem',
-                  backgroundColor: loading || !input.trim() ? '#ccc' : '#007bff',
+                  borderRadius: '1rem',
+                  backgroundColor: loading ? '#ccc' : '#007bff',
                   color: 'white',
                   border: 'none',
-                  cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+                  cursor: loading ? 'not-allowed' : 'pointer',
                   fontWeight: 'bold',
-                  minWidth: isMobile ? '80px' : '80px',
+                  minWidth: isMobile ? '80px' : '100px',
                   flexShrink: 0
                 }}
               >
-                {loading ? '⏳' : 'Send'}
+                {loading ? '⏳' : 'Odeslat'}
               </button>
             )}
           </div>
 
+          {/* 🔔 HELP TEXT PRO ZASTAVENÍ AUDIO */}
           {isAudioPlaying && (
             <div style={{
               textAlign: 'center',
-              fontSize: isMobile ? '0.9rem' : '0.8rem',
+              fontSize: '0.8rem',
               color: '#666',
               marginTop: '0.5rem',
-              fontWeight: isMobile ? 'bold' : 'normal'
+              maxWidth: '800px',
+              margin: '0.5rem auto 0',
+              padding: '0 1rem'
             }}>
-              💡 {isMobile ? 'Klepněte kamkoli nebo na ⏹️ pro zastavení' : 'ESC, Space nebo ⏹️ pro zastavení'}
+              💡 {isMobile ? 'Klepněte kamkoli nebo na Stop tlačítko' : 'Stiskněte ESC, Space nebo Stop tlačítko'} pro zastavení
             </div>
           )}
 
+          {/* 🚀 INSTANT AUDIO INFO */}
           {voiceMode === 'conversation' && !isAudioPlaying && !loading && (
             <div style={{
               textAlign: 'center',
-              fontSize: isMobile ? '0.9rem' : '0.8rem',
+              fontSize: '0.8rem',
               color: '#007bff',
               marginTop: '0.5rem',
+              maxWidth: '800px',
+              margin: '0.5rem auto 0',
+              padding: '0 1rem',
               fontWeight: 'bold'
             }}>
-              🚀 Instant Audio: Slyšíte odpověď okamžitě!
+              🚀 Instant Audio Mode: Slyšíte odpověď o 2-3 sekundy rychleji!
             </div>
           )}
         </div>
