@@ -1,7 +1,52 @@
-// App.jsx - MOBILE OPTIMIZED VERZE
+// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem)
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
+
+// 🎨 NOVÁ GRADIENT LOGO KOMPONENTA
+const OmniaLogo = ({ size = 100, animate = false }) => {
+  return (
+    <div
+      className={`omnia-logo ${animate ? 'animate' : ''}`}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: `
+          radial-gradient(circle at 30% 30%, 
+            rgba(0, 255, 255, 0.9) 0%,
+            rgba(0, 150, 255, 1) 25%,
+            rgba(100, 50, 255, 1) 50%,
+            rgba(200, 50, 200, 0.9) 75%,
+            rgba(100, 50, 255, 0.7) 100%
+          )
+        `,
+        boxShadow: `
+          0 0 ${size * 0.3}px rgba(0, 150, 255, 0.4),
+          inset 0 0 ${size * 0.2}px rgba(255, 255, 255, 0.3)
+        `,
+        position: 'relative',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease'
+      }}
+    >
+      {/* Inner highlight */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '15%',
+          left: '15%',
+          width: '25%',
+          height: '25%',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.4)',
+          filter: 'blur(6px)'
+        }}
+      />
+    </div>
+  );
+};
 
 function TypewriterText({ text }) {
   const [displayedText, setDisplayedText] = React.useState('');
@@ -107,7 +152,7 @@ function App() {
       document.head.appendChild(metaColorScheme);
     }
 
-    // Přidej CSS pro force light mode
+    // Přidej CSS pro force light mode + LOGO ANIMATIONS
     const darkModeOverride = document.getElementById('dark-mode-override') || document.createElement('style');
     darkModeOverride.id = 'dark-mode-override';
     darkModeOverride.innerHTML = `
@@ -125,6 +170,27 @@ function App() {
         background-color: #ffffff !important;
         color: #000000 !important;
         border-color: #cccccc !important;
+      }
+      
+      /* 🎨 LOGO ANIMATIONS */
+      .omnia-logo:hover {
+        transform: scale(1.05);
+        filter: brightness(1.2);
+      }
+      
+      .omnia-logo.animate {
+        animation: omnia-pulse 4s ease-in-out infinite;
+      }
+      
+      @keyframes omnia-pulse {
+        0%, 100% { 
+          transform: scale(1);
+          filter: brightness(1);
+        }
+        50% { 
+          transform: scale(1.03);
+          filter: brightness(1.15);
+        }
       }
       
       @media (prefers-color-scheme: dark) {
@@ -260,16 +326,32 @@ function App() {
           position: 'relative',
           textAlign: 'center'
         }}>
-          {/* Logo - menší na mobile */}
-          <div style={{ textAlign: 'center', marginBottom: isMobile ? '0.5rem' : '1rem' }}>
-            <img
-              src="/omnia.png"
-              alt="Omnia Logo"
-              style={{ 
-                width: isMobile ? '200px' : '300px', 
-                height: 'auto' 
-              }}
+          {/* 🎨 NOVÉ GRADIENT LOGO */}
+          <div style={{ 
+            textAlign: 'center', 
+            marginBottom: isMobile ? '0.5rem' : '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <OmniaLogo 
+              size={isMobile ? 60 : 80} 
+              animate={true}
             />
+            <h1 style={{ 
+              fontSize: isMobile ? '1.8rem' : '2.2rem',
+              fontWeight: '700',
+              margin: 0,
+              fontFamily: 'Inter, sans-serif',
+              background: 'linear-gradient(135deg, #00aaff 0%, #6644ff 50%, #cc44aa 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              letterSpacing: '0.05em'
+            }}>
+              OMNIA
+            </h1>
           </div>
 
           {/* Controls - větší na mobile */}
@@ -377,14 +459,18 @@ function App() {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {/* AI indikátor */}
+                  {/* 🎨 AI indikátor s malým logem */}
                   {msg.sender === 'bot' && (
                     <div style={{ 
                       fontSize: isMobile ? '0.8rem' : '0.7rem',
-                      opacity: 0.6, 
-                      marginBottom: '0.5rem'
+                      opacity: 0.7, 
+                      marginBottom: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem'
                     }}>
-                      🔮 Omnia
+                      <OmniaLogo size={14} />
+                      Omnia
                     </div>
                   )}
                   
@@ -411,6 +497,7 @@ function App() {
                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <OmniaLogo size={12} animate={true} />
                     <div style={{ 
                       width: '12px', 
                       height: '12px', 
