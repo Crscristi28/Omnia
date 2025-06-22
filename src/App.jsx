@@ -175,7 +175,13 @@ function App() {
   }, [messages]);
 
   return (
-    <div className="main-wrapper" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="main-wrapper" style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      background: '#fff',
+      overflow: 'hidden'
+    }}>
       <div className="app light" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         
         {/* KOMPAKTNÍ HEADER PRO MOBILE */}
@@ -271,7 +277,9 @@ function App() {
           flex: 1,
           overflowY: 'auto',
           padding: '1rem',
-          paddingBottom: isMobile ? '100px' : '120px' // prostor pro input
+          paddingBottom: isMobile ? '100px' : '120px', // prostor pro input
+          background: '#fff',
+          WebkitOverflowScrolling: 'touch'
         }}>
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
             {messages.map((msg, idx) => (
@@ -357,7 +365,9 @@ function App() {
           background: '#fff', 
           padding: isMobile ? '1rem' : '1rem',
           borderTop: '1px solid #eee',
-          paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem'
+          paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem',
+          zIndex: 1000,
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
         }}>
           <div style={{ 
             maxWidth: '800px',
