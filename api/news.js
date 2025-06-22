@@ -1,135 +1,76 @@
-// /api/news.js - Vercel API endpoint pro aktuální zprávy
+// pages/api/news.js nebo api/news.js
+// SerpAPI endpoint pro Internet Search
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { query, category = 'general' } = req.method === 'GET' ? req.query : req.body;
+    const { query } = req.body;
     
-    // 🔑 SERPAPI CONFIGURATION
-    const SERP_API_KEY = process.env.SERP_API_KEY; // Přidejte do Vercel Environment Variables
-    
-    if (!SERP_API_KEY) {
-      throw new Error('SERP API key not configured');
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
     }
 
-    let searchQuery;
+    // SerpAPI klíč z environment variables
+    const SERPAPI_KEY = process.env.SERPAPI_API_KEY;
     
-    // 📰 ČESKÝ NEWS QUERIES
-    if (query) {
-      // Custom search query
-      searchQuery = `${query} zprávy Česko`;
-    } else {
-      // Category-based searches
-      const categoryQueries = {
-        general: 'nejnovější zprávy Česko dnes',
-        politics: 'politika Česko zprávy dnes',
-        economy: 'ekonomika hospodářství Česko zprávy',
-        world: 'svět zahraniční zprávy dnes',
-        sport: 'sport Česko zprávy dnes',
-        technology: 'technologie IT zprávy Česko',
-        health: 'zdravotnictví medicína zprávy Česko'
-      };
-      searchQuery = categoryQueries[category] || categoryQueries.general;
+    if (!SERPAPI_KEY) {
+      console.error('❌ SERPAPI_API_KEY not found in environment variables');
+      return res.status(500).json({ 
+        success: false,
+        error: 'SerpAPI key not configured' 
+      });
     }
 
-    // 🔍 SERPAPI NEWS SEARCH
-    const serpParams = {
-      engine: 'google_news',
-      q: searchQuery,
-      gl: 'cz', // Czech geo-location
-      hl: 'cs', // Czech language
-      api_key: SERP_API_KEY,
-      num: 10 // Number of results
-    };
+    console.log('🔍 Searching for:', query);
 
-    const serpUrl = 'https://serpapi.com/search?' + new URLSearchParams(serpParams);
+    // SerpAPI search request
+    const serpApiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(query)}&api_key=${SERPAPI_KEY}&num=5&hl=cs&gl=cz`;
     
-    console.log('🔍 Fetching news from SerpAPI:', searchQuery);
-    
-    const response = await fetch(serpUrl);
+    const response = await fetch(serpApiUrl);
     
     if (!response.ok) {
-      throw new Error(`SerpAPI error: ${response.status}`);
+      throw new Error(`SerpAPI request failed: ${response.status}`);
     }
     
     const data = await response.json();
     
-    // 📰 PROCESS NEWS RESULTS
-    const articles = [];
-    
-    if (data.news_results) {
-      for (const item of data.news_results) {
-        articles.push({
-          title: item.title,
-          snippet: item.snippet,
-          link: item.link,
-          source: {
-            name: item.source || 'Neznámý zdroj'
-          },
-          date: item.date,
-          thumbnail: item.thumbnail,
-          position: item.position
-        });
-      }
+    console.log('🔍 SerpAPI response:', data);
+
+    // Zkontroluj jestli máme výsledky
+    if (!data.organic_results || data.organic_results.length === 0) {
+      return res.status(200).json({
+        success: false,
+        message: 'No search results found',
+        results: []
+      });
     }
 
-    // 🎯 FALLBACK - Regular search results if no news_results
-    if (articles.length === 0 && data.organic_results) {
-      for (const item of data.organic_results.slice(0, 5)) {
-        articles.push({
-          title: item.title,
-          snippet: item.snippet,
-          link: item.link,
-          source: {
-            name: extractDomain(item.link)
-          },
-          date: 'Dnes',
-          position: item.position
-        });
-      }
-    }
+    // Formátuj výsledky
+    const results = data.organic_results.slice(0, 5).map(result => ({
+      title: result.title || 'Bez názvu',
+      snippet: result.snippet || 'Bez popisu',
+      link: result.link || '#',
+      source: result.source || 'Neznámý zdroj'
+    }));
 
-    // 📊 RESPONSE
-    const newsResponse = {
+    console.log('✅ Processed results:', results.length);
+
+    return res.status(200).json({
       success: true,
-      query: searchQuery,
-      total_results: articles.length,
-      articles: articles,
-      timestamp: new Date().toISOString(),
-      source: 'SerpAPI'
-    };
-
-    console.log(`✅ Found ${articles.length} news articles`);
-    
-    res.status(200).json(newsResponse);
+      results: results,
+      query: query
+    });
 
   } catch (error) {
-    console.error('💥 News API error:', error);
+    console.error('💥 Search API error:', error);
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error.message,
-      articles: [],
-      timestamp: new Date().toISOString()
+      message: 'Search failed'
     });
-  }
-}
-
-// 🔧 HELPER FUNCTION
-function extractDomain(url) {
-  try {
-    const domain = new URL(url).hostname;
-    return domain.replace('www.', '');
-  } catch {
-    return 'Neznámý zdroj';
   }
 }
