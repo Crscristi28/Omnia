@@ -35,14 +35,38 @@ export default async function handler(req, res) {
       });
     }
 
-    // 🔧 OPRAVA: Použij celý messages array místo jen poslední zprávy
+    // 🔧 OPRAVA: Bezpečně připrav messages pro Claude API
     console.log('📝 Posílám Claudovi celou historii:', messages.length, 'zpráv');
+    
+    // Validace a čištění messages
+    const validMessages = messages.filter(msg => 
+      msg.role && msg.content && 
+      (msg.role === 'user' || msg.role === 'assistant')
+    ).map(msg => ({
+      role: msg.role,
+      content: String(msg.content).trim()
+    }));
+
+    // Claude nesmí začínat assistant message
+    if (validMessages.length > 0 && validMessages[0].role === 'assistant') {
+      validMessages.shift();
+    }
+
+    // Pokud není žádná zpráva, použij fallback
+    if (validMessages.length === 0) {
+      validMessages.push({
+        role: 'user',
+        content: 'Ahoj'
+      });
+    }
+
+    console.log('✅ Připravené messages pro Claude:', validMessages);
     
     const claudeRequest = {
       model: "claude-3-5-sonnet-20241022",
       max_tokens: 1000,
-      messages: messages, // ✅ CELÁ HISTORIE místo jen lastMessage
-      ...(system && { system }) // System prompt pokud je poslán
+      messages: validMessages,
+      ...(system && { system: String(system) })
     };
 
     console.log('🚀 Volám Claude API s historií...');
