@@ -44,10 +44,11 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 MOBILE-OPTIMIZED VOICE RECORDER
+// 🎤 FIXED VOICE RECORDER WITH BETTER ERROR HANDLING
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
@@ -56,10 +57,47 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+  const showUserError = (message) => {
+    setError(message);
+    alert(message);
+    setTimeout(() => setError(null), 5000);
+  };
+
+  const getSupportedMimeType = () => {
+    const types = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/aac',
+      'audio/ogg;codecs=opus',
+      'audio/wav'
+    ];
+    
+    for (let type of types) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        console.log('🎵 Using MIME type:', type);
+        return type;
+      }
+    }
+    
+    console.warn('⚠️ No supported MIME type found, using default');
+    return '';
+  };
+
   const startRecording = async () => {
     try {
       console.log('🎙️ Starting recording...');
+      setError(null);
       
+      // Check if MediaRecorder is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Nahrávání zvuku není podporováno ve vašem prohlížeči');
+      }
+
+      if (!window.MediaRecorder) {
+        throw new Error('MediaRecorder není podporován ve vašem prohlížeči');
+      }
+
       const constraints = {
         audio: {
           sampleRate: isMobile ? 44100 : 16000,
@@ -70,47 +108,71 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         }
       };
 
+      // Request permission and get stream
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      let mimeType = 'audio/webm;codecs=opus';
-      if (isMobile) {
-        if (MediaRecorder.isTypeSupported('audio/mp4')) {
-          mimeType = 'audio/mp4';
-        } else if (MediaRecorder.isTypeSupported('audio/aac')) {
-          mimeType = 'audio/aac';
-        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-          mimeType = 'audio/webm';
-        }
+      // Check if stream has audio tracks
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        throw new Error('Žádné audio stopy nenalezeny');
       }
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      console.log('🎵 Audio tracks:', audioTracks.length, audioTracks[0].readyState);
+
+      // Get supported MIME type
+      const mimeType = getSupportedMimeType();
+      
+      let mediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      } catch (err) {
+        console.warn('⚠️ Failed to create MediaRecorder with MIME type, trying without:', err);
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
+      // Set up event handlers
       mediaRecorder.ondataavailable = (event) => {
+        console.log('📦 Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('🛑 Recording stopped');
+        console.log('🛑 Recording stopped, processing...');
         setIsProcessing(true);
         
+        // Stop all tracks immediately
         if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current.getTracks().forEach(track => {
+            track.stop();
+            console.log('🔇 Track stopped:', track.kind, track.readyState);
+          });
           streamRef.current = null;
         }
         
         try {
           if (audioChunksRef.current.length === 0) {
-            throw new Error('No audio data recorded');
+            throw new Error('Žádná audio data nebyla nahrána');
           }
 
-          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          // Create blob with detected MIME type
+          const finalMimeType = mimeType || 'audio/webm';
+          const audioBlob = new Blob(audioChunksRef.current, { type: finalMimeType });
+          console.log('🎵 Audio blob created:', audioBlob.size, 'bytes, type:', finalMimeType);
+          
+          if (audioBlob.size === 0) {
+            throw new Error('Audio soubor je prázdný');
+          }
+
           const arrayBuffer = await audioBlob.arrayBuffer();
 
+          // Send to Whisper API
+          console.log('📤 Sending to Whisper API...');
           const response = await fetch('/api/whisper', {
             method: 'POST',
             headers: { 'Content-Type': 'application/octet-stream' },
@@ -118,49 +180,81 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Whisper API chyba (${response.status}): ${errorText}`);
           }
 
           const data = await response.json();
+          console.log('✅ Whisper response:', data);
           
-          if (data.text && data.text.trim()) {
-            onTranscript(data.text);
+          if (!data.text || data.text.trim().length === 0) {
+            showUserError('Nepodařilo se rozpoznat žádný text. Zkuste mluvit hlasitěji a jasněji.');
+            return;
           }
 
+          onTranscript(data.text.trim());
+
         } catch (error) {
-          console.error('💥 Transcription error:', error);
-          alert(`Chyba při zpracování hlasu: ${error.message}`);
+          console.error('💥 Processing error:', error);
+          showUserError(`Chyba při zpracování: ${error.message}`);
         } finally {
           setIsProcessing(false);
         }
       };
 
+      mediaRecorder.onerror = (event) => {
+        console.error('💥 MediaRecorder error:', event.error);
+        showUserError(`Chyba nahrávání: ${event.error?.message || 'Neznámá chyba'}`);
+        cleanup();
+      };
+
+      // Start recording with appropriate timeslice
       const timeslice = isMobile ? 100 : 250;
       mediaRecorder.start(timeslice);
       setIsRecording(true);
+      console.log('🎙️ Recording started with timeslice:', timeslice);
 
     } catch (error) {
-      console.error('💥 Recording error:', error);
-      alert(`Nepodařilo se spustit nahrávání: ${error.message}`);
+      console.error('💥 Start recording error:', error);
+      let userMessage = 'Nepodařilo se spustit nahrávání';
+      
+      if (error.name === 'NotAllowedError') {
+        userMessage = 'Přístup k mikrofonu byl zamítnut. Povolte mikrofon v nastavení prohlížeče.';
+      } else if (error.name === 'NotFoundError') {
+        userMessage = 'Mikrofon nenalezen. Zkontrolujte, zda je mikrofon připojen.';
+      } else if (error.name === 'NotReadableError') {
+        userMessage = 'Mikrofon je již používán jinou aplikací.';
+      } else {
+        userMessage = `${userMessage}: ${error.message}`;
+      }
+      
+      showUserError(userMessage);
       cleanup();
     }
   };
 
   const stopRecording = () => {
+    console.log('🛑 Stop recording requested');
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (error) {
+        console.error('Error stopping recorder:', error);
+      }
     }
     setIsRecording(false);
   };
 
   const cleanup = () => {
+    console.log('🧹 Cleaning up...');
+    
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state === 'recording') {
           mediaRecorderRef.current.stop();
         }
       } catch (error) {
-        console.error('Error stopping recorder:', error);
+        console.error('Error stopping recorder during cleanup:', error);
       }
       mediaRecorderRef.current = null;
     }
@@ -180,6 +274,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     setIsProcessing(false);
   };
 
+  // Touch handlers
   const handleTouchStart = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -201,8 +296,10 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     
     const duration = Date.now() - (touchTimeRef.current || 0);
     
-    if (duration < 200) {
+    if (duration < 300) { // Increased minimum duration
+      console.log('⚠️ Touch too short:', duration, 'ms');
       cleanup();
+      showUserError('Držte tlačítko déle pro nahrávání');
       return;
     }
     
@@ -213,9 +310,11 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
 
   const handleTouchCancel = (e) => {
     e.preventDefault();
+    console.log('❌ Touch cancelled');
     cleanup();
   };
 
+  // Desktop handlers
   const handleMouseDown = (e) => {
     if (!isMobile && !disabled && !isProcessing && !isRecording) {
       startRecording();
@@ -228,21 +327,27 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     }
   };
 
+  // Cleanup effects
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && (isRecording || streamRef.current)) {
+        console.log('🚨 Page hidden - cleaning up');
         cleanup();
       }
     };
 
+    const handleBeforeUnload = () => {
+      cleanup();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', cleanup);
-    window.addEventListener('pagehide', cleanup);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', cleanup);
-      window.removeEventListener('pagehide', cleanup);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
       cleanup();
     };
   }, [isRecording]);
@@ -252,6 +357,11 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   }, []);
 
   const getButtonStyle = () => {
+    if (error) return { 
+      backgroundColor: '#ff6b6b', 
+      color: 'white',
+      boxShadow: '0 0 20px rgba(255, 107, 107, 0.5)'
+    };
     if (isProcessing) return { 
       backgroundColor: '#FFA500', 
       color: 'white',
@@ -271,58 +381,87 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     };
   };
 
+  const getButtonContent = () => {
+    if (error) return '❌';
+    if (isProcessing) return '⏳';
+    if (isRecording) return '🔴';
+    return '🎤';
+  };
+
   const buttonSize = isMobile ? 80 : 70;
 
   return (
-    <button
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={() => !isMobile && isRecording && stopRecording()}
-      disabled={disabled || isProcessing}
-      title="Držte pro mluvení"
-      style={{
-        ...getButtonStyle(),
-        border: 'none',
-        borderRadius: '50%',
-        padding: 0,
-        fontSize: isMobile ? '1.8rem' : '1.4rem',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        width: buttonSize,
-        height: buttonSize,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'all 0.2s ease',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-        WebkitTapHighlightColor: 'transparent',
-        touchAction: 'none',
-        position: 'relative',
-        fontWeight: 'bold'
-      }}
-    >
-      {isProcessing ? '⏳' : isRecording ? '🔴' : '🎤'}
-      {isRecording && (
+    <div style={{ position: 'relative' }}>
+      <button
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={() => !isMobile && isRecording && stopRecording()}
+        disabled={disabled || isProcessing}
+        title={error ? error : "Držte pro mluvení"}
+        style={{
+          ...getButtonStyle(),
+          border: 'none',
+          borderRadius: '50%',
+          padding: 0,
+          fontSize: isMobile ? '1.8rem' : '1.4rem',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          width: buttonSize,
+          height: buttonSize,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTouchCallout: 'none',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'none',
+          position: 'relative',
+          fontWeight: 'bold'
+        }}
+      >
+        {getButtonContent()}
+        {isRecording && (
+          <div style={{
+            position: 'absolute',
+            top: -2,
+            left: -2,
+            right: -2,
+            bottom: -2,
+            borderRadius: '50%',
+            border: '3px solid #ff4444',
+            animation: 'pulse 1s infinite'
+          }} />
+        )}
+      </button>
+      
+      {/* Error display */}
+      {error && (
         <div style={{
           position: 'absolute',
-          top: -2,
-          left: -2,
-          right: -2,
-          bottom: -2,
-          borderRadius: '50%',
-          border: '3px solid #ff4444',
-          animation: 'pulse 1s infinite'
-        }} />
+          top: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#ff4444',
+          color: 'white',
+          padding: '0.5rem',
+          borderRadius: '0.5rem',
+          fontSize: '0.8rem',
+          marginTop: '0.5rem',
+          whiteSpace: 'nowrap',
+          zIndex: 1000
+        }}>
+          {error}
+        </div>
       )}
-    </button>
+    </div>
   );
 };
 
-// 🔊 VOICE BUTTON
+// 🔊 VOICE BUTTON (unchanged)
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -432,7 +571,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   );
 };
 
-// Typewriter effect
+// Typewriter effect (unchanged)
 function TypewriterText({ text }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
@@ -452,7 +591,7 @@ function TypewriterText({ text }) {
   return <span>{displayedText}</span>;
 }
 
-// Helper functions
+// Helper functions (unchanged)
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -572,7 +711,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// API Services
+// API Services (unchanged)
 const claudeService = {
   async sendMessage(messages) {
     const claudeMessages = prepareClaudeMessages(messages);
@@ -615,7 +754,7 @@ const openaiService = {
   }
 };
 
-// Main App Component
+// Main App Component (rest unchanged, only using the fixed VoiceRecorder)
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -879,6 +1018,7 @@ function App() {
   };
 
   const handleTranscript = (text) => {
+    console.log('🎙️ Transcript received:', text);
     if (voiceMode === 'conversation') {
       handleSend(text);
     } else {
@@ -1098,8 +1238,7 @@ function App() {
                   padding: isMobile ? '0.5rem' : '0.3rem',
                   fontSize: isMobile ? '0.9rem' : '0.8rem',
                   borderRadius: '0.4rem',
-                  border: '1px solid #ccc',
-                  minWidth: isMobile ? '100px' : 'auto'
+                  border: '1px solid #ccc'
                 }}
               >
                 <option value="text">📝 Text</option>
@@ -1122,8 +1261,7 @@ function App() {
                   padding: isMobile ? '0.5rem' : '0.4rem',
                   fontSize: isMobile ? '0.9rem' : '0.9rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #ccc',
-                  minWidth: isMobile ? '120px' : 'auto'
+                  border: '1px solid #ccc'
                 }}
               >
                 <option value="gpt-4o">Omnia (GPT-4)</option>
@@ -1147,17 +1285,6 @@ function App() {
                 />
               </div>
             )}
-
-            <div style={{ 
-              fontSize: isMobile ? '0.8rem' : '0.9rem',
-              color: isAudioPlaying ? '#ff4444' : '#007bff',
-              fontWeight: 'bold',
-              textAlign: 'center'
-            }}>
-              {voiceMode === 'conversation' && isAudioPlaying ? '🚀 Instant!' : 
-               voiceMode === 'conversation' ? '🗣️ Chat' : 
-               '📱 Ready'}
-            </div>
 
             <button
               onClick={() => {
@@ -1324,7 +1451,6 @@ function App() {
                   outline: 'none',
                   backgroundColor: loading ? '#f5f5f5' : '#ffffff',
                   color: '#000000',
-                  resize: 'none',
                   minHeight: isMobile ? '50px' : '45px'
                 }}
               />
@@ -1445,18 +1571,7 @@ function App() {
               marginTop: '0.5rem',
               fontWeight: 'bold'
             }}>
-              🚀 Instant Audio: Slyšíte odpověď okamžitě po AI generování!
-            </div>
-          )}
-
-          {isMobile && voiceMode === 'hybrid' && (
-            <div style={{
-              textAlign: 'center',
-              fontSize: '0.8rem',
-              color: '#888',
-              marginTop: '0.5rem'
-            }}>
-              💡 Tip: Přepněte na 🗣️ Chat pro nejrychlejší audio odpovědi
+              🚀 Instant Audio: Slyšíte odpověď okamžitě!
             </div>
           )}
         </div>
