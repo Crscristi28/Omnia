@@ -1,5 +1,5 @@
 // pages/api/news.js nebo api/news.js
-// SerpAPI endpoint pro Internet Search
+// SerpAPI endpoint pro Internet Search s podporou stránkování
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,13 +7,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query } = req.body;
+    const { query, start = 0 } = req.body;
     
     if (!query) {
       return res.status(400).json({ error: 'Query is required' });
     }
 
-    // SerpAPI klíč z environment variables
     const SERPAPI_KEY = process.env.SERPAPI_API_KEY;
     
     if (!SERPAPI_KEY) {
@@ -24,10 +23,10 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('🔍 Searching for:', query);
+    console.log(`🔍 Searching for: ${query} (start=${start})`);
 
-    // SerpAPI search request
-    const serpApiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(query)}&api_key=${SERPAPI_KEY}&num=5&hl=cs&gl=cz`;
+    // SerpAPI search request s parametrem start pro stránkování
+    const serpApiUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(query)}&api_key=${SERPAPI_KEY}&num=5&hl=cs&gl=cz&start=${start}`;
     
     const response = await fetch(serpApiUrl);
     
@@ -39,7 +38,6 @@ export default async function handler(req, res) {
     
     console.log('🔍 SerpAPI response:', data);
 
-    // Zkontroluj jestli máme výsledky
     if (!data.organic_results || data.organic_results.length === 0) {
       return res.status(200).json({
         success: false,
@@ -48,7 +46,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // Formátuj výsledky
     const results = data.organic_results.slice(0, 5).map(result => ({
       title: result.title || 'Bez názvu',
       snippet: result.snippet || 'Bez popisu',
@@ -61,7 +58,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       results: results,
-      query: query
+      query: query,
+      next_start: start + 5
     });
 
   } catch (error) {
