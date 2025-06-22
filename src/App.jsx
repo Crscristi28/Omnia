@@ -137,6 +137,8 @@ const VoiceButton = ({ text }) => {
     </button>
   );
 };
+
+function TypewriterText({ text }) {
   const [displayedText, setDisplayedText] = React.useState('');
   const [charIndex, setCharIndex] = React.useState(0);
   const chars = React.useMemo(() => Array.from(text), [text]);
