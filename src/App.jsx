@@ -619,6 +619,8 @@ function App() {
 
       if (!response.ok) {
         console.error('❌ Voice API failed:', response.status);
+        // 🔔 VIZUÁLNÍ INDIKACE CHYBY
+        showNotification('🔇 Hlas se nepodařilo přehrát', 'error');
         return;
       }
 
@@ -626,12 +628,21 @@ function App() {
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      // Nastavení pro lepší kompatibilitu
+      // 🎯 AGRESIVNĚJŠÍ NASTAVENÍ PRO AUTO-PLAY
       audio.preload = 'auto';
       audio.volume = 1.0;
+      audio.autoplay = true;
+      
+      // 🔄 FALLBACK - pokud auto-play selže, ukáž notifikaci
+      let playStarted = false;
       
       audio.oncanplay = () => {
         console.log('🎵 Audio ready to play');
+      };
+      
+      audio.onplay = () => {
+        playStarted = true;
+        console.log('🎵 Auto-play started successfully');
       };
       
       audio.onended = () => {
@@ -642,25 +653,70 @@ function App() {
       audio.onerror = (e) => {
         console.error('❌ Audio playback error:', e);
         URL.revokeObjectURL(audioUrl);
+        showNotification('🔇 Chyba přehrávání hlasu', 'error');
       };
       
-      // Pokus o přehrání
-      const playPromise = audio.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log('🎵 Auto-play started successfully');
-          })
-          .catch(error => {
-            console.error('❌ Auto-play blocked by browser:', error);
-            console.log('💡 Tip: Klikněte někam na stránku a zkuste znovu');
-          });
+      // Pokus o přehrání s fallback
+      try {
+        await audio.play();
+        if (!playStarted) {
+          throw new Error('Play did not start');
+        }
+      } catch (error) {
+        console.error('❌ Auto-play blocked/failed:', error);
+        
+        // 🔔 UKÁŽ NOTIFIKACI S MOŽNOSTÍ RUČNÍHO PŘEHRÁNÍ
+        showNotification('🔊 Klikněte pro přehrání odpovědi', 'info', () => {
+          audio.play().catch(console.error);
+        });
       }
       
     } catch (error) {
       console.error('💥 Auto-play error:', error);
+      showNotification('🔇 Chyba při generování hlasu', 'error');
     }
+  };
+
+  // 🔔 HELPER FUNKCE PRO NOTIFIKACE
+  const showNotification = (message, type = 'info', onClick = null) => {
+    // Vytvoř dočasnou notifikaci
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: ${type === 'error' ? '#ff4444' : '#007bff'};
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10000;
+      cursor: ${onClick ? 'pointer' : 'default'};
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: opacity 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    if (onClick) {
+      notification.addEventListener('click', () => {
+        onClick();
+        document.body.removeChild(notification);
+      });
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove po 4 sekundách
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }
+    }, 4000);
   };
 
   useEffect(() => {
