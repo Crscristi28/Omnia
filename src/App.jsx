@@ -48,7 +48,7 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 VOICE RECORDING KOMPONENTA
+// 🎤 VOICE RECORDING KOMPONENTA - PUSH TO TALK
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -132,42 +132,59 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     }
   };
 
-  const handleClick = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
+  // 🎯 PUSH-TO-TALK HANDLERS
+  const handleMouseDown = () => {
+    if (!disabled && !isProcessing && !isRecording) {
       startRecording();
     }
   };
 
-  // Hands-free mode - automatické nahrávání
-  useEffect(() => {
-    if (mode === 'handsfree' && !disabled && !isRecording && !isProcessing) {
-      // Automaticky začni nahrávat po krátké pauze
-      const timer = setTimeout(() => {
-        startRecording();
-      }, 1000);
-      return () => clearTimeout(timer);
+  const handleMouseUp = () => {
+    if (isRecording) {
+      stopRecording();
     }
-  }, [mode, disabled, isRecording, isProcessing]);
+  };
+
+  // 📱 TOUCH HANDLERS PRO MOBIL
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    handleMouseDown();
+  };
+
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
+    handleMouseUp();
+  };
+
+  // 🚫 ODSTRANIT AUTOMATICKÉ NAHRÁVÁNÍ
+  // useEffect pro hands-free mode je odstraněn
 
   const getButtonStyle = () => {
     if (isProcessing) return { backgroundColor: '#FFA500', color: 'white' };
-    if (isRecording) return { backgroundColor: '#FF4444', color: 'white' };
+    if (isRecording) return { backgroundColor: '#FF4444', color: 'white', transform: 'scale(1.1)' };
     return { backgroundColor: '#007bff', color: 'white' };
   };
 
   const getButtonText = () => {
     if (isProcessing) return '⏳';
-    if (isRecording) return '🛑';
-    if (mode === 'handsfree') return '🎤';
-    return '🎙️';
+    if (isRecording) return '🔴';
+    return '🎤';
+  };
+
+  const getButtonTitle = () => {
+    if (mode === 'handsfree') return 'Držte pro mluvení';
+    return 'Držte pro nahrávání';
   };
 
   return (
     <button
-      onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp} // Pokud myš opustí tlačítko
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       disabled={disabled || isProcessing}
+      title={getButtonTitle()}
       style={{
         ...getButtonStyle(),
         border: 'none',
@@ -177,7 +194,9 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         cursor: disabled ? 'not-allowed' : 'pointer',
         minWidth: '60px',
         transition: 'all 0.2s',
-        boxShadow: isRecording ? '0 0 20px rgba(255, 68, 68, 0.5)' : 'none'
+        boxShadow: isRecording ? '0 0 20px rgba(255, 68, 68, 0.5)' : 'none',
+        userSelect: 'none', // Zabránit označování textu
+        WebkitUserSelect: 'none'
       }}
     >
       {getButtonText()}
@@ -1128,7 +1147,7 @@ function App() {
                 textAlign: 'center',
                 fontWeight: 'bold'
               }}>
-                🗣️ Hands-free režim - mluvte s Omnií
+                🎤 Držte tlačítko pro mluvení
               </div>
             )}
 
