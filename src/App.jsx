@@ -129,7 +129,7 @@ const claudeService = {
       // System prompt pro Claude (samostatně)
       const systemPrompt = 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
       
-      const response = await fetch('/api/claude', {
+      const response = await fetch('/api/claude2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
