@@ -589,7 +589,7 @@ function App() {
       // Krátká pauza před přehráním
       setTimeout(() => {
         playResponseAudio(responseText);
-      }, 500);
+      }, 1000);
     }
   };
 
@@ -605,6 +605,8 @@ function App() {
 
   const playResponseAudio = async (text) => {
     try {
+      console.log('🔊 Auto-playing response:', text.substring(0, 50) + '...');
+      
       const response = await fetch('/api/voice', {
         method: 'POST',
         headers: {
@@ -613,14 +615,27 @@ function App() {
         body: JSON.stringify({ text })
       });
 
-      if (!response.ok) return;
+      if (!response.ok) {
+        console.error('❌ Voice API failed:', response.status);
+        return;
+      }
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      audio.onended = () => URL.revokeObjectURL(audioUrl);
+      audio.onended = () => {
+        console.log('✅ Auto-play finished');
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = (e) => {
+        console.error('❌ Audio playback error:', e);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
       await audio.play();
+      console.log('🎵 Auto-play started');
       
     } catch (error) {
       console.error('💥 Auto-play error:', error);
