@@ -1,8 +1,4 @@
-const openAiMessages = [
-          { 
-            role: 'system', 
-            content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nepředstavuj.' 
-          },// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK + CLAUDE PAMĚŤ
+// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK + CLAUDE PAMĚŤ
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -328,14 +324,31 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     </button>
   );
 };
+
+// 🎤 VOICE BUTTON KOMPONENTA - ANTI-OVERLAP
 const VoiceButton = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef(null);
 
+  // 🔧 GLOBAL AUDIO MANAGER - zabránit překrývání
+  useEffect(() => {
+    // Pokud se spustí nové audio, zastav všechna ostatní
+    const handleNewAudio = () => {
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setIsPlaying(false);
+      }
+    };
+
+    window.addEventListener('omnia-audio-start', handleNewAudio);
+    return () => window.removeEventListener('omnia-audio-start', handleNewAudio);
+  }, []);
+
   const handleSpeak = async () => {
     if (isPlaying) {
-      // Stop audio
+      // Stop current audio
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -346,7 +359,10 @@ const VoiceButton = ({ text }) => {
 
     try {
       setIsLoading(true);
-      console.log('🎤 Generuji hlas...');
+      console.log('🎤 Manual voice button clicked');
+
+      // 🔔 NOTIFY OTHER AUDIO TO STOP
+      window.dispatchEvent(new CustomEvent('omnia-audio-start'));
 
       const response = await fetch('/api/voice', {
         method: 'POST',
@@ -363,7 +379,7 @@ const VoiceButton = ({ text }) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
-      // Vytvoř audio element
+      // Stop any existing audio
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -384,7 +400,7 @@ const VoiceButton = ({ text }) => {
       };
 
       await audio.play();
-      console.log('🔊 Audio přehrávání zahájeno');
+      console.log('🔊 Manual audio playback started');
 
     } catch (error) {
       console.error('💥 Voice error:', error);
@@ -703,7 +719,7 @@ function App() {
         const openAiMessages = [
           { 
             role: 'system', 
-            content: 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.' 
+            content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nepředstavuj.' 
           },
           ...newMessages.map((msg) => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
