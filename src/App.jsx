@@ -48,7 +48,95 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-function TypewriterText({ text }) {
+// 🎤 VOICE BUTTON KOMPONENTA
+const VoiceButton = ({ text }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const audioRef = useRef(null);
+
+  const handleSpeak = async () => {
+    if (isPlaying) {
+      // Stop audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setIsPlaying(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      console.log('🎤 Generuji hlas...');
+
+      const response = await fetch('/api/voice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Vytvoř audio element
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onplay = () => setIsPlaying(true);
+      audio.onended = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      audio.onerror = () => {
+        setIsPlaying(false);
+        setIsLoading(false);
+        URL.revokeObjectURL(audioUrl);
+        console.error('Audio playback error');
+      };
+
+      await audio.play();
+      console.log('🔊 Audio přehrávání zahájeno');
+
+    } catch (error) {
+      console.error('💥 Voice error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleSpeak}
+      disabled={isLoading}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: isLoading ? 'wait' : 'pointer',
+        padding: '4px',
+        borderRadius: '4px',
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1rem',
+        opacity: isLoading ? 0.5 : 0.7,
+        transition: 'opacity 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.opacity = '1'}
+      onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '0.7'}
+    >
+      {isLoading ? '⏳' : isPlaying ? '⏸️' : '🔊'}
+    </button>
+  );
+};
   const [displayedText, setDisplayedText] = React.useState('');
   const [charIndex, setCharIndex] = React.useState(0);
   const chars = React.useMemo(() => Array.from(text), [text]);
@@ -574,10 +662,15 @@ function App() {
                       marginBottom: '0.5rem',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'space-between',
                       gap: '0.4rem'
                     }}>
-                      <OmniaLogo size={14} />
-                      Omnia
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <OmniaLogo size={14} />
+                        Omnia
+                      </div>
+                      {/* 🔊 VOICE BUTTON */}
+                      <VoiceButton text={msg.text} />
                     </div>
                   )}
                   
