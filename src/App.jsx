@@ -180,7 +180,8 @@ function App() {
       height: '100%',
       display: 'flex', 
       flexDirection: 'column',
-      background: '#fff'
+      background: '#fff',
+      width: '100%'
     }}>
       <div className="app light" style={{ 
         minHeight: '100vh',
@@ -194,7 +195,8 @@ function App() {
           padding: isMobile ? '1rem 0.5rem 0.5rem' : '2rem 1rem 1rem',
           background: '#fff',
           borderBottom: '1px solid #eee',
-          position: 'relative'
+          position: 'relative',
+          textAlign: 'center'
         }}>
           {/* Logo - menší na mobile */}
           <div style={{ textAlign: 'center', marginBottom: isMobile ? '0.5rem' : '1rem' }}>
@@ -211,10 +213,12 @@ function App() {
           {/* Controls - větší na mobile */}
           <div style={{ 
             display: 'flex', 
-            justifyContent: 'space-between', 
+            justifyContent: isMobile ? 'space-between' : 'center',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            maxWidth: '800px',
+            margin: '0 auto'
           }}>
             {/* Model selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -368,6 +372,7 @@ function App() {
           bottom: 0, 
           left: 0,
           right: 0,
+          width: '100%',
           background: '#fff', 
           padding: isMobile ? '1rem' : '1rem',
           borderTop: '1px solid #eee',
@@ -395,7 +400,9 @@ function App() {
                 borderRadius: '1rem',
                 border: '1px solid #ccc',
                 outline: 'none',
-                backgroundColor: loading ? '#f5f5f5' : '#fff'
+                backgroundColor: loading ? '#f5f5f5' : '#fff',
+                width: '100%',
+                boxSizing: 'border-box'
               }}
             />
             <button 
