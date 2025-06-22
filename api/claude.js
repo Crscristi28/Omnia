@@ -1,4 +1,4 @@
-// api/claude.js - OPRAVENÁ VERZE S PAMĚTÍ
+// api/claude.js - JEDNODUCHÁ VERZE S DEBUGGING
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,10 +15,12 @@ export default async function handler(req, res) {
 
   try {
     console.log('🤖 Claude API call via Vercel');
+    console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
     
-    const { messages, system } = req.body;
+    const { messages } = req.body;
     
     if (!messages || !Array.isArray(messages)) {
+      console.log('❌ Invalid messages:', messages);
       return res.status(400).json({ 
         error: 'Invalid request',
         message: 'Messages musí být array' 
@@ -35,41 +37,21 @@ export default async function handler(req, res) {
       });
     }
 
-    // 🔧 OPRAVA: Bezpečně připrav messages pro Claude API
-    console.log('📝 Posílám Claudovi celou historii:', messages.length, 'zpráv');
+    // 🎯 NEJJEDNODUŠŠÍ ŘEŠENÍ - jen poslední 2 zprávy pro začátek
+    console.log('📝 Celkem zpráv:', messages.length);
     
-    // Validace a čištění messages
-    const validMessages = messages.filter(msg => 
-      msg.role && msg.content && 
-      (msg.role === 'user' || msg.role === 'assistant')
-    ).map(msg => ({
-      role: msg.role,
-      content: String(msg.content).trim()
-    }));
-
-    // Claude nesmí začínat assistant message
-    if (validMessages.length > 0 && validMessages[0].role === 'assistant') {
-      validMessages.shift();
-    }
-
-    // Pokud není žádná zpráva, použij fallback
-    if (validMessages.length === 0) {
-      validMessages.push({
-        role: 'user',
-        content: 'Ahoj'
-      });
-    }
-
-    console.log('✅ Připravené messages pro Claude:', validMessages);
+    // Vezmi posledních 5 zpráv (aby Claude měl trochu kontextu)
+    const recentMessages = messages.slice(-5);
+    console.log('📝 Posílám posledních 5 zpráv:', recentMessages);
     
     const claudeRequest = {
       model: "claude-3-5-sonnet-20241022",
       max_tokens: 1000,
-      messages: validMessages,
-      ...(system && { system: String(system) })
+      system: "Jsi Omnia, chytrý AI asistent. Odpovídej vždy v češtině, stručně a přirozeně.",
+      messages: recentMessages
     };
 
-    console.log('🚀 Volám Claude API s historií...');
+    console.log('🚀 Claude request:', JSON.stringify(claudeRequest, null, 2));
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -95,10 +77,11 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Claude API success with memory');
+    console.log('✅ Claude API success');
+    console.log('📨 Claude response:', JSON.stringify(data, null, 2));
 
     if (!data.content || !data.content[0] || !data.content[0].text) {
-      console.error('❌ Invalid Claude response:', data);
+      console.error('❌ Invalid Claude response structure:', data);
       return res.status(500).json({
         error: 'Invalid response from Claude'
       });
@@ -112,10 +95,12 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('💥 Claude function error:', error);
+    console.error('💥 Claude function error details:', error);
+    console.error('💥 Error stack:', error.stack);
     return res.status(500).json({ 
       error: 'Server error',
-      message: error.message
+      message: error.message,
+      stack: error.stack
     });
   }
 }
