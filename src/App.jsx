@@ -631,9 +631,7 @@ const searchInternet = async (query, showNotification) => {
 
     const response = await fetch('/api/news', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })
     });
 
@@ -645,25 +643,30 @@ const searchInternet = async (query, showNotification) => {
     console.log('🔍 Search results:', data);
 
     if (!data.success || !data.results || data.results.length === 0) {
+      showNotification('⚠️ Nenašel jsem žádné relevantní výsledky.', 'info');
       return {
         success: false,
         message: 'Nenašel jsem žádné relevantní výsledky.'
       };
     }
 
-    // Formátuj výsledky pro AI
-    const searchResults = data.results.slice(0, 5).map((result, index) => {
+    const maxResults = 5;
+    const resultsCount = data.results.length;
+
+    const searchResults = data.results.slice(0, maxResults).map((result, index) => {
       return `${index + 1}. ${result.title}\n   ${result.snippet}\n   Zdroj: ${result.link}`;
     }).join('\n\n');
+
+    showNotification(`🔍 Našel jsem ${resultsCount} výsledků, zobrazují se první ${Math.min(maxResults, resultsCount)}.`, 'info');
 
     return {
       success: true,
       results: searchResults,
-      count: data.results.length
+      count: resultsCount
     };
-
   } catch (error) {
     console.error('💥 Search error:', error);
+    showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
     return {
       success: false,
       message: `Chyba při vyhledávání: ${error.message}`
