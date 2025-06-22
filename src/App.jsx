@@ -1,4 +1,4 @@
-/// App.jsx - MOBILE OPTIMIZED VERZE s OKAMŽITOU AUDIO ODPOVĚDÍ
+/// App.jsx - MOBILE OPTIMIZED VERZE s OKAMŽITOU AUDIO ODPOVĚDÍ + INTERNET SEARCH
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -623,7 +623,86 @@ const displayResponseText = async (responseText, currentMessages, setMessages, s
   return true;
 };
 
-// 🎯 HLAVNÍ FUNKCE PRO PARALELNÍ ZPRACOVÁNÍ
+// 🔍 INTERNET SEARCH FUNKCE
+const searchInternet = async (query, showNotification) => {
+  try {
+    console.log('🔍 Searching internet for:', query);
+    showNotification('🔍 Vyhledávám na internetu...', 'info');
+
+    const response = await fetch('/api/news', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Search API failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('🔍 Search results:', data);
+
+    if (!data.success || !data.results || data.results.length === 0) {
+      return {
+        success: false,
+        message: 'Nenašel jsem žádné relevantní výsledky.'
+      };
+    }
+
+    // Formátuj výsledky pro AI
+    const searchResults = data.results.slice(0, 5).map((result, index) => {
+      return `${index + 1}. ${result.title}\n   ${result.snippet}\n   Zdroj: ${result.link}`;
+    }).join('\n\n');
+
+    return {
+      success: true,
+      results: searchResults,
+      count: data.results.length
+    };
+
+  } catch (error) {
+    console.error('💥 Search error:', error);
+    return {
+      success: false,
+      message: `Chyba při vyhledávání: ${error.message}`
+    };
+  }
+};
+
+// 🧠 AI ROZHODNUTÍ O SEARCH
+// NOVÁ DEBUG VERZE shouldSearchInternet
+const shouldSearchInternet = (userInput) => {
+  console.log('🧪 [DEBUG] shouldSearchInternet called with:', userInput);
+  const searchTriggers = [
+    'vyhledej', 'najdi', 'hledej', 'googluj', 'search',
+    'aktuální', 'nejnovější', 'současný', 'dnešní', 'včerejší',
+    'zprávy', 'news', 'novinky',
+    'cena', 'kurz', 'počasí', 'weather',
+    '2024', '2025', 'letos', 'loni', 'minulý rok',
+    'co se děje', 'co je nového', 'informace o',
+    'jak se má', 'co dělá', 'kde je'
+  ];
+  const input = (userInput || '').toLowerCase();
+  for (const trigger of searchTriggers) {
+    if (input.includes(trigger)) {
+      console.log('🧪 [DEBUG] shouldSearchInternet: Triggered by keyword:', trigger);
+      return true;
+    }
+  }
+  const questionWords = ['co je', 'kde je', 'kdy', 'jak se', 'kdo je'];
+  for (const question of questionWords) {
+    if (input.startsWith(question)) {
+      console.log('🧪 [DEBUG] shouldSearchInternet: Triggered by question word:', question);
+      return true;
+    }
+  }
+  console.log('🧪 [DEBUG] shouldSearchInternet: No trigger found.');
+  return false;
+};
+
+// 🎯 HLAVNÍ FUNKCE PRO PARALELNÍ ZPRACOVÁNÍ S SEARCH
 const handleInstantAudioResponse = async (
   textInput, 
   currentMessages, 
@@ -648,14 +727,30 @@ const handleInstantAudioResponse = async (
   setMessages(tempMessages);
 
   try {
-    // 2. Zavolej AI API pro text odpověď
     let responseText = '';
+    let searchContext = '';
+
+    // 2. 🔍 ROZHODNUTÍ O SEARCH
+    const needsSearch = shouldSearchInternet(textInput);
     
+    if (needsSearch) {
+      console.log('🔍 Query needs internet search');
+      const searchResult = await searchInternet(textInput, showNotification);
+      
+      if (searchResult.success) {
+        searchContext = `\n\nNAJNOVĚJŠÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Zmiň že informace jsou z internetu a aktuální.`;
+        showNotification(`🔍 Našel jsem ${searchResult.count} výsledků`, 'info');
+      } else {
+        searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+      }
+    }
+
+    // 3. Zavolej AI API pro text odpověď (s možným search contextem)
     if (model === 'gpt-4o') {
       const openAiMessages = [
         { 
           role: 'system', 
-          content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.' 
+          content: `Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
         },
         ...currentMessages.map((msg) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -666,12 +761,19 @@ const handleInstantAudioResponse = async (
 
       responseText = await openaiService.sendMessage(openAiMessages);
     } else if (model === 'claude') {
-      responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
+      // Pro Claude přidáme search context do user message
+      const userMessageWithContext = searchContext ? 
+        `${textInput}${searchContext}` : textInput;
+      
+      responseText = await claudeService.sendMessage([
+        ...currentMessages, 
+        { sender: 'user', text: userMessageWithContext }
+      ]);
     }
 
     console.log('✅ AI odpověď získána:', responseText);
 
-    // 3. 🎯 PARALELNÍ SPUŠTĚNÍ: Audio generování + Text zobrazení
+    // 4. 🎯 PARALELNÍ SPUŠTĚNÍ: Audio generování + Text zobrazení
     const audioPromise = generateInstantAudio(
       responseText, 
       setIsAudioPlaying, 
@@ -687,7 +789,7 @@ const handleInstantAudioResponse = async (
       true
     );
 
-    // 4. Audio se spustí okamžitě, text se zobrazí postupně
+    // 5. Audio se spustí okamžitě, text se zobrazí postupně
     await Promise.allSettled([audioPromise, textPromise]);
     
     return responseText;
@@ -705,7 +807,7 @@ const handleInstantAudioResponse = async (
   }
 };
 
-// 📄 KLASICKÝ TEXT FLOW (beze změn pro text mode)
+// 📄 KLASICKÝ TEXT FLOW S SEARCH (pro text a hybrid mode)
 const handleClassicTextResponse = async (
   textInput, 
   currentMessages, 
@@ -715,15 +817,32 @@ const handleClassicTextResponse = async (
   setMessages,
   autoPlay,
   voiceMode,
-  playResponseAudio
+  playResponseAudio,
+  showNotification
 ) => {
   let responseText = '';
+  let searchContext = '';
+
+  // 🔍 ROZHODNUTÍ O SEARCH
+  const needsSearch = shouldSearchInternet(textInput);
+  
+  if (needsSearch) {
+    console.log('🔍 Query needs internet search');
+    const searchResult = await searchInternet(textInput, showNotification);
+    
+    if (searchResult.success) {
+      searchContext = `\n\nNAJNOVĚJŠÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Zmiň že informace jsou z internetu a aktuální.`;
+      showNotification(`🔍 Našel jsem ${searchResult.count} výsledků`, 'info');
+    } else {
+      searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+    }
+  }
   
   if (model === 'gpt-4o') {
     const openAiMessages = [
       { 
         role: 'system', 
-        content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.' 
+        content: `Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
       },
       ...currentMessages.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -734,7 +853,14 @@ const handleClassicTextResponse = async (
 
     responseText = await openaiService.sendMessage(openAiMessages);
   } else if (model === 'claude') {
-    responseText = await claudeService.sendMessage([...currentMessages, { sender: 'user', text: textInput }]);
+    // Pro Claude přidáme search context do user message
+    const userMessageWithContext = searchContext ? 
+      `${textInput}${searchContext}` : textInput;
+    
+    responseText = await claudeService.sendMessage([
+      ...currentMessages, 
+      { sender: 'user', text: userMessageWithContext }
+    ]);
   }
 
   const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
@@ -1125,9 +1251,16 @@ function App() {
     }
   }, []);
 
-  // 🚀 NOVÁ HANDLESENД FUNKCE S OKAMŽITÝM AUDIEM
+  // 🚀 NOVÁ HANDLESENД FUNKCE S OKAMŽITÝM AUDIEM A SEARCH
   const handleSend = async (textInput = input) => {
+    console.log('🚀 handleSend called with:', textInput); // DEBUG
+    
     if (!textInput.trim()) return;
+
+    // FORCE TEST - přidej tohle pro test:
+    console.log('🧪 Testing search detection...');
+    const testResult = shouldSearchInternet(textInput);
+    console.log('🧪 Search detection result:', testResult);
 
     // Zastavit audio před odesláním nové zprávy
     if (isAudioPlaying) {
@@ -1142,8 +1275,8 @@ function App() {
     try {
       // 🎯 KLÍČOVÁ ZMĚNA: Rozhodnutí o strategii zpracování
       if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
-        // 🚀 NOVÁ STRATEGIE: Okamžitá audio odpověď
-        console.log('🚀 Using INSTANT audio response strategy');
+        // 🚀 NOVÁ STRATEGIE: Okamžitá audio odpověď + search
+        console.log('🚀 Using INSTANT audio response strategy with search');
         
         await handleInstantAudioResponse(
           textInput,
@@ -1160,8 +1293,8 @@ function App() {
         );
         
       } else {
-        // 📄 KLASICKÁ STRATEGIE: Text první, pak audio
-        console.log('📄 Using classic text-first strategy');
+        // 📄 KLASICKÁ STRATEGIE: Text první, pak audio + search
+        console.log('📄 Using classic text-first strategy with search');
         
         await handleClassicTextResponse(
           textInput,
@@ -1172,7 +1305,8 @@ function App() {
           setMessages,
           autoPlay,
           voiceMode,
-          playResponseAudio
+          playResponseAudio,
+          showNotification
         );
       }
 
@@ -1191,7 +1325,7 @@ function App() {
 
   const handleTranscript = (text) => {
     if (voiceMode === 'conversation') {
-      // V conversation mode rovnou pošli s INSTANT AUDIO!
+      // V conversation mode rovnou pošli s INSTANT AUDIO + SEARCH!
       handleSend(text);
     } else {
       // V hybrid mode vlož do input pole
@@ -1331,6 +1465,15 @@ function App() {
             }}>
               OMNIA
             </h1>
+            {/* 🔍 SEARCH INDICATOR */}
+            <div style={{
+              fontSize: '0.7rem',
+              color: '#007bff',
+              fontWeight: 'bold',
+              opacity: 0.8
+            }}>
+              🔍 S internetovým vyhledáváním
+            </div>
           </div>
 
           {/* Controls - větší na mobile */}
@@ -1532,7 +1675,7 @@ function App() {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {/* 🎨 AI indikátor s malým logem */}
+                  {/* 🎨 AI indikátor s malým logom */}
                   {msg.sender === 'bot' && (
                     <div style={{ 
                       fontSize: isMobile ? '0.8rem' : '0.7rem',
@@ -1547,6 +1690,7 @@ function App() {
                         <OmniaLogo size={14} />
                         Omnia
                         {msg.isGenerating && <span>🚀</span>}
+                        {msg.text.includes('z internetu') && <span>🔍</span>}
                       </div>
                       {/* 🔊 VOICE BUTTON */}
                       <VoiceButton 
@@ -1590,6 +1734,7 @@ function App() {
                       animation: 'spin 1s linear infinite'
                     }}></div>
                     {voiceMode === 'conversation' ? 'Připravuji instant odpověď...' : 'Omnia přemýšlí...'}
+                    <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>🔍</span>
                   </div>
                 </div>
               </div>
@@ -1630,7 +1775,7 @@ function App() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-                placeholder={voiceMode === 'hybrid' ? "Napište nebo použijte mikrofon..." : "Zeptej se Omnie…"}
+                placeholder={voiceMode === 'hybrid' ? "Napište nebo použijte mikrofon..." : "Zeptej se Omnie nebo vyhledej na internetu…"}
                 disabled={loading}
                 style={{ 
                   flex: 1,
@@ -1675,14 +1820,14 @@ function App() {
                       animation: 'spin 1s linear infinite',
                       marginRight: '0.5rem'
                     }}></div>
-                    🚀 Připravuji instant odpověď...
+                    🚀 Připravuji instant odpověď s vyhledáváním...
                   </>
                 ) : isAudioPlaying ? (
                   <>
                     🔊 Instant audio hraje - {isMobile ? 'dotkněte se' : 'ESC/Space'} pro zastavení
                   </>
                 ) : (
-                  "🎤 Držte tlačítko pro INSTANT audio odpověď"
+                  "🎤 Držte tlačítko pro INSTANT audio odpověď + 🔍 search"
                 )}
               </div>
             )}
@@ -1759,7 +1904,7 @@ function App() {
             </div>
           )}
 
-          {/* 🚀 INSTANT AUDIO INFO */}
+          {/* 🚀 INSTANT AUDIO + SEARCH INFO */}
           {voiceMode === 'conversation' && !isAudioPlaying && !loading && (
             <div style={{
               textAlign: 'center',
@@ -1771,7 +1916,23 @@ function App() {
               padding: '0 1rem',
               fontWeight: 'bold'
             }}>
-              🚀 Instant Audio Mode: Slyšíte odpověď o 2-3 sekundy rychleji!
+              🚀 Instant Audio Mode + 🔍 Internet Search: Nejrychlejší AI asistent s aktuálními informacemi!
+            </div>
+          )}
+
+          {/* 🔍 SEARCH INFO PRO TEXT/HYBRID MODES */}
+          {voiceMode !== 'conversation' && !isAudioPlaying && !loading && (
+            <div style={{
+              textAlign: 'center',
+              fontSize: '0.8rem',
+              color: '#007bff',
+              marginTop: '0.5rem',
+              maxWidth: '800px',
+              margin: '0.5rem auto 0',
+              padding: '0 1rem',
+              fontWeight: 'bold'
+            }}>
+              🔍 Automatické vyhledávání na internetu pro aktuální informace
             </div>
           )}
         </div>
