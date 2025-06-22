@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('🗣️ Generuji hlas (TURBO):', text.substring(0, 50) + '...');
+    console.log('🗣️ Generuji hlas (česky):', text.substring(0, 50) + '...');
 
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
       method: 'POST',
@@ -55,11 +55,11 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         text: text,
-        model_id: 'eleven_turbo_v2', // 🚀 RYCHLEJŠÍ MODEL
+        model_id: 'eleven_multilingual_v2', // 🎯 ZPĚT K MULTILINGUAL PRO ČEŠTINU
         voice_settings: {
-          stability: 0.6,              // 🎯 OPTIMALIZACE PRO RYCHLOST
-          similarity_boost: 0.8,       // 🎯 LEPŠÍ KVALITA
-          style: 0.2,                  // 🎯 TROCHU STYLU
+          stability: 0.5,              // 🎯 PŮVODNÍ NASTAVENÍ PRO ČEŠTINU
+          similarity_boost: 0.5,       // 🎯 PŮVODNÍ NASTAVENÍ
+          style: 0.0,                  // 🎯 BEZ STYLU PRO LEPŠÍ ČEŠTINU
           use_speaker_boost: true
         },
         // 🚀 DODATEČNÉ OPTIMALIZACE
