@@ -440,8 +440,8 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('gpt-4o'); // 'gpt-4o' or 'claude'
   const [loading, setLoading] = useState(false);
-  const [voiceMode, setVoiceMode] = useState('text'); // 'text', 'hybrid', 'handsfree'
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [voiceMode, setVoiceMode] = useState('text'); // 'text', 'hybrid', 'conversation'
+  const [autoPlay, setAutoPlay] = useState(true); // Default true pro conversation mode
   const endOfMessagesRef = useRef(null);
 
   // Detekce mobile zařízení
@@ -605,8 +605,8 @@ function App() {
     localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
     setLoading(false);
 
-    // Auto-play pouze pokud je explicitně zapnuté
-    if (autoPlay && (voiceMode === 'handsfree' || voiceMode === 'hybrid')) {
+    // Auto-play pro conversation mode
+    if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
       // Krátká pauza před přehráním
       setTimeout(() => {
         playResponseAudio(responseText);
@@ -615,8 +615,8 @@ function App() {
   };
 
   const handleTranscript = (text) => {
-    if (voiceMode === 'handsfree') {
-      // V hands-free mode rovnou pošli
+    if (voiceMode === 'conversation') {
+      // V conversation mode rovnou pošli
       handleSend(text);
     } else {
       // V hybrid mode vlož do input pole
@@ -680,13 +680,25 @@ function App() {
       
       // 📱 MOBILNÍ STRATEGIE
       if (isMobile) {
-        // Na mobilu rovnou ukáž klikatelnou notifikaci
-        showNotification('🔊 Tap to play response', 'info', () => {
-          audio.play().catch(error => {
-            console.error('❌ Manual play failed:', error);
-            showNotification('🔇 Audio play failed', 'error');
+        // Na mobilu - pokud je conversation mode, zkus auto-play, jinak notifikace
+        if (voiceMode === 'conversation') {
+          try {
+            await audio.play();
+            if (!playStarted) {
+              throw new Error('Play did not start');
+            }
+          } catch (error) {
+            console.error('❌ Mobile auto-play failed:', error);
+            showNotification('🔊 Tap to play response', 'info', () => {
+              audio.play().catch(console.error);
+            });
+          }
+        } else {
+          // Pro jiné režimy ukáž notifikaci
+          showNotification('🔊 Tap to play response', 'info', () => {
+            audio.play().catch(console.error);
           });
-        });
+        }
       } else {
         // Desktop - zkus auto-play
         try {
@@ -873,7 +885,7 @@ function App() {
               >
                 <option value="text">📝 Text</option>
                 <option value="hybrid">🎤 Hybrid</option>
-                <option value="handsfree">🗣️ Voice</option>
+                <option value="conversation">🗣️ Chat</option>
               </select>
             </div>
 
@@ -907,8 +919,8 @@ function App() {
               </select>
             </div>
 
-            {/* Auto-play toggle pro voice mode - skryj na mobilu */}
-            {voiceMode === 'handsfree' && !isMobile && (
+            {/* Skryj auto-play toggle - v conversation mode je vždy auto */}
+            {voiceMode === 'hybrid' && !isMobile && (
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -930,15 +942,16 @@ function App() {
               </div>
             )}
 
-            {/* Mobilní info */}
-            {voiceMode === 'handsfree' && isMobile && (
+            {/* Conversation mode info */}
+            {voiceMode === 'conversation' && (
               <div style={{ 
                 fontSize: '0.8rem',
-                color: '#888',
+                color: '#007bff',
                 textAlign: 'center',
+                fontWeight: 'bold',
                 minWidth: '120px'
               }}>
-                📱 Tap to play
+                🗣️ Conversation
               </div>
             )}
 
@@ -1111,7 +1124,7 @@ function App() {
             boxSizing: 'border-box',
             padding: '0 1rem'
           }}>
-            {voiceMode !== 'handsfree' && (
+            {voiceMode !== 'conversation' && (
               <input
                 type="text"
                 value={input}
@@ -1135,23 +1148,42 @@ function App() {
               />
             )}
             
-            {voiceMode === 'handsfree' && (
+            {voiceMode === 'conversation' && (
               <div style={{
                 flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 padding: isMobile ? '1.2rem' : '1rem',
                 fontSize: isMobile ? '1.1rem' : '1rem',
                 borderRadius: '1rem',
-                border: '2px dashed #007bff',
+                border: '2px solid #007bff',
                 backgroundColor: '#f8f9ff',
                 color: '#007bff',
                 textAlign: 'center',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                minHeight: '50px'
               }}>
-                🎤 Držte tlačítko pro mluvení
+                {loading ? (
+                  <>
+                    <div style={{ 
+                      width: '20px', 
+                      height: '20px', 
+                      border: '2px solid #007bff', 
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite',
+                      marginRight: '0.5rem'
+                    }}></div>
+                    Omnia přemýšlí...
+                  </>
+                ) : (
+                  "🎤 Držte tlačítko a mluvte"
+                )}
               </div>
             )}
 
-            {(voiceMode === 'hybrid' || voiceMode === 'handsfree') && (
+            {(voiceMode === 'hybrid' || voiceMode === 'conversation') && (
               <VoiceRecorder 
                 onTranscript={handleTranscript}
                 disabled={loading}
@@ -1159,7 +1191,7 @@ function App() {
               />
             )}
             
-            {voiceMode !== 'handsfree' && (
+            {voiceMode !== 'conversation' && (
               <button 
                 onClick={() => handleSend()} 
                 disabled={loading || !input.trim()}
