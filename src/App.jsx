@@ -1,4 +1,4 @@
-// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK
+// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK + CLAUDE PAMĚŤ
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -67,18 +67,77 @@ function TypewriterText({ text }) {
   return <span>{displayedText}</span>;
 }
 
+// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
+const prepareClaudeMessages = (messages) => {
+  try {
+    // Filtrovat pouze user/assistant messages
+    const validMessages = messages.filter(msg => 
+      msg.sender === 'user' || msg.sender === 'bot'
+    );
+
+    // Konvertovat na Claude formát
+    let claudeMessages = validMessages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text || ''
+    }));
+
+    // Claude nesmí začínat assistant message
+    if (claudeMessages.length > 0 && claudeMessages[0].role === 'assistant') {
+      claudeMessages = claudeMessages.slice(1);
+    }
+
+    // Claude nesmí mít dva stejné role za sebou - oprava
+    const cleanMessages = [];
+    for (let i = 0; i < claudeMessages.length; i++) {
+      const current = claudeMessages[i];
+      const previous = cleanMessages[cleanMessages.length - 1];
+      
+      // Přidej pouze pokud není stejný role jako předchozí
+      if (!previous || previous.role !== current.role) {
+        cleanMessages.push(current);
+      }
+    }
+
+    // Claude musí končit user message (pokud posíláme novou zprávu)
+    if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
+      cleanMessages.pop();
+    }
+
+    console.log('📝 Prepared Claude messages:', cleanMessages);
+    return cleanMessages;
+
+  } catch (error) {
+    console.error('💥 Error preparing Claude messages:', error);
+    // Fallback - vrať jen poslední user message
+    const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
+    return lastUserMessage.map(msg => ({
+      role: 'user',
+      content: msg.text || ''
+    }));
+  }
+};
+
 // ONLINE API SERVICES (pro Vercel)
 const claudeService = {
   async sendMessage(messages) {
     try {
       console.log('🔄 Volám Claude přes Vercel API...');
       
+      // Příprava bezpečných messages pro Claude
+      const claudeMessages = prepareClaudeMessages(messages);
+      
+      // System prompt pro Claude (samostatně)
+      const systemPrompt = 'Jmenuješ se Omnia. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
+      
       const response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ messages })
+        body: JSON.stringify({ 
+          messages: claudeMessages,
+          system: systemPrompt
+        })
       });
 
       if (!response.ok) {
@@ -267,7 +326,7 @@ function App() {
 
     try {
       if (model === 'gpt-4o') {
-        // Převeď na OpenAI formát
+        // OpenAI formát (nezměněno - funguje)
         const openAiMessages = [
           { 
             role: 'system', 
@@ -282,13 +341,8 @@ function App() {
         responseText = await openaiService.sendMessage(openAiMessages);
 
       } else if (model === 'claude') {
-        // Převeď na Claude formát
-        const claudeMessages = newMessages.map((msg) => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
-        }));
-
-        responseText = await claudeService.sendMessage(claudeMessages);
+        // Claude formát s pamětí (nově opraveno)
+        responseText = await claudeService.sendMessage(newMessages);
       }
 
       console.log('✅ Odpověď získána:', responseText);
