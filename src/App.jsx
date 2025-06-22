@@ -1,4 +1,8 @@
-// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK + CLAUDE PAMĚŤ
+const openAiMessages = [
+          { 
+            role: 'system', 
+            content: 'Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nepředstavuj.' 
+          },// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK + CLAUDE PAMĚŤ
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -48,31 +52,40 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 VOICE RECORDING KOMPONENTA - PUSH TO TALK (FIXED)
+// 🎤 VOICE RECORDING KOMPONENTA - iOS PWA OPTIMIZED
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-  const streamRef = useRef(null); // Track stream for proper cleanup
+  const streamRef = useRef(null);
+  const touchStartTimeRef = useRef(null);
+  const isIOSPWA = window.navigator.standalone; // Detekce iOS PWA
 
   const startRecording = async () => {
     try {
-      console.log('🎙️ Začínám nahrávání...');
+      console.log('🎙️ Starting recording... iOS PWA:', isIOSPWA);
       
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      // 🍎 iOS PWA específická konfigurace
+      const constraints = {
         audio: {
-          sampleRate: 16000,
+          sampleRate: isIOSPWA ? 44100 : 16000, // iOS PWA preferuje 44100
           channelCount: 1,
           echoCancellation: true,
-          noiseSuppression: true
-        } 
-      });
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      };
 
-      streamRef.current = stream; // Store stream reference
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+
+      // 🍎 iOS PWA - kontrola stream aktivity
+      const audioTracks = stream.getAudioTracks();
+      console.log('🎵 Audio tracks:', audioTracks.length, audioTracks[0]?.readyState);
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: isIOSPWA ? 'audio/mp4' : 'audio/webm;codecs=opus'
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -85,20 +98,22 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('🛑 Nahrávání ukončeno, zpracovávám...');
+        console.log('🛑 Recording stopped, processing...');
         setIsProcessing(true);
         
-        // 🔧 OKAMŽITĚ VYPNI STREAM
+        // 🔧 IMMEDIATE iOS PWA CLEANUP
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => {
             track.stop();
-            console.log('🔇 Track stopped:', track.kind);
+            console.log('🔇 Track stopped (iOS PWA):', track.kind, track.readyState);
           });
           streamRef.current = null;
         }
         
         try {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const audioBlob = new Blob(audioChunksRef.current, { 
+            type: isIOSPWA ? 'audio/mp4' : 'audio/webm' 
+          });
           const arrayBuffer = await audioBlob.arrayBuffer();
 
           const response = await fetch('/api/whisper', {
@@ -114,7 +129,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           }
 
           const data = await response.json();
-          console.log('✅ Přepsaný text:', data.text);
+          console.log('✅ Transcribed:', data.text);
           
           onTranscript(data.text);
 
@@ -131,25 +146,36 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     } catch (error) {
       console.error('💥 Recording error:', error);
       alert('Nepodařilo se získat přístup k mikrofonu');
+      // Cleanup on error
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      setIsRecording(false);
     }
   };
 
-  const stopRecording = () => {
-    console.log('🔧 Force stop recording...');
+  const forceStopRecording = () => {
+    console.log('🚨 Force stopping recording (iOS PWA)...');
     
-    if (mediaRecorderRef.current && isRecording) {
+    // Aggressive cleanup pro iOS PWA
+    if (mediaRecorderRef.current) {
       try {
-        mediaRecorderRef.current.stop();
+        if (mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.stop();
+        }
       } catch (error) {
         console.error('Error stopping recorder:', error);
       }
+      mediaRecorderRef.current = null;
     }
     
-    // 🔧 FORCE CLEANUP - VŽDY VYPNI STREAM
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => {
-        track.stop();
-        console.log('🔇 Force stopped track:', track.kind);
+        if (track.readyState === 'live') {
+          track.stop();
+          console.log('🔇 Force stopped track:', track.kind);
+        }
       });
       streamRef.current = null;
     }
@@ -157,92 +183,108 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     setIsRecording(false);
   };
 
-  // 🔧 CLEANUP ON UNMOUNT
+  // 🍎 iOS PWA TOUCH HANDLERS
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    touchStartTimeRef.current = Date.now();
+    
+    if (!disabled && !isProcessing && !isRecording) {
+      console.log('👆 Touch start - iOS PWA');
+      startRecording();
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const touchDuration = Date.now() - (touchStartTimeRef.current || 0);
+    console.log('👆 Touch end - duration:', touchDuration, 'ms');
+    
+    // iOS PWA - minimální doba dotyku
+    if (touchDuration < 100) {
+      console.log('⚠️ Touch too short, ignoring');
+      return;
+    }
+    
+    if (isRecording) {
+      forceStopRecording();
+    }
+  };
+
+  const handleTouchCancel = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('❌ Touch cancelled (iOS PWA)');
+    
+    if (isRecording) {
+      forceStopRecording();
+    }
+  };
+
+  // 🖱️ DESKTOP HANDLERS (fallback)
+  const handleMouseDown = (e) => {
+    // Pouze pro desktop (ne iOS PWA)
+    if (!isIOSPWA && !disabled && !isProcessing && !isRecording) {
+      startRecording();
+    }
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isIOSPWA && isRecording) {
+      forceStopRecording();
+    }
+  };
+
+  // 🔧 EMERGENCY CLEANUP
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isRecording) {
+        console.log('🚨 Page hidden - force stop (iOS PWA)');
+        forceStopRecording();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (isRecording) {
+        forceStopRecording();
+      }
+    };
+
+    // iOS PWA specific events
+    const handlePageShow = () => {
+      if (isRecording) {
+        console.log('🔄 Page shown - check recording state');
+        forceStopRecording();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [isRecording]);
+
+  // Component unmount cleanup
   useEffect(() => {
     return () => {
-      console.log('🧹 Component unmounting - cleanup');
+      console.log('🧹 Component unmount - iOS PWA cleanup');
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
 
-  // 🔧 EMERGENCY CLEANUP pokud zůstane nahrávání aktivní
-  useEffect(() => {
-    const cleanup = () => {
-      if (isRecording) {
-        console.log('🚨 Emergency cleanup - stopping recording');
-        stopRecording();
-      }
-    };
-
-    // Cleanup při změně stránky
-    window.addEventListener('beforeunload', cleanup);
-    window.addEventListener('visibilitychange', () => {
-      if (document.hidden && isRecording) {
-        cleanup();
-      }
-    });
-
-    return () => {
-      window.removeEventListener('beforeunload', cleanup);
-      window.removeEventListener('visibilitychange', cleanup);
-    };
-  }, [isRecording]);
-
-  // 🎯 ROBUSTNÍ PUSH-TO-TALK HANDLERS
-  const handleStart = () => {
-    if (!disabled && !isProcessing && !isRecording) {
-      startRecording();
-    }
-  };
-
-  const handleStop = () => {
-    if (isRecording) {
-      stopRecording();
-    }
-  };
-
-  // 📱 UNIFIED HANDLERS
-  const handleMouseDown = (e) => {
-    e.preventDefault();
-    handleStart();
-  };
-
-  const handleMouseUp = (e) => {
-    e.preventDefault();
-    handleStop();
-  };
-
-  const handleTouchStart = (e) => {
-    e.preventDefault();
-    handleStart();
-  };
-
-  const handleTouchEnd = (e) => {
-    e.preventDefault();
-    handleStop();
-  };
-
-  // 🔧 CATCH-ALL STOP HANDLERS
-  const handleMouseLeave = () => {
-    if (isRecording) {
-      console.log('🔧 Mouse left button - stopping');
-      handleStop();
-    }
-  };
-
-  const handleTouchCancel = (e) => {
-    e.preventDefault();
-    if (isRecording) {
-      console.log('🔧 Touch cancelled - stopping');
-      handleStop();
-    }
-  };
-
   const getButtonStyle = () => {
     if (isProcessing) return { backgroundColor: '#FFA500', color: 'white' };
-    if (isRecording) return { backgroundColor: '#FF4444', color: 'white', transform: 'scale(1.1)' };
+    if (isRecording) return { backgroundColor: '#FF4444', color: 'white', transform: 'scale(1.05)' };
     return { backgroundColor: '#007bff', color: 'white' };
   };
 
@@ -252,33 +294,34 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     return '🎤';
   };
 
-  const getButtonTitle = () => {
-    return 'Držte pro mluvení';
-  };
-
   return (
     <button
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
+      // iOS PWA - primárně touch eventy
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchCancel}
+      // Desktop fallback
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={() => !isIOSPWA && isRecording && forceStopRecording()}
       disabled={disabled || isProcessing}
-      title={getButtonTitle()}
+      title="Držte pro mluvení"
       style={{
         ...getButtonStyle(),
         border: 'none',
         borderRadius: '1rem',
-        padding: '1rem',
-        fontSize: '1.1rem',
+        padding: '1.2rem',
+        fontSize: '1.2rem',
         cursor: disabled ? 'not-allowed' : 'pointer',
-        minWidth: '60px',
+        minWidth: '70px',
+        minHeight: '70px',
         transition: 'all 0.2s',
-        boxShadow: isRecording ? '0 0 20px rgba(255, 68, 68, 0.5)' : 'none',
+        boxShadow: isRecording ? '0 0 25px rgba(255, 68, 68, 0.6)' : 'none',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none'
+        WebkitTouchCallout: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'none' // iOS PWA - zabránit scroll během touch
       }}
     >
       {getButtonText()}
@@ -708,8 +751,10 @@ function App() {
 
   const playResponseAudio = async (text) => {
     try {
-      console.log('🔊 Attempting auto-play for:', text.substring(0, 50) + '...');
-      console.log('📱 Mobile device:', isMobile, 'iOS:', isIOS, 'Android:', isAndroid);
+      console.log('🔊 Auto-play attempting:', text.substring(0, 50) + '...');
+      
+      // 🔔 NOTIFY OTHER AUDIO TO STOP
+      window.dispatchEvent(new CustomEvent('omnia-audio-start'));
       
       const response = await fetch('/api/voice', {
         method: 'POST',
@@ -729,70 +774,88 @@ function App() {
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      // 📱 MOBILNÍ OPTIMALIZACE
+      // Track this as auto-play audio
+      audio.dataset.autoPlay = 'true';
+      
+      // 🍎 iOS PWA - kontrola zda není přerušeno jiným audio
+      let playbackInterrupted = false;
+      
+      const handleInterrupt = () => {
+        playbackInterrupted = true;
+        if (!audio.paused) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      window.addEventListener('omnia-audio-start', handleInterrupt, { once: true });
+      
       audio.preload = 'auto';
       audio.volume = 1.0;
       
-      // iOS potřebuje speciální handling
       if (isIOS) {
-        audio.load(); // Explicitní load pro iOS
+        audio.load();
       }
       
       let playStarted = false;
       
-      audio.oncanplay = () => {
-        console.log('🎵 Audio ready to play');
-      };
-      
       audio.onplay = () => {
-        playStarted = true;
-        console.log('🎵 Auto-play started successfully');
+        if (!playbackInterrupted) {
+          playStarted = true;
+          console.log('🎵 Auto-play started successfully');
+        }
       };
       
       audio.onended = () => {
         console.log('✅ Auto-play finished');
         URL.revokeObjectURL(audioUrl);
+        window.removeEventListener('omnia-audio-start', handleInterrupt);
       };
       
       audio.onerror = (e) => {
         console.error('❌ Audio playback error:', e);
         URL.revokeObjectURL(audioUrl);
         showNotification('🔇 Chyba přehrávání hlasu', 'error');
+        window.removeEventListener('omnia-audio-start', handleInterrupt);
       };
       
-      // 📱 MOBILNÍ STRATEGIE
+      // 📱 MOBILE/DESKTOP STRATEGY
       if (isMobile) {
-        // Na mobilu - pokud je conversation mode, zkus auto-play, jinak notifikace
         if (voiceMode === 'conversation') {
           try {
             await audio.play();
-            if (!playStarted) {
-              throw new Error('Play did not start');
+            if (!playStarted && !playbackInterrupted) {
+              throw new Error('Auto-play failed to start');
             }
           } catch (error) {
             console.error('❌ Mobile auto-play failed:', error);
+            if (!playbackInterrupted) {
+              showNotification('🔊 Tap to play response', 'info', () => {
+                audio.play().catch(console.error);
+              });
+            }
+          }
+        } else {
+          if (!playbackInterrupted) {
             showNotification('🔊 Tap to play response', 'info', () => {
               audio.play().catch(console.error);
             });
           }
-        } else {
-          // Pro jiné režimy ukáž notifikaci
-          showNotification('🔊 Tap to play response', 'info', () => {
-            audio.play().catch(console.error);
-          });
         }
       } else {
-        // Desktop - zkus auto-play
         try {
           await audio.play();
-          if (!playStarted) {
-            throw new Error('Play did not start');
+          if (!playStarted && !playbackInterrupted) {
+            throw new Error('Auto-play blocked');
           }
         } catch (error) {
-          console.error('❌ Auto-play blocked/failed:', error);
-          showNotification('🔊 Klikněte pro přehrání odpovědi', 'info', () => {
-            audio.play().catch(console.error);
-          });
+          console.error('❌ Desktop auto-play failed:', error);
+          if (!playbackInterrupted) {
+            showNotification('🔊 Klikněte pro přehrání odpovědi', 'info', () => {
+              audio.play().catch(console.error);
+            });
+          }
         }
       }
       
