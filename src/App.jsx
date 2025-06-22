@@ -1,6 +1,6 @@
 /// App.jsx - MOBILE OPTIMIZED VERZE s OKAMŽITOU AUDIO ODPOVĚDÍ + INTERNET SEARCH
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './App.css';
 
 // 🎨 GRADIENT LOGO KOMPONENTA
@@ -440,11 +440,11 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 };
 
 function TypewriterText({ text }) {
-  const [displayedText, setDisplayedText] = React.useState('');
-  const [charIndex, setCharIndex] = React.useState(0);
-  const chars = React.useMemo(() => Array.from(text), [text]);
+  const [displayedText, setDisplayedText] = useState('');
+  const [charIndex, setCharIndex] = useState(0);
+  const chars = useMemo(() => Array.from(text), [text]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (charIndex >= chars.length) return;
 
     const timeout = setTimeout(() => {
