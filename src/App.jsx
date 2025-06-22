@@ -427,6 +427,8 @@ function App() {
 
   // Detekce mobile zařízení
   const isMobile = window.innerWidth <= 768;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
 
   // Force light mode pro celou aplikaci
   useEffect(() => {
@@ -606,8 +608,7 @@ function App() {
   const playResponseAudio = async (text) => {
     try {
       console.log('🔊 Attempting auto-play for:', text.substring(0, 50) + '...');
-      console.log('🎯 Auto-play enabled:', autoPlay);
-      console.log('🎭 Voice mode:', voiceMode);
+      console.log('📱 Mobile device:', isMobile, 'iOS:', isIOS, 'Android:', isAndroid);
       
       const response = await fetch('/api/voice', {
         method: 'POST',
@@ -619,7 +620,6 @@ function App() {
 
       if (!response.ok) {
         console.error('❌ Voice API failed:', response.status);
-        // 🔔 VIZUÁLNÍ INDIKACE CHYBY
         showNotification('🔇 Hlas se nepodařilo přehrát', 'error');
         return;
       }
@@ -628,12 +628,15 @@ function App() {
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      // 🎯 AGRESIVNĚJŠÍ NASTAVENÍ PRO AUTO-PLAY
+      // 📱 MOBILNÍ OPTIMALIZACE
       audio.preload = 'auto';
       audio.volume = 1.0;
-      audio.autoplay = true;
       
-      // 🔄 FALLBACK - pokud auto-play selže, ukáž notifikaci
+      // iOS potřebuje speciální handling
+      if (isIOS) {
+        audio.load(); // Explicitní load pro iOS
+      }
+      
       let playStarted = false;
       
       audio.oncanplay = () => {
@@ -656,19 +659,28 @@ function App() {
         showNotification('🔇 Chyba přehrávání hlasu', 'error');
       };
       
-      // Pokus o přehrání s fallback
-      try {
-        await audio.play();
-        if (!playStarted) {
-          throw new Error('Play did not start');
-        }
-      } catch (error) {
-        console.error('❌ Auto-play blocked/failed:', error);
-        
-        // 🔔 UKÁŽ NOTIFIKACI S MOŽNOSTÍ RUČNÍHO PŘEHRÁNÍ
-        showNotification('🔊 Klikněte pro přehrání odpovědi', 'info', () => {
-          audio.play().catch(console.error);
+      // 📱 MOBILNÍ STRATEGIE
+      if (isMobile) {
+        // Na mobilu rovnou ukáž klikatelnou notifikaci
+        showNotification('🔊 Tap to play response', 'info', () => {
+          audio.play().catch(error => {
+            console.error('❌ Manual play failed:', error);
+            showNotification('🔇 Audio play failed', 'error');
+          });
         });
+      } else {
+        // Desktop - zkus auto-play
+        try {
+          await audio.play();
+          if (!playStarted) {
+            throw new Error('Play did not start');
+          }
+        } catch (error) {
+          console.error('❌ Auto-play blocked/failed:', error);
+          showNotification('🔊 Klikněte pro přehrání odpovědi', 'info', () => {
+            audio.play().catch(console.error);
+          });
+        }
       }
       
     } catch (error) {
@@ -876,8 +888,8 @@ function App() {
               </select>
             </div>
 
-            {/* Auto-play toggle pro voice mode */}
-            {voiceMode === 'handsfree' && (
+            {/* Auto-play toggle pro voice mode - skryj na mobilu */}
+            {voiceMode === 'handsfree' && !isMobile && (
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -896,6 +908,18 @@ function App() {
                   onChange={(e) => setAutoPlay(e.target.checked)}
                   style={{ cursor: 'pointer' }}
                 />
+              </div>
+            )}
+
+            {/* Mobilní info */}
+            {voiceMode === 'handsfree' && isMobile && (
+              <div style={{ 
+                fontSize: '0.8rem',
+                color: '#888',
+                textAlign: 'center',
+                minWidth: '120px'
+              }}>
+                📱 Tap to play
               </div>
             )}
 
