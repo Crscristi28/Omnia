@@ -1,4 +1,4 @@
-// api/voice.js - ElevenLabs Text-to-Speech API
+// api/voice.js - ElevenLabs Text-to-Speech API - OPTIMIZED PRO RYCHLOST
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🎤 ElevenLabs TTS API call');
+    console.log('🎤 ElevenLabs TTS API call (FAST)');
     
     const { text } = req.body;
     
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('🗣️ Generuji hlas pro text:', text.substring(0, 50) + '...');
+    console.log('🗣️ Generuji hlas (TURBO):', text.substring(0, 50) + '...');
 
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
       method: 'POST',
@@ -55,13 +55,16 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         text: text,
-        model_id: 'eleven_multilingual_v2',
+        model_id: 'eleven_turbo_v2', // 🚀 RYCHLEJŠÍ MODEL
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.5,
-          style: 0.0,
+          stability: 0.6,              // 🎯 OPTIMALIZACE PRO RYCHLOST
+          similarity_boost: 0.8,       // 🎯 LEPŠÍ KVALITA
+          style: 0.2,                  // 🎯 TROCHU STYLU
           use_speaker_boost: true
-        }
+        },
+        // 🚀 DODATEČNÉ OPTIMALIZACE
+        output_format: "mp3_44100_128", // Menší soubor = rychlejší
+        optimize_streaming_latency: 4    // Max optimalizace pro rychlost
       })
     });
 
@@ -80,11 +83,12 @@ export default async function handler(req, res) {
 
     // Získej audio data jako buffer
     const audioBuffer = await response.arrayBuffer();
-    console.log('✅ Audio vygenerováno, velikost:', audioBuffer.byteLength, 'bytes');
+    console.log('✅ Audio vygenerováno (FAST), velikost:', audioBuffer.byteLength, 'bytes');
 
-    // Nastav správné headers pro audio
+    // Nastav správné headers pro audio s cache
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Content-Length', audioBuffer.byteLength);
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 🚀 CACHE PRO RYCHLOST
     
     // Pošli audio data
     res.status(200).send(Buffer.from(audioBuffer));
