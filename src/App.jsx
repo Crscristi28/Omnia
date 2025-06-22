@@ -1,4 +1,4 @@
-// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem)
+// App.jsx - MOBILE OPTIMIZED VERZE (s gradient logem) - OPRAVENÝ LAYOUT PRO MACBOOK
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -160,10 +160,24 @@ function App() {
         color-scheme: light only !important;
         background-color: #ffffff !important;
         color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      #root {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
       }
       
       * {
         color-scheme: light only !important;
+        box-sizing: border-box !important;
       }
       
       input, textarea, select, button {
@@ -191,6 +205,11 @@ function App() {
           transform: scale(1.03);
           filter: brightness(1.15);
         }
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
       
       @media (prefers-color-scheme: dark) {
@@ -300,21 +319,34 @@ function App() {
       className="main-wrapper" 
       style={{ 
         minHeight: '100vh', 
-        height: '100%',
+        height: '100vh',
+        display: 'flex', 
+        flexDirection: 'column',
+        background: '#ffffff',
+        color: '#000000',
+        width: '100vw',
+        margin: 0,
+        padding: 0,
+        colorScheme: 'light only',
+        boxSizing: 'border-box',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}
+    >
+      <div className="app light" style={{ 
+        minHeight: '100vh',
+        height: '100vh',
         display: 'flex', 
         flexDirection: 'column',
         background: '#ffffff',
         color: '#000000',
         width: '100%',
-        colorScheme: 'light only'
-      }}
-    >
-      <div className="app light" style={{ 
-        minHeight: '100vh',
-        display: 'flex', 
-        flexDirection: 'column',
-        background: '#ffffff',
-        color: '#000000'
+        margin: 0,
+        padding: 0,
+        boxSizing: 'border-box'
       }}>
         
         {/* KOMPAKTNÍ HEADER PRO MOBILE */}
@@ -324,7 +356,10 @@ function App() {
           color: '#000000',
           borderBottom: '1px solid #eee',
           position: 'relative',
-          textAlign: 'center'
+          textAlign: 'center',
+          width: '100%',
+          boxSizing: 'border-box',
+          flexShrink: 0
         }}>
           {/* 🎨 NOVÉ GRADIENT LOGO */}
           <div style={{ 
@@ -438,15 +473,23 @@ function App() {
         {/* CHAT CONTAINER */}
         <main style={{ 
           flex: 1,
-          minHeight: '60vh',
+          minHeight: 0,
           overflowY: 'auto',
           padding: '1rem',
-          paddingBottom: isMobile ? '140px' : '120px', // více prostoru pro input
+          paddingBottom: isMobile ? '140px' : '120px',
           background: '#ffffff',
           color: '#000000',
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
-          <div style={{ maxWidth: '800px', margin: '0 auto', minHeight: '50vh' }}>
+          <div style={{ 
+            maxWidth: '800px', 
+            margin: '0 auto', 
+            minHeight: '50vh',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -532,20 +575,24 @@ function App() {
           bottom: 0, 
           left: 0,
           right: 0,
-          width: '100%',
+          width: '100vw',
           background: '#ffffff', 
           color: '#000000',
           padding: isMobile ? '1rem' : '1rem',
           borderTop: '1px solid #eee',
           paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem',
           zIndex: 1000,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+          boxSizing: 'border-box'
         }}>
           <div style={{ 
             maxWidth: '800px',
             margin: '0 auto',
             display: 'flex', 
-            gap: isMobile ? '0.5rem' : '1rem'
+            gap: isMobile ? '0.5rem' : '1rem',
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '0 1rem'
           }}>
             <input
               type="text"
@@ -580,7 +627,8 @@ function App() {
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontWeight: 'bold',
-                minWidth: isMobile ? '80px' : '100px'
+                minWidth: isMobile ? '80px' : '100px',
+                flexShrink: 0
               }}
             >
               {loading ? '⏳' : 'Odeslat'}
