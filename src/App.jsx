@@ -48,12 +48,13 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 VOICE RECORDING KOMPONENTA - PUSH TO TALK
+// 🎤 VOICE RECORDING KOMPONENTA - PUSH TO TALK (FIXED)
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const streamRef = useRef(null); // Track stream for proper cleanup
 
   const startRecording = async () => {
     try {
@@ -67,6 +68,8 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           noiseSuppression: true
         } 
       });
+
+      streamRef.current = stream; // Store stream reference
 
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
@@ -84,6 +87,15 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       mediaRecorder.onstop = async () => {
         console.log('🛑 Nahrávání ukončeno, zpracovávám...');
         setIsProcessing(true);
+        
+        // 🔧 OKAMŽITĚ VYPNI STREAM
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => {
+            track.stop();
+            console.log('🔇 Track stopped:', track.kind);
+          });
+          streamRef.current = null;
+        }
         
         try {
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
@@ -111,9 +123,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         } finally {
           setIsProcessing(false);
         }
-
-        // Vypni mikrofon
-        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();
@@ -126,38 +135,110 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   };
 
   const stopRecording = () => {
+    console.log('🔧 Force stop recording...');
+    
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (error) {
+        console.error('Error stopping recorder:', error);
+      }
     }
+    
+    // 🔧 FORCE CLEANUP - VŽDY VYPNI STREAM
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('🔇 Force stopped track:', track.kind);
+      });
+      streamRef.current = null;
+    }
+    
+    setIsRecording(false);
   };
 
-  // 🎯 PUSH-TO-TALK HANDLERS
-  const handleMouseDown = () => {
+  // 🔧 CLEANUP ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      console.log('🧹 Component unmounting - cleanup');
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  // 🔧 EMERGENCY CLEANUP pokud zůstane nahrávání aktivní
+  useEffect(() => {
+    const cleanup = () => {
+      if (isRecording) {
+        console.log('🚨 Emergency cleanup - stopping recording');
+        stopRecording();
+      }
+    };
+
+    // Cleanup při změně stránky
+    window.addEventListener('beforeunload', cleanup);
+    window.addEventListener('visibilitychange', () => {
+      if (document.hidden && isRecording) {
+        cleanup();
+      }
+    });
+
+    return () => {
+      window.removeEventListener('beforeunload', cleanup);
+      window.removeEventListener('visibilitychange', cleanup);
+    };
+  }, [isRecording]);
+
+  // 🎯 ROBUSTNÍ PUSH-TO-TALK HANDLERS
+  const handleStart = () => {
     if (!disabled && !isProcessing && !isRecording) {
       startRecording();
     }
   };
 
-  const handleMouseUp = () => {
+  const handleStop = () => {
     if (isRecording) {
       stopRecording();
     }
   };
 
-  // 📱 TOUCH HANDLERS PRO MOBIL
+  // 📱 UNIFIED HANDLERS
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    handleStart();
+  };
+
+  const handleMouseUp = (e) => {
+    e.preventDefault();
+    handleStop();
+  };
+
   const handleTouchStart = (e) => {
     e.preventDefault();
-    handleMouseDown();
+    handleStart();
   };
 
   const handleTouchEnd = (e) => {
     e.preventDefault();
-    handleMouseUp();
+    handleStop();
   };
 
-  // 🚫 ODSTRANIT AUTOMATICKÉ NAHRÁVÁNÍ
-  // useEffect pro hands-free mode je odstraněn
+  // 🔧 CATCH-ALL STOP HANDLERS
+  const handleMouseLeave = () => {
+    if (isRecording) {
+      console.log('🔧 Mouse left button - stopping');
+      handleStop();
+    }
+  };
+
+  const handleTouchCancel = (e) => {
+    e.preventDefault();
+    if (isRecording) {
+      console.log('🔧 Touch cancelled - stopping');
+      handleStop();
+    }
+  };
 
   const getButtonStyle = () => {
     if (isProcessing) return { backgroundColor: '#FFA500', color: 'white' };
@@ -172,17 +253,17 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   };
 
   const getButtonTitle = () => {
-    if (mode === 'handsfree') return 'Držte pro mluvení';
-    return 'Držte pro nahrávání';
+    return 'Držte pro mluvení';
   };
 
   return (
     <button
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp} // Pokud myš opustí tlačítko
+      onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
       disabled={disabled || isProcessing}
       title={getButtonTitle()}
       style={{
@@ -195,8 +276,9 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         minWidth: '60px',
         transition: 'all 0.2s',
         boxShadow: isRecording ? '0 0 20px rgba(255, 68, 68, 0.5)' : 'none',
-        userSelect: 'none', // Zabránit označování textu
-        WebkitUserSelect: 'none'
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none'
       }}
     >
       {getButtonText()}
