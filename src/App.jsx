@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-// 🎨 NOVÁ GRADIENT LOGO KOMPONENTA
+// 🎨 GRADIENT LOGO KOMPONENTA
 const OmniaLogo = ({ size = 100, animate = false }) => {
   return (
     <div
@@ -127,7 +127,7 @@ const claudeService = {
       const claudeMessages = prepareClaudeMessages(messages);
       
       // System prompt pro Claude (samostatně)
-      const systemPrompt = 'Jmenuješ se Omnia. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
+      const systemPrompt = 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
       
       const response = await fetch('/api/claude', {
         method: 'POST',
@@ -330,7 +330,7 @@ function App() {
         const openAiMessages = [
           { 
             role: 'system', 
-            content: 'Jmenuješ se Omnia. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.' 
+            content: 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.' 
           },
           ...newMessages.map((msg) => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -415,7 +415,7 @@ function App() {
           boxSizing: 'border-box',
           flexShrink: 0
         }}>
-          {/* 🎨 NOVÉ GRADIENT LOGO */}
+          {/* 🎨 GRADIENT LOGO */}
           <div style={{ 
             textAlign: 'center', 
             marginBottom: isMobile ? '0.5rem' : '1rem',
