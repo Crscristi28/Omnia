@@ -1,4 +1,4 @@
-// api/claude.js
+// api/claude.js - OPRAVENÁ VERZE S PAMĚTÍ
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   try {
     console.log('🤖 Claude API call via Vercel');
     
-    const { messages } = req.body;
+    const { messages, system } = req.body;
     
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ 
@@ -35,20 +35,17 @@ export default async function handler(req, res) {
       });
     }
 
-    const lastMessage = messages[messages.length - 1];
+    // 🔧 OPRAVA: Použij celý messages array místo jen poslední zprávy
+    console.log('📝 Posílám Claudovi celou historii:', messages.length, 'zpráv');
     
     const claudeRequest = {
       model: "claude-3-5-sonnet-20241022",
       max_tokens: 1000,
-      messages: [
-        {
-          role: 'user',
-          content: lastMessage.content || 'Ahoj'
-        }
-      ]
+      messages: messages, // ✅ CELÁ HISTORIE místo jen lastMessage
+      ...(system && { system }) // System prompt pokud je poslán
     };
 
-    console.log('🚀 Volám Claude API...');
+    console.log('🚀 Volám Claude API s historií...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -74,7 +71,7 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Claude API success');
+    console.log('✅ Claude API success with memory');
 
     if (!data.content || !data.content[0] || !data.content[0].text) {
       console.error('❌ Invalid Claude response:', data);
