@@ -1,4 +1,4 @@
-// App.jsx - OPRAVENÁ VERZE
+// App.jsx - OMNIA BRANDED VERZE
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -191,8 +191,8 @@ function App() {
                     onChange={(e) => setModel(e.target.value)}
                     style={{ marginRight: '0.5rem' }}
                   >
-                    <option value="gpt-4o">OpenAI (GPT-4)</option>
-                    <option value="claude">Anthropic (Claude)</option>
+                    <option value="gpt-4o">Omnia (GPT-4)</option>
+                    <option value="claude">Omnia (Claude)</option>
                   </select>
                   <button
                     onClick={() => {
@@ -211,9 +211,18 @@ function App() {
                   top: '1rem', 
                   right: '1rem', 
                   fontSize: '0.8rem',
-                  color: '#666'
+                  color: '#666',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
                 }}>
-                  🌐 Online • Vercel API
+                  <div style={{ 
+                    width: '8px', 
+                    height: '8px', 
+                    backgroundColor: '#4CAF50', 
+                    borderRadius: '50%' 
+                  }}></div>
+                  Online
                 </div>
               </div>
             </header>
@@ -259,7 +268,7 @@ function App() {
                         opacity: 0.6, 
                         marginBottom: '0.3rem' 
                       }}>
-                        {model === 'claude' ? '🤖 Claude' : '🧠 GPT-4'}
+                        🔮 Omnia
                       </div>
                     )}
                     
@@ -293,7 +302,7 @@ function App() {
                         borderRadius: '50%',
                         animation: 'spin 1s linear infinite'
                       }}></div>
-                      {model === 'claude' ? 'Claude' : 'GPT-4'} přemýšlí...
+                      Omnia přemýšlí...
                     </div>
                   </div>
                 </div>
