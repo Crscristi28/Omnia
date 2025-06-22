@@ -357,15 +357,22 @@ function App() {
           {/* Controls - větší na mobile */}
           <div style={{ 
             display: 'flex', 
-            justifyContent: isMobile ? 'space-between' : 'center',
+            justifyContent: isMobile ? 'space-between' : 'space-around',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '0.5rem',
+            gap: '1rem',
             maxWidth: '800px',
-            margin: '0 auto'
+            margin: '0 auto',
+            padding: isMobile ? '0' : '0 2rem'
           }}>
             {/* Model selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              minWidth: isMobile ? 'auto' : '200px',
+              justifyContent: isMobile ? 'flex-start' : 'center'
+            }}>
               <label style={{ 
                 fontSize: isMobile ? '0.9rem' : '1rem',
                 fontWeight: 'bold' 
@@ -393,8 +400,10 @@ function App() {
               display: 'flex',
               alignItems: 'center',
               gap: '0.3rem',
-              fontSize: isMobile ? '0.8rem' : '0.8rem',
-              color: '#666'
+              fontSize: isMobile ? '0.8rem' : '0.9rem',
+              color: '#666',
+              minWidth: isMobile ? 'auto' : '80px',
+              justifyContent: 'center'
             }}>
               <div style={{ 
                 width: '8px', 
@@ -412,12 +421,13 @@ function App() {
                 setMessages([]);
               }}
               style={{ 
-                padding: isMobile ? '0.6rem 1rem' : '0.5rem 1rem',
-                fontSize: isMobile ? '0.9rem' : '0.8rem',
+                padding: isMobile ? '0.6rem 1rem' : '0.6rem 1.2rem',
+                fontSize: isMobile ? '0.9rem' : '0.9rem',
                 borderRadius: '0.5rem',
                 border: '1px solid #ccc',
                 backgroundColor: '#f8f9fa',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minWidth: isMobile ? 'auto' : '120px'
               }}
             >
               Nový chat
