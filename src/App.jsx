@@ -584,8 +584,8 @@ function App() {
     localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
     setLoading(false);
 
-    // Auto-play pro hands-free mode
-    if (voiceMode === 'handsfree' || autoPlay) {
+    // Auto-play pouze pokud je explicitně zapnuté
+    if (autoPlay && (voiceMode === 'handsfree' || voiceMode === 'hybrid')) {
       // Krátká pauza před přehráním
       setTimeout(() => {
         playResponseAudio(responseText);
@@ -605,7 +605,9 @@ function App() {
 
   const playResponseAudio = async (text) => {
     try {
-      console.log('🔊 Auto-playing response:', text.substring(0, 50) + '...');
+      console.log('🔊 Attempting auto-play for:', text.substring(0, 50) + '...');
+      console.log('🎯 Auto-play enabled:', autoPlay);
+      console.log('🎭 Voice mode:', voiceMode);
       
       const response = await fetch('/api/voice', {
         method: 'POST',
@@ -624,6 +626,14 @@ function App() {
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
+      // Nastavení pro lepší kompatibilitu
+      audio.preload = 'auto';
+      audio.volume = 1.0;
+      
+      audio.oncanplay = () => {
+        console.log('🎵 Audio ready to play');
+      };
+      
       audio.onended = () => {
         console.log('✅ Auto-play finished');
         URL.revokeObjectURL(audioUrl);
@@ -634,8 +644,19 @@ function App() {
         URL.revokeObjectURL(audioUrl);
       };
       
-      await audio.play();
-      console.log('🎵 Auto-play started');
+      // Pokus o přehrání
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('🎵 Auto-play started successfully');
+          })
+          .catch(error => {
+            console.error('❌ Auto-play blocked by browser:', error);
+            console.log('💡 Tip: Klikněte někam na stránku a zkuste znovu');
+          });
+      }
       
     } catch (error) {
       console.error('💥 Auto-play error:', error);
@@ -798,6 +819,29 @@ function App() {
                 <option value="claude">Omnia (Claude)</option>
               </select>
             </div>
+
+            {/* Auto-play toggle pro voice mode */}
+            {voiceMode === 'handsfree' && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.3rem',
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
+                color: '#666',
+                minWidth: isMobile ? 'auto' : '120px',
+                justifyContent: 'center'
+              }}>
+                <label style={{ fontSize: isMobile ? '0.8rem' : '0.9rem' }}>
+                  🔊 Auto:
+                </label>
+                <input 
+                  type="checkbox" 
+                  checked={autoPlay} 
+                  onChange={(e) => setAutoPlay(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+              </div>
+            )}
 
             {/* Online status */}
             <div style={{ 
