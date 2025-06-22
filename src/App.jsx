@@ -48,7 +48,142 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 VOICE BUTTON KOMPONENTA
+// 🎤 VOICE RECORDING KOMPONENTA
+const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const startRecording = async () => {
+    try {
+      console.log('🎙️ Začínám nahrávání...');
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true
+        } 
+      });
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        console.log('🛑 Nahrávání ukončeno, zpracovávám...');
+        setIsProcessing(true);
+        
+        try {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const arrayBuffer = await audioBlob.arrayBuffer();
+
+          const response = await fetch('/api/whisper', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/octet-stream',
+            },
+            body: arrayBuffer
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log('✅ Přepsaný text:', data.text);
+          
+          onTranscript(data.text);
+
+        } catch (error) {
+          console.error('💥 Whisper error:', error);
+        } finally {
+          setIsProcessing(false);
+        }
+
+        // Vypni mikrofon
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+
+    } catch (error) {
+      console.error('💥 Recording error:', error);
+      alert('Nepodařilo se získat přístup k mikrofonu');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  // Hands-free mode - automatické nahrávání
+  useEffect(() => {
+    if (mode === 'handsfree' && !disabled && !isRecording && !isProcessing) {
+      // Automaticky začni nahrávat po krátké pauze
+      const timer = setTimeout(() => {
+        startRecording();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [mode, disabled, isRecording, isProcessing]);
+
+  const getButtonStyle = () => {
+    if (isProcessing) return { backgroundColor: '#FFA500', color: 'white' };
+    if (isRecording) return { backgroundColor: '#FF4444', color: 'white' };
+    return { backgroundColor: '#007bff', color: 'white' };
+  };
+
+  const getButtonText = () => {
+    if (isProcessing) return '⏳';
+    if (isRecording) return '🛑';
+    if (mode === 'handsfree') return '🎤';
+    return '🎙️';
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={disabled || isProcessing}
+      style={{
+        ...getButtonStyle(),
+        border: 'none',
+        borderRadius: '1rem',
+        padding: '1rem',
+        fontSize: '1.1rem',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        minWidth: '60px',
+        transition: 'all 0.2s',
+        boxShadow: isRecording ? '0 0 20px rgba(255, 68, 68, 0.5)' : 'none'
+      }}
+    >
+      {getButtonText()}
+    </button>
+  );
+};
 const VoiceButton = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -286,6 +421,8 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('gpt-4o'); // 'gpt-4o' or 'claude'
   const [loading, setLoading] = useState(false);
+  const [voiceMode, setVoiceMode] = useState('text'); // 'text', 'hybrid', 'handsfree'
+  const [autoPlay, setAutoPlay] = useState(false);
   const endOfMessagesRef = useRef(null);
 
   // Detekce mobile zařízení
@@ -404,10 +541,10 @@ function App() {
     }
   }, []);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSend = async (textInput = input) => {
+    if (!textInput.trim()) return;
 
-    const newMessages = [...messages, { sender: 'user', text: input }];
+    const newMessages = [...messages, { sender: 'user', text: textInput }];
     setMessages(newMessages);
     setInput('');
     setLoading(true);
@@ -446,6 +583,48 @@ function App() {
     setMessages(updatedMessages);
     localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
     setLoading(false);
+
+    // Auto-play pro hands-free mode
+    if (voiceMode === 'handsfree' || autoPlay) {
+      // Krátká pauza před přehráním
+      setTimeout(() => {
+        playResponseAudio(responseText);
+      }, 500);
+    }
+  };
+
+  const handleTranscript = (text) => {
+    if (voiceMode === 'handsfree') {
+      // V hands-free mode rovnou pošli
+      handleSend(text);
+    } else {
+      // V hybrid mode vlož do input pole
+      setInput(text);
+    }
+  };
+
+  const playResponseAudio = async (text) => {
+    try {
+      const response = await fetch('/api/voice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      });
+
+      if (!response.ok) return;
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.onended = () => URL.revokeObjectURL(audioUrl);
+      await audio.play();
+      
+    } catch (error) {
+      console.error('💥 Auto-play error:', error);
+    }
   };
 
   useEffect(() => {
@@ -544,6 +723,37 @@ function App() {
             margin: '0 auto',
             padding: isMobile ? '0' : '0 2rem'
           }}>
+            {/* Voice Mode Selector */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              minWidth: isMobile ? 'auto' : '150px',
+              justifyContent: isMobile ? 'flex-start' : 'center'
+            }}>
+              <label style={{ 
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
+                fontWeight: 'bold' 
+              }}>
+                Režim:
+              </label>
+              <select 
+                value={voiceMode} 
+                onChange={(e) => setVoiceMode(e.target.value)}
+                style={{ 
+                  padding: isMobile ? '0.4rem' : '0.3rem',
+                  fontSize: isMobile ? '0.9rem' : '0.8rem',
+                  borderRadius: '0.4rem',
+                  border: '1px solid #ccc',
+                  minWidth: isMobile ? '100px' : 'auto'
+                }}
+              >
+                <option value="text">📝 Text</option>
+                <option value="hybrid">🎤 Hybrid</option>
+                <option value="handsfree">🗣️ Voice</option>
+              </select>
+            </div>
+
             {/* Model selector */}
             <div style={{ 
               display: 'flex', 
@@ -743,45 +953,74 @@ function App() {
             boxSizing: 'border-box',
             padding: '0 1rem'
           }}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-              placeholder="Zeptej se Omnie…"
-              disabled={loading}
-              style={{ 
+            {voiceMode !== 'handsfree' && (
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
+                placeholder={voiceMode === 'hybrid' ? "Napište nebo použijte mikrofon..." : "Zeptej se Omnie…"}
+                disabled={loading}
+                style={{ 
+                  flex: 1,
+                  padding: isMobile ? '1.2rem' : '1rem',
+                  fontSize: isMobile ? '1.1rem' : '1rem',
+                  borderRadius: '1rem',
+                  border: '1px solid #ccc',
+                  outline: 'none',
+                  backgroundColor: loading ? '#f5f5f5' : '#ffffff',
+                  color: '#000000',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  colorScheme: 'light only'
+                }}
+              />
+            )}
+            
+            {voiceMode === 'handsfree' && (
+              <div style={{
                 flex: 1,
                 padding: isMobile ? '1.2rem' : '1rem',
                 fontSize: isMobile ? '1.1rem' : '1rem',
                 borderRadius: '1rem',
-                border: '1px solid #ccc',
-                outline: 'none',
-                backgroundColor: loading ? '#f5f5f5' : '#ffffff',
-                color: '#000000',
-                width: '100%',
-                boxSizing: 'border-box',
-                colorScheme: 'light only'
-              }}
-            />
-            <button 
-              onClick={handleSend} 
-              disabled={loading || !input.trim()}
-              style={{ 
-                padding: isMobile ? '1.2rem 1.5rem' : '1rem',
-                fontSize: isMobile ? '1.1rem' : '1rem',
-                borderRadius: '1rem',
-                backgroundColor: loading ? '#ccc' : '#007bff',
-                color: 'white',
-                border: 'none',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold',
-                minWidth: isMobile ? '80px' : '100px',
-                flexShrink: 0
-              }}
-            >
-              {loading ? '⏳' : 'Odeslat'}
-            </button>
+                border: '2px dashed #007bff',
+                backgroundColor: '#f8f9ff',
+                color: '#007bff',
+                textAlign: 'center',
+                fontWeight: 'bold'
+              }}>
+                🗣️ Hands-free režim - mluvte s Omnií
+              </div>
+            )}
+
+            {(voiceMode === 'hybrid' || voiceMode === 'handsfree') && (
+              <VoiceRecorder 
+                onTranscript={handleTranscript}
+                disabled={loading}
+                mode={voiceMode}
+              />
+            )}
+            
+            {voiceMode !== 'handsfree' && (
+              <button 
+                onClick={() => handleSend()} 
+                disabled={loading || !input.trim()}
+                style={{ 
+                  padding: isMobile ? '1.2rem 1.5rem' : '1rem',
+                  fontSize: isMobile ? '1.1rem' : '1rem',
+                  borderRadius: '1rem',
+                  backgroundColor: loading ? '#ccc' : '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  minWidth: isMobile ? '80px' : '100px',
+                  flexShrink: 0
+                }}
+              >
+                {loading ? '⏳' : 'Odeslat'}
+              </button>
+            )}
           </div>
         </div>
       </div>
