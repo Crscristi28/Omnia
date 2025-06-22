@@ -176,13 +176,18 @@ function App() {
 
   return (
     <div className="main-wrapper" style={{ 
-      height: '100vh', 
+      minHeight: '100vh', 
+      height: '100%',
       display: 'flex', 
       flexDirection: 'column',
-      background: '#fff',
-      overflow: 'hidden'
+      background: '#fff'
     }}>
-      <div className="app light" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className="app light" style={{ 
+        minHeight: '100vh',
+        display: 'flex', 
+        flexDirection: 'column',
+        background: '#fff'
+      }}>
         
         {/* KOMPAKTNÍ HEADER PRO MOBILE */}
         <header style={{ 
@@ -275,13 +280,14 @@ function App() {
         {/* CHAT CONTAINER */}
         <main style={{ 
           flex: 1,
+          minHeight: '60vh',
           overflowY: 'auto',
           padding: '1rem',
-          paddingBottom: isMobile ? '100px' : '120px', // prostor pro input
+          paddingBottom: isMobile ? '140px' : '120px', // více prostoru pro input
           background: '#fff',
           WebkitOverflowScrolling: 'touch'
         }}>
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', minHeight: '50vh' }}>
             {messages.map((msg, idx) => (
               <div
                 key={idx}
