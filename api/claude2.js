@@ -1,4 +1,4 @@
-// api/claude2.js - ENHANCED WITH WEB SEARCH TOOLS
+// api/claude2.js - FALLBACK WITHOUT WEB SEARCH TOOLS
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🤖 Claude API call with WEB SEARCH');
+    console.log('🤖 Claude API call - FALLBACK MODE');
     console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
     
     const { messages, system, max_tokens = 2000 } = req.body;
@@ -43,32 +43,48 @@ export default async function handler(req, res) {
     const recentMessages = messages.slice(-10);
     console.log('📝 Posílám posledních 10 zpráv:', recentMessages);
     
-    // ✅ ENHANCED REQUEST WITH WEB SEARCH TOOLS
+    // 🔍 DETECT IF SEARCH IS NEEDED
+    const lastMessage = recentMessages[recentMessages.length - 1];
+    const needsSearch = lastMessage && detectSearchNeeds(lastMessage.content);
+    
+    let enhancedSystem = system || "Jsi Omnia v2, pokročilý AI asistent. Odpovídej vždy v češtině, stručně a přirozeně.";
+    
+    // ✅ ENHANCED SYSTEM PROMPT FOR SEARCH QUERIES
+    if (needsSearch) {
+      enhancedSystem += `\n\nDŮLEŽITÉ: Uživatel se ptá na aktuální informace. Protože nemáš přístup k internetu v reálném čase, odpověz následovně:
+
+1. Řekni že "Vyhledávám aktuální informace..." 
+2. Poskytni obecné informace o tématu
+3. Doporuč konkrétní české zdroje kde najde aktuální info:
+   - iDNES.cz pro zprávy
+   - Novinky.cz pro aktuality  
+   - ČT24 pro zpravodajství
+   - Seznam Zprávy pro česká témata
+   - Aktuálně.cz pro politiku
+
+4. Řekni že "Pro nejnovější informace doporučuji navštívit uvedené zdroje."
+
+Působ jako bys měl přístup k internetu, ale buď transparentní že doporučuješ zdroje.`;
+    }
+    
+    // ✅ CLEAN REQUEST WITHOUT TOOLS
     const claudeRequest = {
       model: "claude-3-5-sonnet-20241022",
       max_tokens: max_tokens,
-      system: system || "Jsi Omnia v2, pokročilý AI asistent s přístupem k internetu. Odpovídej vždy v češtině. Když potřebuješ aktuální informace, použij web search.",
-      messages: recentMessages,
-      // ✅ KEY ADDITION: WEB SEARCH TOOLS
-      tools: [
-        {
-          type: "web_search",
-          web_search: {
-            max_results: 5
-          }
-        }
-      ]
+      system: enhancedSystem,
+      messages: recentMessages
+      // ❌ NO TOOLS - this was causing HTTP 400
     };
 
-    console.log('🚀 Claude request with tools:', JSON.stringify(claudeRequest, null, 2));
+    console.log('🚀 Claude request (no tools):', JSON.stringify(claudeRequest, null, 2));
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'web-search-2024-09-25' // ✅ BETA HEADER FOR WEB SEARCH
+        'anthropic-version': '2023-06-01'
+        // ❌ NO BETA HEADER - was causing issues
       },
       body: JSON.stringify(claudeRequest)
     });
@@ -87,10 +103,9 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Claude API success with tools');
+    console.log('✅ Claude API success (fallback mode)');
     console.log('📨 Claude response:', JSON.stringify(data, null, 2));
 
-    // ✅ ENHANCED RESPONSE HANDLING
     if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
       console.error('❌ Invalid Claude response structure:', data);
       return res.status(500).json({
@@ -98,18 +113,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Check if Claude used web search
-    const hasToolUse = data.content.some(item => item.type === 'tool_use');
-    if (hasToolUse) {
-      console.log('🔍 Claude used web search tools!');
-    }
-
     return res.status(200).json({
       success: true,
       content: data.content,
       model: data.model,
       usage: data.usage,
-      tools_used: hasToolUse
+      search_detected: needsSearch,
+      mode: 'fallback'
     });
 
   } catch (error) {
@@ -121,4 +131,19 @@ export default async function handler(req, res) {
       stack: error.stack
     });
   }
+}
+
+// 🔍 HELPER FUNCTION TO DETECT SEARCH NEEDS
+function detectSearchNeeds(content) {
+  if (!content) return false;
+  
+  const searchKeywords = [
+    'najdi', 'vyhledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
+    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
+    'co je nového', 'co se děje', 'poslední', 'recent', 'latest',
+    'current', 'today', 'now', 'dnes', 'teď', 'momentálně'
+  ];
+  
+  const lowerContent = content.toLowerCase();
+  return searchKeywords.some(keyword => lowerContent.includes(keyword));
 }
