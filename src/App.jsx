@@ -631,114 +631,57 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-// 🔍 CLAUDE WEB SEARCH SERVICE - Replaces SerpAPI completely
-const claudeWebSearchService = {
+// 🔍 PERPLEXITY WEB SEARCH SERVICE - Real web search!
+const perplexitySearchService = {
   async search(query, showNotification) {
     try {
-      console.log('🔍 Claude searching web for:', query);
-      showNotification('🔍 Hledám aktuální informace...', 'info');
+      console.log('🔍 Perplexity searching web for:', query);
+      showNotification('🔍 Vyhledávám aktuální informace na internetu...', 'info');
 
-      const response = await fetch('/api/claude2', {
+      const response = await fetch('/api/perplexity-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Vyhledej aktuální informace na internetu o: "${query}". Poskytni mi relevantní a aktuální výsledky.`
-            }
-          ],
-          system: 'Jsi expert na vyhledávání informací na internetu. Používej web_search nástroj pro nalezení aktuálních a relevantních informací. Odpovídej vždy v češtině.',
-          max_tokens: 2000
-        })
+        body: JSON.stringify({ query })
       });
 
       if (!response.ok) {
-        throw new Error(`Claude search API failed: ${response.status}`);
+        throw new Error(`Perplexity search failed: ${response.status}`);
       }
 
       const data = await response.json();
 
-      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
-        throw new Error('Invalid Claude search response');
+      if (!data.success || !data.result) {
+        throw new Error('Invalid Perplexity response');
       }
 
-      const searchResults = data.content[0].text;
-      
-      showNotification('🔍 Našel jsem aktuální informace', 'info');
+      showNotification('🔍 Našel jsem aktuální informace!', 'info');
 
       return {
         success: true,
-        results: searchResults,
-        source: 'claude_web_search'
+        result: data.result,
+        citations: data.citations || [],
+        source: 'perplexity_search'
       };
 
     } catch (error) {
-      console.error('💥 Claude search error:', error);
+      console.error('💥 Perplexity search error:', error);
       showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
       return {
         success: false,
         message: `Chyba při vyhledávání: ${error.message}`,
-        source: 'claude_web_search'
-      };
-    }
-  },
-
-  async fetchPage(url, showNotification) {
-    try {
-      console.log('📄 Claude fetching page:', url);
-      showNotification('📄 Načítám obsah stránky...', 'info');
-
-      const response = await fetch('/api/claude2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Načti a shrň obsah této webové stránky: ${url}`
-            }
-          ],
-          system: 'Používej web_fetch nástroj pro načítání obsahu webových stránek. Shrň klíčové informace z načtené stránky. Odpovídej v češtině.',
-          max_tokens: 2000
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Claude fetch API failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
-        throw new Error('Invalid Claude fetch response');
-      }
-
-      const pageContent = data.content[0].text;
-      
-      showNotification('📄 Stránka načtena a zpracována', 'info');
-
-      return {
-        success: true,
-        content: pageContent,
-        url: url,
-        source: 'claude_web_fetch'
-      };
-
-    } catch (error) {
-      console.error('💥 Claude fetch error:', error);
-      showNotification(`Chyba při načítání stránky: ${error.message}`, 'error');
-      return {
-        success: false,
-        message: `Chyba při načítání stránky: ${error.message}`,
-        source: 'claude_web_fetch'
+        source: 'perplexity_search'
       };
     }
   }
 };
 
-// 🧠 ENHANCED SEARCH LOGIC - Claude knows when to search
-const shouldSearchInternet = (userInput) => {
+// 🧠 ENHANCED SEARCH LOGIC - Smart detection for Omnia v2
+const shouldSearchInternet = (userInput, model) => {
+  // ❌ Pouze Omnia v2 (Claude) má web search
+  if (model !== 'claude') {
+    return false;
+  }
+
   const input = (userInput || '').toLowerCase();
   
   // ❌ NIKDY nehledej pro basic conversation
@@ -761,11 +704,11 @@ const shouldSearchInternet = (userInput) => {
   
   // ✅ Hledej pro explicitní požadavky
   const searchTriggers = [
-    'vyhledej', 'najdi aktuální', 'co je nového', 'hledej',
-    'dnešní zprávy', 'současná cena', 'nejnovější', 'poslední',
-    'aktuální informace', 'latest', 'current', 'recent',
-    'vyhledání', 'najít informace', 'aktuální stav',
-    'co se děje', 'novinky', 'zprávy', 'aktuality'
+    'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
+    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
+    'co je nového', 'co se děje', 'poslední', 'recent', 'latest',
+    'current', 'today', 'now', 'dnes', 'teď', 'momentálně',
+    'aktuální informace', 'aktuální stav', 'nové informace'
   ];
   
   for (const trigger of searchTriggers) {
@@ -892,7 +835,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with Claude search
+// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with Perplexity
 const handleVoiceScreenResponse = async (
   textInput, 
   currentMessages, 
@@ -912,14 +855,14 @@ const handleVoiceScreenResponse = async (
     let responseText = '';
     let searchContext = '';
 
-    const needsSearch = shouldSearchInternet(textInput);
+    const needsSearch = shouldSearchInternet(textInput, model);
     
-    if (needsSearch) {
-      console.log('🔍 Query needs Claude web search');
-      const searchResult = await claudeWebSearchService.search(textInput, showNotification);
+    if (needsSearch && model === 'claude') {
+      console.log('🔍 Query needs Perplexity web search');
+      const searchResult = await perplexitySearchService.search(textInput, showNotification);
       
       if (searchResult.success) {
-        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Informace jsou z internetu a aktuální.`;
+        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
       } else {
         searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
       }
@@ -929,7 +872,7 @@ const handleVoiceScreenResponse = async (
       const openAiMessages = [
         { 
           role: 'system', 
-          content: `Jsi Omnia, pokročilý český AI asistent s přístupem k internetu. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
+          content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
         },
         ...currentMessages.map((msg) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -979,7 +922,7 @@ const handleVoiceScreenResponse = async (
   }
 };
 
-// 📄 CLASSIC TEXT RESPONSE HANDLER - Enhanced with Claude search
+// 📄 CLASSIC TEXT RESPONSE HANDLER - Enhanced with Perplexity
 const handleTextResponse = async (
   textInput, 
   currentMessages, 
@@ -992,14 +935,14 @@ const handleTextResponse = async (
   let responseText = '';
   let searchContext = '';
 
-  const needsSearch = shouldSearchInternet(textInput);
+  const needsSearch = shouldSearchInternet(textInput, model);
   
-  if (needsSearch) {
-    console.log('🔍 Query needs Claude web search');
-    const searchResult = await claudeWebSearchService.search(textInput, showNotification);
+  if (needsSearch && model === 'claude') {
+    console.log('🔍 Query needs Perplexity web search');
+    const searchResult = await perplexitySearchService.search(textInput, showNotification);
     
     if (searchResult.success) {
-      searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Informace jsou z internetu a aktuální.`;
+      searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
     } else {
       searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
     }
@@ -1009,7 +952,7 @@ const handleTextResponse = async (
     const openAiMessages = [
       { 
         role: 'system', 
-        content: `Jsi Omnia, pokročilý český AI asistent s přístupem k internetu. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
+        content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
       },
       ...currentMessages.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1081,7 +1024,7 @@ const claudeService = {
   async sendMessage(messages) {
     try {
       const claudeMessages = prepareClaudeMessages(messages);
-      const systemPrompt = 'Jsi Omnia v2, pokročilý AI asistent s přístupem k internetu a analytickým nástrojům. Máš tyto schopnosti:\n\n🔍 WEB SEARCH - můžeš vyhledávat aktuální informace na internetu\n📄 WEB FETCH - můžeš načítat obsah konkrétních webových stránek\n📊 ANALÝZA DAT - můžeš analyzovat data a provádět výpočty\n\nOdpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk. Nepiš "Jsem AI" ani se nijak nepředstavuj. Když potřebuješ aktuální informace, automaticky použij své web search schopnosti.';
+      const systemPrompt = 'Jsi Omnia v2, pokročilý AI asistent s přístupem k internetu přes Perplexity. Máš tyto schopnosti:\n\n🔍 WEB SEARCH - můžeš vyhledávat aktuální informace na internetu\n📊 ANALÝZA DAT - můžeš analyzovat data a poskytovat insights\n\nOdpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk. Nepiš "Jsem AI" ani se nijak nepředstavuj. Když dostaneš aktuální informace z internetu, zpracuj je a odpověz na základě nich.';
       
       const response = await fetch('/api/claude2', {
         method: 'POST',
@@ -1138,14 +1081,15 @@ const openaiService = {
       throw error;
     }
   }
-};// 🎤 VOICE SCREEN COMPONENT - Enhanced for Claude search
+};// 🎤 VOICE SCREEN COMPONENT - Enhanced for Perplexity search
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
   loading, 
   isAudioPlaying,
   isMobile,
-  stopCurrentAudio
+  stopCurrentAudio,
+  model
 }) => {
 
   // 🔇 Handle any click in Voice Screen - stop audio
@@ -1235,7 +1179,7 @@ const VoiceScreen = ({
         <OmniaLogo size={140} animate={true} />
       </div>
 
-      {/* Voice Status - Enhanced for Claude */}
+      {/* Enhanced Voice Status for Perplexity */}
       <div style={{
         fontSize: isMobile ? '1.2rem' : '1.5rem',
         fontWeight: '600',
@@ -1247,11 +1191,13 @@ const VoiceScreen = ({
       onClick={handleElementClick}
       >
         {loading ? (
-          "🚀 Omnia v2 připravuje odpověď..."
+          model === 'claude' ? 
+          "🚀 Omnia v2 s web search připravuje odpověď..." :
+          "🚀 Omnia v1 připravuje odpověď..."
         ) : isAudioPlaying ? (
-          "🔊 Omnia v2 mluví... (klepněte pro stop)"
+          `🔊 Omnia ${model === 'claude' ? 'v2' : 'v1'} mluví... (klepněte pro stop)`
         ) : (
-          "🎤 Držte mikrofon pro mluvení s Omnia v2"
+          `🎤 Držte mikrofon pro mluvení s Omnia ${model === 'claude' ? 'v2' : 'v1'}`
         )}
       </div>
 
@@ -1272,23 +1218,28 @@ const VoiceScreen = ({
         fontSize: '0.9rem',
         opacity: 0.6,
         textAlign: 'center',
-        maxWidth: '320px',
+        maxWidth: '360px',
         lineHeight: '1.4',
         cursor: 'pointer'
       }}
       onClick={handleElementClick}
       >
-        {isMobile ? 
-          'Omnia v2 s přístupem k internetu • Klepněte kdekoli pro stop/návrat' : 
-          'Omnia v2 s web search a analýzou • ESC nebo klepněte kdekoli pro stop/návrat'
-        }
+        {model === 'claude' ? (
+          isMobile ? 
+          'Omnia v2 s Perplexity web search • Klepněte kdekoli pro stop/návrat' : 
+          'Omnia v2 s Perplexity web search a analýzou • ESC nebo klepněte kdekoli pro stop/návrat'
+        ) : (
+          isMobile ?
+          'Omnia v1 rychlý chat • Klepněte kdekoli pro stop/návrat' :
+          'Omnia v1 rychlý chat režim • ESC nebo klepněte kdekoli pro stop/návrat'
+        )}
       </div>
     </div>
   );
 };
 
-// ⚙️ ENHANCED SETTINGS DROPDOWN
-const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
+// ⚙️ ENHANCED SETTINGS DROPDOWN with Perplexity info
+const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
   if (!isOpen) return null;
 
   return (
@@ -1317,7 +1268,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         zIndex: 1000,
-        minWidth: '200px'
+        minWidth: '220px'
       }}>
         <button
           onClick={() => {
@@ -1343,14 +1294,14 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
           🗑️ Nový chat
         </button>
         
-        {/* Future features placeholder */}
+        {/* Enhanced status info */}
         <div style={{
           padding: '0.5rem 1rem',
           fontSize: '0.75rem',
           color: '#9ca3af',
           borderTop: '1px solid #f3f4f6'
         }}>
-          🔍 Web search aktivní
+          {model === 'claude' ? '🔍 Perplexity web search aktivní' : '⚡ Rychlý chat režim'}
         </div>
         
         <div style={{
@@ -1365,12 +1316,12 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
   );
 };
 
-// 🚀 MAIN APP COMPONENT - Enhanced with Claude capabilities
+// 🚀 MAIN APP COMPONENT - Enhanced with Perplexity integration
 function App() {
   // 📱 States
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('claude'); // ✅ Default to Claude v2
+  const [model, setModel] = useState('claude'); // ✅ Default to Claude v2 with Perplexity
   const [loading, setLoading] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
@@ -1408,7 +1359,7 @@ function App() {
     }
     localStorage.removeItem('omnia-memory');
     setMessages([]);
-    showNotification('Nový chat s Omnia v2 vytvořen', 'info');
+    showNotification(`Nový chat s Omnia ${model === 'claude' ? 'v2' : 'v1'} vytvořen`, 'info');
   };
 
   // 🎯 KEYBOARD SHORTCUTS
@@ -1549,7 +1500,7 @@ function App() {
       padding: 0
     }}>
       
-      {/* 🎨 ENHANCED HEADER */}
+      {/* 🎨 ENHANCED HEADER with Perplexity info */}
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
         background: '#f5f5f5',
@@ -1602,7 +1553,7 @@ function App() {
                 borderRadius: '8px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 zIndex: 1000,
-                minWidth: '200px'
+                minWidth: '240px'
               }}>
                 <button
                   onClick={() => {
@@ -1623,7 +1574,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
                   onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? '#f3f4f6' : 'white'}
                 >
-                  Omnia v1 (OpenAI)
+                  ⚡ Omnia v1 (OpenAI rychlý chat)
                 </button>
                 <button
                   onClick={() => {
@@ -1645,7 +1596,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
                   onMouseLeave={(e) => e.target.style.background = model === 'claude' ? '#f3f4f6' : 'white'}
                 >
-                  Omnia v2 (Claude + Web) 🔍
+                  🔍 Omnia v2 (Claude + Perplexity search)
                 </button>
               </div>
             )}
@@ -1673,6 +1624,7 @@ function App() {
               isOpen={showSettingsDropdown}
               onClose={() => setShowSettingsDropdown(false)}
               onNewChat={handleNewChat}
+              model={model}
             />
           </div>
         </div>
@@ -1705,15 +1657,15 @@ function App() {
             OMNIA
           </h1>
           
-          {/* Enhanced subtitle */}
+          {/* Enhanced subtitle with Perplexity info */}
           <div style={{
             fontSize: isMobile ? '0.85rem' : '0.9rem',
             color: '#6b7280',
             fontWeight: '500'
           }}>
             {model === 'claude' ? 
-              '🔍 v2 • Claude s přístupem k internetu' : 
-              'v1 • Klasický chat režim'
+              '🔍 v2 • Claude s Perplexity web search' : 
+              '⚡ v1 • OpenAI rychlý chat režim'
             }
           </div>
         </div>
@@ -1743,7 +1695,7 @@ function App() {
             <div style={{ height: '40vh' }}></div>
           )}
 
-          {/* Enhanced Messages */}
+          {/* Enhanced Messages with Perplexity indicators */}
           {messages.map((msg, idx) => (
             <div
               key={idx}
@@ -1770,7 +1722,7 @@ function App() {
                   position: 'relative'
                 }}
               >
-                {/* Enhanced AI Indicator */}
+                {/* Enhanced AI Indicator with Perplexity */}
                 {msg.sender === 'bot' && (
                   <div style={{ 
                     fontSize: '0.75rem',
@@ -1784,7 +1736,7 @@ function App() {
                   }}>
                     <span style={{ fontWeight: '600', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
                       <ChatOmniaLogo size={16} />
-                      Omnia {model === 'claude' ? 'v2 🔍' : 'v1'}
+                      Omnia {model === 'claude' ? 'v2 🔍' : 'v1 ⚡'}
                     </span>
                     <VoiceButton 
                       text={msg.text} 
@@ -1828,7 +1780,7 @@ function App() {
                     animation: 'spin 1s linear infinite'
                   }}></div>
                   <span style={{ color: '#6b7280', fontWeight: '500' }}>
-                    Omnia {model === 'claude' ? 'v2 🔍' : 'v1'} přemýšlí...
+                    Omnia {model === 'claude' ? 'v2 🔍' : 'v1 ⚡'} přemýšlí...
                   </span>
                 </div>
               </div>
@@ -1837,7 +1789,7 @@ function App() {
           
           <div ref={endOfMessagesRef} />
         </div>
-      </main>{/* 🎯 INPUT BAR - Enhanced for Claude v2 */}
+      </main>{/* 🎯 INPUT BAR - Enhanced for Perplexity */}
       <div style={{ 
         position: 'fixed', 
         bottom: 0, 
@@ -1859,7 +1811,7 @@ function App() {
           width: '100%'
         }}>
           
-          {/* 📝 ENHANCED INPUT FIELD */}
+          {/* 📝 ENHANCED INPUT FIELD with Perplexity styling */}
           <div style={{ flex: 1 }}>
             <input
               type="text"
@@ -1867,8 +1819,8 @@ function App() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
               placeholder={model === 'claude' ? 
-                "Napište zprávu pro Omnia v2 (s přístupem k internetu)..." : 
-                "Napište zprávu pro Omnia v1..."
+                "Napište zprávu pro Omnia v2 (s Perplexity web search)..." : 
+                "Napište zprávu pro Omnia v1 (rychlý chat)..."
               }
               disabled={loading}
               style={{ 
@@ -1877,14 +1829,14 @@ function App() {
                 fontSize: isMobile ? '16px' : '0.95rem', // iOS zoom fix
                 borderRadius: '25px',
                 border: model === 'claude' ? 
-                  '2px solid rgba(0, 150, 255, 0.3)' : // Claude border
+                  '2px solid rgba(0, 150, 255, 0.3)' : // Perplexity border
                   '2px solid #e5e7eb', // Standard border
                 outline: 'none',
                 backgroundColor: loading ? '#f9fafb' : '#ffffff',
                 color: '#000000',
                 transition: 'all 0.2s ease',
                 boxShadow: model === 'claude' ? 
-                  '0 2px 8px rgba(0, 150, 255, 0.1)' : // Claude shadow
+                  '0 2px 8px rgba(0, 150, 255, 0.1)' : // Perplexity shadow
                   '0 2px 8px rgba(0,0,0,0.05)' // Standard shadow
               }}
               onFocus={(e) => {
@@ -1925,22 +1877,23 @@ function App() {
           />
         </div>
         
-        {/* 🔍 Enhanced Status Bar */}
-        {model === 'claude' && (
-          <div style={{
-            maxWidth: '1000px',
-            margin: '0.5rem auto 0',
-            fontSize: '0.75rem',
-            color: '#6b7280',
-            textAlign: 'center',
-            opacity: 0.8
-          }}>
-            🔍 Web search aktivní • 📊 Analýza dat připravena
-          </div>
-        )}
+        {/* 🔍 Enhanced Status Bar with Perplexity info */}
+        <div style={{
+          maxWidth: '1000px',
+          margin: '0.5rem auto 0',
+          fontSize: '0.75rem',
+          color: '#6b7280',
+          textAlign: 'center',
+          opacity: 0.8
+        }}>
+          {model === 'claude' ? 
+            '🔍 Perplexity web search aktivní • 📊 Analýza dat připravena' :
+            '⚡ Rychlý chat režim • Pro web search přepněte na v2'
+          }
+        </div>
       </div>
 
-      {/* 🎤 ENHANCED VOICE SCREEN */}
+      {/* 🎤 ENHANCED VOICE SCREEN with Perplexity */}
       {showVoiceScreen && (
         <VoiceScreen
           onClose={() => setShowVoiceScreen(false)}
@@ -1949,10 +1902,11 @@ function App() {
           isAudioPlaying={isAudioPlaying}
           isMobile={isMobile}
           stopCurrentAudio={stopCurrentAudio}
+          model={model}
         />
       )}
 
-      {/* 🎨 ENHANCED CSS ANIMATIONS & STYLES */}
+      {/* 🎨 ENHANCED CSS ANIMATIONS & STYLES with Perplexity theming */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
@@ -2073,8 +2027,8 @@ function App() {
           }
         }
 
-        /* 🎵 Enhanced logo animations for Claude */
-        @keyframes claude-glow {
+        /* 🔍 Perplexity-specific animations */
+        @keyframes perplexity-glow {
           0%, 100% { 
             box-shadow: 0 0 15px rgba(0, 150, 255, 0.4);
             transform: scale(1);
@@ -2091,6 +2045,16 @@ function App() {
           50% { opacity: 1; }
         }
 
+        /* ⚡ Quick chat mode styling */
+        @keyframes quick-pulse {
+          0%, 100% { 
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+          }
+          50% { 
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+          }
+        }
+
         /* 🔄 Enhanced transitions */
         button, input, div[role="button"] {
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2104,7 +2068,7 @@ function App() {
           }
         }
 
-        /* 🎨 Claude-specific styling */
+        /* 🎨 Model-specific styling */
         .claude-mode {
           border-color: rgba(0, 150, 255, 0.3) !important;
           box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1) !important;
@@ -2113,6 +2077,16 @@ function App() {
         .claude-mode:focus {
           border-color: rgba(0, 150, 255, 0.6) !important;
           box-shadow: 0 0 0 3px rgba(0, 150, 255, 0.1) !important;
+        }
+
+        .gpt-mode {
+          border-color: #e5e7eb !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+        }
+
+        .gpt-mode:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
         }
 
         /* 🎯 Enhanced button hover effects */
@@ -2135,9 +2109,42 @@ function App() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 🔍 Search status styling */
-        .search-status {
+        /* 🔍 Perplexity status styling */
+        .perplexity-status {
           animation: search-pulse 2s ease-in-out infinite;
+        }
+
+        /* 🎵 Enhanced logo states for different models */
+        .logo-perplexity {
+          animation: perplexity-glow 3s ease-in-out infinite;
+        }
+
+        .logo-quick {
+          animation: quick-pulse 2s ease-in-out infinite;
+        }
+
+        /* 📊 Status bar enhancements */
+        .status-bar {
+          background: linear-gradient(90deg, 
+            rgba(0, 150, 255, 0.1) 0%, 
+            rgba(0, 150, 255, 0.05) 50%, 
+            rgba(0, 150, 255, 0.1) 100%);
+          border-radius: 20px;
+          padding: 0.5rem 1rem;
+          margin-top: 0.5rem;
+        }
+
+        /* 🔍 Search mode indicators */
+        .search-active::before {
+          content: "🔍";
+          margin-right: 0.5rem;
+          animation: search-pulse 1.5s ease-in-out infinite;
+        }
+
+        .quick-mode::before {
+          content: "⚡";
+          margin-right: 0.5rem;
+          animation: quick-pulse 1.5s ease-in-out infinite;
         }
       `}</style>
 
