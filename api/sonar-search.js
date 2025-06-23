@@ -1,5 +1,5 @@
-// 🔎 FUNGUJÍCÍ SONAR SEARCH - Jednoduchá verze
-// Soubor: api/sonar-search.js
+// 🔎 OPRAVENÉ NÁZVY MODELŮ v sonar-search.js
+// Podle Perplexity dokumentace:
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -22,9 +22,9 @@ export default async function handler(req, res) {
       throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    // ✅ MINIMÁLNÍ KONFIGURACE
+    // ✅ SPRÁVNÝ NÁZEV MODELU z dokumentace
     const payload = {
-      model: 'llama-3.1-sonar-large-128k-online',
+      model: 'sonar',  // ✅ NEBO zkus 'sonar-pro' pro lepší výsledky
       messages: [
         {
           role: 'user',
@@ -32,8 +32,7 @@ export default async function handler(req, res) {
         }
       ],
       max_tokens: 800,
-      temperature: 0.2,
-      search_recency_filter: "month"
+      temperature: 0.2
     };
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -46,13 +45,15 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      throw new Error(`API failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Perplexity API error:', response.status, errorText);
+      throw new Error(`API failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
 
     if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response');
+      throw new Error('Invalid response structure');
     }
 
     const result = data.choices[0].message.content;
@@ -62,14 +63,14 @@ export default async function handler(req, res) {
       result: result,
       citations: data.choices[0].message.metadata?.citations || [],
       metadata: {
-        model: 'llama-3.1-sonar-large-128k-online',
+        model: 'sonar',
         query: query,
         timestamp: new Date().toISOString()
       }
     });
 
   } catch (error) {
-    console.error('Sonar error:', error);
+    console.error('💥 Sonar error:', error);
     
     return res.status(500).json({
       success: false,
@@ -77,3 +78,11 @@ export default async function handler(req, res) {
     });
   }
 }
+
+// ✅ DOSTUPNÉ MODELY z dokumentace:
+// - sonar              (128k context) - základní
+// - sonar-pro          (200k context) - lepší, ale dražší  
+// - sonar-reasoning    (128k context)
+// - sonar-reasoning-pro (128k context)  
+// - sonar-deep-research (128k context)
+// - r1-1776            (128k context) - offline model
