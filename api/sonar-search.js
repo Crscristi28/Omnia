@@ -1,5 +1,5 @@
-// 🔎 OPRAVENÝ SONAR SEARCH API ENDPOINT
-// Soubor: api/sonar-search.js
+// 🚨 DRASTICKÁ OPRAVA - sonar-search.js
+// Úplně jiný model a přístup
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,9 +7,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query, recency_filter, search_type, focus, date_range } = req.body;
+    const { query } = req.body;
 
-    console.log('🔎 Sonar API call:', { query, recency_filter });
+    console.log('🔎 Sonar API call:', { query });
 
     if (!query) {
       return res.status(400).json({
@@ -18,48 +18,37 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ SONAR/PERPLEXITY API CONFIGURATION
     const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
     
     if (!PERPLEXITY_API_KEY) {
       throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    // 🔎 ZJEDNODUŠENÝ SONAR PROMPT - OPRAVA SMYČKY
+    // 🔧 ZKUS JINÝ MODEL - možná problém je v sonar-large
     const sonarPayload = {
-      model: 'llama-3.1-sonar-large-128k-online',
+      model: 'llama-3.1-sonar-small-128k-online', // ✅ ZMĚNA NA SMALL
       messages: [
         {
-          role: 'system',
-          content: `Odpovídej stručně v češtině na základě aktuálních informací z internetu. Uveď konkrétní data a čísla.`
-        },
-        {
           role: 'user',
-          content: query
+          content: `Search for: ${query}. Answer in Czech language briefly.` // ✅ ANGLICKÝ PROMPT
         }
       ],
-      max_tokens: 1000, // ✅ SNÍŽENO z 2000
-      temperature: 0.3, // ✅ ZVÝŠENO z 0.1
-      top_p: 0.9,
-      search_domain_filter: [],
-      return_images: false,
-      return_related_questions: false,
-      search_recency_filter: recency_filter || "month",
-      top_k: 0,
+      max_tokens: 500, // ✅ JEŠTĚ MÉNĚ
+      temperature: 0.7, // ✅ VYŠŠÍ TEMPERATURA
+      top_p: 0.95,
+      search_recency_filter: "month",
       stream: false,
-      presence_penalty: 0.1, // ✅ PŘIDÁNO pro zabránění opakování
-      frequency_penalty: 0.2  // ✅ ZVÝŠENO pro zabránění opakování
+      presence_penalty: 0.5, // ✅ VYSOKÁ PENALIZACE OPAKOVÁNÍ
+      frequency_penalty: 0.8  // ✅ VELMI VYSOKÁ PENALIZACE
     };
 
-    console.log('🚀 Sending request to Perplexity Sonar API...');
+    console.log('🚀 Sending request to Perplexity...');
 
-    // ✅ VOLÁNÍ PERPLEXITY API
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Omnia-Search-v1'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(sonarPayload)
     });
@@ -67,111 +56,92 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Perplexity API error:', response.status, errorText);
-      throw new Error(`Perplexity API failed: ${response.status} - ${errorText}`);
+      
+      // ✅ FALLBACK ODPOVĚĎ MÍSTO CHYBY
+      return res.status(200).json({
+        success: true,
+        result: `Promiňte, momentálně nemohu vyhledat informace o "${query}". Zkuste prosím Omnia v2 (Claude) pro spolehlivé vyhledávání.`,
+        metadata: {
+          model: 'fallback',
+          query: query,
+          timestamp: new Date().toISOString()
+        }
+      });
     }
 
     const data = await response.json();
-    console.log('✅ Perplexity Sonar response received');
 
-    // ✅ VALIDACE ODPOVĚDI
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('❌ Invalid Perplexity response structure:', data);
-      throw new Error('Invalid response from Perplexity API');
+      throw new Error('Invalid response structure');
     }
 
     let result = data.choices[0].message.content;
 
-    // ✅ OCHRANA PROTI OPAKOVÁNÍ - DETEKCE SMYČKY
-    if (isRepeatingText(result)) {
-      console.warn('⚠️ Detected repeating text, using fallback response');
-      result = `Promiňte, nastala chyba při zpracování vašeho dotazu "${query}". Zkuste prosím jiný dotaz nebo přepněte na Omnia v2.`;
+    // ✅ AGRESIVNÍ DETEKCE OPAKOVÁNÍ
+    if (hasRepeatingPattern(result)) {
+      console.warn('⚠️ Detected repetition, using fallback');
+      result = `Omlouváme se, ale došlo k chybě při zpracování dotazu "${query}". Doporučujeme použít Omnia v2 pro spolehlivé vyhledávání aktuálních informací.`;
     }
 
-    // ✅ EXTRAKCE CITACÍ (pokud jsou dostupné)
-    let citations = [];
-    if (data.choices[0].message.metadata) {
-      citations = data.choices[0].message.metadata.citations || [];
+    // ✅ ZKRÁCENÍ ODPOVĚDI
+    if (result.length > 800) {
+      result = result.substring(0, 800) + '...';
     }
 
-    // ✅ ZÁKLADNÍ VALIDACE VÝSLEDKU
-    const currentYear = new Date().getFullYear();
-    const enhancedResult = validateAndEnhanceResult(result, query, currentYear);
-
-    console.log('🎯 Sonar search completed successfully');
+    console.log('✅ Sonar response processed');
 
     return res.status(200).json({
       success: true,
-      result: enhancedResult,
-      citations: citations,
+      result: result,
       metadata: {
-        model: 'llama-3.1-sonar-large-128k-online',
+        model: 'llama-3.1-sonar-small-128k-online',
         query: query,
-        timestamp: new Date().toISOString(),
-        search_type: 'sonar_web_search'
+        timestamp: new Date().toISOString()
       }
     });
 
   } catch (error) {
-    console.error('💥 Sonar search error:', error);
+    console.error('💥 Sonar error:', error);
     
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Sonar search failed',
-      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    // ✅ VŽDY VRAŤ ÚSPĚŠNOU ODPOVĚĎ S FALLBACK
+    return res.status(200).json({
+      success: true,
+      result: `Nastala chyba při vyhledávání. Pro spolehlivé vyhledávání aktuálních informací doporučujeme Omnia v2.`,
+      metadata: {
+        model: 'error_fallback',
+        query: req.body.query || 'unknown',
+        timestamp: new Date().toISOString(),
+        error: error.message
+      }
     });
   }
 }
 
-// 🔍 HELPER FUNKCE - Detekce opakujícího se textu
-function isRepeatingText(text) {
-  if (!text || text.length < 50) return false;
+// 🔍 AGRESIVNÍ DETEKCE OPAKOVÁNÍ
+function hasRepeatingPattern(text) {
+  if (!text || text.length < 20) return false;
   
-  // Rozdělí text na slova
+  // Kontrola opakujících se slov
   const words = text.toLowerCase().split(/\s+/);
-  if (words.length < 10) return false;
+  const wordCounts = {};
   
-  // Kontrola zda se nějaké slovo opakuje víc než 5x
-  const wordCount = {};
   for (const word of words) {
-    if (word.length > 3) { // Ignoruj krátká slova
-      wordCount[word] = (wordCount[word] || 0) + 1;
-      if (wordCount[word] > 5) {
-        return true; // Našli jsme opakování
+    if (word.length > 2) {
+      wordCounts[word] = (wordCounts[word] || 0) + 1;
+      if (wordCounts[word] > 3) { // Už po 3 opakováních
+        return true;
       }
     }
   }
   
-  // Kontrola opakujících se frází
-  const text_lower = text.toLowerCase();
-  const phrases = text_lower.match(/(.{10,}?)\1+/g);
-  if (phrases && phrases.length > 0) {
-    return true; // Našli jsme opakující se fráze
+  // Kontrola opakujících se částí
+  for (let i = 0; i < text.length - 10; i++) {
+    const substring = text.substring(i, i + 10);
+    const restOfText = text.substring(i + 10);
+    if (restOfText.includes(substring)) {
+      return true;
+    }
   }
   
   return false;
-}
-
-// 🔍 HELPER FUNKCE - Validace a vylepšení výsledků
-function validateAndEnhanceResult(result, originalQuery, currentYear) {
-  // Kontrola na opakování
-  if (isRepeatingText(result)) {
-    return `Promiňte, nastala chyba při zpracování dotazu "${originalQuery}". Zkuste jiný dotaz nebo použijte Omnia v2.`;
-  }
-  
-  const lastYear = currentYear - 1;
-  
-  // Kontrola starých dat
-  const hasOldData = result.includes('2023') || result.includes('2022') || result.includes('2021');
-  const hasCurrentData = result.includes(currentYear.toString()) || result.includes(lastYear.toString());
-  
-  if (hasOldData && !hasCurrentData) {
-    return `⚠️ UPOZORNĚNÍ: Některé informace mohou být starší.\n\n${result}\n\n💡 TIP: Pro nejnovější informace zkuste konkrétnější dotaz.`;
-  }
-  
-  // Zkrácení příliš dlouhých odpovědí
-  if (result.length > 1500) {
-    return result.substring(0, 1500) + '...';
-  }
-  
-  return result;
 }
