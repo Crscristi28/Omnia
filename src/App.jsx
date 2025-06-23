@@ -747,10 +747,62 @@ const perplexitySearchService = {
 };
 
 const shouldSearchInternet = (userInput, model) => {
-  // Povolit web search pro Claude i GPT-4o
-  if (model !== 'claude' && model !== 'gpt-4o') {
+  // Povolit web search pro Claude, GPT-4o i Sonar
+  if (model !== 'claude' && model !== 'gpt-4o' && model !== 'sonar') {
     return false;
   }
+// 🔎 SONAR (PERPLEXITY) SERVICE - použij stejnou logiku jako perplexitySearchService
+const sonarService = {
+  async search(query, showNotification) {
+    try {
+      console.log('🔎 Sonar searching web for:', query);
+      showNotification('🔎 Vyhledávám aktuální informace na internetu... (Sonar)', 'info');
+
+      // Vylepši dotaz jako u Perplexity
+      const enhancedQuery = perplexitySearchService.enhanceQueryForCurrentData(query);
+      console.log('🎯 Enhanced query (Sonar):', enhancedQuery);
+
+      const response = await fetch('/api/perplexity-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: enhancedQuery,
+          recency_filter: 'month',
+          search_type: 'web',
+          focus: 'recent',
+          date_range: '2024-2025'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sonar request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.success || !data.result) {
+        throw new Error('Invalid Sonar response');
+      }
+
+      const validatedResult = perplexitySearchService.validateResultFreshness(data.result, query);
+      showNotification('🔍 Našel jsem aktuální informace! (Sonar)', 'info');
+      return {
+        success: true,
+        result: validatedResult,
+        citations: data.citations || [],
+        source: 'sonar_search',
+        enhanced_query: enhancedQuery
+      };
+    } catch (error) {
+      console.error('💥 Sonar search error:', error);
+      showNotification(`Chyba při vyhledávání (Sonar): ${error.message}`, 'error');
+      return {
+        success: false,
+        message: `Chyba při vyhledávání: ${error.message}`,
+        source: 'sonar_search'
+      };
+    }
+  }
+};
 
   const input = (userInput || '').toLowerCase();
 
@@ -957,6 +1009,13 @@ const handleVoiceScreenResponse = async (
         if (googleResults) {
           searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
         }
+      } else if (model === 'sonar') {
+        const searchResult = await sonarService.search(textInput, showNotification);
+        if (searchResult.success) {
+          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Sonar):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+        } else {
+          searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+        }
       }
     }
 
@@ -974,7 +1033,7 @@ const handleVoiceScreenResponse = async (
       ];
 
       responseText = await openaiService.sendMessage(openAiMessages);
-    } else if (model === 'claude') {
+    } else if (model === 'claude' || model === 'sonar') {
       const userMessageWithContext = searchContext ?
         `${textInput}${searchContext}` : textInput;
 
@@ -1037,6 +1096,13 @@ const handleTextResponse = async (
       if (googleResults) {
         searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
       }
+    } else if (model === 'sonar') {
+      const searchResult = await sonarService.search(textInput, showNotification);
+      if (searchResult.success) {
+        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Sonar):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+      } else {
+        searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+      }
     }
   }
 
@@ -1054,7 +1120,7 @@ const handleTextResponse = async (
     ];
 
     responseText = await openaiService.sendMessage(openAiMessages);
-  } else if (model === 'claude') {
+  } else if (model === 'claude' || model === 'sonar') {
     const userMessageWithContext = searchContext ?
       `${textInput}${searchContext}` : textInput;
 
@@ -1670,6 +1736,27 @@ function App() {
                 </button>
                 <button
                   onClick={() => {
+                    setModel('sonar');
+                    setShowModelDropdown(false);
+                  }}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    border: 'none',
+                    background: model === 'sonar' ? '#f3f4f6' : 'white',
+                    textAlign: 'left',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    fontWeight: model === 'sonar' ? '600' : '400'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
+                  onMouseLeave={(e) => e.target.style.background = model === 'sonar' ? '#f3f4f6' : 'white'}
+                >
+                  🔎 Omnia v3 (Sonar / Perplexity)
+                </button>
+                <button
+                  onClick={() => {
                     setModel('claude');
                     setShowModelDropdown(false);
                   }}
@@ -1755,9 +1842,11 @@ function App() {
             color: '#6b7280',
             fontWeight: '500'
           }}>
-            {model === 'claude' ? 
-              '🔍 v2 • Claude s Perplexity web search' : 
-              '⚡ v1 • OpenAI rychlý chat režim'
+            {model === 'claude'
+              ? '🔍 v2 • Claude s Perplexity web search'
+              : model === 'sonar'
+              ? '🔎 v3 • Sonar (Perplexity API, aktuální internet)'
+              : '⚡ v1 • OpenAI rychlý chat režim'
             }
           </div>
         </div>
@@ -1828,7 +1917,13 @@ function App() {
                   }}>
                     <span style={{ fontWeight: '600', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
                       <ChatOmniaLogo size={16} />
-                      Omnia {model === 'claude' ? 'v2 🔍' : 'v1 ⚡'}
+                      Omnia
+                      {model === 'claude'
+                        ? ' v2 🔍'
+                        : model === 'sonar'
+                        ? ' v3 🔎'
+                        : ' v1 ⚡'
+                      }
                     </span>
                     <VoiceButton 
                       text={msg.text} 
@@ -1978,9 +2073,11 @@ function App() {
           textAlign: 'center',
           opacity: 0.8
         }}>
-          {model === 'claude' ? 
-            '🔍 Perplexity web search aktivní • 📊 Analýza dat připravena' :
-            '⚡ Rychlý chat režim • Pro web search přepněte na v2'
+          {model === 'claude'
+            ? '🔍 Perplexity web search aktivní • 📊 Analýza dat připravena'
+            : model === 'sonar'
+            ? '🔎 Sonar web search aktivní (Perplexity API v3)'
+            : '⚡ Rychlý chat režim • Pro web search přepněte na v2/v3'
           }
         </div>
       </div>
