@@ -1,9 +1,10 @@
-/// App.jsx - MOBILE OPTIMIZED VERZE s OKAMŽITOU AUDIO ODPOVĚDÍ + INTERNET SEARCH
+// App.jsx - OMNIA UI REDESIGN - Claude Style + Rainbow Accents
+// PART 1/4: Imports, Logo, VoiceRecorder, VoiceButton
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './App.css';
 
-// 🎨 GRADIENT LOGO KOMPONENTA
+// 🎨 REDESIGNED OMNIA LOGO - Rainbow Gradient
 const OmniaLogo = ({ size = 100, animate = false }) => {
   return (
     <div
@@ -13,42 +14,57 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
         height: size,
         borderRadius: '50%',
         background: `
-          radial-gradient(circle at 30% 30%, 
-            rgba(0, 255, 255, 0.9) 0%,
-            rgba(0, 150, 255, 1) 25%,
-            rgba(100, 50, 255, 1) 50%,
-            rgba(200, 50, 200, 0.9) 75%,
-            rgba(100, 50, 255, 0.7) 100%
+          linear-gradient(135deg, 
+            #007bff 0%,
+            #28a745 25%,
+            #ffc107 50%,
+            #fd7e14 75%,
+            #6f42c1 100%
           )
         `,
         boxShadow: `
-          0 0 ${size * 0.3}px rgba(0, 150, 255, 0.4),
-          inset 0 0 ${size * 0.2}px rgba(255, 255, 255, 0.3)
+          0 0 ${size * 0.4}px rgba(0, 123, 255, 0.3),
+          inset 0 0 ${size * 0.15}px rgba(255, 255, 255, 0.4)
         `,
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',
-        transition: 'all 0.3s ease'
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        border: '2px solid rgba(255, 255, 255, 0.2)'
       }}
     >
-      {/* Inner highlight */}
+      {/* Glossy highlight effect */}
       <div
         style={{
           position: 'absolute',
-          top: '15%',
-          left: '15%',
-          width: '25%',
-          height: '25%',
+          top: '20%',
+          left: '20%',
+          width: '30%',
+          height: '30%',
           borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.4)',
-          filter: 'blur(6px)'
+          background: 'rgba(255, 255, 255, 0.5)',
+          filter: 'blur(8px)'
         }}
       />
+      {/* Animated shimmer effect */}
+      {animate && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+            animation: 'shimmer 3s ease-in-out infinite'
+          }}
+        />
+      )}
     </div>
   );
 };
 
-// 🎤 VOICE RECORDING KOMPONENTA - iOS PWA OPTIMIZED
+// 🎤 REDESIGNED VOICE RECORDER - Clean iOS Style
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,16 +72,15 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
   const touchStartTimeRef = useRef(null);
-  const isIOSPWA = window.navigator.standalone; // Detekce iOS PWA
+  const isIOSPWA = window.navigator.standalone;
 
   const startRecording = async () => {
     try {
       console.log('🎙️ Starting recording... iOS PWA:', isIOSPWA);
       
-      // 🍎 iOS PWA específická konfigurace
       const constraints = {
         audio: {
-          sampleRate: isIOSPWA ? 44100 : 16000, // iOS PWA preferuje 44100
+          sampleRate: isIOSPWA ? 44100 : 16000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -76,7 +91,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      // 🍎 iOS PWA - kontrola stream aktivity
       const audioTracks = stream.getAudioTracks();
       console.log('🎵 Audio tracks:', audioTracks.length, audioTracks[0]?.readyState);
 
@@ -97,7 +111,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         console.log('🛑 Recording stopped, processing...');
         setIsProcessing(true);
         
-        // 🔧 IMMEDIATE iOS PWA CLEANUP
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => {
             track.stop();
@@ -142,7 +155,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     } catch (error) {
       console.error('💥 Recording error:', error);
       alert('Nepodařilo se získat přístup k mikrofonu');
-      // Cleanup on error
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
@@ -154,7 +166,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const forceStopRecording = () => {
     console.log('🚨 Force stopping recording (iOS PWA)...');
     
-    // Aggressive cleanup pro iOS PWA
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state === 'recording') {
@@ -179,7 +190,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     setIsRecording(false);
   };
 
-  // 🍎 iOS PWA TOUCH HANDLERS
   const handleTouchStart = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -199,7 +209,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     const touchDuration = Date.now() - (touchStartTimeRef.current || 0);
     console.log('👆 Touch end - duration:', touchDuration, 'ms');
     
-    // iOS PWA - minimální doba dotyku
     if (touchDuration < 100) {
       console.log('⚠️ Touch too short, ignoring');
       return;
@@ -220,9 +229,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     }
   };
 
-  // 🖱️ DESKTOP HANDLERS (fallback)
   const handleMouseDown = (e) => {
-    // Pouze pro desktop (ne iOS PWA)
     if (!isIOSPWA && !disabled && !isProcessing && !isRecording) {
       startRecording();
     }
@@ -234,7 +241,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     }
   };
 
-  // 🔧 EMERGENCY CLEANUP
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isRecording) {
@@ -249,7 +255,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       }
     };
 
-    // iOS PWA specific events
     const handlePageShow = () => {
       if (isRecording) {
         console.log('🔄 Page shown - check recording state');
@@ -268,7 +273,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     };
   }, [isRecording]);
 
-  // Component unmount cleanup
   useEffect(() => {
     return () => {
       console.log('🧹 Component unmount - iOS PWA cleanup');
@@ -279,61 +283,98 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   }, []);
 
   const getButtonStyle = () => {
-    if (isProcessing) return { backgroundColor: '#FFA500', color: 'white' };
-    if (isRecording) return { backgroundColor: '#FF4444', color: 'white', transform: 'scale(1.05)' };
-    return { backgroundColor: '#007bff', color: 'white' };
+    const baseStyle = {
+      border: 'none',
+      borderRadius: '50%',
+      padding: 0,
+      fontSize: '1.5rem',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      width: '64px',
+      height: '64px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      boxShadow: isRecording 
+        ? '0 0 25px rgba(255, 68, 68, 0.6), 0 4px 15px rgba(0,0,0,0.2)' 
+        : '0 4px 15px rgba(0,0,0,0.1)',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      WebkitTouchCallout: 'none',
+      WebkitTapHighlightColor: 'transparent',
+      touchAction: 'none',
+      transform: isRecording ? 'scale(1.05)' : 'scale(1)',
+      position: 'relative',
+      overflow: 'hidden'
+    };
+
+    if (isProcessing) {
+      return {
+        ...baseStyle,
+        background: 'linear-gradient(135deg, #ffc107, #fd7e14)',
+        color: 'white'
+      };
+    }
+    
+    if (isRecording) {
+      return {
+        ...baseStyle,
+        background: 'linear-gradient(135deg, #dc3545, #fd5e53)',
+        color: 'white'
+      };
+    }
+    
+    return {
+      ...baseStyle,
+      background: 'linear-gradient(135deg, #007bff, #0056b3)',
+      color: 'white'
+    };
   };
 
-  const getButtonText = () => {
+  const getButtonIcon = () => {
     if (isProcessing) return '⏳';
-    if (isRecording) return '🔴';
+    if (isRecording) return '⏹️';
     return '🎤';
   };
 
   return (
     <button
-      // iOS PWA - primárně touch eventy
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchCancel}
-      // Desktop fallback
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={() => !isIOSPWA && isRecording && forceStopRecording()}
       disabled={disabled || isProcessing}
       title="Držte pro mluvení"
-      style={{
-        ...getButtonStyle(),
-        border: 'none',
-        borderRadius: '1rem',
-        padding: '1.2rem',
-        fontSize: '1.2rem',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        minWidth: '70px',
-        minHeight: '70px',
-        transition: 'all 0.2s',
-        boxShadow: isRecording ? '0 0 25px rgba(255, 68, 68, 0.6)' : 'none',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-        WebkitTapHighlightColor: 'transparent',
-        touchAction: 'none' // iOS PWA - zabránit scroll během touch
-      }}
+      style={getButtonStyle()}
     >
-      {getButtonText()}
+      {isRecording && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
+            animation: 'pulse-ring 1.5s ease-out infinite'
+          }}
+        />
+      )}
+      {getButtonIcon()}
     </button>
   );
 };
 
-// 🎤 VOICE BUTTON KOMPONENTA - ANTI-OVERLAP
+// 🎤 REDESIGNED VOICE BUTTON - Minimal Clean Style
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef(null);
 
-  // 🔧 GLOBAL AUDIO MANAGER - zabránit překrývání
   useEffect(() => {
-    // Pokud se spustí nové audio, zastav všechna ostatní
     const handleNewAudio = () => {
       if (audioRef.current && !audioRef.current.paused) {
         audioRef.current.pause();
@@ -349,7 +390,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
   const handleSpeak = async () => {
     if (isPlaying) {
-      // Stop current audio
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -363,7 +403,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       setIsLoading(true);
       console.log('🎤 Manual voice button clicked');
 
-      // 🔔 NOTIFY OTHER AUDIO TO STOP
       window.dispatchEvent(new CustomEvent('omnia-audio-start'));
       if (onAudioStart) onAudioStart();
 
@@ -382,7 +421,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
-      // Stop any existing audio
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -420,24 +458,39 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       onClick={handleSpeak}
       disabled={isLoading}
       style={{
-        background: 'none',
+        background: isPlaying 
+          ? 'linear-gradient(135deg, #28a745, #20c997)' 
+          : 'linear-gradient(135deg, #6c757d, #495057)',
         border: 'none',
+        borderRadius: '8px',
         cursor: isLoading ? 'wait' : 'pointer',
-        padding: '4px',
-        borderRadius: '4px',
+        padding: '6px 8px',
         display: 'flex',
         alignItems: 'center',
-        fontSize: '1rem',
-        opacity: isLoading ? 0.5 : 0.7,
-        transition: 'opacity 0.2s'
+        justifyContent: 'center',
+        fontSize: '0.9rem',
+        color: 'white',
+        opacity: isLoading ? 0.6 : 1,
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        minWidth: '32px',
+        height: '32px'
       }}
-      onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '0.7'}
+      onMouseEnter={(e) => {
+        if (!isLoading) {
+          e.target.style.transform = 'translateY(-1px)';
+          e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      }}
     >
       {isLoading ? '⏳' : isPlaying ? '⏸️' : '🔊'}
     </button>
   );
-};
+};// PART 2/4: TypewriterText, Helper Functions, Audio & Search Functions
 
 function TypewriterText({ text }) {
   const [displayedText, setDisplayedText] = useState('');
@@ -461,35 +514,29 @@ function TypewriterText({ text }) {
 // 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
-    // Filtrovat pouze user/assistant messages
     const validMessages = messages.filter(msg => 
       msg.sender === 'user' || msg.sender === 'bot'
     );
 
-    // Konvertovat na Claude formát
     let claudeMessages = validMessages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text || ''
     }));
 
-    // Claude nesmí začínat assistant message
     if (claudeMessages.length > 0 && claudeMessages[0].role === 'assistant') {
       claudeMessages = claudeMessages.slice(1);
     }
 
-    // Claude nesmí mít dva stejné role za sebou - oprava
     const cleanMessages = [];
     for (let i = 0; i < claudeMessages.length; i++) {
       const current = claudeMessages[i];
       const previous = cleanMessages[cleanMessages.length - 1];
       
-      // Přidej pouze pokud není stejný role jako předchozí
       if (!previous || previous.role !== current.role) {
         cleanMessages.push(current);
       }
     }
 
-    // Claude musí končit user message (pokud posíláme novou zprávu)
     if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
       cleanMessages.pop();
     }
@@ -499,7 +546,6 @@ const prepareClaudeMessages = (messages) => {
 
   } catch (error) {
     console.error('💥 Error preparing Claude messages:', error);
-    // Fallback - vrať jen poslední user message
     const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
     return lastUserMessage.map(msg => ({
       role: 'user',
@@ -508,14 +554,11 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-// 🚀 NOVÉ FUNKCE PRO OKAMŽITOU AUDIO ODPOVĚĎ
-
 // 🎵 OKAMŽITÉ AUDIO GENEROVÁNÍ - HLAVNÍ FUNKCE
 const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification) => {
   try {
     console.log('🚀 Generating INSTANT audio response...');
     
-    // Spuštění TTS API okamžitě
     const response = await fetch('/api/voice', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -543,7 +586,6 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     
     let playbackInterrupted = false;
     
-    // Interrupt handler
     const handleInterrupt = () => {
       playbackInterrupted = true;
       if (!audio.paused) {
@@ -580,7 +622,6 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
       window.removeEventListener('omnia-audio-start', handleInterrupt);
     };
     
-    // 🚀 OKAMŽITÉ PŘEHRÁNÍ
     try {
       await audio.play();
       console.log('🎯 Audio plays IMMEDIATELY after AI response!');
@@ -605,13 +646,11 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
 // 📝 POSTUPNÉ ZOBRAZENÍ TEXTU (zatímco hraje audio)
 const displayResponseText = async (responseText, currentMessages, setMessages, showTempMessage = true) => {
   if (showTempMessage) {
-    // Malá pauza aby user viděl audio feedback
     await new Promise(resolve => setTimeout(resolve, 800));
   }
   
   console.log('📝 Displaying response text while audio plays...');
   
-  // Nahraď placeholder skutečným textem
   const finalMessages = [...currentMessages, { 
     sender: 'bot', 
     text: responseText 
@@ -675,7 +714,6 @@ const searchInternet = async (query, showNotification) => {
 };
 
 // 🧠 AI ROZHODNUTÍ O SEARCH
-// NOVÁ DEBUG VERZE shouldSearchInternet
 const shouldSearchInternet = (userInput) => {
   console.log('🧪 [DEBUG] shouldSearchInternet called with:', userInput);
   const searchTriggers = [
@@ -721,7 +759,6 @@ const handleInstantAudioResponse = async (
 ) => {
   console.log('🚀 Starting INSTANT audio response strategy...');
   
-  // 1. Zobraz "Připravuji odpověď..." placeholder
   const tempMessages = [...currentMessages, { 
     sender: 'bot', 
     text: '🎵 Připravuji audio odpověď...',
@@ -733,7 +770,6 @@ const handleInstantAudioResponse = async (
     let responseText = '';
     let searchContext = '';
 
-    // 2. 🔍 ROZHODNUTÍ O SEARCH
     const needsSearch = shouldSearchInternet(textInput);
     
     if (needsSearch) {
@@ -748,7 +784,6 @@ const handleInstantAudioResponse = async (
       }
     }
 
-    // 3. Zavolej AI API pro text odpověď (s možným search contextem)
     if (model === 'gpt-4o') {
       const openAiMessages = [
         { 
@@ -764,7 +799,6 @@ const handleInstantAudioResponse = async (
 
       responseText = await openaiService.sendMessage(openAiMessages);
     } else if (model === 'claude') {
-      // Pro Claude přidáme search context do user message
       const userMessageWithContext = searchContext ? 
         `${textInput}${searchContext}` : textInput;
       
@@ -776,7 +810,6 @@ const handleInstantAudioResponse = async (
 
     console.log('✅ AI odpověď získána:', responseText);
 
-    // 4. 🎯 PARALELNÍ SPUŠTĚNÍ: Audio generování + Text zobrazení
     const audioPromise = generateInstantAudio(
       responseText, 
       setIsAudioPlaying, 
@@ -792,7 +825,6 @@ const handleInstantAudioResponse = async (
       true
     );
 
-    // 5. Audio se spustí okamžitě, text se zobrazí postupně
     await Promise.allSettled([audioPromise, textPromise]);
     
     return responseText;
@@ -800,7 +832,6 @@ const handleInstantAudioResponse = async (
   } catch (error) {
     console.error('💥 Instant audio response error:', error);
     
-    // Fallback - zobraz chybu jako text
     const errorText = `Chyba: ${error.message}`;
     const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
     setMessages(errorMessages);
@@ -826,7 +857,6 @@ const handleClassicTextResponse = async (
   let responseText = '';
   let searchContext = '';
 
-  // 🔍 ROZHODNUTÍ O SEARCH
   const needsSearch = shouldSearchInternet(textInput);
   
   if (needsSearch) {
@@ -856,7 +886,6 @@ const handleClassicTextResponse = async (
 
     responseText = await openaiService.sendMessage(openAiMessages);
   } else if (model === 'claude') {
-    // Pro Claude přidáme search context do user message
     const userMessageWithContext = searchContext ? 
       `${textInput}${searchContext}` : textInput;
     
@@ -870,7 +899,6 @@ const handleClassicTextResponse = async (
   setMessages(updatedMessages);
   localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
   
-  // Klasické audio po textu
   if (autoPlay && voiceMode === 'hybrid') {
     setTimeout(() => {
       playResponseAudio(responseText);
@@ -878,7 +906,7 @@ const handleClassicTextResponse = async (
   }
   
   return responseText;
-};
+};// PART 3/4: API Services & Main App Component Start
 
 // ONLINE API SERVICES (pro Vercel)
 const claudeService = {
@@ -886,10 +914,8 @@ const claudeService = {
     try {
       console.log('🔄 Volám Claude přes Vercel API...');
       
-      // Příprava bezpečných messages pro Claude
       const claudeMessages = prepareClaudeMessages(messages);
       
-      // System prompt pro Claude (samostatně)
       const systemPrompt = 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
       
       const response = await fetch('/api/claude2', {
@@ -954,26 +980,26 @@ const openaiService = {
   }
 };
 
+// 🚀 MAIN APP COMPONENT - REDESIGNED
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('gpt-4o'); // 'gpt-4o' or 'claude'
+  const [model, setModel] = useState('gpt-4o');
   const [loading, setLoading] = useState(false);
-  const [voiceMode, setVoiceMode] = useState('text'); // 'text', 'hybrid', 'conversation'
-  const [autoPlay, setAutoPlay] = useState(true); // Default true pro conversation mode
+  const [voiceMode, setVoiceMode] = useState('text');
+  const [autoPlay, setAutoPlay] = useState(true);
   
-  // 🔊 NOVÉ STAVY PRO AUDIO KONTROLU
+  // 🔊 AUDIO STATES
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const currentAudioRef = useRef(null);
   
   const endOfMessagesRef = useRef(null);
 
-  // Detekce mobile zařízení
+  // Device detection
   const isMobile = window.innerWidth <= 768;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
 
-  // 🔇 FUNKCE PRO ZASTAVENÍ AUDIO
+  // 🔇 STOP AUDIO FUNCTION
   const stopCurrentAudio = () => {
     console.log('🔇 Stopping current audio...');
     
@@ -984,19 +1010,15 @@ function App() {
     }
     
     setIsAudioPlaying(false);
-    
-    // Notify all other audio components
     window.dispatchEvent(new CustomEvent('omnia-audio-start'));
-    
     console.log('🔇 Audio manually stopped');
   };
 
-  // 🔊 UPRAVENÁ FUNKCE PRO AUTO-PLAY (zachována pro hybrid mode)
+  // 🔊 AUTO-PLAY FUNCTION
   const playResponseAudio = async (text) => {
     try {
       console.log('🔊 Auto-play attempting:', text.substring(0, 50) + '...');
       
-      // Zastavit předchozí audio
       stopCurrentAudio();
       
       const response = await fetch('/api/voice', {
@@ -1013,15 +1035,14 @@ function App() {
         return;
       }
 
-      setIsAudioPlaying(true); // 🔥 NASTAVIT STAV
+      setIsAudioPlaying(true);
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      currentAudioRef.current = audio; // 🔥 ULOŽIT REFERENCI
+      currentAudioRef.current = audio;
       
-      // Track this as auto-play audio
       audio.dataset.autoPlay = 'true';
       
       let playbackInterrupted = false;
@@ -1057,7 +1078,7 @@ function App() {
       
       audio.onended = () => {
         console.log('✅ Auto-play finished');
-        setIsAudioPlaying(false); // 🔥 VYČISTIT STAV
+        setIsAudioPlaying(false);
         currentAudioRef.current = null;
         URL.revokeObjectURL(audioUrl);
         window.removeEventListener('omnia-audio-start', handleInterrupt);
@@ -1065,14 +1086,13 @@ function App() {
       
       audio.onerror = (e) => {
         console.error('❌ Audio playback error:', e);
-        setIsAudioPlaying(false); // 🔥 VYČISTIT STAV
+        setIsAudioPlaying(false);
         currentAudioRef.current = null;
         URL.revokeObjectURL(audioUrl);
         showNotification('🔇 Chyba přehrávání hlasu', 'error');
         window.removeEventListener('omnia-audio-start', handleInterrupt);
       };
       
-      // 📱 MOBILE/DESKTOP STRATEGY
       if (isMobile) {
         if (voiceMode === 'conversation') {
           try {
@@ -1119,17 +1139,15 @@ function App() {
     }
   };
 
-  // 🎯 GLOBÁLNÍ KLAVESOVÉ ZKRATKY
+  // 🎯 GLOBAL KEYBOARD SHORTCUTS
   useEffect(() => {
     const handleKeyPress = (e) => {
-      // ESC = zastavit audio
       if (e.key === 'Escape' && isAudioPlaying) {
         e.preventDefault();
         stopCurrentAudio();
         showNotification('🔇 Audio zastaveno', 'info');
       }
       
-      // SPACE = zastavit audio (pouze pokud není focus na input)
       if (e.key === ' ' && isAudioPlaying && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         stopCurrentAudio();
@@ -1141,9 +1159,8 @@ function App() {
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [isAudioPlaying]);
 
-  // Force light mode pro celou aplikaci
+  // 🎨 FORCE LIGHT MODE + ANIMATIONS
   useEffect(() => {
-    // Přidej meta tag pro color-scheme
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]') || document.createElement('meta');
     metaColorScheme.name = 'color-scheme';
     metaColorScheme.content = 'light only';
@@ -1151,7 +1168,6 @@ function App() {
       document.head.appendChild(metaColorScheme);
     }
 
-    // Přidej CSS pro force light mode + LOGO ANIMATIONS
     const darkModeOverride = document.getElementById('dark-mode-override') || document.createElement('style');
     darkModeOverride.id = 'dark-mode-override';
     darkModeOverride.innerHTML = `
@@ -1164,6 +1180,7 @@ function App() {
         width: 100% !important;
         height: 100% !important;
         box-sizing: border-box !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
       }
       
       #root {
@@ -1182,28 +1199,39 @@ function App() {
       input, textarea, select, button {
         background-color: #ffffff !important;
         color: #000000 !important;
-        border-color: #cccccc !important;
+        border-color: #e9ecef !important;
+        font-family: inherit !important;
       }
       
-      /* 🎨 LOGO ANIMATIONS */
+      /* 🎨 REDESIGNED ANIMATIONS */
       .omnia-logo:hover {
         transform: scale(1.05);
-        filter: brightness(1.2);
+        filter: brightness(1.1);
       }
       
       .omnia-logo.animate {
-        animation: omnia-pulse 4s ease-in-out infinite;
+        animation: omnia-breathe 4s ease-in-out infinite;
       }
       
-      @keyframes omnia-pulse {
+      @keyframes omnia-breathe {
         0%, 100% { 
           transform: scale(1);
-          filter: brightness(1);
+          filter: brightness(1) saturate(1);
         }
         50% { 
-          transform: scale(1.03);
-          filter: brightness(1.15);
+          transform: scale(1.02);
+          filter: brightness(1.1) saturate(1.1);
         }
+      }
+      
+      @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(200%) translateY(200%) rotate(45deg); }
+      }
+      
+      @keyframes pulse-ring {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.4); opacity: 0; }
       }
       
       @keyframes spin {
@@ -1211,15 +1239,25 @@ function App() {
         100% { transform: rotate(360deg); }
       }
       
+      /* 🌈 RAINBOW TEXT GRADIENT */
+      .rainbow-text {
+        background: linear-gradient(135deg, #007bff 0%, #28a745 25%, #ffc107 50%, #fd7e14 75%, #6f42c1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      /* 📱 MOBILE OPTIMIZATIONS */
+      @media (max-width: 768px) {
+        input, textarea, select, button {
+          font-size: 16px !important; /* Prevent zoom on iOS */
+        }
+      }
+      
       @media (prefers-color-scheme: dark) {
         html, body, #root {
           background-color: #ffffff !important;
           color: #000000 !important;
-        }
-        
-        * {
-          background-color: inherit !important;
-          color: inherit !important;
         }
       }
     `;
@@ -1228,7 +1266,6 @@ function App() {
     }
 
     return () => {
-      // Cleanup při unmount
       const meta = document.querySelector('meta[name="color-scheme"]');
       const style = document.getElementById('dark-mode-override');
       if (meta) meta.remove();
@@ -1236,10 +1273,10 @@ function App() {
     };
   }, []);
 
-  // Načtení historie z localStorage při startu
+  // 💾 LOAD HISTORY FROM LOCALSTORAGE
   useEffect(() => {
     const navType = window.performance?.navigation?.type;
-    if (navType === 1) { // Reload
+    if (navType === 1) {
       localStorage.removeItem('omnia-memory');
       setMessages([]);
     } else {
@@ -1254,18 +1291,16 @@ function App() {
     }
   }, []);
 
-  // 🚀 NOVÁ HANDLESENД FUNKCE S OKAMŽITÝM AUDIEM A SEARCH
+  // 🚀 REDESIGNED HANDLE SEND FUNCTION
   const handleSend = async (textInput = input) => {
-    console.log('🚀 handleSend called with:', textInput); // DEBUG
+    console.log('🚀 handleSend called with:', textInput);
     
     if (!textInput.trim()) return;
 
-    // FORCE TEST - přidej tohle pro test:
     console.log('🧪 Testing search detection...');
     const testResult = shouldSearchInternet(textInput);
     console.log('🧪 Search detection result:', testResult);
 
-    // Zastavit audio před odesláním nové zprávy
     if (isAudioPlaying) {
       stopCurrentAudio();
     }
@@ -1276,9 +1311,7 @@ function App() {
     setLoading(true);
 
     try {
-      // 🎯 KLÍČOVÁ ZMĚNA: Rozhodnutí o strategii zpracování
       if (voiceMode === 'conversation' || (autoPlay && voiceMode === 'hybrid')) {
-        // 🚀 NOVÁ STRATEGIE: Okamžitá audio odpověď + search
         console.log('🚀 Using INSTANT audio response strategy with search');
         
         await handleInstantAudioResponse(
@@ -1296,7 +1329,6 @@ function App() {
         );
         
       } else {
-        // 📄 KLASICKÁ STRATEGIE: Text první, pak audio + search
         console.log('📄 Using classic text-first strategy with search');
         
         await handleClassicTextResponse(
@@ -1328,31 +1360,31 @@ function App() {
 
   const handleTranscript = (text) => {
     if (voiceMode === 'conversation') {
-      // V conversation mode rovnou pošli s INSTANT AUDIO + SEARCH!
       handleSend(text);
     } else {
-      // V hybrid mode vlož do input pole
       setInput(text);
     }
   };
 
-  // 🔔 HELPER FUNKCE PRO NOTIFIKACE
+  // 🔔 NOTIFICATION HELPER
   const showNotification = (message, type = 'info', onClick = null) => {
-    // Vytvoř dočasnou notifikaci
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
       top: 100px;
       right: 20px;
-      background: ${type === 'error' ? '#ff4444' : '#007bff'};
+      background: ${type === 'error' ? 'linear-gradient(135deg, #dc3545, #c82333)' : 'linear-gradient(135deg, #007bff, #0056b3)'};
       color: white;
       padding: 12px 16px;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 14px;
       z-index: 10000;
       cursor: ${onClick ? 'pointer' : 'default'};
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      transition: opacity 0.3s ease;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      font-weight: 500;
     `;
     notification.textContent = message;
     
@@ -1365,10 +1397,10 @@ function App() {
     
     document.body.appendChild(notification);
     
-    // Auto-remove po 4 sekundách
     setTimeout(() => {
       if (document.body.contains(notification)) {
         notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
           if (document.body.contains(notification)) {
             document.body.removeChild(notification);
@@ -1378,6 +1410,7 @@ function App() {
     }, 4000);
   };
 
+  // 📜 AUTO SCROLL
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (messages.length > 0 && endOfMessagesRef.current) {
@@ -1386,7 +1419,7 @@ function App() {
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [messages]);
+  }, [messages]);// PART 4/4: REDESIGNED UI - Claude Style Clean Layout
 
   return (
     <div 
@@ -1407,9 +1440,9 @@ function App() {
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0
+        bottom: 0,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
       }}
-      // 🔇 CLICK ANYWHERE TO STOP AUDIO
       onClick={() => {
         if (isAudioPlaying && isMobile) {
           stopCurrentAudio();
@@ -1430,94 +1463,112 @@ function App() {
         boxSizing: 'border-box'
       }}>
         
-        {/* KOMPAKTNÍ HEADER PRO MOBILE */}
+        {/* 🎨 REDESIGNED HEADER - Claude Style */}
         <header style={{ 
-          padding: isMobile ? '1rem 0.5rem 0.5rem' : '2rem 1rem 1rem',
-          background: '#ffffff',
+          padding: isMobile ? '1.5rem 1rem 1rem' : '2rem 1.5rem 1.5rem',
+          background: 'linear-gradient(180deg, #ffffff 0%, #fafbfc 100%)',
           color: '#000000',
-          borderBottom: '1px solid #eee',
+          borderBottom: '1px solid #e9ecef',
           position: 'relative',
           textAlign: 'center',
           width: '100%',
           boxSizing: 'border-box',
-          flexShrink: 0
+          flexShrink: 0,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
         }}>
-          {/* 🎨 GRADIENT LOGO */}
+          {/* 🌈 RAINBOW LOGO SECTION */}
           <div style={{ 
             textAlign: 'center', 
-            marginBottom: isMobile ? '0.5rem' : '1rem',
+            marginBottom: isMobile ? '1rem' : '1.5rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.75rem'
           }}>
             <OmniaLogo 
-              size={isMobile ? 60 : 80} 
+              size={isMobile ? 64 : 80} 
               animate={true}
             />
-            <h1 style={{ 
-              fontSize: isMobile ? '1.8rem' : '2.2rem',
-              fontWeight: '700',
-              margin: 0,
-              fontFamily: 'Inter, sans-serif',
-              background: 'linear-gradient(135deg, #00aaff 0%, #6644ff 50%, #cc44aa 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              letterSpacing: '0.05em'
-            }}>
-              OMNIA
-            </h1>
-            {/* 🔍 SEARCH INDICATOR */}
             <div style={{
-              fontSize: '0.7rem',
-              color: '#007bff',
-              fontWeight: 'bold',
-              opacity: 0.8
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem'
             }}>
-              🔍 S internetovým vyhledáváním
+              <h1 className="rainbow-text" style={{ 
+                fontSize: isMobile ? '2rem' : '2.5rem',
+                fontWeight: '800',
+                margin: 0,
+                letterSpacing: '0.02em',
+                textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}>
+                OMNIA
+              </h1>
+              <div style={{
+                fontSize: isMobile ? '0.75rem' : '0.8rem',
+                color: '#6c757d',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'linear-gradient(135deg, #e3f2fd, #f3e5f5)',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '12px',
+                border: '1px solid rgba(0,123,255,0.1)'
+              }}>
+                <span>🔍</span>
+                <span>Internet Search</span>
+                <span>•</span>
+                <span>🚀</span>
+                <span>Instant Audio</span>
+              </div>
             </div>
           </div>
 
-          {/* Controls - větší na mobile */}
+          {/* 🎛️ CLEAN CONTROLS SECTION */}
           <div style={{ 
             display: 'flex', 
-            justifyContent: isMobile ? 'space-between' : 'space-around',
+            justifyContent: 'center',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '1rem',
-            maxWidth: '800px',
+            gap: isMobile ? '0.75rem' : '1.5rem',
+            maxWidth: '900px',
             margin: '0 auto',
-            padding: isMobile ? '0' : '0 2rem'
+            padding: isMobile ? '0' : '0 1rem'
           }}>
-            {/* Voice Mode Selector */}
+            {/* Mode Selector */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem',
-              minWidth: isMobile ? 'auto' : '150px',
-              justifyContent: isMobile ? 'flex-start' : 'center'
+              background: '#f8f9fa',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '12px',
+              border: '1px solid #e9ecef'
             }}>
               <label style={{ 
-                fontSize: isMobile ? '0.8rem' : '0.9rem',
-                fontWeight: 'bold' 
+                fontSize: isMobile ? '0.8rem' : '0.85rem',
+                fontWeight: '600',
+                color: '#495057'
               }}>
-                Režim:
+                📋 Režim:
               </label>
               <select 
                 value={voiceMode} 
                 onChange={(e) => {
-                  // Zastavit audio při změně režimu
                   if (isAudioPlaying) {
                     stopCurrentAudio();
                   }
                   setVoiceMode(e.target.value);
                 }}
                 style={{ 
-                  padding: isMobile ? '0.4rem' : '0.3rem',
-                  fontSize: isMobile ? '0.9rem' : '0.8rem',
-                  borderRadius: '0.4rem',
-                  border: '1px solid #ccc',
+                  padding: '0.4rem 0.6rem',
+                  fontSize: isMobile ? '0.85rem' : '0.8rem',
+                  borderRadius: '8px',
+                  border: '1px solid #ced4da',
+                  background: '#ffffff',
+                  color: '#495057',
+                  fontWeight: '500',
                   minWidth: isMobile ? '100px' : 'auto'
                 }}
               >
@@ -1527,92 +1578,90 @@ function App() {
               </select>
             </div>
 
-            {/* Model selector */}
+            {/* Model Selector */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.5rem',
-              minWidth: isMobile ? 'auto' : '200px',
-              justifyContent: isMobile ? 'flex-start' : 'center'
+              background: '#f8f9fa',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '12px',
+              border: '1px solid #e9ecef'
             }}>
               <label style={{ 
-                fontSize: isMobile ? '0.9rem' : '1rem',
-                fontWeight: 'bold' 
+                fontSize: isMobile ? '0.8rem' : '0.85rem',
+                fontWeight: '600',
+                color: '#495057'
               }}>
-                Model:
+                🧠 Model:
               </label>
               <select 
                 value={model} 
                 onChange={(e) => setModel(e.target.value)}
                 style={{ 
-                  padding: isMobile ? '0.6rem' : '0.4rem',
-                  fontSize: isMobile ? '1rem' : '0.9rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #ccc',
-                  minWidth: isMobile ? '140px' : 'auto'
+                  padding: '0.4rem 0.6rem',
+                  fontSize: isMobile ? '0.85rem' : '0.8rem',
+                  borderRadius: '8px',
+                  border: '1px solid #ced4da',
+                  background: '#ffffff',
+                  color: '#495057',
+                  fontWeight: '500',
+                  minWidth: isMobile ? '130px' : 'auto'
                 }}
               >
-                <option value="gpt-4o">Omnia (GPT-4)</option>
-                <option value="claude">Omnia (Claude)</option>
+                <option value="gpt-4o">Omnia v1 (GPT-4)</option>
+                <option value="claude">Omnia v2 (Claude)</option>
               </select>
             </div>
 
-            {/* Skryj auto-play toggle - v conversation mode je vždy auto */}
-            {voiceMode === 'hybrid' && !isMobile && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.3rem',
-                fontSize: isMobile ? '0.8rem' : '0.9rem',
-                color: '#666',
-                minWidth: isMobile ? 'auto' : '120px',
-                justifyContent: 'center'
-              }}>
-                <label style={{ fontSize: isMobile ? '0.8rem' : '0.9rem' }}>
-                  🔊 Auto:
-                </label>
-                <input 
-                  type="checkbox" 
-                  checked={autoPlay} 
-                  onChange={(e) => setAutoPlay(e.target.checked)}
-                  style={{ cursor: 'pointer' }}
-                />
-              </div>
-            )}
-
-            {/* Conversation mode info nebo audio status */}
-            {voiceMode === 'conversation' && (
-              <div style={{ 
-                fontSize: '0.8rem',
-                color: isAudioPlaying ? '#ff4444' : '#007bff',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                minWidth: '120px'
-              }}>
-                {isAudioPlaying ? '🚀 Instant Audio!' : '🗣️ Conversation'}
-              </div>
-            )}
-
-            {/* Online status */}
+            {/* Status Indicators */}
             <div style={{ 
               display: 'flex',
               alignItems: 'center',
-              gap: '0.3rem',
-              fontSize: isMobile ? '0.8rem' : '0.9rem',
-              color: '#666',
-              minWidth: isMobile ? 'auto' : '80px',
-              justifyContent: 'center'
+              gap: '1rem',
+              fontSize: isMobile ? '0.75rem' : '0.8rem',
+              color: '#6c757d',
+              fontWeight: '500'
             }}>
+              {/* Online Status */}
               <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                backgroundColor: '#4CAF50', 
-                borderRadius: '50%' 
-              }}></div>
-              Online
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: '#d1edff',
+                padding: '0.3rem 0.6rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(0,123,255,0.2)'
+              }}>
+                <div style={{ 
+                  width: '6px', 
+                  height: '6px', 
+                  backgroundColor: '#28a745', 
+                  borderRadius: '50%',
+                  animation: 'omnia-breathe 2s ease-in-out infinite'
+                }}></div>
+                Online
+              </div>
+
+              {/* Audio Status */}
+              {voiceMode === 'conversation' && (
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: isAudioPlaying ? '#ffe6e6' : '#e6f3ff',
+                  padding: '0.3rem 0.6rem',
+                  borderRadius: '8px',
+                  border: `1px solid ${isAudioPlaying ? 'rgba(255,68,68,0.2)' : 'rgba(0,123,255,0.2)'}`,
+                  color: isAudioPlaying ? '#dc3545' : '#007bff',
+                  fontWeight: '600'
+                }}>
+                  {isAudioPlaying ? '🚀 Instant!' : '🗣️ Ready'}
+                </div>
+              )}
             </div>
 
-            {/* Nový chat button */}
+            {/* Clear Chat Button */}
             <button
               onClick={() => {
                 if (isAudioPlaying) {
@@ -1622,27 +1671,38 @@ function App() {
                 setMessages([]);
               }}
               style={{ 
-                padding: isMobile ? '0.6rem 1rem' : '0.6rem 1.2rem',
-                fontSize: isMobile ? '0.9rem' : '0.9rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #ccc',
-                backgroundColor: '#f8f9fa',
+                padding: '0.5rem 1rem',
+                fontSize: isMobile ? '0.8rem' : '0.85rem',
+                borderRadius: '10px',
+                border: '1px solid #ced4da',
+                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                color: '#495057',
                 cursor: 'pointer',
-                minWidth: isMobile ? 'auto' : '120px'
+                fontWeight: '500',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
               }}
             >
-              Nový chat
+              🗑️ Nový chat
             </button>
           </div>
         </header>
 
-        {/* CHAT CONTAINER */}
+        {/* 💬 CHAT CONTAINER - Claude Style */}
         <main style={{ 
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
-          padding: '1rem',
-          paddingBottom: isMobile ? '140px' : '120px',
+          padding: isMobile ? '1rem' : '1.5rem',
+          paddingBottom: isMobile ? '160px' : '140px',
           background: '#ffffff',
           color: '#000000',
           WebkitOverflowScrolling: 'touch',
@@ -1662,40 +1722,50 @@ function App() {
                 style={{
                   display: 'flex',
                   justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                  marginBottom: '1rem'
+                  marginBottom: '1.5rem'
                 }}
               >
                 <div
                   style={{
-                    backgroundColor: msg.sender === 'user' ? '#DCF8C6' : '#F1F0F0',
+                    backgroundColor: msg.sender === 'user' 
+                      ? 'linear-gradient(135deg, #e3f2fd, #bbdefb)' 
+                      : '#f8f9fa',
+                    background: msg.sender === 'user' 
+                      ? 'linear-gradient(135deg, #e3f2fd, #bbdefb)' 
+                      : 'linear-gradient(135deg, #f8f9fa, #ffffff)',
                     color: '#000',
-                    padding: isMobile ? '1rem' : '0.8rem 1rem',
-                    borderRadius: '1rem',
-                    maxWidth: isMobile ? '85%' : '70%',
-                    fontSize: isMobile ? '1.1rem' : '1rem',
-                    lineHeight: '1.4',
+                    padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
+                    borderRadius: msg.sender === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    maxWidth: isMobile ? '85%' : '75%',
+                    fontSize: isMobile ? '1rem' : '0.95rem',
+                    lineHeight: '1.5',
                     whiteSpace: 'pre-wrap',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    position: 'relative'
                   }}
                 >
-                  {/* 🎨 AI indikátor s malým logom */}
+                  {/* 🤖 AI INDICATOR */}
                   {msg.sender === 'bot' && (
                     <div style={{ 
-                      fontSize: isMobile ? '0.8rem' : '0.7rem',
-                      opacity: 0.7, 
-                      marginBottom: '0.5rem',
+                      fontSize: isMobile ? '0.75rem' : '0.7rem',
+                      opacity: 0.8, 
+                      marginBottom: '0.75rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '0.4rem'
+                      gap: '0.5rem',
+                      paddingBottom: '0.5rem',
+                      borderBottom: '1px solid rgba(0,0,0,0.08)'
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <OmniaLogo size={14} />
-                        Omnia
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <OmniaLogo size={16} />
+                        <span style={{ fontWeight: '600', color: '#495057' }}>
+                          Omnia {model === 'claude' ? 'v2' : 'v1'}
+                        </span>
                         {msg.isGenerating && <span>🚀</span>}
                         {msg.text.includes('z internetu') && <span>🔍</span>}
                       </div>
-                      {/* 🔊 VOICE BUTTON */}
                       <VoiceButton 
                         text={msg.text} 
                         onAudioStart={() => setIsAudioPlaying(true)}
@@ -1717,27 +1787,30 @@ function App() {
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'flex-start',
-                marginBottom: '1rem'
+                marginBottom: '1.5rem'
               }}>
                 <div style={{
-                  backgroundColor: '#F1F0F0',
-                  padding: isMobile ? '1rem' : '0.8rem 1rem',
-                  borderRadius: '1rem',
-                  fontSize: isMobile ? '1.1rem' : '1rem',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  background: 'linear-gradient(135deg, #f8f9fa, #ffffff)',
+                  padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
+                  borderRadius: '18px 18px 18px 4px',
+                  fontSize: isMobile ? '1rem' : '0.95rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  border: '1px solid rgba(0,0,0,0.05)'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <OmniaLogo size={12} animate={true} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <OmniaLogo size={16} animate={true} />
                     <div style={{ 
-                      width: '12px', 
-                      height: '12px', 
-                      border: '2px solid #ccc', 
-                      borderTop: '2px solid #666',
+                      width: '16px', 
+                      height: '16px', 
+                      border: '2px solid #e9ecef', 
+                      borderTop: '2px solid #007bff',
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }}></div>
-                    {voiceMode === 'conversation' ? 'Připravuji instant odpověď...' : 'Omnia přemýšlí...'}
-                    <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>🔍</span>
+                    <span style={{ color: '#495057', fontWeight: '500' }}>
+                      {voiceMode === 'conversation' ? 'Připravuji instant odpověď...' : 'Omnia přemýšlí...'}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>🔍</span>
                   </div>
                 </div>
               </div>
@@ -1747,53 +1820,66 @@ function App() {
           </div>
         </main>
 
-        {/* FIXED INPUT AREA */}
+        {/* 🎯 REDESIGNED INPUT AREA - Claude Style */}
         <div style={{ 
           position: 'fixed', 
           bottom: 0, 
           left: 0,
           right: 0,
           width: '100vw',
-          background: '#ffffff', 
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, #ffffff 20%)', 
           color: '#000000',
-          padding: isMobile ? '1rem' : '1rem',
-          borderTop: '1px solid #eee',
-          paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 1rem)' : '1rem',
+          padding: isMobile ? '1rem' : '1.5rem',
+          borderTop: '1px solid #e9ecef',
+          paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
           zIndex: 1000,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-          boxSizing: 'border-box'
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
+          boxSizing: 'border-box',
+          backdropFilter: 'blur(10px)'
         }}>
           <div style={{ 
             maxWidth: '800px',
             margin: '0 auto',
             display: 'flex', 
-            gap: isMobile ? '0.5rem' : '1rem',
+            gap: isMobile ? '0.75rem' : '1rem',
             width: '100%',
             boxSizing: 'border-box',
-            padding: '0 1rem'
+            alignItems: 'flex-end'
           }}>
             {voiceMode !== 'conversation' && (
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-                placeholder={voiceMode === 'hybrid' ? "Napište nebo použijte mikrofon..." : "Zeptej se Omnie nebo vyhledej na internetu…"}
-                disabled={loading}
-                style={{ 
-                  flex: 1,
-                  padding: isMobile ? '1.2rem' : '1rem',
-                  fontSize: isMobile ? '1.1rem' : '1rem',
-                  borderRadius: '1rem',
-                  border: '1px solid #ccc',
-                  outline: 'none',
-                  backgroundColor: loading ? '#f5f5f5' : '#ffffff',
-                  color: '#000000',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  colorScheme: 'light only'
-                }}
-              />
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
+                  placeholder={voiceMode === 'hybrid' ? "Napište nebo použijte mikrofon..." : "Zeptej se Omnie nebo vyhledej na internetu…"}
+                  disabled={loading}
+                  style={{ 
+                    width: '100%',
+                    padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
+                    fontSize: isMobile ? '1rem' : '0.95rem',
+                    borderRadius: '20px',
+                    border: '2px solid #e9ecef',
+                    outline: 'none',
+                    backgroundColor: loading ? '#f8f9fa' : '#ffffff',
+                    color: '#000000',
+                    boxSizing: 'border-box',
+                    colorScheme: 'light only',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                    fontFamily: 'inherit'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#007bff';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e9ecef';
+                    e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                  }}
+                />
+              </div>
             )}
             
             {voiceMode === 'conversation' && (
@@ -1802,29 +1888,31 @@ function App() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: isMobile ? '1.2rem' : '1rem',
-                fontSize: isMobile ? '1.1rem' : '1rem',
-                borderRadius: '1rem',
-                border: isAudioPlaying ? '2px solid #ff4444' : '2px solid #007bff',
-                backgroundColor: isAudioPlaying ? '#fff5f5' : '#f8f9ff',
-                color: isAudioPlaying ? '#ff4444' : '#007bff',
+                padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
+                fontSize: isMobile ? '0.9rem' : '0.85rem',
+                borderRadius: '20px',
+                border: isAudioPlaying ? '2px solid #dc3545' : '2px solid #007bff',
+                background: isAudioPlaying 
+                  ? 'linear-gradient(135deg, #ffe6e6, #fff5f5)' 
+                  : 'linear-gradient(135deg, #e6f3ff, #f0f8ff)',
+                color: isAudioPlaying ? '#dc3545' : '#007bff',
                 textAlign: 'center',
-                fontWeight: 'bold',
-                minHeight: '50px'
+                fontWeight: '600',
+                minHeight: '50px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
               }}>
                 {loading ? (
-                  <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ 
                       width: '20px', 
                       height: '20px', 
                       border: '2px solid #007bff', 
                       borderTop: '2px solid transparent',
                       borderRadius: '50%',
-                      animation: 'spin 1s linear infinite',
-                      marginRight: '0.5rem'
+                      animation: 'spin 1s linear infinite'
                     }}></div>
                     🚀 Připravuji instant odpověď s vyhledáváním...
-                  </>
+                  </div>
                 ) : isAudioPlaying ? (
                   <>
                     🔊 Instant audio hraje - {isMobile ? 'dotkněte se' : 'ESC/Space'} pro zastavení
@@ -1843,27 +1931,33 @@ function App() {
               />
             )}
 
-            {/* 🔇 STOP BUTTON - zobrazí se během přehrávání audio */}
             {isAudioPlaying && (
               <button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Zabránit propagaci do main wrapper
+                  e.stopPropagation();
                   stopCurrentAudio();
                   showNotification('🔇 Audio zastaveno', 'info');
                 }}
                 style={{ 
-                  padding: isMobile ? '1.2rem' : '1rem',
-                  fontSize: isMobile ? '1.1rem' : '1rem',
-                  borderRadius: '1rem',
-                  backgroundColor: '#ff4444',
+                  padding: isMobile ? '1rem' : '1rem 1.25rem',
+                  fontSize: isMobile ? '0.9rem' : '0.85rem',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, #dc3545, #c82333)',
                   color: 'white',
                   border: 'none',
                   cursor: 'pointer',
-                  fontWeight: 'bold',
-                  minWidth: isMobile ? '80px' : '100px',
+                  fontWeight: '600',
+                  minWidth: isMobile ? '60px' : '80px',
                   flexShrink: 0,
-                  boxShadow: '0 0 15px rgba(255, 68, 68, 0.5)',
-                  animation: 'omnia-pulse 2s ease-in-out infinite'
+                  boxShadow: '0 0 20px rgba(220, 53, 69, 0.4)',
+                  animation: 'omnia-breathe 2s ease-in-out infinite',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
                 }}
               >
                 ⏹️ Stop
@@ -1875,67 +1969,78 @@ function App() {
                 onClick={() => handleSend()} 
                 disabled={loading || !input.trim()}
                 style={{ 
-                  padding: isMobile ? '1.2rem 1.5rem' : '1rem',
-                  fontSize: isMobile ? '1.1rem' : '1rem',
-                  borderRadius: '1rem',
-                  backgroundColor: loading ? '#ccc' : '#007bff',
+                  padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
+                  fontSize: isMobile ? '0.9rem' : '0.85rem',
+                  borderRadius: '16px',
+                  background: loading || !input.trim() 
+                    ? 'linear-gradient(135deg, #6c757d, #495057)' 
+                    : 'linear-gradient(135deg, #007bff, #0056b3)',
                   color: 'white',
                   border: 'none',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontWeight: 'bold',
-                  minWidth: isMobile ? '80px' : '100px',
-                  flexShrink: 0
+                  cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  minWidth: isMobile ? '60px' : '80px',
+                  flexShrink: 0,
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  opacity: loading || !input.trim() ? 0.6 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading && input.trim()) {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                 }}
               >
-                {loading ? '⏳' : 'Odeslat'}
+                {loading ? '⏳' : '📤'}
               </button>
             )}
           </div>
 
-          {/* 🔔 HELP TEXT PRO ZASTAVENÍ AUDIO */}
+          {/* 🔔 HELP TEXTS */}
           {isAudioPlaying && (
             <div style={{
               textAlign: 'center',
-              fontSize: '0.8rem',
-              color: '#666',
-              marginTop: '0.5rem',
+              fontSize: '0.75rem',
+              color: '#6c757d',
+              marginTop: '0.75rem',
               maxWidth: '800px',
-              margin: '0.5rem auto 0',
-              padding: '0 1rem'
+              margin: '0.75rem auto 0',
+              fontWeight: '500'
             }}>
               💡 {isMobile ? 'Klepněte kamkoli nebo na Stop tlačítko' : 'Stiskněte ESC, Space nebo Stop tlačítko'} pro zastavení
             </div>
           )}
 
-          {/* 🚀 INSTANT AUDIO + SEARCH INFO */}
           {voiceMode === 'conversation' && !isAudioPlaying && !loading && (
             <div style={{
               textAlign: 'center',
-              fontSize: '0.8rem',
+              fontSize: '0.75rem',
               color: '#007bff',
-              marginTop: '0.5rem',
+              marginTop: '0.75rem',
               maxWidth: '800px',
-              margin: '0.5rem auto 0',
-              padding: '0 1rem',
-              fontWeight: 'bold'
+              margin: '0.75rem auto 0',
+              fontWeight: '600'
             }}>
-              🚀 Instant Audio Mode + 🔍 Internet Search: Nejrychlejší AI asistent s aktuálními informacemi!
+              🚀 Instant Audio Mode + 🔍 Internet Search: Nejrychlejší AI asistent!
             </div>
           )}
 
-          {/* 🔍 SEARCH INFO PRO TEXT/HYBRID MODES */}
           {voiceMode !== 'conversation' && !isAudioPlaying && !loading && (
             <div style={{
               textAlign: 'center',
-              fontSize: '0.8rem',
+              fontSize: '0.75rem',
               color: '#007bff',
-              marginTop: '0.5rem',
+              marginTop: '0.75rem',
               maxWidth: '800px',
-              margin: '0.5rem auto 0',
-              padding: '0 1rem',
-              fontWeight: 'bold'
+              margin: '0.75rem auto 0',
+              fontWeight: '600'
             }}>
-              🔍 Automatické vyhledávání na internetu pro aktuální informace
+              🔍 Automatické vyhledávání aktuálních informací z internetu
             </div>
           )}
         </div>
