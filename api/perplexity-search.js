@@ -1,4 +1,4 @@
-// api/perplexity-search.js - REAL WEB SEARCH WITH PERPLEXITY
+// api/perplexity-search.js - FIXED VERSION
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
     console.log('🔍 Perplexity search for:', query);
 
-    // ✅ PERPLEXITY API CALL WITH WEB SEARCH
+    // ✅ FIXED: Proper Perplexity API call
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
         ],
         max_tokens: 1000,
         temperature: 0.2,
-        search_domain_filter: ["cz"], // ✅ FOCUS ON CZECH SOURCES
+        // ✅ REMOVED PROBLEMATIC DOMAIN FILTER
         return_citations: true,
         search_recency_filter: "month"
       })
