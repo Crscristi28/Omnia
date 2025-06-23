@@ -145,7 +145,7 @@ const ChatOmniaLogo = ({ size = 16 }) => {
   );
 };
 
-// ✅ NEW: OMNIA ARROW BUTTON - Samostatné tlačítko s Omnia barvami
+// ✅ OMNIA ARROW BUTTON - Samostatné tlačítko s Omnia barvami
 const OmniaArrowButton = ({ onClick, disabled, loading, size = 56 }) => {
   const getButtonStyle = () => {
     const baseStyle = {
@@ -631,57 +631,113 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-// 🔍 INTERNET SEARCH FUNKCE
-const searchInternet = async (query, showNotification) => {
-  try {
-    console.log('🔍 Searching internet for:', query);
-    showNotification('🔍 Vyhledávám na internetu...', 'info');
+// 🔍 CLAUDE WEB SEARCH SERVICE - Replaces SerpAPI completely
+const claudeWebSearchService = {
+  async search(query, showNotification) {
+    try {
+      console.log('🔍 Claude searching web for:', query);
+      showNotification('🔍 Hledám aktuální informace...', 'info');
 
-    const response = await fetch('/api/news', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
-    });
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Vyhledej aktuální informace na internetu o: "${query}". Poskytni mi relevantní a aktuální výsledky.`
+            }
+          ],
+          system: 'Jsi expert na vyhledávání informací na internetu. Používej web_search nástroj pro nalezení aktuálních a relevantních informací. Odpovídej vždy v češtině.',
+          max_tokens: 2000
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error(`Search API failed: ${response.status}`);
-    }
+      if (!response.ok) {
+        throw new Error(`Claude search API failed: ${response.status}`);
+      }
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!data.success || !data.results || data.results.length === 0) {
-      showNotification('⚠️ Nenašel jsem žádné relevantní výsledky.', 'info');
+      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
+        throw new Error('Invalid Claude search response');
+      }
+
+      const searchResults = data.content[0].text;
+      
+      showNotification('🔍 Našel jsem aktuální informace', 'info');
+
+      return {
+        success: true,
+        results: searchResults,
+        source: 'claude_web_search'
+      };
+
+    } catch (error) {
+      console.error('💥 Claude search error:', error);
+      showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
       return {
         success: false,
-        message: 'Nenašel jsem žádné relevantní výsledky.'
+        message: `Chyba při vyhledávání: ${error.message}`,
+        source: 'claude_web_search'
       };
     }
+  },
 
-    const maxResults = 5;
-    const resultsCount = data.results.length;
+  async fetchPage(url, showNotification) {
+    try {
+      console.log('📄 Claude fetching page:', url);
+      showNotification('📄 Načítám obsah stránky...', 'info');
 
-    const searchResults = data.results.slice(0, maxResults).map((result, index) => {
-      return `${index + 1}. ${result.title}\n   ${result.snippet}\n   Zdroj: ${result.link}`;
-    }).join('\n\n');
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Načti a shrň obsah této webové stránky: ${url}`
+            }
+          ],
+          system: 'Používej web_fetch nástroj pro načítání obsahu webových stránek. Shrň klíčové informace z načtené stránky. Odpovídej v češtině.',
+          max_tokens: 2000
+        })
+      });
 
-    showNotification(`🔍 Našel jsem ${resultsCount} výsledků`, 'info');
+      if (!response.ok) {
+        throw new Error(`Claude fetch API failed: ${response.status}`);
+      }
 
-    return {
-      success: true,
-      results: searchResults,
-      count: resultsCount
-    };
-  } catch (error) {
-    console.error('💥 Search error:', error);
-    showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
-    return {
-      success: false,
-      message: `Chyba při vyhledávání: ${error.message}`
-    };
+      const data = await response.json();
+
+      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
+        throw new Error('Invalid Claude fetch response');
+      }
+
+      const pageContent = data.content[0].text;
+      
+      showNotification('📄 Stránka načtena a zpracována', 'info');
+
+      return {
+        success: true,
+        content: pageContent,
+        url: url,
+        source: 'claude_web_fetch'
+      };
+
+    } catch (error) {
+      console.error('💥 Claude fetch error:', error);
+      showNotification(`Chyba při načítání stránky: ${error.message}`, 'error');
+      return {
+        success: false,
+        message: `Chyba při načítání stránky: ${error.message}`,
+        source: 'claude_web_fetch'
+      };
+    }
   }
 };
 
-// 🧠 SEARCH LOGIC - When to search internet
+// 🧠 ENHANCED SEARCH LOGIC - Claude knows when to search
 const shouldSearchInternet = (userInput) => {
   const input = (userInput || '').toLowerCase();
   
@@ -691,7 +747,9 @@ const shouldSearchInternet = (userInput) => {
     'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi',
     'umíš', 'můžeš mi', 'co umíš', 'jak funguje',
     'co je to', 'vysvětli', 'řekni mi', 'pomoč', 'pomoz',
-    'jak na to', 'co si myslíš', 'jaký je tvůj názor'
+    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
+    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej',
+    'napiš mi', 'vytvoř', 'spočítej', 'překladej'
   ];
   
   for (const phrase of conversationalPhrases) {
@@ -701,12 +759,13 @@ const shouldSearchInternet = (userInput) => {
     }
   }
   
-  // ✅ Hledej JEN pro explicitní požadavky
+  // ✅ Hledej pro explicitní požadavky
   const searchTriggers = [
-    'vyhledej', 'najdi aktuální', 'co je nového',
-    'dnešní zprávy', 'současná cena', 'nejnovější',
-    'aktuální informace', 'latest', 'current',
-    'vyhledání', 'najít informace'
+    'vyhledej', 'najdi aktuální', 'co je nového', 'hledej',
+    'dnešní zprávy', 'současná cena', 'nejnovější', 'poslední',
+    'aktuální informace', 'latest', 'current', 'recent',
+    'vyhledání', 'najít informace', 'aktuální stav',
+    'co se děje', 'novinky', 'zprávy', 'aktuality'
   ];
   
   for (const trigger of searchTriggers) {
@@ -720,8 +779,25 @@ const shouldSearchInternet = (userInput) => {
   if (input.includes('2024') || input.includes('2025') || 
       input.includes('dnes') || input.includes('včera') ||
       input.includes('tento týden') || input.includes('tento měsíc') ||
-      input.includes('letos') || input.includes('loni')) {
+      input.includes('letos') || input.includes('loni') ||
+      input.includes('teď') || input.includes('právě') ||
+      input.includes('momentálně') || input.includes('v současnosti')) {
     console.log('🧪 Search triggered by temporal keyword');
+    return true;
+  }
+  
+  // ✅ Hledej pro price/financial queries
+  if (input.includes('cena') || input.includes('kurz') || 
+      input.includes('akcie') || input.includes('burza') ||
+      input.includes('bitcoin') || input.includes('krypto')) {
+    console.log('🧪 Search triggered by financial keyword');
+    return true;
+  }
+  
+  // ✅ Hledej pro weather queries
+  if (input.includes('počasí') || input.includes('teplota') || 
+      input.includes('déšť') || input.includes('sníh')) {
+    console.log('🧪 Search triggered by weather keyword');
     return true;
   }
   
@@ -729,7 +805,7 @@ const shouldSearchInternet = (userInput) => {
   return false;
 };
 
-// 🎵 AUDIO GENERATION FOR VOICE SCREEN - Enhanced with stop capability
+// 🎵 ENHANCED AUDIO GENERATION
 const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification) => {
   try {
     console.log('🚀 Generating INSTANT audio response...');
@@ -816,7 +892,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with audio stop
+// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with Claude search
 const handleVoiceScreenResponse = async (
   textInput, 
   currentMessages, 
@@ -839,11 +915,11 @@ const handleVoiceScreenResponse = async (
     const needsSearch = shouldSearchInternet(textInput);
     
     if (needsSearch) {
-      console.log('🔍 Query needs internet search');
-      const searchResult = await searchInternet(textInput, showNotification);
+      console.log('🔍 Query needs Claude web search');
+      const searchResult = await claudeWebSearchService.search(textInput, showNotification);
       
       if (searchResult.success) {
-        searchContext = `\n\nNAJNOVĚJŠÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Zmiň že informace jsou z internetu a aktuální.`;
+        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Informace jsou z internetu a aktuální.`;
       } else {
         searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
       }
@@ -853,7 +929,7 @@ const handleVoiceScreenResponse = async (
       const openAiMessages = [
         { 
           role: 'system', 
-          content: `Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
+          content: `Jsi Omnia, pokročilý český AI asistent s přístupem k internetu. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
         },
         ...currentMessages.map((msg) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -903,7 +979,7 @@ const handleVoiceScreenResponse = async (
   }
 };
 
-// 📄 CLASSIC TEXT RESPONSE HANDLER
+// 📄 CLASSIC TEXT RESPONSE HANDLER - Enhanced with Claude search
 const handleTextResponse = async (
   textInput, 
   currentMessages, 
@@ -919,11 +995,11 @@ const handleTextResponse = async (
   const needsSearch = shouldSearchInternet(textInput);
   
   if (needsSearch) {
-    console.log('🔍 Query needs internet search');
-    const searchResult = await searchInternet(textInput, showNotification);
+    console.log('🔍 Query needs Claude web search');
+    const searchResult = await claudeWebSearchService.search(textInput, showNotification);
     
     if (searchResult.success) {
-      searchContext = `\n\nNAJNOVĚJŠÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Zmiň že informace jsou z internetu a aktuální.`;
+      searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU:\n${searchResult.results}\n\nNa základě těchto aktuálních informací odpověz na otázku uživatele. Informace jsou z internetu a aktuální.`;
     } else {
       searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
     }
@@ -933,7 +1009,7 @@ const handleTextResponse = async (
     const openAiMessages = [
       { 
         role: 'system', 
-        content: `Jsi Omnia, chytrý český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova jako "Oh", "Well", "So", "Now" apod. Začínej odpovědi přímo česky - například "Ano", "Rozumím", "To je", "Samozřejmě" atd. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
+        content: `Jsi Omnia, pokročilý český AI asistent s přístupem k internetu. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
       },
       ...currentMessages.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1000,19 +1076,20 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
   }, 4000);
 };
 
-// 🤖 API SERVICES
+// 🤖 ENHANCED API SERVICES
 const claudeService = {
   async sendMessage(messages) {
     try {
       const claudeMessages = prepareClaudeMessages(messages);
-      const systemPrompt = 'Jsi Omnia, chytrý AI asistent. Odpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk, bez formálností. Nepiš "Jsem AI" ani se nijak nepředstavuj. Odpovědi musí být stylisticky i jazykově bezchybné, jako by je psal rodilý mluvčí.';
+      const systemPrompt = 'Jsi Omnia v2, pokročilý AI asistent s přístupem k internetu a analytickým nástrojům. Máš tyto schopnosti:\n\n🔍 WEB SEARCH - můžeš vyhledávat aktuální informace na internetu\n📄 WEB FETCH - můžeš načítat obsah konkrétních webových stránek\n📊 ANALÝZA DAT - můžeš analyzovat data a provádět výpočty\n\nOdpovídej vždy výhradně v češtině, gramaticky správně a přirozeně. Piš stručně, jako chytrý a lidsky znějící člověk. Nepiš "Jsem AI" ani se nijak nepředstavuj. Když potřebuješ aktuální informace, automaticky použij své web search schopnosti.';
       
       const response = await fetch('/api/claude2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           messages: claudeMessages,
-          system: systemPrompt
+          system: systemPrompt,
+          max_tokens: 2000
         })
       });
 
@@ -1061,14 +1138,14 @@ const openaiService = {
       throw error;
     }
   }
-};// 🎤 VOICE SCREEN COMPONENT - Fixed Audio Stop Management
+};// 🎤 VOICE SCREEN COMPONENT - Enhanced for Claude search
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
   loading, 
   isAudioPlaying,
   isMobile,
-  stopCurrentAudio  // ✅ Stop function
+  stopCurrentAudio
 }) => {
 
   // 🔇 Handle any click in Voice Screen - stop audio
@@ -1158,7 +1235,7 @@ const VoiceScreen = ({
         <OmniaLogo size={140} animate={true} />
       </div>
 
-      {/* Voice Status - Stop audio on click */}
+      {/* Voice Status - Enhanced for Claude */}
       <div style={{
         fontSize: isMobile ? '1.2rem' : '1.5rem',
         fontWeight: '600',
@@ -1170,15 +1247,15 @@ const VoiceScreen = ({
       onClick={handleElementClick}
       >
         {loading ? (
-          "🚀 Připravuji instant odpověď..."
+          "🚀 Omnia v2 připravuje odpověď..."
         ) : isAudioPlaying ? (
-          "🔊 Omnia mluví... (klepněte pro stop)"
+          "🔊 Omnia v2 mluví... (klepněte pro stop)"
         ) : (
-          "🎤 Držte mikrofon pro mluvení"
+          "🎤 Držte mikrofon pro mluvení s Omnia v2"
         )}
       </div>
 
-      {/* Voice Button - Stop audio on click */}
+      {/* Voice Button */}
       <div 
         style={{ marginBottom: '3rem' }}
         onClick={handleElementClick}
@@ -1190,24 +1267,27 @@ const VoiceScreen = ({
         />
       </div>
 
-      {/* Instruction - Stop audio on click */}
+      {/* Enhanced Instruction */}
       <div style={{
         fontSize: '0.9rem',
         opacity: 0.6,
         textAlign: 'center',
-        maxWidth: '300px',
+        maxWidth: '320px',
         lineHeight: '1.4',
         cursor: 'pointer'
       }}
       onClick={handleElementClick}
       >
-        {isMobile ? 'Klepněte X nebo kdekoli pro stop/návrat' : 'ESC, X nebo klepněte kdekoli pro stop/návrat'}
+        {isMobile ? 
+          'Omnia v2 s přístupem k internetu • Klepněte kdekoli pro stop/návrat' : 
+          'Omnia v2 s web search a analýzou • ESC nebo klepněte kdekoli pro stop/návrat'
+        }
       </div>
     </div>
   );
 };
 
-// ⚙️ SETTINGS DROPDOWN COMPONENT
+// ⚙️ ENHANCED SETTINGS DROPDOWN
 const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
   if (!isOpen) return null;
 
@@ -1237,7 +1317,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         zIndex: 1000,
-        minWidth: '160px'
+        minWidth: '200px'
       }}>
         <button
           onClick={() => {
@@ -1254,7 +1334,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
             fontSize: '0.85rem',
             cursor: 'pointer',
             fontWeight: '400',
-            borderRadius: '8px',
+            borderRadius: '8px 8px 0 0',
             color: '#374151'
           }}
           onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
@@ -1262,17 +1342,35 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
         >
           🗑️ Nový chat
         </button>
+        
+        {/* Future features placeholder */}
+        <div style={{
+          padding: '0.5rem 1rem',
+          fontSize: '0.75rem',
+          color: '#9ca3af',
+          borderTop: '1px solid #f3f4f6'
+        }}>
+          🔍 Web search aktivní
+        </div>
+        
+        <div style={{
+          padding: '0.25rem 1rem 0.75rem',
+          fontSize: '0.75rem',
+          color: '#9ca3af'
+        }}>
+          📊 Další funkce brzy...
+        </div>
       </div>
     </>
   );
 };
 
-// 🚀 MAIN APP COMPONENT - Fixed Fullscreen Layout
+// 🚀 MAIN APP COMPONENT - Enhanced with Claude capabilities
 function App() {
   // 📱 States
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('gpt-4o');
+  const [model, setModel] = useState('claude'); // ✅ Default to Claude v2
   const [loading, setLoading] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
@@ -1289,7 +1387,7 @@ function App() {
   // 🔔 Notification function
   const showNotification = showNotificationHelper;
 
-  // 🔇 STOP AUDIO FUNCTION - Enhanced
+  // 🔇 STOP AUDIO FUNCTION
   const stopCurrentAudio = () => {
     console.log('🔇 Stopping current audio...');
     
@@ -1310,16 +1408,15 @@ function App() {
     }
     localStorage.removeItem('omnia-memory');
     setMessages([]);
-    showNotification('Nový chat vytvořen', 'info');
+    showNotification('Nový chat s Omnia v2 vytvořen', 'info');
   };
 
-  // 🎯 KEYBOARD SHORTCUTS - Enhanced with Voice Screen audio stop
+  // 🎯 KEYBOARD SHORTCUTS
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         if (showVoiceScreen) {
-          // ✅ FIXED: Stop audio when closing Voice Screen
           if (isAudioPlaying) {
             stopCurrentAudio();
           }
@@ -1452,7 +1549,7 @@ function App() {
       padding: 0
     }}>
       
-      {/* 🎨 CLEAN HEADER - Fixed Fullscreen */}
+      {/* 🎨 ENHANCED HEADER */}
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
         background: '#f5f5f5',
@@ -1473,7 +1570,7 @@ function App() {
           width: '100%'
         }}>
           
-          {/* 📋 Left: Model Dropdown */}
+          {/* 📋 Left: Enhanced Model Dropdown */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
@@ -1505,7 +1602,7 @@ function App() {
                 borderRadius: '8px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 zIndex: 1000,
-                minWidth: '160px'
+                minWidth: '200px'
               }}>
                 <button
                   onClick={() => {
@@ -1526,7 +1623,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
                   onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? '#f3f4f6' : 'white'}
                 >
-                  Omnia v1
+                  Omnia v1 (OpenAI)
                 </button>
                 <button
                   onClick={() => {
@@ -1548,13 +1645,13 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
                   onMouseLeave={(e) => e.target.style.background = model === 'claude' ? '#f3f4f6' : 'white'}
                 >
-                  Omnia v2
+                  Omnia v2 (Claude + Web) 🔍
                 </button>
               </div>
             )}
           </div>
 
-          {/* ⚙️ Right: Settings Dropdown */}
+          {/* ⚙️ Right: Enhanced Settings */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
@@ -1567,7 +1664,7 @@ function App() {
                 color: '#6b7280',
                 cursor: 'pointer'
               }}
-              title="Nastavení"
+              title="Nastavení a funkce"
             >
               ⚙️
             </button>
@@ -1580,7 +1677,7 @@ function App() {
           </div>
         </div>
 
-        {/* 🎨 Center: Clean Logo Section */}
+        {/* 🎨 Enhanced Logo Section */}
         <div style={{ 
           textAlign: 'center',
           display: 'flex',
@@ -1607,10 +1704,22 @@ function App() {
           }}>
             OMNIA
           </h1>
+          
+          {/* Enhanced subtitle */}
+          <div style={{
+            fontSize: isMobile ? '0.85rem' : '0.9rem',
+            color: '#6b7280',
+            fontWeight: '500'
+          }}>
+            {model === 'claude' ? 
+              '🔍 v2 • Claude s přístupem k internetu' : 
+              'v1 • Klasický chat režim'
+            }
+          </div>
         </div>
       </header>
 
-      {/* 💬 MESSAGES AREA - Fixed Fullscreen */}
+      {/* 💬 MESSAGES AREA */}
       <main style={{ 
         flex: 1,
         overflowY: 'auto',
@@ -1629,12 +1738,12 @@ function App() {
           width: '100%'
         }}>
           
-          {/* ✅ Clean Empty Space */}
+          {/* Clean Empty Space */}
           {messages.length === 0 && (
             <div style={{ height: '40vh' }}></div>
           )}
 
-          {/* Messages with Chat Logo */}
+          {/* Enhanced Messages */}
           {messages.map((msg, idx) => (
             <div
               key={idx}
@@ -1661,7 +1770,7 @@ function App() {
                   position: 'relative'
                 }}
               >
-                {/* ✅ FIXED: Chat Omnia Logo místo 🤖 */}
+                {/* Enhanced AI Indicator */}
                 {msg.sender === 'bot' && (
                   <div style={{ 
                     fontSize: '0.75rem',
@@ -1675,7 +1784,7 @@ function App() {
                   }}>
                     <span style={{ fontWeight: '600', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
                       <ChatOmniaLogo size={16} />
-                      Omnia {model === 'claude' ? 'v2' : 'v1'}
+                      Omnia {model === 'claude' ? 'v2 🔍' : 'v1'}
                     </span>
                     <VoiceButton 
                       text={msg.text} 
@@ -1694,7 +1803,7 @@ function App() {
             </div>
           ))}
           
-          {/* 🔄 LOADING STATE */}
+          {/* Enhanced Loading State */}
           {loading && (
             <div style={{ 
               display: 'flex', 
@@ -1719,7 +1828,7 @@ function App() {
                     animation: 'spin 1s linear infinite'
                   }}></div>
                   <span style={{ color: '#6b7280', fontWeight: '500' }}>
-                    Omnia přemýšlí...
+                    Omnia {model === 'claude' ? 'v2 🔍' : 'v1'} přemýšlí...
                   </span>
                 </div>
               </div>
@@ -1728,7 +1837,7 @@ function App() {
           
           <div ref={endOfMessagesRef} />
         </div>
-      </main>{/* 🎯 INPUT BAR - FIXED: Arrow Outside Input */}
+      </main>{/* 🎯 INPUT BAR - Enhanced for Claude v2 */}
       <div style={{ 
         position: 'fixed', 
         bottom: 0, 
@@ -1750,39 +1859,56 @@ function App() {
           width: '100%'
         }}>
           
-          {/* 📝 CLEAN INPUT FIELD - No integrated arrow */}
+          {/* 📝 ENHANCED INPUT FIELD */}
           <div style={{ flex: 1 }}>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-              placeholder="Napište zprávu pro Omnia..."
+              placeholder={model === 'claude' ? 
+                "Napište zprávu pro Omnia v2 (s přístupem k internetu)..." : 
+                "Napište zprávu pro Omnia v1..."
+              }
               disabled={loading}
               style={{ 
                 width: '100%',
-                padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem', // ✅ FIXED: Normal padding
-                fontSize: isMobile ? '16px' : '0.95rem', // ✅ iOS zoom fix
+                padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
+                fontSize: isMobile ? '16px' : '0.95rem', // iOS zoom fix
                 borderRadius: '25px',
-                border: '2px solid #e5e7eb',
+                border: model === 'claude' ? 
+                  '2px solid rgba(0, 150, 255, 0.3)' : // Claude border
+                  '2px solid #e5e7eb', // Standard border
                 outline: 'none',
                 backgroundColor: loading ? '#f9fafb' : '#ffffff',
                 color: '#000000',
                 transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                boxShadow: model === 'claude' ? 
+                  '0 2px 8px rgba(0, 150, 255, 0.1)' : // Claude shadow
+                  '0 2px 8px rgba(0,0,0,0.05)' // Standard shadow
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                if (model === 'claude') {
+                  e.target.style.borderColor = 'rgba(0, 150, 255, 0.6)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 150, 255, 0.1)';
+                } else {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                }
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                if (model === 'claude') {
+                  e.target.style.borderColor = 'rgba(0, 150, 255, 0.3)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 150, 255, 0.1)';
+                } else {
+                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                }
               }}
             />
           </div>
           
-          {/* 🎵 MINI OMNIA LOGO - Voice Screen Trigger */}
+          {/* 🎵 ENHANCED MINI OMNIA LOGO */}
           <MiniOmniaLogo 
             size={isMobile ? 50 : 56} 
             onClick={() => setShowVoiceScreen(true)}
@@ -1790,7 +1916,7 @@ function App() {
             loading={loading}
           />
 
-          {/* ✅ FIXED: OMNIA ARROW BUTTON - Outside input with Omnia colors */}
+          {/* ✅ OMNIA ARROW BUTTON - Enhanced */}
           <OmniaArrowButton
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
@@ -1798,9 +1924,23 @@ function App() {
             size={isMobile ? 50 : 56}
           />
         </div>
+        
+        {/* 🔍 Enhanced Status Bar */}
+        {model === 'claude' && (
+          <div style={{
+            maxWidth: '1000px',
+            margin: '0.5rem auto 0',
+            fontSize: '0.75rem',
+            color: '#6b7280',
+            textAlign: 'center',
+            opacity: 0.8
+          }}>
+            🔍 Web search aktivní • 📊 Analýza dat připravena
+          </div>
+        )}
       </div>
 
-      {/* 🎤 VOICE SCREEN OVERLAY - Enhanced with stop function */}
+      {/* 🎤 ENHANCED VOICE SCREEN */}
       {showVoiceScreen && (
         <VoiceScreen
           onClose={() => setShowVoiceScreen(false)}
@@ -1812,7 +1952,7 @@ function App() {
         />
       )}
 
-      {/* 🎨 CSS ANIMATIONS & STYLES - Enhanced */}
+      {/* 🎨 ENHANCED CSS ANIMATIONS & STYLES */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
@@ -1861,7 +2001,7 @@ function App() {
           }
         }
 
-        /* ✅ FIXED: Full viewport layout */
+        /* ✅ Full viewport layout */
         html, body {
           margin: 0;
           padding: 0;
@@ -1908,7 +2048,7 @@ function App() {
           box-sizing: border-box;
         }
 
-        /* ✅ FIXED: Fullscreen container */
+        /* ✅ Fullscreen container */
         #root {
           width: 100vw;
           min-height: 100vh;
@@ -1916,7 +2056,7 @@ function App() {
           padding: 0;
         }
 
-        /* 🎨 Input focus states */
+        /* 🎨 Enhanced input focus states */
         input:focus {
           outline: none !important;
         }
@@ -1933,31 +2073,49 @@ function App() {
           }
         }
 
-        /* 🎵 Logo pulse animations for different states */
-        @keyframes pulse-loading {
+        /* 🎵 Enhanced logo animations for Claude */
+        @keyframes claude-glow {
           0%, 100% { 
-            box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);
+            box-shadow: 0 0 15px rgba(0, 150, 255, 0.4);
             transform: scale(1);
           }
           50% { 
-            box-shadow: 0 0 25px rgba(255, 193, 7, 0.8);
-            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 150, 255, 0.6);
+            transform: scale(1.02);
           }
         }
 
-        /* 🔄 Smooth transitions for all interactive elements */
+        /* 🔍 Search indicator animation */
+        @keyframes search-pulse {
+          0%, 100% { opacity: 0.8; }
+          50% { opacity: 1; }
+        }
+
+        /* 🔄 Enhanced transitions */
         button, input, div[role="button"] {
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 📱 Safe area handling for mobile */
-        @supports (padding: max(0px)) {
-          .input-container {
-            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        /* 📱 Better touch targets */
+        @media (max-width: 768px) {
+          button {
+            min-height: 44px;
+            min-width: 44px;
           }
         }
 
-        /* ✅ FIXED: Omnia Arrow Button hover effects */
+        /* 🎨 Claude-specific styling */
+        .claude-mode {
+          border-color: rgba(0, 150, 255, 0.3) !important;
+          box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1) !important;
+        }
+
+        .claude-mode:focus {
+          border-color: rgba(0, 150, 255, 0.6) !important;
+          box-shadow: 0 0 0 3px rgba(0, 150, 255, 0.1) !important;
+        }
+
+        /* 🎯 Enhanced button hover effects */
         .omnia-arrow-button:hover {
           transform: translateY(-1px) scale(1.05);
           box-shadow: 0 6px 16px rgba(0, 150, 255, 0.4);
@@ -1967,22 +2125,19 @@ function App() {
           transform: translateY(0) scale(0.98);
         }
 
-        /* 🎨 Beautiful gradient animations for Omnia buttons */
-        @keyframes omnia-glow {
-          0%, 100% {
-            box-shadow: 0 4px 12px rgba(0, 150, 255, 0.3);
-          }
-          50% {
-            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
-          }
+        /* ✨ Smooth page transitions */
+        .page-transition {
+          animation: fadeIn 0.3s ease-in-out;
         }
 
-        /* 📱 Better touch targets for mobile */
-        @media (max-width: 768px) {
-          button {
-            min-height: 44px;
-            min-width: 44px;
-          }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 🔍 Search status styling */
+        .search-status {
+          animation: search-pulse 2s ease-in-out infinite;
         }
       `}</style>
 
