@@ -49,7 +49,6 @@ export default async function handler(req, res) {
         ],
         max_tokens: 1000,
         temperature: 0.2,
-        // ✅ REMOVED PROBLEMATIC DOMAIN FILTER
         return_citations: true,
         search_recency_filter: "month"
       })
