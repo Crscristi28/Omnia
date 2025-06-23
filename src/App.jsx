@@ -733,7 +733,7 @@ const perplexitySearchService = {
   }
 };
 
-// 🔎 SONAR SERVICE - OPRAVENÝ PRO SPRÁVNÝ ENDPOINT
+// 🔎 SONAR SERVICE - OPRAVENÝ PRO PŘÍMÉ ODPOVĚDI
 const sonarService = {
   async search(query, showNotification) {
     try {
@@ -764,14 +764,17 @@ const sonarService = {
         throw new Error('Invalid Sonar response');
       }
 
+      // ✅ SONAR VRACÍ PŘÍMO FINÁLNÍ ODPOVĚĎ, NE JEN KONTEXT
       const validatedResult = perplexitySearchService.validateResultFreshness(data.result, query);
       showNotification('🔍 Našel jsem aktuální informace! (Omnia Search)', 'info');
+      
       return {
         success: true,
         result: validatedResult,
         citations: data.citations || [],
         source: 'sonar_search',
-        enhanced_query: enhancedQuery
+        enhanced_query: enhancedQuery,
+        is_final_response: true // ✅ OZNAČENÍ ŽE TOTO JE FINÁLNÍ ODPOVĚĎ
       };
     } catch (error) {
       console.error('💥 Sonar search error:', error);
@@ -962,6 +965,7 @@ const googleSearchService = {
   }
 };
 
+// ✅ OPRAVENÁ FUNKCE PRO VOICE SCREEN - S PODPOROU SONAR
 const handleVoiceScreenResponse = async (
   textInput,
   currentMessages,
@@ -981,6 +985,36 @@ const handleVoiceScreenResponse = async (
 
     const needsSearch = shouldSearchInternet(textInput, model);
 
+    // ✅ SONAR - PŘÍMO VRÁTÍ FINÁLNÍ ODPOVĚĎ
+    if (model === 'sonar') {
+      if (needsSearch) {
+        const searchResult = await sonarService.search(textInput, showNotification);
+        if (searchResult.success) {
+          responseText = searchResult.result; // ✅ PŘÍMO FINÁLNÍ ODPOVĚĎ
+        } else {
+          responseText = `Chyba při vyhledávání: ${searchResult.message}`;
+        }
+      } else {
+        // Pro konverzační dotazy bez vyhledávání použij základní odpověď
+        responseText = "Omnia Search je specializovaná na vyhledávání aktuálních informací na internetu. Pro běžnou konverzaci zkuste Omnia v1 nebo v2.";
+      }
+
+      const finalMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification
+      );
+
+      return responseText;
+    }
+
+    // ✅ CLAUDE A GPT-4O - STANDARDNÍ LOGIKA
     if (needsSearch) {
       if (model === 'claude') {
         const searchResult = await perplexitySearchService.search(textInput, showNotification);
@@ -993,13 +1027,6 @@ const handleVoiceScreenResponse = async (
         const googleResults = await googleSearchService.search(textInput, showNotification);
         if (googleResults) {
           searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
-        }
-      } else if (model === 'sonar') {
-        const searchResult = await sonarService.search(textInput, showNotification);
-        if (searchResult.success) {
-          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Sonar):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
-        } else {
-          searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
         }
       }
     }
@@ -1018,7 +1045,7 @@ const handleVoiceScreenResponse = async (
       ];
 
       responseText = await openaiService.sendMessage(openAiMessages);
-    } else if (model === 'claude' || model === 'sonar') {
+    } else if (model === 'claude') {
       const userMessageWithContext = searchContext ?
         `${textInput}${searchContext}` : textInput;
 
@@ -1054,6 +1081,7 @@ const handleVoiceScreenResponse = async (
   }
 };
 
+// ✅ OPRAVENÁ FUNKCE PRO TEXT RESPONSE - S PODPOROU SONAR
 const handleTextResponse = async (
   textInput,
   currentMessages,
@@ -1068,6 +1096,28 @@ const handleTextResponse = async (
 
   const needsSearch = shouldSearchInternet(textInput, model);
 
+  // ✅ SONAR - PŘÍMO VRÁTÍ FINÁLNÍ ODPOVĚĎ
+  if (model === 'sonar') {
+    if (needsSearch) {
+      const searchResult = await sonarService.search(textInput, showNotification);
+      if (searchResult.success) {
+        responseText = searchResult.result; // ✅ PŘÍMO FINÁLNÍ ODPOVĚĎ
+      } else {
+        responseText = `Chyba při vyhledávání: ${searchResult.message}`;
+      }
+    } else {
+      // Pro konverzační dotazy bez vyhledávání
+      responseText = "Omnia Search je specializovaná na vyhledávání aktuálních informací na internetu. Pro běžnou konverzaci zkuste Omnia v1 nebo v2.";
+    }
+
+    const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+
+    return responseText;
+  }
+
+  // ✅ CLAUDE A GPT-4O - STANDARDNÍ LOGIKA
   if (needsSearch) {
     if (model === 'claude') {
       const searchResult = await perplexitySearchService.search(textInput, showNotification);
@@ -1080,13 +1130,6 @@ const handleTextResponse = async (
       const googleResults = await googleSearchService.search(textInput, showNotification);
       if (googleResults) {
         searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
-      }
-    } else if (model === 'sonar') {
-      const searchResult = await sonarService.search(textInput, showNotification);
-      if (searchResult.success) {
-        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Sonar):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
-      } else {
-        searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
       }
     }
   }
@@ -1105,7 +1148,7 @@ const handleTextResponse = async (
     ];
 
     responseText = await openaiService.sendMessage(openAiMessages);
-  } else if (model === 'claude' || model === 'sonar') {
+  } else if (model === 'claude') {
     const userMessageWithContext = searchContext ?
       `${textInput}${searchContext}` : textInput;
 
@@ -1552,6 +1595,7 @@ function App() {
     }
   }, []);
 
+  // ✅ HLAVNÍ SEND HANDLER S OPRAVOU PRO SONAR
   const handleSend = async (textInput = input) => {
     if (!textInput.trim()) return;
 
@@ -1635,9 +1679,7 @@ function App() {
       case 'gpt-4o': return '⚡ • OpenAI rychlý chat';
       default: return '⚡ • OpenAI rychlý chat';
     }
-  };
-
-  return (
+  };return (
     <div style={{ 
       minHeight: '100vh', 
       display: 'flex', 
