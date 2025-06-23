@@ -145,6 +145,72 @@ const ChatOmniaLogo = ({ size = 16 }) => {
   );
 };
 
+// ✅ NEW: OMNIA ARROW BUTTON - Samostatné tlačítko s Omnia barvami
+const OmniaArrowButton = ({ onClick, disabled, loading, size = 56 }) => {
+  const getButtonStyle = () => {
+    const baseStyle = {
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      border: 'none',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: size * 0.3,
+      fontWeight: 'bold',
+      transition: 'all 0.2s ease',
+      color: 'white',
+      opacity: disabled ? 0.5 : 1
+    };
+
+    if (disabled) {
+      return {
+        ...baseStyle,
+        background: 'linear-gradient(135deg, #9ca3af, #6b7280)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      };
+    }
+
+    return {
+      ...baseStyle,
+      background: `
+        radial-gradient(circle at 30% 30%, 
+          rgba(0, 255, 255, 0.9) 0%,
+          rgba(0, 150, 255, 1) 25%,
+          rgba(100, 50, 255, 1) 50%,
+          rgba(200, 50, 200, 0.9) 75%,
+          rgba(100, 50, 255, 0.7) 100%
+        )
+      `,
+      boxShadow: '0 4px 12px rgba(0, 150, 255, 0.3)'
+    };
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={getButtonStyle()}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.target.style.transform = 'translateY(-1px) scale(1.05)';
+          e.target.style.boxShadow = '0 6px 16px rgba(0, 150, 255, 0.4)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          e.target.style.transform = 'translateY(0) scale(1)';
+          e.target.style.boxShadow = '0 4px 12px rgba(0, 150, 255, 0.3)';
+        }
+      }}
+      title="Odeslat zprávu"
+    >
+      {loading ? '⏳' : '→'}
+    </button>
+  );
+};
+
 // 🎤 VOICE RECORDER for Voice Screen
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -1002,7 +1068,7 @@ const VoiceScreen = ({
   loading, 
   isAudioPlaying,
   isMobile,
-  stopCurrentAudio  // ✅ NEW: Stop function
+  stopCurrentAudio  // ✅ Stop function
 }) => {
 
   // 🔇 Handle any click in Voice Screen - stop audio
@@ -1050,11 +1116,11 @@ const VoiceScreen = ({
         zIndex: 10000,
         color: 'white'
       }}
-      onClick={handleScreenClick}  // ✅ FIXED: Stop audio on any click
+      onClick={handleScreenClick}
     >
       {/* X Close Button */}
       <button
-        onClick={handleCloseClick}  // ✅ FIXED: Stop audio + close
+        onClick={handleCloseClick}
         style={{
           position: 'absolute',
           top: '20px',
@@ -1378,10 +1444,10 @@ function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: '#f5f5f5', // ✅ FIXED: Full gray background
+      background: '#f5f5f5',
       color: '#000000',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
-      width: '100vw', // ✅ FIXED: Full viewport width
+      width: '100vw',
       margin: 0,
       padding: 0
     }}>
@@ -1392,7 +1458,7 @@ function App() {
         background: '#f5f5f5',
         position: 'relative',
         borderBottom: '1px solid rgba(0,0,0,0.05)',
-        width: '100%' // ✅ FIXED: Full width
+        width: '100%'
       }}>
         
         {/* Top Controls Row */}
@@ -1404,7 +1470,7 @@ function App() {
           maxWidth: '1200px',
           margin: '0 auto',
           marginBottom: isMobile ? '1.5rem' : '2rem',
-          width: '100%' // ✅ FIXED: Full width
+          width: '100%'
         }}>
           
           {/* 📋 Left: Model Dropdown */}
@@ -1523,7 +1589,7 @@ function App() {
           gap: '1rem',
           maxWidth: '1200px',
           margin: '0 auto',
-          width: '100%' // ✅ FIXED: Full width
+          width: '100%'
         }}>
           <OmniaLogo 
             size={isMobile ? 80 : 100} 
@@ -1551,7 +1617,7 @@ function App() {
         padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
         background: '#f5f5f5',
-        width: '100%' // ✅ FIXED: Full width
+        width: '100%'
       }}>
         <div style={{ 
           maxWidth: '1000px', 
@@ -1560,10 +1626,10 @@ function App() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: messages.length === 0 ? 'center' : 'flex-start',
-          width: '100%' // ✅ FIXED: Full width
+          width: '100%'
         }}>
           
-          {/* ✅ REMOVED: Empty State - Clean Space */}
+          {/* ✅ Clean Empty Space */}
           {messages.length === 0 && (
             <div style={{ height: '40vh' }}></div>
           )}
@@ -1662,7 +1728,7 @@ function App() {
           
           <div ref={endOfMessagesRef} />
         </div>
-      </main>{/* 🎯 INPUT BAR - Fixed with Arrow Inside */}
+      </main>{/* 🎯 INPUT BAR - FIXED: Arrow Outside Input */}
       <div style={{ 
         position: 'fixed', 
         bottom: 0, 
@@ -1673,7 +1739,7 @@ function App() {
         padding: isMobile ? '1rem' : '1.5rem',
         borderTop: '1px solid rgba(0,0,0,0.05)',
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
-        width: '100%' // ✅ FIXED: Full width
+        width: '100%'
       }}>
         <div style={{ 
           maxWidth: '1000px',
@@ -1681,11 +1747,11 @@ function App() {
           display: 'flex', 
           gap: '0.75rem',
           alignItems: 'center',
-          width: '100%' // ✅ FIXED: Full width
+          width: '100%'
         }}>
           
-          {/* 📝 INPUT FIELD WITH INTEGRATED ARROW */}
-          <div style={{ flex: 1, position: 'relative' }}>
+          {/* 📝 CLEAN INPUT FIELD - No integrated arrow */}
+          <div style={{ flex: 1 }}>
             <input
               type="text"
               value={input}
@@ -1695,7 +1761,7 @@ function App() {
               disabled={loading}
               style={{ 
                 width: '100%',
-                padding: isMobile ? '1rem 50px 1rem 1.25rem' : '1rem 60px 1rem 1.5rem', // ✅ FIXED: More right padding for arrow
+                padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem', // ✅ FIXED: Normal padding
                 fontSize: isMobile ? '16px' : '0.95rem', // ✅ iOS zoom fix
                 borderRadius: '25px',
                 border: '2px solid #e5e7eb',
@@ -1714,48 +1780,6 @@ function App() {
                 e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
               }}
             />
-            
-            {/* ✅ FIXED: Small Arrow Inside Input */}
-            <button
-              onClick={() => handleSend()}
-              disabled={loading || !input.trim()}
-              style={{
-                position: 'absolute',
-                right: '8px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: isMobile ? '36px' : '40px',
-                height: isMobile ? '36px' : '40px',
-                borderRadius: '50%',
-                border: 'none',
-                background: loading || !input.trim() 
-                  ? '#e5e7eb' 
-                  : '#3b82f6',
-                color: 'white',
-                cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: isMobile ? '14px' : '16px',
-                transition: 'all 0.2s ease',
-                opacity: loading || !input.trim() ? 0.5 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!loading && input.trim()) {
-                  e.target.style.background = '#2563eb';
-                  e.target.style.transform = 'translateY(-50%) scale(1.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading && input.trim()) {
-                  e.target.style.background = '#3b82f6';
-                  e.target.style.transform = 'translateY(-50%) scale(1)';
-                }
-              }}
-              title="Odeslat zprávu"
-            >
-              {loading ? '⏳' : '→'}
-            </button>
           </div>
           
           {/* 🎵 MINI OMNIA LOGO - Voice Screen Trigger */}
@@ -1764,6 +1788,14 @@ function App() {
             onClick={() => setShowVoiceScreen(true)}
             isAudioPlaying={isAudioPlaying}
             loading={loading}
+          />
+
+          {/* ✅ FIXED: OMNIA ARROW BUTTON - Outside input with Omnia colors */}
+          <OmniaArrowButton
+            onClick={() => handleSend()}
+            disabled={loading || !input.trim()}
+            loading={loading}
+            size={isMobile ? 50 : 56}
           />
         </div>
       </div>
@@ -1776,7 +1808,7 @@ function App() {
           loading={loading}
           isAudioPlaying={isAudioPlaying}
           isMobile={isMobile}
-          stopCurrentAudio={stopCurrentAudio}  // ✅ NEW: Pass stop function
+          stopCurrentAudio={stopCurrentAudio}
         />
       )}
 
@@ -1922,6 +1954,34 @@ function App() {
         @supports (padding: max(0px)) {
           .input-container {
             padding-bottom: max(1rem, env(safe-area-inset-bottom));
+          }
+        }
+
+        /* ✅ FIXED: Omnia Arrow Button hover effects */
+        .omnia-arrow-button:hover {
+          transform: translateY(-1px) scale(1.05);
+          box-shadow: 0 6px 16px rgba(0, 150, 255, 0.4);
+        }
+
+        .omnia-arrow-button:active {
+          transform: translateY(0) scale(0.98);
+        }
+
+        /* 🎨 Beautiful gradient animations for Omnia buttons */
+        @keyframes omnia-glow {
+          0%, 100% {
+            box-shadow: 0 4px 12px rgba(0, 150, 255, 0.3);
+          }
+          50% {
+            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
+          }
+        }
+
+        /* 📱 Better touch targets for mobile */
+        @media (max-width: 768px) {
+          button {
+            min-height: 44px;
+            min-width: 44px;
           }
         }
       `}</style>
