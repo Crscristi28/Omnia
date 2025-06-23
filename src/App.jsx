@@ -746,16 +746,15 @@ const perplexitySearchService = {
   }
 };
 
-// ✅ ENHANCED SEARCH DETECTION - Lepší detekce kdy hledat aktuální data
 const shouldSearchInternet = (userInput, model) => {
-  // ❌ Pouze Omnia v2 (Claude) má web search
-  if (model !== 'claude') {
+  // Povolit web search pro Claude i GPT-4o
+  if (model !== 'claude' && model !== 'gpt-4o') {
     return false;
   }
 
   const input = (userInput || '').toLowerCase();
-  
-  // ❌ NIKDY nehledej pro basic conversation
+
+  // NIKDY nehledej pro základní konverzační fráze
   const conversationalPhrases = [
     'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer',
     'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi',
@@ -765,15 +764,14 @@ const shouldSearchInternet = (userInput, model) => {
     'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej',
     'napiš mi', 'vytvoř', 'spočítej', 'překladej'
   ];
-  
+
   for (const phrase of conversationalPhrases) {
     if (input.includes(phrase)) {
-      console.log('🧪 Conversation detected, no search:', phrase);
       return false;
     }
   }
-  
-  // ✅ Hledej pro explicitní požadavky
+
+  // Search triggery
   const searchTriggers = [
     'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
     'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
@@ -781,41 +779,36 @@ const shouldSearchInternet = (userInput, model) => {
     'current', 'today', 'now', 'dnes', 'teď', 'momentálně',
     'aktuální informace', 'aktuální stav', 'nové informace'
   ];
-  
+
   for (const trigger of searchTriggers) {
     if (input.includes(trigger)) {
-      console.log('🧪 Search triggered by:', trigger);
       return true;
     }
   }
-  
-  // ✅ Hledej pro temporal keywords
-  if (input.includes('2024') || input.includes('2025') || 
+
+  // Temporal keywords
+  if (input.includes('2024') || input.includes('2025') ||
       input.includes('dnes') || input.includes('včera') ||
       input.includes('tento týden') || input.includes('tento měsíc') ||
       input.includes('letos') || input.includes('loni') ||
       input.includes('teď') || input.includes('právě') ||
       input.includes('momentálně') || input.includes('v současnosti')) {
-    console.log('🧪 Search triggered by temporal keyword');
     return true;
   }
-  
-  // ✅ Hledej pro price/financial queries
-  if (input.includes('cena') || input.includes('kurz') || 
+
+  // Financial keywords
+  if (input.includes('cena') || input.includes('kurz') ||
       input.includes('akcie') || input.includes('burza') ||
       input.includes('bitcoin') || input.includes('krypto')) {
-    console.log('🧪 Search triggered by financial keyword');
     return true;
   }
-  
-  // ✅ Hledej pro weather queries
-  if (input.includes('počasí') || input.includes('teplota') || 
+
+  // Weather keywords
+  if (input.includes('počasí') || input.includes('teplota') ||
       input.includes('déšť') || input.includes('sníh')) {
-    console.log('🧪 Search triggered by weather keyword');
     return true;
   }
-  
-  console.log('🧪 No search trigger found');
+
   return false;
 };
 
@@ -932,32 +925,27 @@ const googleSearchService = {
   }
 };
 
-// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with Perplexity & Google Search
 const handleVoiceScreenResponse = async (
-  textInput, 
-  currentMessages, 
-  model, 
-  openaiService, 
-  claudeService, 
-  setMessages, 
+  textInput,
+  currentMessages,
+  model,
+  openaiService,
+  claudeService,
+  setMessages,
   setLoading,
   setIsAudioPlaying,
   currentAudioRef,
   isIOS,
   showNotification
 ) => {
-  console.log('🚀 Starting Voice Screen response...');
-
   try {
     let responseText = '';
     let searchContext = '';
 
     const needsSearch = shouldSearchInternet(textInput, model);
-    
+
     if (needsSearch) {
       if (model === 'claude') {
-        // existující Perplexity logika
-        console.log('🔍 Query needs Perplexity web search');
         const searchResult = await perplexitySearchService.search(textInput, showNotification);
         if (searchResult.success) {
           searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
@@ -965,7 +953,6 @@ const handleVoiceScreenResponse = async (
           searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
         }
       } else if (model === 'gpt-4o') {
-        // Google search logika
         const googleResults = await googleSearchService.search(textInput, showNotification);
         if (googleResults) {
           searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
@@ -975,9 +962,9 @@ const handleVoiceScreenResponse = async (
 
     if (model === 'gpt-4o') {
       const openAiMessages = [
-        { 
-          role: 'system', 
-          content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
+        {
+          role: 'system',
+          content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
         },
         ...currentMessages.map((msg) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -988,52 +975,47 @@ const handleVoiceScreenResponse = async (
 
       responseText = await openaiService.sendMessage(openAiMessages);
     } else if (model === 'claude') {
-      const userMessageWithContext = searchContext ? 
+      const userMessageWithContext = searchContext ?
         `${textInput}${searchContext}` : textInput;
-      
+
       responseText = await claudeService.sendMessage([
-        ...currentMessages, 
+        ...currentMessages,
         { sender: 'user', text: userMessageWithContext }
       ]);
     }
 
-    console.log('✅ AI odpověď získána:', responseText);
-
-    // 🎯 PARALELNÍ SPUŠTĚNÍ: Audio + Text
     const finalMessages = [...currentMessages, { sender: 'bot', text: responseText }];
     setMessages(finalMessages);
     localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
 
-    // Generate instant audio
     await generateInstantAudio(
-      responseText, 
-      setIsAudioPlaying, 
-      currentAudioRef, 
-      isIOS, 
+      responseText,
+      setIsAudioPlaying,
+      currentAudioRef,
+      isIOS,
       showNotification
     );
-    
+
     return responseText;
-    
+
   } catch (error) {
     console.error('💥 Voice Screen response error:', error);
-    
+
     const errorText = `Chyba: ${error.message}`;
     const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
     setMessages(errorMessages);
     localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
-    
+
     throw error;
   }
 };
 
-// 📄 CLASSIC TEXT RESPONSE HANDLER - Enhanced with Perplexity
 const handleTextResponse = async (
-  textInput, 
-  currentMessages, 
-  model, 
-  openaiService, 
-  claudeService, 
+  textInput,
+  currentMessages,
+  model,
+  openaiService,
+  claudeService,
   setMessages,
   showNotification
 ) => {
@@ -1041,23 +1023,28 @@ const handleTextResponse = async (
   let searchContext = '';
 
   const needsSearch = shouldSearchInternet(textInput, model);
-  
-  if (needsSearch && model === 'claude') {
-    console.log('🔍 Query needs Perplexity web search');
-    const searchResult = await perplexitySearchService.search(textInput, showNotification);
-    
-    if (searchResult.success) {
-      searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
-    } else {
-      searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+
+  if (needsSearch) {
+    if (model === 'claude') {
+      const searchResult = await perplexitySearchService.search(textInput, showNotification);
+      if (searchResult.success) {
+        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
+      } else {
+        searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+      }
+    } else if (model === 'gpt-4o') {
+      const googleResults = await googleSearchService.search(textInput, showNotification);
+      if (googleResults) {
+        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+      }
     }
   }
-  
+
   if (model === 'gpt-4o') {
     const openAiMessages = [
-      { 
-        role: 'system', 
-        content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívaj anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}` 
+      {
+        role: 'system',
+        content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
       },
       ...currentMessages.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1068,11 +1055,11 @@ const handleTextResponse = async (
 
     responseText = await openaiService.sendMessage(openAiMessages);
   } else if (model === 'claude') {
-    const userMessageWithContext = searchContext ? 
+    const userMessageWithContext = searchContext ?
       `${textInput}${searchContext}` : textInput;
-    
+
     responseText = await claudeService.sendMessage([
-      ...currentMessages, 
+      ...currentMessages,
       { sender: 'user', text: userMessageWithContext }
     ]);
   }
@@ -1080,7 +1067,7 @@ const handleTextResponse = async (
   const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
   setMessages(updatedMessages);
   localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-  
+
   return responseText;
 };
 
