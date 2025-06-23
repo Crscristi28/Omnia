@@ -58,7 +58,7 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 MINI LOGO for Input Bar - Audio State Indicator
+// 🎤 MINI OMNIA LOGO for Input Bar - Audio State Indicator
 const MiniOmniaLogo = ({ size = 32, onClick, isAudioPlaying = false, loading = false }) => {
   const getLogoStyle = () => {
     const baseStyle = {
@@ -116,6 +116,32 @@ const MiniOmniaLogo = ({ size = 32, onClick, isAudioPlaying = false, loading = f
         {loading ? '⚡' : isAudioPlaying ? '🔊' : '🎤'}
       </span>
     </div>
+  );
+};
+
+// 🎤 CHAT OMNIA LOGO - Malé logo pro chat bubliny místo 🤖
+const ChatOmniaLogo = ({ size = 16 }) => {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: `
+          radial-gradient(circle at 30% 30%, 
+            rgba(0, 255, 255, 0.9) 0%,
+            rgba(0, 150, 255, 1) 25%,
+            rgba(100, 50, 255, 1) 50%,
+            rgba(200, 50, 200, 0.9) 75%,
+            rgba(100, 50, 255, 0.7) 100%
+          )
+        `,
+        boxShadow: `0 0 ${size * 0.5}px rgba(0, 150, 255, 0.4)`,
+        display: 'inline-block',
+        marginRight: '6px',
+        flexShrink: 0
+      }}
+    />
   );
 };
 
@@ -637,7 +663,7 @@ const shouldSearchInternet = (userInput) => {
   return false;
 };
 
-// 🎵 AUDIO GENERATION FOR VOICE SCREEN
+// 🎵 AUDIO GENERATION FOR VOICE SCREEN - Enhanced with stop capability
 const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification) => {
   try {
     console.log('🚀 Generating INSTANT audio response...');
@@ -724,7 +750,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// 🎯 VOICE SCREEN RESPONSE HANDLER
+// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with audio stop
 const handleVoiceScreenResponse = async (
   textInput, 
   currentMessages, 
@@ -969,113 +995,213 @@ const openaiService = {
       throw error;
     }
   }
-};// 🎤 VOICE SCREEN COMPONENT - Full Screen Overlay
+};// 🎤 VOICE SCREEN COMPONENT - Fixed Audio Stop Management
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
   loading, 
   isAudioPlaying,
-  isMobile 
-}) => (
-  <div 
-    style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(135deg, #000000, #1a1a2e)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 10000,
-      color: 'white'
-    }}
-    onClick={(e) => {
-      // Only close if clicking outside main content area
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    }}
-  >
-    {/* X Close Button */}
-    <button
-      onClick={onClose}
+  isMobile,
+  stopCurrentAudio  // ✅ NEW: Stop function
+}) => {
+
+  // 🔇 Handle any click in Voice Screen - stop audio
+  const handleScreenClick = (e) => {
+    // Stop audio on any click in Voice Screen
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+    
+    // Only close if clicking outside main content area
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  // 🔇 Handle X button - stop audio + close
+  const handleCloseClick = () => {
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+    onClose();
+  };
+
+  // 🔇 Handle element clicks - stop audio but don't close
+  const handleElementClick = (e) => {
+    e.stopPropagation();
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+  };
+
+  return (
+    <div 
       style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        background: 'none',
-        border: '2px solid rgba(255,255,255,0.7)',
-        color: 'white',
-        borderRadius: '50%',
-        width: '50px',
-        height: '50px',
-        fontSize: '1.5rem',
-        cursor: 'pointer',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'linear-gradient(135deg, #000000, #1a1a2e)',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        transition: 'all 0.2s ease'
+        zIndex: 10000,
+        color: 'white'
       }}
-      onMouseEnter={(e) => {
-        e.target.style.background = 'rgba(255,255,255,0.1)';
-        e.target.style.borderColor = 'white';
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.background = 'none';
-        e.target.style.borderColor = 'rgba(255,255,255,0.7)';
-      }}
+      onClick={handleScreenClick}  // ✅ FIXED: Stop audio on any click
     >
-      ×
-    </button>
+      {/* X Close Button */}
+      <button
+        onClick={handleCloseClick}  // ✅ FIXED: Stop audio + close
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          background: 'none',
+          border: '2px solid rgba(255,255,255,0.7)',
+          color: 'white',
+          borderRadius: '50%',
+          width: '50px',
+          height: '50px',
+          fontSize: '1.5rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.background = 'rgba(255,255,255,0.1)';
+          e.target.style.borderColor = 'white';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.background = 'none';
+          e.target.style.borderColor = 'rgba(255,255,255,0.7)';
+        }}
+      >
+        ×
+      </button>
 
-    {/* Animated Logo */}
-    <div style={{ marginBottom: '3rem' }}>
-      <OmniaLogo size={140} animate={true} />
+      {/* Animated Logo - Stop audio on click */}
+      <div 
+        style={{ marginBottom: '3rem', cursor: 'pointer' }}
+        onClick={handleElementClick}
+      >
+        <OmniaLogo size={140} animate={true} />
+      </div>
+
+      {/* Voice Status - Stop audio on click */}
+      <div style={{
+        fontSize: isMobile ? '1.2rem' : '1.5rem',
+        fontWeight: '600',
+        marginBottom: '2rem',
+        textAlign: 'center',
+        opacity: 0.9,
+        cursor: 'pointer'
+      }}
+      onClick={handleElementClick}
+      >
+        {loading ? (
+          "🚀 Připravuji instant odpověď..."
+        ) : isAudioPlaying ? (
+          "🔊 Omnia mluví... (klepněte pro stop)"
+        ) : (
+          "🎤 Držte mikrofon pro mluvení"
+        )}
+      </div>
+
+      {/* Voice Button - Stop audio on click */}
+      <div 
+        style={{ marginBottom: '3rem' }}
+        onClick={handleElementClick}
+      >
+        <VoiceRecorder 
+          onTranscript={onTranscript}
+          disabled={loading}
+          mode="conversation"
+        />
+      </div>
+
+      {/* Instruction - Stop audio on click */}
+      <div style={{
+        fontSize: '0.9rem',
+        opacity: 0.6,
+        textAlign: 'center',
+        maxWidth: '300px',
+        lineHeight: '1.4',
+        cursor: 'pointer'
+      }}
+      onClick={handleElementClick}
+      >
+        {isMobile ? 'Klepněte X nebo kdekoli pro stop/návrat' : 'ESC, X nebo klepněte kdekoli pro stop/návrat'}
+      </div>
     </div>
+  );
+};
 
-    {/* Voice Status */}
-    <div style={{
-      fontSize: isMobile ? '1.2rem' : '1.5rem',
-      fontWeight: '600',
-      marginBottom: '2rem',
-      textAlign: 'center',
-      opacity: 0.9
-    }}>
-      {loading ? (
-        "🚀 Připravuji instant odpověď..."
-      ) : isAudioPlaying ? (
-        "🔊 Omnia mluví..."
-      ) : (
-        "🎤 Držte mikrofon pro mluvení"
-      )}
-    </div>
+// ⚙️ SETTINGS DROPDOWN COMPONENT
+const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
+  if (!isOpen) return null;
 
-    {/* Voice Button */}
-    <div style={{ marginBottom: '3rem' }}>
-      <VoiceRecorder 
-        onTranscript={onTranscript}
-        disabled={loading}
-        mode="conversation"
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 999
+        }}
+        onClick={onClose}
       />
-    </div>
+      
+      {/* Dropdown */}
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        right: 0,
+        marginTop: '4px',
+        background: 'white',
+        border: '1px solid #d1d5db',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        zIndex: 1000,
+        minWidth: '160px'
+      }}>
+        <button
+          onClick={() => {
+            onNewChat();
+            onClose();
+          }}
+          style={{
+            display: 'block',
+            width: '100%',
+            padding: '0.75rem 1rem',
+            border: 'none',
+            background: 'white',
+            textAlign: 'left',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            fontWeight: '400',
+            borderRadius: '8px',
+            color: '#374151'
+          }}
+          onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
+          onMouseLeave={(e) => e.target.style.background = 'white'}
+        >
+          🗑️ Nový chat
+        </button>
+      </div>
+    </>
+  );
+};
 
-    {/* Instruction */}
-    <div style={{
-      fontSize: '0.9rem',
-      opacity: 0.6,
-      textAlign: 'center',
-      maxWidth: '300px',
-      lineHeight: '1.4'
-    }}>
-      {isMobile ? 'Klepněte X nebo mimo pro návrat' : 'ESC, X nebo klepněte mimo pro návrat'}
-    </div>
-  </div>
-);
-
-// 🚀 MAIN APP COMPONENT - Clean Claude-style Fullscreen
+// 🚀 MAIN APP COMPONENT - Fixed Fullscreen Layout
 function App() {
   // 📱 States
   const [input, setInput] = useState('');
@@ -1085,6 +1211,7 @@ function App() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
@@ -1096,7 +1223,7 @@ function App() {
   // 🔔 Notification function
   const showNotification = showNotificationHelper;
 
-  // 🔇 STOP AUDIO FUNCTION
+  // 🔇 STOP AUDIO FUNCTION - Enhanced
   const stopCurrentAudio = () => {
     console.log('🔇 Stopping current audio...');
     
@@ -1110,12 +1237,26 @@ function App() {
     window.dispatchEvent(new CustomEvent('omnia-audio-start'));
   };
 
-  // 🎯 KEYBOARD SHORTCUTS
+  // 🗑️ NEW CHAT FUNCTION
+  const handleNewChat = () => {
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+    localStorage.removeItem('omnia-memory');
+    setMessages([]);
+    showNotification('Nový chat vytvořen', 'info');
+  };
+
+  // 🎯 KEYBOARD SHORTCUTS - Enhanced with Voice Screen audio stop
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         if (showVoiceScreen) {
+          // ✅ FIXED: Stop audio when closing Voice Screen
+          if (isAudioPlaying) {
+            stopCurrentAudio();
+          }
           setShowVoiceScreen(false);
         } else if (isAudioPlaying) {
           stopCurrentAudio();
@@ -1123,6 +1264,9 @@ function App() {
         }
         if (showModelDropdown) {
           setShowModelDropdown(false);
+        }
+        if (showSettingsDropdown) {
+          setShowSettingsDropdown(false);
         }
       }
       
@@ -1135,7 +1279,7 @@ function App() {
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isAudioPlaying, showVoiceScreen, showModelDropdown]);
+  }, [isAudioPlaying, showVoiceScreen, showModelDropdown, showSettingsDropdown]);
 
   // 💾 LOAD HISTORY FROM LOCALSTORAGE
   useEffect(() => {
@@ -1234,17 +1378,21 @@ function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: '#f5f5f5',
+      background: '#f5f5f5', // ✅ FIXED: Full gray background
       color: '#000000',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
+      width: '100vw', // ✅ FIXED: Full viewport width
+      margin: 0,
+      padding: 0
     }}>
       
-      {/* 🎨 CLEAN HEADER - Claude Style */}
+      {/* 🎨 CLEAN HEADER - Fixed Fullscreen */}
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
         background: '#f5f5f5',
         position: 'relative',
-        borderBottom: '1px solid rgba(0,0,0,0.05)'
+        borderBottom: '1px solid rgba(0,0,0,0.05)',
+        width: '100%' // ✅ FIXED: Full width
       }}>
         
         {/* Top Controls Row */}
@@ -1255,7 +1403,8 @@ function App() {
           marginBottom: isMobile ? '1.5rem' : '2rem',
           maxWidth: '1200px',
           margin: '0 auto',
-          marginBottom: isMobile ? '1.5rem' : '2rem'
+          marginBottom: isMobile ? '1.5rem' : '2rem',
+          width: '100%' // ✅ FIXED: Full width
         }}>
           
           {/* 📋 Left: Model Dropdown */}
@@ -1339,29 +1488,30 @@ function App() {
             )}
           </div>
 
-          {/* ⚙️ Right: Clear Chat */}
-          <button
-            onClick={() => {
-              if (isAudioPlaying) {
-                stopCurrentAudio();
-              }
-              localStorage.removeItem('omnia-memory');
-              setMessages([]);
-              showNotification('Chat vymazán', 'info');
-            }}
-            style={{
-              background: 'none',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              padding: '0.5rem',
-              fontSize: '1rem',
-              color: '#6b7280',
-              cursor: 'pointer'
-            }}
-            title="Vymazat chat"
-          >
-            🗑️
-          </button>
+          {/* ⚙️ Right: Settings Dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+              style={{
+                background: 'none',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                padding: '0.5rem',
+                fontSize: '1rem',
+                color: '#6b7280',
+                cursor: 'pointer'
+              }}
+              title="Nastavení"
+            >
+              ⚙️
+            </button>
+            
+            <SettingsDropdown 
+              isOpen={showSettingsDropdown}
+              onClose={() => setShowSettingsDropdown(false)}
+              onNewChat={handleNewChat}
+            />
+          </div>
         </div>
 
         {/* 🎨 Center: Clean Logo Section */}
@@ -1372,7 +1522,8 @@ function App() {
           alignItems: 'center',
           gap: '1rem',
           maxWidth: '1200px',
-          margin: '0 auto'
+          margin: '0 auto',
+          width: '100%' // ✅ FIXED: Full width
         }}>
           <OmniaLogo 
             size={isMobile ? 80 : 100} 
@@ -1393,13 +1544,14 @@ function App() {
         </div>
       </header>
 
-      {/* 💬 MESSAGES AREA - Fullscreen */}
+      {/* 💬 MESSAGES AREA - Fixed Fullscreen */}
       <main style={{ 
         flex: 1,
         overflowY: 'auto',
         padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
-        background: '#f5f5f5'
+        background: '#f5f5f5',
+        width: '100%' // ✅ FIXED: Full width
       }}>
         <div style={{ 
           maxWidth: '1000px', 
@@ -1407,26 +1559,16 @@ function App() {
           minHeight: messages.length === 0 ? '60vh' : 'auto',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: messages.length === 0 ? 'center' : 'flex-start'
+          justifyContent: messages.length === 0 ? 'center' : 'flex-start',
+          width: '100%' // ✅ FIXED: Full width
         }}>
           
-          {/* Empty State */}
+          {/* ✅ REMOVED: Empty State - Clean Space */}
           {messages.length === 0 && (
-            <div style={{
-              textAlign: 'center',
-              color: '#9ca3af',
-              fontSize: isMobile ? '1rem' : '1.1rem',
-              lineHeight: '1.6'
-            }}>
-              <div style={{ marginBottom: '1rem', fontSize: '2rem' }}>💬</div>
-              <div>Začněte konverzaci s Omnia</div>
-              <div style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                Napište zprávu nebo klepněte na malé logo pro Voice Screen
-              </div>
-            </div>
+            <div style={{ height: '40vh' }}></div>
           )}
 
-          {/* Messages */}
+          {/* Messages with Chat Logo */}
           {messages.map((msg, idx) => (
             <div
               key={idx}
@@ -1453,7 +1595,7 @@ function App() {
                   position: 'relative'
                 }}
               >
-                {/* 🤖 AI INDICATOR */}
+                {/* ✅ FIXED: Chat Omnia Logo místo 🤖 */}
                 {msg.sender === 'bot' && (
                   <div style={{ 
                     fontSize: '0.75rem',
@@ -1465,8 +1607,9 @@ function App() {
                     paddingBottom: '0.5rem',
                     borderBottom: '1px solid #f0f0f0'
                   }}>
-                    <span style={{ fontWeight: '600', color: '#6b7280' }}>
-                      🤖 Omnia {model === 'claude' ? 'v2' : 'v1'}
+                    <span style={{ fontWeight: '600', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
+                      <ChatOmniaLogo size={16} />
+                      Omnia {model === 'claude' ? 'v2' : 'v1'}
                     </span>
                     <VoiceButton 
                       text={msg.text} 
@@ -1519,7 +1662,7 @@ function App() {
           
           <div ref={endOfMessagesRef} />
         </div>
-      </main>{/* 🎯 INPUT BAR - Fixed Bottom with Mini Logo */}
+      </main>{/* 🎯 INPUT BAR - Fixed with Arrow Inside */}
       <div style={{ 
         position: 'fixed', 
         bottom: 0, 
@@ -1529,17 +1672,19 @@ function App() {
         backdropFilter: 'blur(10px)',
         padding: isMobile ? '1rem' : '1.5rem',
         borderTop: '1px solid rgba(0,0,0,0.05)',
-        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem'
+        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
+        width: '100%' // ✅ FIXED: Full width
       }}>
         <div style={{ 
           maxWidth: '1000px',
           margin: '0 auto',
           display: 'flex', 
           gap: '0.75rem',
-          alignItems: 'center'
+          alignItems: 'center',
+          width: '100%' // ✅ FIXED: Full width
         }}>
           
-          {/* 📝 INPUT FIELD */}
+          {/* 📝 INPUT FIELD WITH INTEGRATED ARROW */}
           <div style={{ flex: 1, position: 'relative' }}>
             <input
               type="text"
@@ -1550,8 +1695,8 @@ function App() {
               disabled={loading}
               style={{ 
                 width: '100%',
-                padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
-                fontSize: isMobile ? '1rem' : '0.95rem',
+                padding: isMobile ? '1rem 50px 1rem 1.25rem' : '1rem 60px 1rem 1.5rem', // ✅ FIXED: More right padding for arrow
+                fontSize: isMobile ? '16px' : '0.95rem', // ✅ iOS zoom fix
                 borderRadius: '25px',
                 border: '2px solid #e5e7eb',
                 outline: 'none',
@@ -1569,6 +1714,48 @@ function App() {
                 e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
               }}
             />
+            
+            {/* ✅ FIXED: Small Arrow Inside Input */}
+            <button
+              onClick={() => handleSend()}
+              disabled={loading || !input.trim()}
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: isMobile ? '36px' : '40px',
+                height: isMobile ? '36px' : '40px',
+                borderRadius: '50%',
+                border: 'none',
+                background: loading || !input.trim() 
+                  ? '#e5e7eb' 
+                  : '#3b82f6',
+                color: 'white',
+                cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: isMobile ? '14px' : '16px',
+                transition: 'all 0.2s ease',
+                opacity: loading || !input.trim() ? 0.5 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && input.trim()) {
+                  e.target.style.background = '#2563eb';
+                  e.target.style.transform = 'translateY(-50%) scale(1.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && input.trim()) {
+                  e.target.style.background = '#3b82f6';
+                  e.target.style.transform = 'translateY(-50%) scale(1)';
+                }
+              }}
+              title="Odeslat zprávu"
+            >
+              {loading ? '⏳' : '→'}
+            </button>
           </div>
           
           {/* 🎵 MINI OMNIA LOGO - Voice Screen Trigger */}
@@ -1578,45 +1765,10 @@ function App() {
             isAudioPlaying={isAudioPlaying}
             loading={loading}
           />
-
-          {/* 📤 SEND BUTTON */}
-          <button 
-            onClick={() => handleSend()} 
-            disabled={loading || !input.trim()}
-            style={{ 
-              padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
-              fontSize: isMobile ? '0.9rem' : '0.95rem',
-              borderRadius: '20px',
-              background: loading || !input.trim() 
-                ? 'linear-gradient(135deg, #9ca3af, #6b7280)' 
-                : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              color: 'white',
-              border: 'none',
-              cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
-              fontWeight: '600',
-              minWidth: isMobile ? '60px' : '80px',
-              height: isMobile ? '50px' : '56px',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              opacity: loading || !input.trim() ? 0.6 : 1
-            }}
-            onMouseEnter={(e) => {
-              if (!loading && input.trim()) {
-                e.target.style.transform = 'translateY(-1px)';
-                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-            }}
-          >
-            {loading ? '⏳' : '📤'}
-          </button>
         </div>
       </div>
 
-      {/* 🎤 VOICE SCREEN OVERLAY */}
+      {/* 🎤 VOICE SCREEN OVERLAY - Enhanced with stop function */}
       {showVoiceScreen && (
         <VoiceScreen
           onClose={() => setShowVoiceScreen(false)}
@@ -1624,10 +1776,11 @@ function App() {
           loading={loading}
           isAudioPlaying={isAudioPlaying}
           isMobile={isMobile}
+          stopCurrentAudio={stopCurrentAudio}  // ✅ NEW: Pass stop function
         />
       )}
 
-      {/* 🎨 CSS ANIMATIONS & STYLES */}
+      {/* 🎨 CSS ANIMATIONS & STYLES - Enhanced */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
@@ -1676,6 +1829,14 @@ function App() {
           }
         }
 
+        /* ✅ FIXED: Full viewport layout */
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          overflow-x: hidden;
+        }
+
         /* 📱 Mobile optimizations */
         @media (max-width: 768px) {
           input {
@@ -1712,22 +1873,61 @@ function App() {
         /* 📱 Touch optimizations */
         * {
           -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 🎨 Smooth transitions */
-        * {
           box-sizing: border-box;
         }
-        
-        body {
+
+        /* ✅ FIXED: Fullscreen container */
+        #root {
+          width: 100vw;
+          min-height: 100vh;
           margin: 0;
           padding: 0;
-          overflow-x: hidden;
+        }
+
+        /* 🎨 Input focus states */
+        input:focus {
+          outline: none !important;
+        }
+
+        /* ⚙️ Dropdown animations */
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* 🎵 Logo pulse animations for different states */
+        @keyframes pulse-loading {
+          0%, 100% { 
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);
+            transform: scale(1);
+          }
+          50% { 
+            box-shadow: 0 0 25px rgba(255, 193, 7, 0.8);
+            transform: scale(1.05);
+          }
+        }
+
+        /* 🔄 Smooth transitions for all interactive elements */
+        button, input, div[role="button"] {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 📱 Safe area handling for mobile */
+        @supports (padding: max(0px)) {
+          .input-container {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+          }
         }
       `}</style>
 
       {/* 📱 CLICK OUTSIDE TO CLOSE DROPDOWNS */}
-      {showModelDropdown && (
+      {(showModelDropdown || showSettingsDropdown) && (
         <div
           style={{
             position: 'fixed',
@@ -1737,7 +1937,10 @@ function App() {
             bottom: 0,
             zIndex: 999
           }}
-          onClick={() => setShowModelDropdown(false)}
+          onClick={() => {
+            setShowModelDropdown(false);
+            setShowSettingsDropdown(false);
+          }}
         />
       )}
     </div>
