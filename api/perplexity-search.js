@@ -1,4 +1,4 @@
-// api/perplexity-search.js - OPRAVENÁ verze se správným modelem
+// api/perplexity-search.js - UPGRADOVANÁ verze se sonar-pro pro Claude
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Perplexity API key not set' });
     }
 
-    console.log('🔍 Perplexity search for:', query);
+    console.log('🔍 Perplexity Sonar Pro search for:', query);
 
     const currentYear = new Date().getFullYear();
 
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${PERPLEXITY_API_KEY}`
       },
       body: JSON.stringify({
-        model: "sonar", // ✅ OPRAVENO - správný název z dokumentace
+        model: "sonar-pro", // ✅ UPGRADOVÁNO na sonar-pro
         messages: [
           {
             role: "system",
@@ -50,13 +50,12 @@ export default async function handler(req, res) {
         ],
         max_tokens: 1000,
         temperature: 0.2
-        // ✅ ODSTRANĚNO - return_citations a search_recency_filter možná dělají problémy
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Perplexity API error:', response.status, errorText);
+      console.error('❌ Perplexity Sonar Pro API error:', response.status, errorText);
       return res.status(500).json({ 
         error: 'Perplexity search failed',
         details: errorText
@@ -64,7 +63,7 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Perplexity search success');
+    console.log('✅ Perplexity Sonar Pro search success');
 
     const searchResult = data.choices[0].message.content;
     // ✅ CITACE z metadata
@@ -80,7 +79,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('💥 Perplexity search error:', error);
+    console.error('💥 Perplexity Sonar Pro search error:', error);
     return res.status(500).json({ 
       error: 'Server error',
       message: error.message
