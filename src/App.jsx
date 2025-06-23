@@ -758,7 +758,6 @@ const sonarService = {
       console.log('🔎 Sonar searching web for:', query);
       showNotification('🔎 Vyhledávám aktuální informace na internetu... (Sonar)', 'info');
 
-      // Vylepši dotaz jako u Perplexity
       const enhancedQuery = perplexitySearchService.enhanceQueryForCurrentData(query);
       console.log('🎯 Enhanced query (Sonar):', enhancedQuery);
 
