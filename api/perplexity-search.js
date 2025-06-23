@@ -1,4 +1,4 @@
-// api/perplexity-search.js - FIXED VERSION
+// api/perplexity-search.js - upravená verze pro správné datum
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,7 +28,8 @@ export default async function handler(req, res) {
 
     console.log('🔍 Perplexity search for:', query);
 
-    // ✅ FIXED: Proper Perplexity API call
+    const currentYear = new Date().getFullYear(); // například 2025
+
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -36,11 +37,11 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${PERPLEXITY_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-small-128k-online", // ✅ ONLINE MODEL WITH WEB SEARCH
+        model: "llama-3.1-sonar-small-128k-online",
         messages: [
           {
             role: "system",
-            content: "Jsi expert na vyhledávání aktuálních informací. Odpovídej vždy v češtině. Používej nejnovější informace z internetu a uveď zdroje."
+            content: `Jsi expert na vyhledávání aktuálních informací. Odpovídej vždy v češtině. Používej nejnovější informace z internetu a uveď zdroje. Aktuální rok je ${currentYear}. Můžeš uvádět i informace z roku ${currentYear}.`
           },
           {
             role: "user",
@@ -66,7 +67,6 @@ export default async function handler(req, res) {
     const data = await response.json();
     console.log('✅ Perplexity search success');
 
-    // ✅ EXTRACT RESPONSE AND CITATIONS
     const searchResult = data.choices[0].message.content;
     const citations = data.citations || [];
 
