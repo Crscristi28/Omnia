@@ -1,5 +1,5 @@
-// 🔎 OPRAVENÉ NÁZVY MODELŮ v sonar-search.js
-// Podle Perplexity dokumentace:
+// 🔎 KOMPLETNÍ SONAR SEARCH s sonar-pro modelem
+// Soubor: api/sonar-search.js
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -22,9 +22,11 @@ export default async function handler(req, res) {
       throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    // ✅ SPRÁVNÝ NÁZEV MODELU z dokumentace
+    console.log('🔎 Sonar Pro API call:', { query });
+
+    // ✅ SONAR-PRO MODEL KONFIGURACE
     const payload = {
-      model: 'sonar',  // ✅ NEBO zkus 'sonar-pro' pro lepší výsledky
+      model: 'sonar-pro',
       messages: [
         {
           role: 'user',
@@ -51,6 +53,7 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
+    console.log('✅ Sonar Pro response received');
 
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response structure');
@@ -63,26 +66,20 @@ export default async function handler(req, res) {
       result: result,
       citations: data.choices[0].message.metadata?.citations || [],
       metadata: {
-        model: 'sonar',
+        model: 'sonar-pro',
         query: query,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        search_type: 'sonar_pro_search'
       }
     });
 
   } catch (error) {
-    console.error('💥 Sonar error:', error);
+    console.error('💥 Sonar Pro error:', error);
     
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Sonar Pro search failed',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
-
-// ✅ DOSTUPNÉ MODELY z dokumentace:
-// - sonar              (128k context) - základní
-// - sonar-pro          (200k context) - lepší, ale dražší  
-// - sonar-reasoning    (128k context)
-// - sonar-reasoning-pro (128k context)  
-// - sonar-deep-research (128k context)
-// - r1-1776            (128k context) - offline model
