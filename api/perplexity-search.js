@@ -1,4 +1,4 @@
-// api/perplexity-search.js - upravená verze pro správné datum
+// api/perplexity-search.js - OPRAVENÁ verze se správným modelem
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
     console.log('🔍 Perplexity search for:', query);
 
-    const currentYear = new Date().getFullYear(); // například 2025
+    const currentYear = new Date().getFullYear();
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${PERPLEXITY_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-small-128k-online",
+        model: "sonar", // ✅ OPRAVENO - správný název z dokumentace
         messages: [
           {
             role: "system",
@@ -49,9 +49,8 @@ export default async function handler(req, res) {
           }
         ],
         max_tokens: 1000,
-        temperature: 0.2,
-        return_citations: true,
-        search_recency_filter: "month"
+        temperature: 0.2
+        // ✅ ODSTRANĚNO - return_citations a search_recency_filter možná dělají problémy
       })
     });
 
@@ -68,7 +67,8 @@ export default async function handler(req, res) {
     console.log('✅ Perplexity search success');
 
     const searchResult = data.choices[0].message.content;
-    const citations = data.citations || [];
+    // ✅ CITACE z metadata
+    const citations = data.choices[0].message.metadata?.citations || [];
 
     return res.status(200).json({
       success: true,
