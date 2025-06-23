@@ -906,7 +906,33 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with Perplexity
+// 🔍 GOOGLE SEARCH SERVICE for GPT-4o
+const googleSearchService = {
+  async search(query, showNotification) {
+    try {
+      showNotification('🔍 Vyhledávám aktuální informace na internetu (Google)...', 'info');
+      const response = await fetch('/api/google-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      if (!response.ok) {
+        throw new Error(`Google search failed: ${response.status}`);
+      }
+      const data = await response.json();
+      if (!data.success || !data.results) {
+        throw new Error('Invalid Google search response');
+      }
+      return data.results.map(r => `${r.title}\n${r.snippet}\n${r.link}`).join('\n\n');
+    } catch (error) {
+      console.error('💥 Google search error:', error);
+      showNotification(`Chyba při Google vyhledávání: ${error.message}`, 'error');
+      return '';
+    }
+  }
+};
+
+// 🎯 VOICE SCREEN RESPONSE HANDLER - Enhanced with Perplexity & Google Search
 const handleVoiceScreenResponse = async (
   textInput, 
   currentMessages, 
@@ -928,14 +954,22 @@ const handleVoiceScreenResponse = async (
 
     const needsSearch = shouldSearchInternet(textInput, model);
     
-    if (needsSearch && model === 'claude') {
-      console.log('🔍 Query needs Perplexity web search');
-      const searchResult = await perplexitySearchService.search(textInput, showNotification);
-      
-      if (searchResult.success) {
-        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
-      } else {
-        searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+    if (needsSearch) {
+      if (model === 'claude') {
+        // existující Perplexity logika
+        console.log('🔍 Query needs Perplexity web search');
+        const searchResult = await perplexitySearchService.search(textInput, showNotification);
+        if (searchResult.success) {
+          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Perplexity):\n${searchResult.result}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli. Informace jsou aktuální a ověřené.`;
+        } else {
+          searchContext = `\n\nPokus o vyhledání aktuálních informací se nezdařil: ${searchResult.message}`;
+        }
+      } else if (model === 'gpt-4o') {
+        // Google search logika
+        const googleResults = await googleSearchService.search(textInput, showNotification);
+        if (googleResults) {
+          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+        }
       }
     }
 
