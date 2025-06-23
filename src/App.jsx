@@ -631,21 +631,33 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-// 🔍 PERPLEXITY WEB SEARCH SERVICE - Real web search!
+// 🔍 ENHANCED PERPLEXITY WEB SEARCH SERVICE - Vylepšená verze pro aktuální data
 const perplexitySearchService = {
   async search(query, showNotification) {
     try {
       console.log('🔍 Perplexity searching web for:', query);
       showNotification('🔍 Vyhledávám aktuální informace na internetu...', 'info');
 
+      // ✅ ENHANCED QUERY PROCESSING - Automaticky přidej časové filtry
+      const enhancedQuery = this.enhanceQueryForCurrentData(query);
+      console.log('🎯 Enhanced query:', enhancedQuery);
+
       const response = await fetch('/api/perplexity-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ 
+          query: enhancedQuery,
+          // ✅ EXPLICITNÍ PARAMETRY pro aktuální data
+          recency_filter: 'month', // Prioritizuj poslední měsíc
+          search_type: 'web',
+          focus: 'recent',
+          // ✅ Explicitně požaduj aktuální rok
+          date_range: '2024-2025'
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`Perplexity search failed: ${response.status}`);
+        throw new Error(`Perplexity request failed: ${response.status}`);
       }
 
       const data = await response.json();
@@ -654,13 +666,17 @@ const perplexitySearchService = {
         throw new Error('Invalid Perplexity response');
       }
 
+      // ✅ VALIDACE VÝSLEDKŮ - Zkontroluj jestli obsahují aktuální data
+      const validatedResult = this.validateResultFreshness(data.result, query);
+      
       showNotification('🔍 Našel jsem aktuální informace!', 'info');
 
       return {
         success: true,
-        result: data.result,
+        result: validatedResult,
         citations: data.citations || [],
-        source: 'perplexity_search'
+        source: 'perplexity_search',
+        enhanced_query: enhancedQuery
       };
 
     } catch (error) {
@@ -672,10 +688,65 @@ const perplexitySearchService = {
         source: 'perplexity_search'
       };
     }
+  },
+
+  // ✅ SMART QUERY ENHANCEMENT - Automaticky vylepši dotaz pro aktuální data
+  enhanceQueryForCurrentData(originalQuery) {
+    const query = originalQuery.toLowerCase();
+    const currentYear = new Date().getFullYear();
+    
+    // Pokud dotaz už obsahuje rok 2024/2025, nech ho být
+    if (query.includes('2024') || query.includes('2025')) {
+      return originalQuery;
+    }
+
+    // ✅ TEMPORAL KEYWORDS - Přidej časové filtry
+    const temporalTriggers = [
+      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední',
+      'zprávy', 'novinky', 'aktuality', 'cena', 'kurz', 'počasí',
+      'dnes', 'teď', 'momentálně', 'current', 'latest', 'recent'
+    ];
+
+    const needsTimeFilter = temporalTriggers.some(trigger => query.includes(trigger));
+    
+    if (needsTimeFilter) {
+      return `${originalQuery} ${currentYear} aktuální`;
+    }
+
+    // ✅ FINANCIAL/PRICE QUERIES - Přidej explicitní časový filtr
+    const financialKeywords = ['cena', 'kurz', 'akcie', 'burza', 'bitcoin', 'krypto'];
+    if (financialKeywords.some(keyword => query.includes(keyword))) {
+      return `${originalQuery} ${currentYear} aktuální cena`;
+    }
+
+    // ✅ NEWS QUERIES - Prioritizuj poslední zprávy
+    const newsKeywords = ['zprávy', 'novinky', 'aktuality', 'události', 'situace'];
+    if (newsKeywords.some(keyword => query.includes(keyword))) {
+      return `${originalQuery} ${currentYear} nejnovější zprávy`;
+    }
+
+    // ✅ DEFAULT - Přidej základní časový filtr
+    return `${originalQuery} ${currentYear}`;
+  },
+
+  // ✅ RESULT VALIDATION - Zkontroluj čerstvost výsledků
+  validateResultFreshness(result, originalQuery) {
+    const currentYear = new Date().getFullYear();
+    const lastYear = currentYear - 1;
+    
+    // Pokud výsledek obsahuje starý rok (2023 a starší), přidej upozornění
+    const hasOldData = result.includes('2023') || result.includes('2022') || result.includes('2021');
+    const hasCurrentData = result.includes(currentYear.toString()) || result.includes(lastYear.toString());
+    
+    if (hasOldData && !hasCurrentData) {
+      return `⚠️ UPOZORNĚNÍ: Našel jsem informace, ale některé mohou být starší. Aktuální data pro "${originalQuery}":\n\n${result}\n\n💡 TIP: Zkuste vyhledat přímo na specializovaných stránkách pro nejnovější informace.`;
+    }
+    
+    return result;
   }
 };
 
-// 🧠 ENHANCED SEARCH LOGIC - Smart detection for Omnia v2
+// ✅ ENHANCED SEARCH DETECTION - Lepší detekce kdy hledat aktuální data
 const shouldSearchInternet = (userInput, model) => {
   // ❌ Pouze Omnia v2 (Claude) má web search
   if (model !== 'claude') {
