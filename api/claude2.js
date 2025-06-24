@@ -1,5 +1,4 @@
-// api/claude2.js - FINÁLNÍ STREAMING verze podle Anthropic docs
-
+// api/claude2.js - STREAMING verze s tvou funkční konfigurací
 export default async function handler(req, res) {
   // CORS headers pro streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,7 +11,6 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -31,36 +29,44 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-8);
     
-    const enhancedSystem = `${system || "Jsi Omnia, pokročilý český AI asistent."}
+    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent."}
     
 Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
 Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
-Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.`;
+Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
+Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
 
-    // 🚀 FINÁLNÍ Claude Sonnet 4 request podle dokumentace
+    // ✅ STREAMING request s tvou funkční konfigurací
     const claudeRequest = {
-      model: "claude-sonnet-4-20250514", // ✅ Správný model z dokumentace
+      model: "claude-sonnet-4-20250514", // ✅ Tvůj funkční model
       max_tokens: max_tokens,
       system: enhancedSystem,
       messages: recentMessages,
-      stream: true // ✅ Streaming enabled
+      stream: true, // 🚀 PŘIDÁNO: streaming
+      tools: [
+        {
+          type: "web_search_20250305", // ✅ Tvůj funkční web_search
+          name: "web_search",
+          max_uses: 5
+        }
+      ]
     };
 
-    console.log('🚀 FINÁLNÍ streaming request to Claude Sonnet 4...');
+    console.log('🚀 Sending STREAMING request to Claude Sonnet 4...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2024-10-22' // 🔧 FINÁLNÍ: aktuální verze
+        'anthropic-version': '2023-06-01' // ✅ Tvá funkční API verze
       },
       body: JSON.stringify(claudeRequest)
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ FINÁLNÍ Claude API error:', response.status, errorText);
+      console.error('❌ Claude API error:', response.status, errorText);
       res.write(JSON.stringify({
         error: true,
         message: `HTTP ${response.status}: ${errorText}`
@@ -68,26 +74,28 @@ Automaticky používej web_search když potřebuješ aktuální informace o cen�
       return res.end();
     }
 
-    console.log('✅ FINÁLNÍ Streaming response started');
+    console.log('✅ STREAMING response started');
 
-    // 🚀 FINÁLNÍ Stream reader setup
+    // 🚀 STREAMING reader setup
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     
     let buffer = '';
     let fullText = '';
+    let webSearchUsed = false;
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         
         if (done) {
-          console.log('✅ FINÁLNÍ Streaming completed');
+          console.log('✅ STREAMING completed');
           
           // Send final metadata
           res.write(JSON.stringify({
             type: 'completed',
-            fullText: fullText
+            fullText: fullText,
+            webSearchUsed: webSearchUsed
           }) + '\n');
           
           break;
@@ -108,7 +116,7 @@ Automaticky používej web_search když potřebuješ aktuální informace o cen�
             try {
               const parsed = JSON.parse(data);
               
-              // Handle Claude 4 streaming events
+              // Handle streaming events
               if (parsed.type === 'content_block_delta') {
                 const text = parsed.delta?.text || '';
                 if (text) {
@@ -122,12 +130,13 @@ Automaticky používej web_search když potřebuješ aktuální informace o cen�
                 }
               }
               
-              // Handle tool use events (pro budoucí web_search)
               else if (parsed.type === 'content_block_start') {
                 if (parsed.content_block?.type === 'tool_use') {
                   const toolName = parsed.content_block.name;
                   
                   if (toolName === 'web_search') {
+                    webSearchUsed = true;
+                    
                     // ✅ Send search notification
                     res.write(JSON.stringify({
                       type: 'search_start',
@@ -138,15 +147,14 @@ Automaticky používej web_search když potřebuješ aktuální informace o cen�
               }
               
             } catch (parseError) {
-              // Some lines might not be JSON, that's OK for Claude 4
-              console.log('⚠️ Non-JSON line (normal for Claude 4):', line.substring(0, 50));
+              // Some lines might not be JSON, that's OK
               continue;
             }
           }
         }
       }
     } catch (streamError) {
-      console.error('💥 FINÁLNÍ Streaming error:', streamError);
+      console.error('💥 Streaming error:', streamError);
       res.write(JSON.stringify({
         error: true,
         message: 'Streaming error: ' + streamError.message
@@ -156,7 +164,7 @@ Automaticky používej web_search když potřebuješ aktuální informace o cen�
     res.end();
 
   } catch (error) {
-    console.error('💥 FINÁLNÍ Fatal error in Claude streaming:', error);
+    console.error('💥 Fatal error in Claude streaming:', error);
     
     res.write(JSON.stringify({
       error: true,
