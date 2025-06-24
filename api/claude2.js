@@ -1,4 +1,4 @@
-// api/claude2.js - Enhanced s EU lokalizací a prompt caching
+// api/claude2.js - BEZ domain filtering (způsobovalo chyby)
 
 export default async function handler(req, res) {
   // CORS headers
@@ -32,9 +32,9 @@ export default async function handler(req, res) {
 Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
 Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
 Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
-Zaměřuj se na české a evropské zdroje kde je to relevantní. Pro místní informace o ČR prioritizuj české weby.`;
+Při vyhledávání se zaměřuj na relevantní a důvěryhodné zdroje. Pro české témata preferuj české weby, pro globální témata mezinárodní zdroje.`;
 
-    // ✅ Enhanced tools s EU lokalizací (nejbližší k ČR)
+    // ✅ Vídeň lokalizace BEZ problematického domain filtering
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
@@ -45,37 +45,20 @@ Zaměřuj se na české a evropské zdroje kde je to relevantní. Pro místní i
           type: "web_search_20250305",
           name: "web_search",
           max_uses: 5,
-          // ✅ Použít Vídeň (nejbližší podporované město k Praze)
+          // ✅ Vídeň jako nejbližší podporované město k Praze
           user_location: {
             type: "approximate",
             city: "Vienna",
-            region: "Vienna",
-            country: "AT", // Rakousko - nejbližší podporovaná země
+            region: "Vienna", 
+            country: "AT",
             timezone: "Europe/Vienna"
-          },
-          // ✅ Domain filtering pro české a evropské zdroje
-          allowed_domains: [
-            "idnes.cz",
-            "novinky.cz", 
-            "aktualne.cz",
-            "irozhlas.cz",
-            "ct24.ceskatelevize.cz",
-            "patria.cz",
-            "finance.cz",
-            "coindesk.com",
-            "binance.com",
-            "coingecko.com",
-            "bloomberg.com",
-            "reuters.com",
-            "bbc.com",
-            "europen.eu"
-          ]
+          }
+          // ❌ ODSTRANĚNO: allowed_domains (způsobovalo HTTP 400)
         }
       ]
     };
 
-    console.log('🚀 Sending enhanced request to Claude Sonnet 4...');
-    console.log('🌍 Using Vienna location (closest to Prague)');
+    console.log('🚀 Sending request to Claude Sonnet 4 with Vienna location...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -97,7 +80,7 @@ Zaměřuj se na české a evropské zdroje kde je to relevantní. Pro místní i
     }
 
     const data = await response.json();
-    console.log('✅ Enhanced Claude Sonnet 4 response received');
+    console.log('✅ Claude Sonnet 4 response received');
     
     // Check for web search usage
     const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
@@ -131,13 +114,7 @@ Zaměřuj se na české a evropské zdroje kde je to relevantní. Pro místní i
       tools_used: toolUses.length > 0,
       web_search_executed: webSearchUsed,
       cache_read_tokens: cacheReadTokens,
-      location_used: "Vienna, AT (closest to Prague)",
-      debug_info: {
-        tools_available: ['web_search_20250305'],
-        tools_used: toolUses.map(t => t.name),
-        allowed_domains: ["Czech and European sources prioritized"],
-        message_count: recentMessages.length
-      }
+      location_used: "Vienna, AT (closest to Prague)"
     });
 
   } catch (error) {
