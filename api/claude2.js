@@ -1,4 +1,4 @@
-// api/claude2.js - FINÁLNÍ s official Anthropic web_search tool
+// api/claude2.js - BEZ CZ lokalizace (není podporovaná)
 
 export default async function handler(req, res) {
   // CORS headers
@@ -32,9 +32,9 @@ export default async function handler(req, res) {
 Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
 Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
 Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
-Vyhledávej v češtině a zaměř se na české a evropské zdroje kde je to relevantní.`;
+Při vyhledávání zkus použít české a evropské zdroje kde je to možné.`;
 
-    // ✅ SPRÁVNÝ formát podle Anthropic dokumentace
+    // ✅ BEZ user_location (CZ není podporovaná)
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
@@ -44,18 +44,13 @@ Vyhledávej v češtině a zaměř se na české a evropské zdroje kde je to re
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 5,
-          // Optional: Lokalizace pro Českou republiku
-          user_location: {
-            type: "approximate",
-            country: "CZ",
-            region: "Prague"
-          }
+          max_uses: 5
+          // ❌ ODSTRANĚNO: user_location (CZ not supported)
         }
       ]
     };
 
-    console.log('🚀 Sending request to Claude Sonnet 4 with official web_search...');
+    console.log('🚀 Sending request to Claude Sonnet 4 with web_search (no CZ location)...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -84,7 +79,7 @@ Vyhledávej v češtině a zaměř se na české a evropské zdroje kde je to re
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
     if (webSearchUsed) {
-      console.log('🔍 Claude used web_search tool!');
+      console.log('🔍 Claude used web_search tool successfully!');
     }
     
     // Extrahovat text odpověď
@@ -103,12 +98,7 @@ Vyhledávej v češtině a zaměř se na české a evropské zdroje kde je to re
       model: data.model,
       usage: data.usage,
       tools_used: toolUses.length > 0,
-      web_search_executed: webSearchUsed,
-      debug_info: {
-        tools_available: ['web_search_20250305'],
-        tools_used: toolUses.map(t => t.name),
-        message_count: recentMessages.length
-      }
+      web_search_executed: webSearchUsed
     });
 
   } catch (error) {
