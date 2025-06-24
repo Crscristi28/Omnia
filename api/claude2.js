@@ -61,8 +61,7 @@ DŮLEŽITÉ: Vždy poskytni konkrétní odpověď na základě nalezených infor
             required: ["query"]
           }
         }
-      ],
-      tool_choice: "auto" // Let Claude decide when to use tools
+      ]
     };
 
     console.log('🔧 Sending request to Claude with web_search tool');
