@@ -227,9 +227,7 @@ function TypewriterText({ text }) {
   }, [charIndex, chars]);
 
   return <span>{displayedText}</span>;
-}
-
-// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
+}// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -269,7 +267,9 @@ const prepareClaudeMessages = (messages) => {
       content: msg.text || ''
     }));
   }
-};// 🎤 VOICE RECORDER for Voice Screen
+};
+
+// 🎤 VOICE RECORDER for Voice Screen
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -629,9 +629,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       {isLoading ? '⏳' : isPlaying ? '⏸️' : '🔊'}
     </button>
   );
-};
-
-// 🔎 SONAR SERVICE - ZACHOVÁNO BEZ ZMĚN
+};// 🔎 SONAR SERVICE - Pro Omnia Search model
 const sonarService = {
   async search(query, showNotification) {
     try {
@@ -645,11 +643,7 @@ const sonarService = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: enhancedQuery,
-          recency_filter: 'month',
-          search_type: 'web',
-          focus: 'recent',
-          date_range: '2024-2025'
+          query: enhancedQuery
         })
       });
 
@@ -668,9 +662,7 @@ const sonarService = {
         success: true,
         result: data.result,
         citations: data.citations || [],
-        source: 'sonar_search',
-        enhanced_query: enhancedQuery,
-        is_final_response: true
+        source: 'sonar_search'
       };
     } catch (error) {
       console.error('💥 Sonar search error:', error);
@@ -715,75 +707,113 @@ const sonarService = {
 
     return `${originalQuery} ${currentYear}`;
   }
-};const shouldSearchInternet = (userInput, model) => {
-  // ⚡ CLAUDE SONNET 4 MÁ NATIVE WEB_SEARCH - NE TRIGGERING NUTNÉ
-  if (model === 'claude') {
-    return false; // Claude Sonnet 4 automaticky rozhodne kdy použít web_search
-  }
+};
 
-  // Povolit web search pro GPT-4o a Sonar
-  if (model !== 'gpt-4o' && model !== 'sonar') {
-    return false;
-  }
-
-  const input = (userInput || '').toLowerCase();
-
-  // NIKDY nehledej pro základní konverzační fráze
-  const conversationalPhrases = [
-    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer',
-    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi',
-    'umíš', 'můžeš mi', 'co umíš', 'jak funguje',
-    'co je to', 'vysvětli', 'řekni mi', 'pomoč', 'pomoz',
-    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
-    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej',
-    'napiš mi', 'vytvoř', 'spočítej', 'překladej'
-  ];
-
-  for (const phrase of conversationalPhrases) {
-    if (input.includes(phrase)) {
-      return false;
+// 🔍 GOOGLE SEARCH SERVICE for GPT-4o
+const googleSearchService = {
+  async search(query, showNotification) {
+    try {
+      showNotification('🔍 Vyhledávám aktuální informace na internetu (Google)...', 'info');
+      const response = await fetch('/api/google-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      if (!response.ok) {
+        throw new Error(`Google search failed: ${response.status}`);
+      }
+      const data = await response.json();
+      if (!data.success || !data.results) {
+        throw new Error('Invalid Google search response');
+      }
+      return data.results.map(r => `${r.title}\n${r.snippet}\n${r.link}`).join('\n\n');
+    } catch (error) {
+      console.error('💥 Google search error:', error);
+      showNotification(`Chyba při Google vyhledávání: ${error.message}`, 'error');
+      return '';
     }
   }
+};
 
-  // Search triggery pouze pro GPT-4o a Sonar
-  const searchTriggers = [
-    'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
-    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
-    'co je nového', 'co se děje', 'poslední', 'recent', 'latest',
-    'current', 'today', 'now', 'dnes', 'teď', 'momentálně',
-    'aktuální informace', 'aktuální stav', 'nové informace'
-  ];
+// 🤖 FIXED API SERVICES - Claude používá claude2, ne perplexity!
+const claudeService = {
+  async sendMessage(messages) {
+    try {
+      console.log('🔧 Claude service: Using /api/claude2');
+      const claudeMessages = prepareClaudeMessages(messages);
+      
+      const systemPrompt = `Jsi Omnia v2, pokročilý český AI asistent s následujícími schopnostmi:
 
-  for (const trigger of searchTriggers) {
-    if (input.includes(trigger)) {
-      return true;
+🔍 WEB_SEARCH - Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu
+📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights
+🎯 EXTENDED THINKING - Používáš pokročilé reasoning s tool use
+
+DŮLEŽITÉ INSTRUKCE:
+- Odpovídej VŽDY výhradně v češtině, gramaticky správně a přirozeně
+- Piš stručně, jako chytrý a lidsky znějící člověk
+- NEPIŠ "Jsem AI" ani se nijak nepředstavuj
+- Automaticky používej web_search když potřebuješ aktuální informace
+- Když použiješ web_search, VŽDY poskytni konkrétní odpověď na základě nalezených informací
+- NIKDY neříkaj "zkontroluj na jiných stránkách" nebo "hledej jinde"
+- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku`;
+      
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: claudeMessages,
+          system: systemPrompt,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
+        throw new Error('Invalid response structure');
+      }
+
+      console.log('✅ Claude response received from /api/claude2');
+      return data.content[0].text;
+    } catch (error) {
+      console.error('💥 Claude error:', error);
+      throw error;
     }
   }
+};
 
-  // Temporal keywords
-  if (input.includes('2024') || input.includes('2025') ||
-      input.includes('dnes') || input.includes('včera') ||
-      input.includes('tento týden') || input.includes('tento měsíc') ||
-      input.includes('letos') || input.includes('loni') ||
-      input.includes('teď') || input.includes('právě') ||
-      input.includes('momentálně') || input.includes('v současnosti')) {
-    return true;
+const openaiService = {
+  async sendMessage(messages) {
+    try {
+      console.log('🔧 OpenAI service: Using /api/openai');
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response structure');
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('💥 OpenAI error:', error);
+      throw error;
+    }
   }
-
-  // Financial keywords
-  if (input.includes('cena') || input.includes('kurz') ||
-      input.includes('akcie') || input.includes('burza') ||
-      input.includes('bitcoin') || input.includes('krypto')) {
-    return true;
-  }
-
-  // Weather keywords
-  if (input.includes('počasí') || input.includes('teplota') ||
-      input.includes('déšť') || input.includes('sníh')) {
-    return true;
-  }
-
-  return false;
 };
 
 // 🎵 ENHANCED AUDIO GENERATION
@@ -873,210 +903,6 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// 🔍 GOOGLE SEARCH SERVICE for GPT-4o
-const googleSearchService = {
-  async search(query, showNotification) {
-    try {
-      showNotification('🔍 Vyhledávám aktuální informace na internetu (Google)...', 'info');
-      const response = await fetch('/api/google-search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
-      });
-      if (!response.ok) {
-        throw new Error(`Google search failed: ${response.status}`);
-      }
-      const data = await response.json();
-      if (!data.success || !data.results) {
-        throw new Error('Invalid Google search response');
-      }
-      return data.results.map(r => `${r.title}\n${r.snippet}\n${r.link}`).join('\n\n');
-    } catch (error) {
-      console.error('💥 Google search error:', error);
-      showNotification(`Chyba při Google vyhledávání: ${error.message}`, 'error');
-      return '';
-    }
-  }
-};
-
-// ✅ UPDATED VOICE SCREEN RESPONSE - CLAUDE S NATIVE WEB_SEARCH
-const handleVoiceScreenResponse = async (
-  textInput,
-  currentMessages,
-  model,
-  openaiService,
-  claudeService,
-  setMessages,
-  setLoading,
-  setIsAudioPlaying,
-  currentAudioRef,
-  isIOS,
-  showNotification
-) => {
-  try {
-    let responseText = '';
-    let searchContext = '';
-
-    const needsSearch = shouldSearchInternet(textInput, model);
-
-    // ✅ SONAR - PŘÍMO VRÁTÍ FINÁLNÍ ODPOVĚĎ
-    if (model === 'sonar') {
-      if (needsSearch) {
-        const searchResult = await sonarService.search(textInput, showNotification);
-        if (searchResult.success) {
-          responseText = searchResult.result;
-        } else {
-          responseText = `Chyba při vyhledávání: ${searchResult.message}`;
-        }
-      } else {
-        responseText = "Omnia Search je specializovaná na vyhledávání aktuálních informací na internetu. Pro běžnou konverzaci zkuste Omnia v1 nebo v2.";
-      }
-
-      const finalMessages = [...currentMessages, { sender: 'bot', text: responseText }];
-      setMessages(finalMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-      await generateInstantAudio(
-        responseText,
-        setIsAudioPlaying,
-        currentAudioRef,
-        isIOS,
-        showNotification
-      );
-
-      return responseText;
-    }
-
-    // ✅ CLAUDE SONNET 4 - NATIVE WEB_SEARCH (bez preprocessing)
-    if (model === 'claude') {
-      responseText = await claudeService.sendMessage([
-        ...currentMessages,
-        { sender: 'user', text: textInput }
-      ]);
-    } 
-    // ✅ GPT-4O - SE SEARCH PREPROCESSING
-    else if (model === 'gpt-4o') {
-      if (needsSearch) {
-        const googleResults = await googleSearchService.search(textInput, showNotification);
-        if (googleResults) {
-          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
-        }
-      }
-
-      const openAiMessages = [
-        {
-          role: 'system',
-          content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
-        },
-        ...currentMessages.map((msg) => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
-        })),
-        { role: 'user', content: textInput }
-      ];
-
-      responseText = await openaiService.sendMessage(openAiMessages);
-    }
-
-    const finalMessages = [...currentMessages, { sender: 'bot', text: responseText }];
-    setMessages(finalMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-    await generateInstantAudio(
-      responseText,
-      setIsAudioPlaying,
-      currentAudioRef,
-      isIOS,
-      showNotification
-    );
-
-    return responseText;
-
-  } catch (error) {
-    console.error('💥 Voice Screen response error:', error);
-
-    const errorText = `Chyba: ${error.message}`;
-    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
-    setMessages(errorMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
-
-    throw error;
-  }
-};
-
-// ✅ UPDATED TEXT RESPONSE - CLAUDE S NATIVE WEB_SEARCH
-const handleTextResponse = async (
-  textInput,
-  currentMessages,
-  model,
-  openaiService,
-  claudeService,
-  setMessages,
-  showNotification
-) => {
-  let responseText = '';
-  let searchContext = '';
-
-  const needsSearch = shouldSearchInternet(textInput, model);
-
-  // ✅ SONAR - PŘÍMO VRÁTÍ FINÁLNÍ ODPOVĚĎ
-  if (model === 'sonar') {
-    if (needsSearch) {
-      const searchResult = await sonarService.search(textInput, showNotification);
-      if (searchResult.success) {
-        responseText = searchResult.result;
-      } else {
-        responseText = `Chyba při vyhledávání: ${searchResult.message}`;
-      }
-    } else {
-      responseText = "Omnia Search je specializovaná na vyhledávání aktuálních informací na internetu. Pro běžnou konverzaci zkuste Omnia v1 nebo v2.";
-    }
-
-    const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-
-    return responseText;
-  }
-
-  // ✅ CLAUDE SONNET 4 - NATIVE WEB_SEARCH (bez preprocessing)
-  if (model === 'claude') {
-    responseText = await claudeService.sendMessage([
-      ...currentMessages,
-      { sender: 'user', text: textInput }
-    ]);
-  } 
-  // ✅ GPT-4O - SE SEARCH PREPROCESSING
-  else if (model === 'gpt-4o') {
-    if (needsSearch) {
-      const googleResults = await googleSearchService.search(textInput, showNotification);
-      if (googleResults) {
-        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
-      }
-    }
-
-    const openAiMessages = [
-      {
-        role: 'system',
-        content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
-      },
-      ...currentMessages.map((msg) => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.text
-      })),
-      { role: 'user', content: textInput }
-    ];
-
-    responseText = await openaiService.sendMessage(openAiMessages);
-  }
-
-  const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
-  setMessages(updatedMessages);
-  localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-
-  return responseText;
-};
-
 // 🔔 NOTIFICATION HELPER
 const showNotificationHelper = (message, type = 'info', onClick = null) => {
   const notification = document.createElement('div');
@@ -1115,87 +941,221 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
       }, 300);
     }
   }, 4000);
-};// 🤖 UPGRADED API SERVICES - CLAUDE SONNET 4
-const claudeService = {
-  async sendMessage(messages) {
-    try {
-      const claudeMessages = prepareClaudeMessages(messages);
-      
-      // ✅ UPDATED SYSTEM PROMPT FOR CLAUDE SONNET 4 WITH NATIVE WEB_SEARCH
-      const systemPrompt = `Jsi Omnia v2, pokročilý český AI asistent s následujícími schopnostmi:
+};// 🚨 FIXED: shouldSearchInternet - Claude NIKDY netrigguje search preprocessing
+const shouldSearchInternet = (userInput, model) => {
+  // ⚡ CLAUDE SONNET 4 MÁ NATIVE WEB_SEARCH - NIKDY NEPREPROCESSOVAT!
+  if (model === 'claude') {
+    return false; // Claude Sonnet 4 si web_search řídí sám
+  }
 
-🔍 WEB_SEARCH - Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu
-📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights
-🎯 EXTENDED THINKING - Používáš pokročilé reasoning s tool use
+  // Povolit web search preprocessing pouze pro GPT-4o 
+  if (model !== 'gpt-4o') {
+    return false;
+  }
 
-DŮLEŽITÉ INSTRUKCE:
-- Odpovídej VŽDY výhradně v češtině, gramaticky správně a přirozeně
-- Piš stručně, jako chytrý a lidsky znějící člověk
-- NEPIŠ "Jsem AI" ani se nijak nepředstavuj
-- Automaticky používej web_search když potřebuješ aktuální informace
-- Když použiješ web_search, VŽDY poskytni konkrétní odpověď na základě nalezených informací
-- NIKDY neříkaj "zkontroluj na jiných stránkách" nebo "hledej jinde"
-- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku`;
-      
-      const response = await fetch('/api/claude2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages: claudeMessages,
-          system: systemPrompt,
-          model: 'claude-sonnet-4-20250514', // ✅ CLAUDE SONNET 4
-          max_tokens: 2000
-        })
-      });
+  const input = (userInput || '').toLowerCase();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
-      }
+  // NIKDY nehledej pro základní konverzační fráze
+  const conversationalPhrases = [
+    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer',
+    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi',
+    'umíš', 'můžeš mi', 'co umíš', 'jak funguje',
+    'co je to', 'vysvětli', 'řekni mi', 'pomoč', 'pomoz',
+    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
+    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej',
+    'napiš mi', 'vytvoř', 'spočítej', 'překladej'
+  ];
 
-      const data = await response.json();
-      
-      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
-        throw new Error('Invalid response structure');
-      }
-
-      return data.content[0].text;
-    } catch (error) {
-      console.error('💥 Claude error:', error);
-      throw error;
+  for (const phrase of conversationalPhrases) {
+    if (input.includes(phrase)) {
+      return false;
     }
+  }
+
+  // Search triggery pouze pro GPT-4o
+  const searchTriggers = [
+    'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
+    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
+    'co je nového', 'co se děje', 'poslední', 'recent', 'latest',
+    'current', 'today', 'now', 'dnes', 'teď', 'momentálně'
+  ];
+
+  for (const trigger of searchTriggers) {
+    if (input.includes(trigger)) {
+      return true;
+    }
+  }
+
+  // Temporal/financial keywords pro GPT-4o
+  if (input.includes('2024') || input.includes('2025') ||
+      input.includes('bitcoin') || input.includes('akcie')) {
+    return true;
+  }
+
+  return false;
+};
+
+// ✅ FIXED VOICE SCREEN RESPONSE - Správné API routing
+const handleVoiceScreenResponse = async (
+  textInput,
+  currentMessages,
+  model,
+  openaiService,
+  claudeService,
+  setMessages,
+  setLoading,
+  setIsAudioPlaying,
+  currentAudioRef,
+  isIOS,
+  showNotification
+) => {
+  try {
+    console.log('🔧 Voice Screen Model:', model);
+    let responseText = '';
+
+    // ✅ SONAR MODEL - používá sonarService
+    if (model === 'sonar') {
+      const searchResult = await sonarService.search(textInput, showNotification);
+      if (searchResult.success) {
+        responseText = searchResult.result;
+      } else {
+        responseText = `Chyba při vyhledávání: ${searchResult.message}`;
+      }
+    }
+    // ✅ CLAUDE MODEL - používá claudeService -> /api/claude2 
+    else if (model === 'claude') {
+      console.log('🚀 Calling Claude Sonnet 4 via /api/claude2');
+      responseText = await claudeService.sendMessage([
+        ...currentMessages,
+        { sender: 'user', text: textInput }
+      ]);
+    }
+    // ✅ GPT-4O MODEL - používá openaiService s optional search preprocessing
+    else if (model === 'gpt-4o') {
+      console.log('🚀 Calling GPT-4o via /api/openai');
+      
+      let searchContext = '';
+      const needsSearch = shouldSearchInternet(textInput, model);
+      
+      if (needsSearch) {
+        const googleResults = await googleSearchService.search(textInput, showNotification);
+        if (googleResults) {
+          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+        }
+      }
+
+      const openAiMessages = [
+        {
+          role: 'system',
+          content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
+        },
+        ...currentMessages.map((msg) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        })),
+        { role: 'user', content: textInput }
+      ];
+
+      responseText = await openaiService.sendMessage(openAiMessages);
+    }
+    else {
+      throw new Error(`Neznámý model: ${model}`);
+    }
+
+    const finalMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+    setMessages(finalMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+    await generateInstantAudio(
+      responseText,
+      setIsAudioPlaying,
+      currentAudioRef,
+      isIOS,
+      showNotification
+    );
+
+    return responseText;
+
+  } catch (error) {
+    console.error('💥 Voice Screen response error:', error);
+
+    const errorText = `Chyba: ${error.message}`;
+    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
+    setMessages(errorMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
+
+    throw error;
   }
 };
 
-const openaiService = {
-  async sendMessage(messages) {
-    try {
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages })
-      });
+// ✅ FIXED TEXT RESPONSE - Správné API routing
+const handleTextResponse = async (
+  textInput,
+  currentMessages,
+  model,
+  openaiService,
+  claudeService,
+  setMessages,
+  showNotification
+) => {
+  console.log('🔧 Text Response Model:', model);
+  let responseText = '';
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response structure');
-      }
-
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error('💥 OpenAI error:', error);
-      throw error;
+  // ✅ SONAR MODEL - používá sonarService
+  if (model === 'sonar') {
+    const searchResult = await sonarService.search(textInput, showNotification);
+    if (searchResult.success) {
+      responseText = searchResult.result;
+    } else {
+      responseText = `Chyba při vyhledávání: ${searchResult.message}`;
     }
   }
-};
+  // ✅ CLAUDE MODEL - používá claudeService -> /api/claude2
+  else if (model === 'claude') {
+    console.log('🚀 Calling Claude Sonnet 4 via /api/claude2');
+    responseText = await claudeService.sendMessage([
+      ...currentMessages,
+      { sender: 'user', text: textInput }
+    ]);
+  }
+  // ✅ GPT-4O MODEL - používá openaiService s optional search preprocessing  
+  else if (model === 'gpt-4o') {
+    console.log('🚀 Calling GPT-4o via /api/openai');
+    
+    let searchContext = '';
+    const needsSearch = shouldSearchInternet(textInput, model);
+    
+    if (needsSearch) {
+      const googleResults = await googleSearchService.search(textInput, showNotification);
+      if (googleResults) {
+        searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+      }
+    }
 
-// 🎤 VOICE SCREEN COMPONENT - Enhanced
+    const openAiMessages = [
+      {
+        role: 'system',
+        content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
+      },
+      ...currentMessages.map((msg) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      { role: 'user', content: textInput }
+    ];
+
+    responseText = await openaiService.sendMessage(openAiMessages);
+  }
+  else {
+    throw new Error(`Neznámý model: ${model}`);
+  }
+
+  const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+  setMessages(updatedMessages);
+  localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+
+  return responseText;
+};// 🎤 VOICE SCREEN COMPONENT - Enhanced
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
@@ -1521,7 +1481,7 @@ function App() {
     }
   }, []);
 
-  // ✅ UPDATED SEND HANDLER - CLAUDE SONNET 4 READY
+  // ✅ FIXED SEND HANDLER - Správné API routing
   const handleSend = async (textInput = input) => {
     if (!textInput.trim()) return;
 
