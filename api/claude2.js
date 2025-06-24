@@ -1,4 +1,4 @@
-// api/claude2.js - BEZ domain filtering (způsobovalo chyby)
+// api/claude2.js - BEZ lokalizace (univerzální web search)
 
 export default async function handler(req, res) {
   // CORS headers
@@ -32,9 +32,9 @@ export default async function handler(req, res) {
 Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
 Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
 Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
-Při vyhledávání se zaměřuj na relevantní a důvěryhodné zdroje. Pro české témata preferuj české weby, pro globální témata mezinárodní zdroje.`;
+Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
 
-    // ✅ Vídeň lokalizace BEZ problematického domain filtering
+    // ✅ ČISTÝ web_search BEZ lokalizace
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
@@ -44,21 +44,13 @@ Při vyhledávání se zaměřuj na relevantní a důvěryhodné zdroje. Pro če
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 5,
-          // ✅ Vídeň jako nejbližší podporované město k Praze
-          user_location: {
-            type: "approximate",
-            city: "Vienna",
-            region: "Vienna", 
-            country: "AT",
-            timezone: "Europe/Vienna"
-          }
-          // ❌ ODSTRANĚNO: allowed_domains (způsobovalo HTTP 400)
+          max_uses: 5
+          // ❌ ODSTRANĚNO: user_location (způsobovalo problémy s českými dotazy)
         }
       ]
     };
 
-    console.log('🚀 Sending request to Claude Sonnet 4 with Vienna location...');
+    console.log('🚀 Sending universal request to Claude Sonnet 4...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -87,13 +79,7 @@ Při vyhledávání se zaměřuj na relevantní a důvěryhodné zdroje. Pro če
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
     if (webSearchUsed) {
-      console.log('🔍 Claude used web_search with Vienna location!');
-    }
-    
-    // Check for caching
-    const cacheReadTokens = data.usage?.cache_read_input_tokens || 0;
-    if (cacheReadTokens > 0) {
-      console.log('💾 Used cached tokens:', cacheReadTokens);
+      console.log('🔍 Claude used universal web_search!');
     }
     
     // Extrahovat text odpověď
@@ -113,8 +99,7 @@ Při vyhledávání se zaměřuj na relevantní a důvěryhodné zdroje. Pro če
       usage: data.usage,
       tools_used: toolUses.length > 0,
       web_search_executed: webSearchUsed,
-      cache_read_tokens: cacheReadTokens,
-      location_used: "Vienna, AT (closest to Prague)"
+      location_mode: "universal (no geo restrictions)"
     });
 
   } catch (error) {
