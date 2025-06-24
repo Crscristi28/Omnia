@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './App.css';
 
-// 🎨 CLEAN OMNIA LOGO - Keep Original Design
-const OmniaLogo = ({ size = 100, animate = false }) => {
+// 🎨 NEW OMNIA LOGO - Nový modro-fialový design ze screenshotu
+const OmniaLogo = ({ size = 80, animate = false }) => {
   return (
     <div
       className={`omnia-logo ${animate ? 'animate' : ''}`}
@@ -11,34 +11,36 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
         height: size,
         borderRadius: '50%',
         background: `
-          radial-gradient(circle at 30% 30%, 
-            rgba(0, 255, 255, 0.9) 0%,
-            rgba(0, 150, 255, 1) 25%,
-            rgba(100, 50, 255, 1) 50%,
-            rgba(200, 50, 200, 0.9) 75%,
-            rgba(100, 50, 255, 0.7) 100%
+          radial-gradient(circle at 30% 40%, 
+            #00ffff 0%,
+            #0096ff 30%,
+            #6432ff 60%,
+            #9932cc 80%,
+            #4b0082 100%
           )
         `,
         boxShadow: `
-          0 0 ${size * 0.3}px rgba(0, 150, 255, 0.4),
-          inset 0 0 ${size * 0.2}px rgba(255, 255, 255, 0.3)
+          0 0 ${size * 0.4}px rgba(100, 50, 255, 0.6),
+          0 0 ${size * 0.2}px rgba(0, 150, 255, 0.4),
+          inset 0 0 ${size * 0.1}px rgba(255, 255, 255, 0.2)
         `,
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',
-        transition: 'all 0.3s ease'
+        transition: 'all 0.3s ease',
+        border: '2px solid rgba(255, 255, 255, 0.1)'
       }}
     >
       <div
         style={{
           position: 'absolute',
-          top: '15%',
-          left: '15%',
-          width: '25%',
-          height: '25%',
+          top: '20%',
+          left: '20%',
+          width: '30%',
+          height: '30%',
           borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.4)',
-          filter: 'blur(6px)'
+          background: 'rgba(255, 255, 255, 0.3)',
+          filter: 'blur(8px)'
         }}
       />
       {animate && (
@@ -49,7 +51,7 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
             left: '-50%',
             width: '200%',
             height: '200%',
-            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%)',
             animation: 'shimmer 3s ease-in-out infinite'
           }}
         />
@@ -58,20 +60,19 @@ const OmniaLogo = ({ size = 100, animate = false }) => {
   );
 };
 
-// 🎤 MINI OMNIA LOGO for Input Bar - Audio State Indicator
-const MiniOmniaLogo = ({ size = 32, onClick, isAudioPlaying = false, loading = false }) => {
+const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false }) => {
   const getLogoStyle = () => {
     const baseStyle = {
       width: size,
       height: size,
       borderRadius: '50%',
       background: `
-        radial-gradient(circle at 30% 30%, 
-          rgba(0, 255, 255, 0.9) 0%,
-          rgba(0, 150, 255, 1) 25%,
-          rgba(100, 50, 255, 1) 50%,
-          rgba(200, 50, 200, 0.9) 75%,
-          rgba(100, 50, 255, 0.7) 100%
+        radial-gradient(circle at 30% 40%, 
+          #00ffff 0%,
+          #0096ff 30%,
+          #6432ff 60%,
+          #9932cc 80%,
+          #4b0082 100%
         )
       `,
       cursor: 'pointer',
@@ -80,29 +81,28 @@ const MiniOmniaLogo = ({ size = 32, onClick, isAudioPlaying = false, loading = f
       alignItems: 'center',
       justifyContent: 'center',
       position: 'relative',
-      border: '2px solid transparent'
+      border: '1px solid rgba(255, 255, 255, 0.2)'
     };
 
     if (loading) {
       return {
         ...baseStyle,
-        animation: 'pulse-blue 1.5s ease-in-out infinite',
-        boxShadow: '0 0 15px rgba(0, 150, 255, 0.6)'
+        animation: 'pulse-omnia 1.5s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 0.6}px rgba(100, 50, 255, 0.8)`
       };
     }
     
     if (isAudioPlaying) {
       return {
         ...baseStyle,
-        animation: 'pulse-green 1s ease-in-out infinite',
-        boxShadow: '0 0 15px rgba(40, 167, 69, 0.8)',
-        borderColor: 'rgba(40, 167, 69, 0.5)'
+        animation: 'pulse-audio 1s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 0.8}px rgba(0, 255, 255, 0.9)`
       };
     }
     
     return {
       ...baseStyle,
-      boxShadow: '0 2px 8px rgba(0, 150, 255, 0.3)'
+      boxShadow: `0 0 ${size * 0.4}px rgba(100, 50, 255, 0.5)`
     };
   };
 
@@ -111,16 +111,11 @@ const MiniOmniaLogo = ({ size = 32, onClick, isAudioPlaying = false, loading = f
       style={getLogoStyle()}
       onClick={onClick}
       title="Klepněte pro Voice Screen"
-    >
-      <span style={{ fontSize: size * 0.4, color: 'white' }}>
-        {loading ? '⚡' : isAudioPlaying ? '🔊' : '🎤'}
-      </span>
-    </div>
+    />
   );
 };
 
-// 🎤 CHAT OMNIA LOGO - Malé logo pro chat bubliny místo 🤖
-const ChatOmniaLogo = ({ size = 16 }) => {
+const ChatOmniaLogo = ({ size = 14 }) => {
   return (
     <div
       style={{
@@ -128,25 +123,25 @@ const ChatOmniaLogo = ({ size = 16 }) => {
         height: size,
         borderRadius: '50%',
         background: `
-          radial-gradient(circle at 30% 30%, 
-            rgba(0, 255, 255, 0.9) 0%,
-            rgba(0, 150, 255, 1) 25%,
-            rgba(100, 50, 255, 1) 50%,
-            rgba(200, 50, 200, 0.9) 75%,
-            rgba(100, 50, 255, 0.7) 100%
+          radial-gradient(circle at 30% 40%, 
+            #00ffff 0%,
+            #0096ff 30%,
+            #6432ff 60%,
+            #9932cc 80%,
+            #4b0082 100%
           )
         `,
-        boxShadow: `0 0 ${size * 0.5}px rgba(0, 150, 255, 0.4)`,
+        boxShadow: `0 0 ${size * 0.5}px rgba(100, 50, 255, 0.6)`,
         display: 'inline-block',
         marginRight: '6px',
-        flexShrink: 0
+        flexShrink: 0,
+        border: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     />
   );
 };
 
-// ✅ OMNIA ARROW BUTTON - Samostatné tlačítko s Omnia barvami
-const OmniaArrowButton = ({ onClick, disabled, loading, size = 56 }) => {
+const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
   const getButtonStyle = () => {
     const baseStyle = {
       width: size,
@@ -167,23 +162,23 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 56 }) => {
     if (disabled) {
       return {
         ...baseStyle,
-        background: 'linear-gradient(135deg, #9ca3af, #6b7280)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
       };
     }
 
     return {
       ...baseStyle,
       background: `
-        radial-gradient(circle at 30% 30%, 
-          rgba(0, 255, 255, 0.9) 0%,
-          rgba(0, 150, 255, 1) 25%,
-          rgba(100, 50, 255, 1) 50%,
-          rgba(200, 50, 200, 0.9) 75%,
-          rgba(100, 50, 255, 0.7) 100%
+        radial-gradient(circle at 30% 40%, 
+          #00ffff 0%,
+          #0096ff 30%,
+          #6432ff 60%,
+          #9932cc 80%,
+          #4b0082 100%
         )
       `,
-      boxShadow: '0 4px 12px rgba(0, 150, 255, 0.3)'
+      boxShadow: '0 4px 12px rgba(100, 50, 255, 0.4)'
     };
   };
 
@@ -195,13 +190,13 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 56 }) => {
       onMouseEnter={(e) => {
         if (!disabled) {
           e.target.style.transform = 'translateY(-1px) scale(1.05)';
-          e.target.style.boxShadow = '0 6px 16px rgba(0, 150, 255, 0.4)';
+          e.target.style.boxShadow = '0 6px 16px rgba(100, 50, 255, 0.6)';
         }
       }}
       onMouseLeave={(e) => {
         if (!disabled) {
           e.target.style.transform = 'translateY(0) scale(1)';
-          e.target.style.boxShadow = '0 4px 12px rgba(0, 150, 255, 0.3)';
+          e.target.style.boxShadow = '0 4px 12px rgba(100, 50, 255, 0.4)';
         }
       }}
       title="Odeslat zprávu"
@@ -209,9 +204,7 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 56 }) => {
       {loading ? '⏳' : '→'}
     </button>
   );
-};
-
-// ⌨️ TYPEWRITER EFFECT
+};// ⌨️ TYPEWRITER EFFECT
 function TypewriterText({ text }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
@@ -227,7 +220,9 @@ function TypewriterText({ text }) {
   }, [charIndex, chars]);
 
   return <span>{displayedText}</span>;
-}// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
+}
+
+// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -390,7 +385,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     setIsRecording(false);
   };
 
-  // Touch handlers
   const handleTouchStart = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -432,7 +426,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     }
   };
 
-  // Cleanup effects
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isRecording) {
@@ -463,7 +456,6 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     };
   }, []);
 
-  // Button styling
   const getButtonStyle = () => {
     const baseStyle = {
       border: 'none',
@@ -634,7 +626,7 @@ const sonarService = {
   async search(query, showNotification) {
     try {
       console.log('🔎 Sonar searching web for:', query);
-      showNotification('🔎 Vyhledávám aktuální informace na internetu... (Omnia Search)', 'info');
+      showNotification('🔎 Vyhledávám aktuální informace na internetu...', 'info');
 
       const enhancedQuery = this.enhanceQueryForCurrentData(query);
       console.log('🎯 Enhanced query (Sonar):', enhancedQuery);
@@ -656,7 +648,7 @@ const sonarService = {
         throw new Error('Invalid Sonar response');
       }
 
-      showNotification('🔍 Našel jsem aktuální informace! (Omnia Search)', 'info');
+      showNotification('🔍 Našel jsem aktuální informace!', 'info');
       
       return {
         success: true,
@@ -666,7 +658,7 @@ const sonarService = {
       };
     } catch (error) {
       console.error('💥 Sonar search error:', error);
-      showNotification(`Chyba při vyhledávání (Omnia Search): ${error.message}`, 'error');
+      showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
       return {
         success: false,
         message: `Chyba při vyhledávání: ${error.message}`,
@@ -735,14 +727,14 @@ const googleSearchService = {
   }
 };
 
-// 🤖 FIXED API SERVICES - Claude používá claude2, ne perplexity!
+// 🤖 API SERVICES - Claude používá claude2
 const claudeService = {
   async sendMessage(messages) {
     try {
       console.log('🔧 Claude service: Using /api/claude2');
       const claudeMessages = prepareClaudeMessages(messages);
       
-      const systemPrompt = `Jsi Omnia v2, pokročilý český AI asistent s následujícími schopnostmi:
+      const systemPrompt = `Jsi Omnia, pokročilý český AI asistent s následujícími schopnostmi:
 
 🔍 WEB_SEARCH - Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu
 📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights
@@ -941,21 +933,18 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
       }, 300);
     }
   }, 4000);
-};// 🚨 FIXED: shouldSearchInternet - Claude NIKDY netrigguje search preprocessing
+};// 🚨 shouldSearchInternet - Claude NIKDY netrigguje search preprocessing
 const shouldSearchInternet = (userInput, model) => {
-  // ⚡ CLAUDE SONNET 4 MÁ NATIVE WEB_SEARCH - NIKDY NEPREPROCESSOVAT!
   if (model === 'claude') {
     return false; // Claude Sonnet 4 si web_search řídí sám
   }
 
-  // Povolit web search preprocessing pouze pro GPT-4o 
   if (model !== 'gpt-4o') {
     return false;
   }
 
   const input = (userInput || '').toLowerCase();
 
-  // NIKDY nehledej pro základní konverzační fráze
   const conversationalPhrases = [
     'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer',
     'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi',
@@ -972,7 +961,6 @@ const shouldSearchInternet = (userInput, model) => {
     }
   }
 
-  // Search triggery pouze pro GPT-4o
   const searchTriggers = [
     'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
     'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
@@ -986,7 +974,6 @@ const shouldSearchInternet = (userInput, model) => {
     }
   }
 
-  // Temporal/financial keywords pro GPT-4o
   if (input.includes('2024') || input.includes('2025') ||
       input.includes('bitcoin') || input.includes('akcie')) {
     return true;
@@ -995,7 +982,7 @@ const shouldSearchInternet = (userInput, model) => {
   return false;
 };
 
-// ✅ FIXED VOICE SCREEN RESPONSE - Správné API routing
+// ✅ VOICE SCREEN RESPONSE Handler
 const handleVoiceScreenResponse = async (
   textInput,
   currentMessages,
@@ -1013,7 +1000,6 @@ const handleVoiceScreenResponse = async (
     console.log('🔧 Voice Screen Model:', model);
     let responseText = '';
 
-    // ✅ SONAR MODEL - používá sonarService
     if (model === 'sonar') {
       const searchResult = await sonarService.search(textInput, showNotification);
       if (searchResult.success) {
@@ -1022,7 +1008,6 @@ const handleVoiceScreenResponse = async (
         responseText = `Chyba při vyhledávání: ${searchResult.message}`;
       }
     }
-    // ✅ CLAUDE MODEL - používá claudeService -> /api/claude2 
     else if (model === 'claude') {
       console.log('🚀 Calling Claude Sonnet 4 via /api/claude2');
       responseText = await claudeService.sendMessage([
@@ -1030,7 +1015,6 @@ const handleVoiceScreenResponse = async (
         { sender: 'user', text: textInput }
       ]);
     }
-    // ✅ GPT-4O MODEL - používá openaiService s optional search preprocessing
     else if (model === 'gpt-4o') {
       console.log('🚀 Calling GPT-4o via /api/openai');
       
@@ -1047,7 +1031,7 @@ const handleVoiceScreenResponse = async (
       const openAiMessages = [
         {
           role: 'system',
-          content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
+          content: `Jsi GPT, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
         },
         ...currentMessages.map((msg) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1088,7 +1072,7 @@ const handleVoiceScreenResponse = async (
   }
 };
 
-// ✅ FIXED TEXT RESPONSE - Správné API routing
+// ✅ TEXT RESPONSE Handler
 const handleTextResponse = async (
   textInput,
   currentMessages,
@@ -1101,7 +1085,6 @@ const handleTextResponse = async (
   console.log('🔧 Text Response Model:', model);
   let responseText = '';
 
-  // ✅ SONAR MODEL - používá sonarService
   if (model === 'sonar') {
     const searchResult = await sonarService.search(textInput, showNotification);
     if (searchResult.success) {
@@ -1110,7 +1093,6 @@ const handleTextResponse = async (
       responseText = `Chyba při vyhledávání: ${searchResult.message}`;
     }
   }
-  // ✅ CLAUDE MODEL - používá claudeService -> /api/claude2
   else if (model === 'claude') {
     console.log('🚀 Calling Claude Sonnet 4 via /api/claude2');
     responseText = await claudeService.sendMessage([
@@ -1118,7 +1100,6 @@ const handleTextResponse = async (
       { sender: 'user', text: textInput }
     ]);
   }
-  // ✅ GPT-4O MODEL - používá openaiService s optional search preprocessing  
   else if (model === 'gpt-4o') {
     console.log('🚀 Calling GPT-4o via /api/openai');
     
@@ -1135,7 +1116,7 @@ const handleTextResponse = async (
     const openAiMessages = [
       {
         role: 'system',
-        content: `Jsi Omnia v1, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
+        content: `Jsi GPT, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
       },
       ...currentMessages.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1155,7 +1136,9 @@ const handleTextResponse = async (
   localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
 
   return responseText;
-};// 🎤 VOICE SCREEN COMPONENT - Enhanced
+};
+
+// 🎤 VOICE SCREEN COMPONENT
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
@@ -1192,10 +1175,10 @@ const VoiceScreen = ({
 
   const getModelName = () => {
     switch(model) {
-      case 'claude': return 'Omnia v2';
+      case 'claude': return 'Omnia';
       case 'sonar': return 'Omnia Search';
-      case 'gpt-4o': return 'Omnia v1';
-      default: return 'Omnia v1';
+      case 'gpt-4o': return 'GPT';
+      default: return 'GPT';
     }
   };
 
@@ -1308,15 +1291,6 @@ const VoiceScreen = ({
 const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
   if (!isOpen) return null;
 
-  const getModelName = () => {
-    switch(model) {
-      case 'claude': return 'Omnia v2';
-      case 'sonar': return 'Omnia Search';
-      case 'gpt-4o': return 'Omnia v1';
-      default: return 'Omnia v1';
-    }
-  };
-
   return (
     <>
       <div
@@ -1336,12 +1310,12 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
         top: '100%',
         right: 0,
         marginTop: '4px',
-        background: 'white',
-        border: '1px solid #d1d5db',
+        background: '#2d3748',
+        border: '1px solid #4a5568',
         borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         zIndex: 1000,
-        minWidth: '220px'
+        minWidth: '200px'
       }}>
         <button
           onClick={() => {
@@ -1353,16 +1327,16 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
             width: '100%',
             padding: '0.75rem 1rem',
             border: 'none',
-            background: 'white',
+            background: '#2d3748',
             textAlign: 'left',
             fontSize: '0.85rem',
             cursor: 'pointer',
             fontWeight: '400',
             borderRadius: '8px 8px 0 0',
-            color: '#374151'
+            color: '#e2e8f0'
           }}
-          onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
-          onMouseLeave={(e) => e.target.style.background = 'white'}
+          onMouseEnter={(e) => e.target.style.background = '#4a5568'}
+          onMouseLeave={(e) => e.target.style.background = '#2d3748'}
         >
           🗑️ Nový chat
         </button>
@@ -1370,18 +1344,8 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
         <div style={{
           padding: '0.5rem 1rem',
           fontSize: '0.75rem',
-          color: '#9ca3af',
-          borderTop: '1px solid #f3f4f6'
-        }}>
-          {model === 'claude' ? '🔍 Native web search aktivní' : 
-           model === 'sonar' ? '🔎 Sonar search aktivní' :
-           '⚡ Rychlý chat režim'}
-        </div>
-        
-        <div style={{
-          padding: '0.25rem 1rem 0.75rem',
-          fontSize: '0.75rem',
-          color: '#9ca3af'
+          color: '#a0aec0',
+          borderTop: '1px solid #4a5568'
         }}>
           📊 Další funkce brzy...
         </div>
@@ -1427,8 +1391,8 @@ function App() {
     localStorage.removeItem('omnia-memory');
     setMessages([]);
     
-    const modelName = model === 'claude' ? 'Omnia v2' : 
-                     model === 'sonar' ? 'Omnia Search' : 'Omnia v1';
+    const modelName = model === 'claude' ? 'Omnia' : 
+                     model === 'sonar' ? 'Omnia Search' : 'GPT';
     showNotification(`Nový chat s ${modelName} vytvořen`, 'info');
   };
 
@@ -1481,7 +1445,6 @@ function App() {
     }
   }, []);
 
-  // ✅ FIXED SEND HANDLER - Správné API routing
   const handleSend = async (textInput = input) => {
     if (!textInput.trim()) return;
 
@@ -1551,19 +1514,10 @@ function App() {
 
   const getModelDisplayName = () => {
     switch(model) {
-      case 'claude': return 'Omnia v2';
+      case 'claude': return 'Omnia';
       case 'sonar': return 'Omnia Search';
-      case 'gpt-4o': return 'Omnia v1';
-      default: return 'Omnia v1';
-    }
-  };
-
-  const getModelDescription = () => {
-    switch(model) {
-      case 'claude': return '🔍 • Claude Sonnet 4 s native web search';
-      case 'sonar': return '🔎 • Sonar web search';
-      case 'gpt-4o': return '⚡ • OpenAI rychlý chat';
-      default: return '⚡ • OpenAI rychlý chat';
+      case 'gpt-4o': return 'GPT';
+      default: return 'GPT';
     }
   };
 
@@ -1572,8 +1526,8 @@ function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: '#f5f5f5',
-      color: '#000000',
+      background: '#000000',
+      color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
       width: '100vw',
       margin: 0,
@@ -1582,9 +1536,9 @@ function App() {
       
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
-        background: '#f5f5f5',
+        background: '#000000',
         position: 'relative',
-        borderBottom: '1px solid rgba(0,0,0,0.05)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
         width: '100%'
       }}>
         
@@ -1603,12 +1557,12 @@ function App() {
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
               style={{
-                background: 'none',
-                border: '1px solid #d1d5db',
+                background: '#2d3748',
+                border: '1px solid #4a5568',
                 borderRadius: '8px',
                 padding: '0.5rem 0.75rem',
                 fontSize: '0.85rem',
-                color: '#374151',
+                color: '#e2e8f0',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -1625,12 +1579,12 @@ function App() {
                 top: '100%',
                 left: 0,
                 marginTop: '4px',
-                background: 'white',
-                border: '1px solid #d1d5db',
+                background: '#2d3748',
+                border: '1px solid #4a5568',
                 borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                 zIndex: 1000,
-                minWidth: '240px'
+                minWidth: '200px'
               }}>
                 <button
                   onClick={() => {
@@ -1642,16 +1596,17 @@ function App() {
                     width: '100%',
                     padding: '0.75rem 1rem',
                     border: 'none',
-                    background: model === 'gpt-4o' ? '#f3f4f6' : 'white',
+                    background: model === 'gpt-4o' ? '#4a5568' : '#2d3748',
                     textAlign: 'left',
                     fontSize: '0.85rem',
                     cursor: 'pointer',
-                    fontWeight: model === 'gpt-4o' ? '600' : '400'
+                    fontWeight: model === 'gpt-4o' ? '600' : '400',
+                    color: '#e2e8f0'
                   }}
-                  onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
-                  onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? '#f3f4f6' : 'white'}
+                  onMouseEnter={(e) => e.target.style.background = '#4a5568'}
+                  onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? '#4a5568' : '#2d3748'}
                 >
-                  ⚡ Omnia v1
+                  GPT
                 </button>
                 <button
                   onClick={() => {
@@ -1663,16 +1618,17 @@ function App() {
                     width: '100%',
                     padding: '0.75rem 1rem',
                     border: 'none',
-                    background: model === 'claude' ? '#f3f4f6' : 'white',
+                    background: model === 'claude' ? '#4a5568' : '#2d3748',
                     textAlign: 'left',
                     fontSize: '0.85rem',
                     cursor: 'pointer',
-                    fontWeight: model === 'claude' ? '600' : '400'
+                    fontWeight: model === 'claude' ? '600' : '400',
+                    color: '#e2e8f0'
                   }}
-                  onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
-                  onMouseLeave={(e) => e.target.style.background = model === 'claude' ? '#f3f4f6' : 'white'}
+                  onMouseEnter={(e) => e.target.style.background = '#4a5568'}
+                  onMouseLeave={(e) => e.target.style.background = model === 'claude' ? '#4a5568' : '#2d3748'}
                 >
-                  🔍 Omnia v2
+                  Omnia
                 </button>
                 <button
                   onClick={() => {
@@ -1684,17 +1640,18 @@ function App() {
                     width: '100%',
                     padding: '0.75rem 1rem',
                     border: 'none',
-                    background: model === 'sonar' ? '#f3f4f6' : 'white',
+                    background: model === 'sonar' ? '#4a5568' : '#2d3748',
                     textAlign: 'left',
                     fontSize: '0.85rem',
                     cursor: 'pointer',
                     fontWeight: model === 'sonar' ? '600' : '400',
-                    borderRadius: '0 0 8px 8px'
+                    borderRadius: '0 0 8px 8px',
+                    color: '#e2e8f0'
                   }}
-                  onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
-                  onMouseLeave={(e) => e.target.style.background = model === 'sonar' ? '#f3f4f6' : 'white'}
+                  onMouseEnter={(e) => e.target.style.background = '#4a5568'}
+                  onMouseLeave={(e) => e.target.style.background = model === 'sonar' ? '#4a5568' : '#2d3748'}
                 >
-                  🔎 Omnia Search
+                  Omnia Search
                 </button>
               </div>
             )}
@@ -1704,12 +1661,12 @@ function App() {
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
               style={{
-                background: 'none',
-                border: '1px solid #d1d5db',
+                background: '#2d3748',
+                border: '1px solid #4a5568',
                 borderRadius: '8px',
                 padding: '0.5rem',
                 fontSize: '1rem',
-                color: '#6b7280',
+                color: '#e2e8f0',
                 cursor: 'pointer'
               }}
               title="Nastavení a funkce"
@@ -1737,36 +1694,25 @@ function App() {
           width: '100%'
         }}>
           <OmniaLogo 
-            size={isMobile ? 80 : 100} 
+            size={isMobile ? 60 : 80} 
             animate={false}
           />
           <h1 style={{ 
-            fontSize: isMobile ? '2.5rem' : '3rem',
+            fontSize: isMobile ? '2rem' : '2.5rem',
             fontWeight: '700',
             margin: 0,
-            background: 'linear-gradient(135deg, #007bff 0%, #28a745 50%, #ffc107 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: '#ffffff',
             letterSpacing: '0.02em'
           }}>
             OMNIA
           </h1>
-          
-          <div style={{
-            fontSize: isMobile ? '0.85rem' : '0.9rem',
-            color: '#6b7280',
-            fontWeight: '500'
-          }}>
-            {getModelDisplayName()} {getModelDescription()}
-          </div>
         </div>
       </header><main style={{ 
         flex: 1,
         overflowY: 'auto',
         padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
-        background: '#f5f5f5',
+        background: '#000000',
         width: '100%'
       }}>
         <div style={{ 
@@ -1794,18 +1740,28 @@ function App() {
             >
               <div
                 style={{
-                  backgroundColor: '#ffffff',
-                  color: '#000',
+                  backgroundColor: msg.sender === 'user' ? '#2d3748' : `
+                    radial-gradient(circle at 30% 40%, 
+                      rgba(0, 255, 255, 0.1) 0%,
+                      rgba(0, 150, 255, 0.1) 30%,
+                      rgba(100, 50, 255, 0.1) 60%,
+                      rgba(153, 50, 204, 0.1) 80%,
+                      rgba(75, 0, 130, 0.1) 100%
+                    )
+                  `,
+                  color: msg.sender === 'user' ? '#ffd700' : '#ffffff',
                   padding: isMobile ? '1rem 1.25rem' : '1.25rem 1.5rem',
                   borderRadius: msg.sender === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
                   maxWidth: isMobile ? '85%' : '75%',
                   fontSize: isMobile ? '1rem' : '0.95rem',
                   lineHeight: '1.6',
                   whiteSpace: 'pre-wrap',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  boxShadow: msg.sender === 'user' 
+                    ? '0 2px 8px rgba(255, 215, 0, 0.2)' 
+                    : '0 2px 8px rgba(100, 50, 255, 0.3)',
                   border: msg.sender === 'user' 
-                    ? '2px solid #e3f2fd' 
-                    : '1px solid #f0f0f0',
+                    ? '1px solid rgba(255, 215, 0, 0.3)' 
+                    : '1px solid rgba(100, 50, 255, 0.3)',
                   position: 'relative'
                 }}
               >
@@ -1818,9 +1774,9 @@ function App() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     paddingBottom: '0.5rem',
-                    borderBottom: '1px solid #f0f0f0'
+                    borderBottom: '1px solid rgba(255,255,255,0.1)'
                   }}>
-                    <span style={{ fontWeight: '600', color: '#6b7280', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ fontWeight: '600', color: '#a0aec0', display: 'flex', alignItems: 'center' }}>
                       <ChatOmniaLogo size={16} />
                       {getModelDisplayName()}
                     </span>
@@ -1848,23 +1804,32 @@ function App() {
               marginBottom: '1.5rem'
             }}>
               <div style={{
-                backgroundColor: '#ffffff',
+                backgroundColor: `
+                  radial-gradient(circle at 30% 40%, 
+                    rgba(0, 255, 255, 0.1) 0%,
+                    rgba(0, 150, 255, 0.1) 30%,
+                    rgba(100, 50, 255, 0.1) 60%,
+                    rgba(153, 50, 204, 0.1) 80%,
+                    rgba(75, 0, 130, 0.1) 100%
+                  )
+                `,
                 padding: isMobile ? '1rem 1.25rem' : '1.25rem 1.5rem',
                 borderRadius: '20px 20px 20px 4px',
                 fontSize: isMobile ? '1rem' : '0.95rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                border: '1px solid #f0f0f0'
+                boxShadow: '0 2px 8px rgba(100, 50, 255, 0.3)',
+                border: '1px solid rgba(100, 50, 255, 0.3)',
+                color: '#ffffff'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ 
                     width: '16px', 
                     height: '16px', 
-                    border: '2px solid #e5e7eb', 
-                    borderTop: '2px solid #007bff',
+                    border: '2px solid rgba(255,255,255,0.3)', 
+                    borderTop: '2px solid #00ffff',
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}></div>
-                  <span style={{ color: '#6b7280', fontWeight: '500' }}>
+                  <span style={{ color: '#a0aec0', fontWeight: '500' }}>
                     {getModelDisplayName()} přemýšlí...
                   </span>
                 </div>
@@ -1881,10 +1846,10 @@ function App() {
         bottom: 0, 
         left: 0,
         right: 0,
-        background: 'rgba(245, 245, 245, 0.95)', 
+        background: 'rgba(0, 0, 0, 0.95)', 
         backdropFilter: 'blur(10px)',
         padding: isMobile ? '1rem' : '1.5rem',
-        borderTop: '1px solid rgba(0,0,0,0.05)',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
         width: '100%'
       }}>
@@ -1910,20 +1875,20 @@ function App() {
                 padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
                 fontSize: isMobile ? '16px' : '0.95rem',
                 borderRadius: '25px',
-                border: '2px solid #e5e7eb',
+                border: '2px solid #4a5568',
                 outline: 'none',
-                backgroundColor: loading ? '#f9fafb' : '#ffffff',
-                color: '#000000',
+                backgroundColor: loading ? '#2d3748' : '#1a202c',
+                color: '#ffffff',
                 transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                e.target.style.borderColor = '#00ffff';
+                e.target.style.boxShadow = '0 0 0 3px rgba(0, 255, 255, 0.1)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                e.target.style.borderColor = '#4a5568';
+                e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
               }}
             />
           </div>
@@ -1941,22 +1906,6 @@ function App() {
             loading={loading}
             size={isMobile ? 50 : 56}
           />
-        </div>
-        
-        <div style={{
-          maxWidth: '1000px',
-          margin: '0.5rem auto 0',
-          fontSize: '0.75rem',
-          color: '#6b7280',
-          textAlign: 'center',
-          opacity: 0.8
-        }}>
-          {model === 'claude'
-            ? '🔍 Native web search aktivní • 📊 Claude Sonnet 4 s extended thinking'
-            : model === 'sonar'
-            ? '🔎 Sonar web search aktivní'
-            : '⚡ Rychlý chat režim • Pro web search přepněte na v2/Search'
-          }
         </div>
       </div>
 
@@ -1983,24 +1932,24 @@ function App() {
           100% { transform: rotate(360deg); }
         }
         
-        @keyframes pulse-blue {
+        @keyframes pulse-omnia {
           0%, 100% { 
-            box-shadow: 0 0 15px rgba(0, 150, 255, 0.6);
+            box-shadow: 0 0 15px rgba(100, 50, 255, 0.8);
             transform: scale(1);
           }
           50% { 
-            box-shadow: 0 0 25px rgba(0, 150, 255, 0.8);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.9);
             transform: scale(1.05);
           }
         }
         
-        @keyframes pulse-green {
+        @keyframes pulse-audio {
           0%, 100% { 
-            box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.9);
             transform: scale(1);
           }
           50% { 
-            box-shadow: 0 0 25px rgba(40, 167, 69, 1);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 1);
             transform: scale(1.05);
           }
         }
@@ -2025,6 +1974,7 @@ function App() {
           padding: 0;
           width: 100%;
           overflow-x: hidden;
+          background: #000000;
         }
 
         @media (max-width: 768px) {
@@ -2038,16 +1988,16 @@ function App() {
         }
         
         ::-webkit-scrollbar-track {
-          background: #f1f1f1;
+          background: #1a202c;
         }
         
         ::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
+          background: #4a5568;
           border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-          background: #a8a8a8;
+          background: #718096;
         }
 
         button {
@@ -2067,6 +2017,7 @@ function App() {
           min-height: 100vh;
           margin: 0;
           padding: 0;
+          background: #000000;
         }
 
         input:focus {
