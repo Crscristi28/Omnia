@@ -1,4 +1,4 @@
-// api/claude2.js - WORKING WEB SEARCH BASED ON CONSOLE
+// api/claude2.js - CORRECT TOOLS FORMAT
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🚀 Claude with web_search - based on console limits');
+    console.log('🚀 Claude API call with CORRECT tools format');
     
     const { messages, system, max_tokens = 2000 } = req.body;
     const API_KEY = process.env.CLAUDE_API_KEY;
@@ -26,37 +26,62 @@ export default async function handler(req, res) {
       });
     }
 
-    const recentMessages = messages.slice(-8);
+    // ✅ CLEAN MESSAGES
+    const validMessages = messages
+      .filter(msg => msg && (msg.sender === 'user' || msg.sender === 'bot'))
+      .map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: (msg.text || msg.content || '').toString().trim()
+      }))
+      .filter(msg => msg.content.length > 0);
+
+    const cleanMessages = [];
+    let lastRole = null;
     
-    // ✅ SYSTEM PROMPT PRO WEB_SEARCH
-    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý AI asistent."} 
+    for (const msg of validMessages) {
+      if (msg.role !== lastRole) {
+        cleanMessages.push(msg);
+        lastRole = msg.role;
+      }
+    }
 
-Odpovídej vždy v češtině, stručně a přirozeně. Máš přístup k web_search nástroji pro vyhledávání aktuálních informací. Když uživatel potřebuje aktuální data (ceny akcií, počasí, zprávy), automaticky použij web_search a poskytni konkrétní aktuální informace.
+    if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
+      cleanMessages.pop();
+    }
 
-DŮLEŽITÉ: Ve finální odpovědi nikdy neukazuj technické tagy nebo debugging informace.`;
+    const recentMessages = cleanMessages.slice(-6);
+    
+    // ✅ SYSTEM PROMPT FOR WEB SEARCH
+    const systemPrompt = `${system || "Jsi Omnia v2, pokročilý AI asistent."} 
 
-    // ✅ REQUEST S WEB_SEARCH TOOLS (based on console info)
+Odpovídej vždy v češtině, stručně a přirozeně. Máš přístup k nástroji pro vyhledávání na internetu. Když uživatel potřebuje aktuální informace (ceny akcií, počasí, zprávy), použij tento nástroj a poskytni konkrétní aktuální informace.`;
+
+    // ✅ CORRECT TOOLS FORMAT - COMPUTER USE
     const claudeRequest = {
-      model: "claude-3-5-sonnet-20241022", // ✅ EXACTLY AS IN CONSOLE
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: max_tokens,
-      system: enhancedSystem,
+      system: systemPrompt,
       messages: recentMessages,
       tools: [
         {
-          type: "web_search", // ✅ SIMPLE TYPE AS SHOWN IN CONSOLE
-          description: "Search the web for current information"
+          type: "computer_use",
+          name: "web_search",
+          display_width_px: 1024,
+          display_height_px: 768,
+          display_number: 1
         }
       ]
     };
 
-    console.log('🔧 Using web_search tools with console-verified model');
+    console.log('🔧 Using COMPUTER USE tools format');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2024-06-01', // ✅ NEWER VERSION FOR COMPUTER USE
+        'anthropic-beta': 'computer-use-2024-10-22' // ✅ REQUIRED BETA HEADER
       },
       body: JSON.stringify(claudeRequest)
     });
@@ -65,31 +90,23 @@ DŮLEŽITÉ: Ve finální odpovědi nikdy neukazuj technické tagy nebo debuggin
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Web search API error:', response.status, errorText);
+      console.error('❌ Computer use error:', response.status, errorText);
       
-      // ✅ LOG THE EXACT ERROR FOR DEBUGGING
-      console.error('Full error details:', errorText);
-      
-      return res.status(response.status).json({ 
-        error: 'Claude API error',
-        status: response.status,
-        details: errorText,
-        model_used: "claude-3-5-sonnet-20241022"
-      });
+      // ✅ FALLBACK TO BASIC VERSION WITHOUT TOOLS
+      console.log('🔄 Falling back to basic version...');
+      return await basicClaudeCall(recentMessages, system, API_KEY, res);
     }
 
     const data = await response.json();
-    console.log('✅ Web search response received');
-    console.log('Response structure:', JSON.stringify(data, null, 2));
+    console.log('✅ Computer use response received');
 
     if (!data.content || !Array.isArray(data.content)) {
       return res.status(500).json({
-        error: 'Invalid response structure',
-        data_received: data
+        error: 'Invalid response structure'
       });
     }
 
-    // ✅ PROCESS RESPONSE (handle tool usage)
+    // ✅ EXTRACT TEXT CONTENT
     let responseText = '';
     let toolUsed = false;
     
@@ -102,27 +119,63 @@ DŮLEŽITÉ: Ve finální odpovědi nikdy neukazuj technické tagy nebo debuggin
       }
     }
 
-    // ✅ CLEAN OUTPUT
-    responseText = responseText
-      .replace(/<[^>]*>/g, '') // Remove XML tags
-      .replace(/\*\*web_search\*\*/gi, '')
-      .trim();
+    responseText = responseText.trim();
 
     return res.status(200).json({
       success: true,
       content: [{ type: 'text', text: responseText }],
       model: data.model,
       usage: data.usage,
-      web_search_used: toolUsed,
-      mode: 'web_search_enabled'
+      tool_used: toolUsed,
+      mode: 'computer_use'
     });
 
   } catch (error) {
-    console.error('💥 Server error:', error);
-    return res.status(500).json({ 
-      error: 'Server error',
-      message: error.message,
-      stack: error.stack
+    console.error('💥 Error:', error);
+    return await basicClaudeCall([], null, process.env.CLAUDE_API_KEY, res);
+  }
+}
+
+// ✅ FALLBACK FUNCTION - BASIC CLAUDE WITHOUT TOOLS
+async function basicClaudeCall(messages, system, apiKey, res) {
+  console.log('🔄 Basic Claude fallback');
+  
+  const basicRequest = {
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 2000,
+    system: `${system || "Jsi Omnia v2"}\n\nMomentálně pracuješ bez přístupu k internetu. Pro aktuální informace doporuč uživateli zkontrolovat Yahoo Finance, iDNES.cz nebo jiné aktuální zdroje.`,
+    messages: messages.slice(-4)
+  };
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify(basicRequest)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    return res.status(response.status).json({
+      error: 'All methods failed',
+      details: errorText
     });
   }
+
+  const data = await response.json();
+  const textContent = data.content
+    .filter(c => c.type === 'text')
+    .map(c => c.text)
+    .join('\n');
+
+  return res.status(200).json({
+    success: true,
+    content: [{ type: 'text', text: textContent }],
+    model: data.model,
+    usage: data.usage,
+    mode: 'basic_fallback'
+  });
 }
