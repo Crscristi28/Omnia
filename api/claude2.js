@@ -1,4 +1,4 @@
-// api/claude2.js - STREAMING verze s tvou funkční konfigurací
+// api/claude2.js - STREAMING s nejnovější API verzí
 export default async function handler(req, res) {
   // CORS headers pro streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,30 +36,30 @@ Máš přístup k web_search funkci pro vyhledávání aktuálních informací n
 Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
 Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
 
-    // ✅ STREAMING request s tvou funkční konfigurací
+    // ✅ STREAMING request s nejnovější API verzí
     const claudeRequest = {
-      model: "claude-sonnet-4-20250514", // ✅ Tvůj funkční model
+      model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
       system: enhancedSystem,
       messages: recentMessages,
-      stream: true, // 🚀 PŘIDÁNO: streaming
+      stream: true, // 🚀 STREAMING
       tools: [
         {
-          type: "web_search_20250305", // ✅ Tvůj funkční web_search
+          type: "web_search_20250305",
           name: "web_search",
           max_uses: 5
         }
       ]
     };
 
-    console.log('🚀 Sending STREAMING request to Claude Sonnet 4...');
+    console.log('🚀 Sending STREAMING request with 2025-01-01 API...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01' // ✅ Tvá funkční API verze
+        'anthropic-version': '2025-01-01' // 🔧 NEJNOVĚJŠÍ API VERZE
       },
       body: JSON.stringify(claudeRequest)
     });
