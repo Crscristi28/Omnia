@@ -1,4 +1,4 @@
-// api/claude2.js - DEBUGGING TOOLS CONFIGURATION
+// api/claude2.js - BETTER OUTPUT CLEANING
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🚀 Claude API call - DEBUGGING TOOLS');
+    console.log('🚀 Claude API call with aggressive cleaning');
     
     const { messages, system, max_tokens = 2000 } = req.body;
     const API_KEY = process.env.CLAUDE_API_KEY;
@@ -26,52 +26,53 @@ export default async function handler(req, res) {
       });
     }
 
-    const recentMessages = messages.slice(-10);
+    const recentMessages = messages.slice(-8);
     
-    // ✅ TRY DIFFERENT TOOLS CONFIGURATION
+    // ✅ ENHANCED SYSTEM PROMPT - FORCE CURRENT DATA
+    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý AI asistent."} 
+
+KRITICKÉ INSTRUKCE PRO WEB SEARCH:
+- Když hledáš aktuální ceny akcií, VŽDY hledej "current stock price TODAY"
+- NIKDY nepoužívej staré cached data
+- VŽDY uváděj aktuální datum ve své odpovědi
+- Odpovídej POUZE s finálními informacemi, bez technických tagů
+- Nepiš <web_search> ani <query> tagy ve finální odpovědi
+- Dnes je ${new Date().toLocaleDateString('cs-CZ')}`;
+
     const claudeRequest = {
-      model: "claude-3-5-sonnet-20241022", // Proven stable version
+      model: "claude-sonnet-4-20250514", // ✅ CLAUDE SONNET 4!
       max_tokens: max_tokens,
-      system: system || "Jsi Omnia v2, pokročilý AI asistent. Odpovídej vždy v češtině, stručně a přirozeně. Když potřebuješ aktuální informace, použij web search.",
+      system: enhancedSystem,
       messages: recentMessages,
-      
-      // ✅ SIMPLIFIED TOOLS ARRAY
       tools: [
         {
-          type: "web_search",
-          description: "Search the web for current information"
+          type: "web_search"
         }
       ]
     };
 
-    console.log('🔧 Debugging request:', JSON.stringify(claudeRequest, null, 2));
+    console.log('🔧 Request with enhanced system prompt');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2024-06-01', // ✅ NEWER VERSION
-        'anthropic-beta': 'tools-2024-05-16' // ✅ TOOLS BETA
+        'anthropic-version': '2024-06-01'
       },
       body: JSON.stringify(claudeRequest)
     });
 
-    console.log('📡 Response status:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Claude API error:', response.status, errorText);
-      
-      // ✅ FALLBACK TO BASIC VERSION
-      console.log('🔄 Trying fallback without tools...');
       return await fallbackBasicClaude(req.body, API_KEY, res);
     }
 
     const data = await response.json();
-    console.log('✅ Claude response structure:', JSON.stringify(data, null, 2));
+    console.log('✅ Raw Claude response received');
 
-    // ✅ EXTRACT AND CLEAN RESPONSE
+    // ✅ EXTRACT RESPONSE TEXT
     let responseText = '';
     
     if (data.content && Array.isArray(data.content)) {
@@ -85,11 +86,32 @@ export default async function handler(req, res) {
       throw new Error('No text content in response');
     }
 
-    // ✅ CLEAN OUTPUT
+    console.log('📝 Before cleaning:', responseText.substring(0, 200));
+
+    // ✅ AGGRESSIVE CLEANING - REMOVE ALL TECHNICAL STUFF
     responseText = responseText
-      .replace(/<\/?web_search>/g, '') // Remove web_search tags
-      .replace(/\*\*web_search\*\*/g, '') // Remove markdown web_search
+      // Remove all XML-like tags
+      .replace(/<[^>]*>/g, '')
+      // Remove query tags specifically  
+      .replace(/<\/?query[^>]*>/gi, '')
+      .replace(/<\/?web_search[^>]*>/gi, '')
+      // Remove markdown web_search
+      .replace(/\*\*web_search\*\*/gi, '')
+      .replace(/\*\*query\*\*/gi, '')
+      // Remove any remaining brackets with technical terms
+      .replace(/\[web_search\]/gi, '')
+      .replace(/\[query\]/gi, '')
+      // Clean up extra whitespace
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
       .trim();
+
+    console.log('📝 After cleaning:', responseText.substring(0, 200));
+
+    // ✅ VALIDATION - CHECK IF WE HAVE GOOD CONTENT
+    if (responseText.length < 10 || responseText.includes('<') || responseText.includes('web_search')) {
+      console.log('⚠️ Cleaning failed, trying fallback');
+      return await fallbackBasicClaude(req.body, API_KEY, res);
+    }
 
     return res.status(200).json({
       success: true,
@@ -97,23 +119,15 @@ export default async function handler(req, res) {
       model: data.model,
       usage: data.usage,
       debug_info: {
-        tools_used: data.content?.some(c => c.type === 'tool_use') || false,
-        content_types: data.content?.map(c => c.type) || []
+        original_length: data.content?.[0]?.text?.length || 0,
+        cleaned_length: responseText.length,
+        tools_used: data.content?.some(c => c.type === 'tool_use') || false
       }
     });
 
   } catch (error) {
     console.error('💥 Error:', error);
-    
-    // ✅ GRACEFUL FALLBACK
-    try {
-      return await fallbackBasicClaude(req.body, process.env.CLAUDE_API_KEY, res);
-    } catch (fallbackError) {
-      return res.status(500).json({ 
-        error: 'Server error',
-        message: error.message
-      });
-    }
+    return await fallbackBasicClaude(req.body, process.env.CLAUDE_API_KEY, res);
   }
 }
 
@@ -124,10 +138,10 @@ async function fallbackBasicClaude(requestBody, apiKey, res) {
   const { messages, system, max_tokens = 2000 } = requestBody;
   
   const fallbackRequest = {
-    model: "claude-3-5-sonnet-20241022",
+    model: "claude-sonnet-4-20250514", // ✅ SONNET 4 I V FALLBACK
     max_tokens: max_tokens,
-    system: (system || "Jsi Omnia v2") + "\n\nINFO: Claude pracuje v základním režimu bez web search. Pro aktuální informace doporuč uživateli ověřit na oficiálních zdrojích.",
-    messages: messages.slice(-8)
+    system: `${system || "Jsi Omnia v2"}\n\nINFO: Pracuji v základním režimu. Pro nejnovější finanční data doporučuji zkontrolovat Yahoo Finance, Bloomberg nebo oficiální burzu.`,
+    messages: messages.slice(-6)
   };
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
