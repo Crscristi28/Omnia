@@ -1,6 +1,7 @@
-// api/claude2.js - Claude Sonnet 4 with Mock Search Data
+// api/claude2.js - SKUTEČNÝ Claude Sonnet 4 s Native Web Search
 
 export default async function handler(req, res) {
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -24,80 +25,43 @@ export default async function handler(req, res) {
       });
     }
 
+    // Připravit zprávy (max 8 posledních)
     const recentMessages = messages.slice(-8);
-    const lastUserMessage = recentMessages.filter(m => m.role === 'user').pop()?.content || '';
     
-    // ✅ MOCK SEARCH DATA
-    let searchContext = '';
-    const query = lastUserMessage.toLowerCase();
-    
-    if (query.includes('microsoft') || query.includes('msft')) {
-      searchContext = `
-AKTUÁLNÍ DATA Z BURZY (${new Date().toLocaleString('cs-CZ')}):
+    // ✅ SYSTEM PROMPT S INSTRUKCEMI PRO WEB_SEARCH
+    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent s přístupem k web_search funkci."}
 
-Microsoft Corporation (MSFT)
-• Aktuální cena: $489.00 USD
-• Denní změna: +$3.00 (+0.62%)
-• Otevírací cena: $486.50
-• Denní maximum: $491.25
-• Denní minimum: $485.75
-• 52-týdenní maximum: $491.25
-• 52-týdenní minimum: $344.79
-• Tržní kapitalizace: $3.63 bilionu
-• Objem obchodování: 24,779,990 akcií
-• P/E poměr: 37.56
+DŮLEŽITÉ INSTRUKCE:
+- Odpovídej VŽDY výhradně v češtině, gramaticky správně a přirozeně
+- Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu
+- AUTOMATICKY používej web_search když uživatel potřebuje:
+  * Aktuální ceny akcií, kryptoměn, kurzy měn
+  * Současné počasí
+  * Nejnovější zprávy a události
+  * Aktuální informace o firmách, produktech
+  * Jakékoli údaje, které se mění denně/týdně
+- Když použiješ web_search, VŽDY poskytni konkrétní odpověď na základě nalezených informací
+- NIKDY neříkej "zkontroluj na jiných stránkách" nebo "hledej jinde"
+- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku
+- Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}`;
 
-Poslední zprávy:
-- Microsoft hlásí rekordní tržby z cloudových služeb Azure
-- Spolupráce s OpenAI přináší nové AI funkce do Office 365
-- Analytiků konsenzus: Strong Buy s cílovú cenou $520`;
-    }
-    
-    if (query.includes('bitcoin') || query.includes('btc')) {
-      searchContext = `
-AKTUÁLNÍ DATA KRYPTOMĚN (${new Date().toLocaleString('cs-CZ')}):
-
-Bitcoin (BTC)
-• Aktuální cena: $98,450.00 USD
-• 24h změna: +$2,150 (+2.23%)
-• 24h maximum: $99,200
-• 24h minimum: $96,100
-• Tržní kapitalizace: $1.93 bilionu
-• Objem (24h): $28.5 miliardy
-
-Ethereum (ETH): $3,450.00 (+1.8%)
-BNB: $685.00 (+0.9%)`;
-    }
-    
-    if (query.includes('počasí')) {
-      searchContext = `
-AKTUÁLNÍ POČASÍ - Praha (${new Date().toLocaleString('cs-CZ')}):
-
-• Teplota: 22°C
-• Pocitová teplota: 21°C
-• Oblačnost: Polojasno
-• Vítr: 15 km/h, západní
-• Vlhkost: 65%
-• Tlak: 1015 hPa
-
-Předpověď na další dny:
-- Středa: 24°C, jasno
-- Čtvrtek: 23°C, oblačno
-- Pátek: 20°C, déšť`;
-    }
-
-    // ✅ CLAUDE REQUEST
-    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent."}
-    
-Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
-${searchContext ? `\nPouži tyto aktuální informace pro odpověď:\n${searchContext}` : ''}`;
-
+    // ✅ CLAUDE REQUEST S WEB_SEARCH TOOLS
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
       system: enhancedSystem,
-      messages: recentMessages
+      messages: recentMessages,
+      tools: [
+        {
+          name: "web_search",
+          description: "Search the web for current, up-to-date information. Use this when you need recent data like stock prices, weather, news, or any information that changes frequently."
+        }
+      ]
     };
+
+    console.log('🚀 Sending request to Claude Sonnet 4...');
+    console.log('📊 Messages count:', recentMessages.length);
+    console.log('🔧 Tools available: web_search');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -111,35 +75,60 @@ ${searchContext ? `\nPouži tyto aktuální informace pro odpověď:\n${searchCo
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Claude API error:', response.status);
+      console.error('❌ Claude API error:', response.status, errorText);
       return res.status(response.status).json({
         error: 'Claude API error',
-        message: errorText
+        message: `HTTP ${response.status}: ${errorText}`
       });
     }
 
     const data = await response.json();
+    console.log('✅ Claude response received');
     
+    // Debug logging pro tools usage
+    if (data.usage) {
+      console.log('📈 Usage stats:', {
+        input_tokens: data.usage.input_tokens,
+        output_tokens: data.usage.output_tokens,
+        total_tokens: data.usage.input_tokens + data.usage.output_tokens
+      });
+    }
+    
+    // Zkontrolovat jestli Claude použil tools
+    const usedTools = data.content?.filter(item => item.type === 'tool_use') || [];
+    if (usedTools.length > 0) {
+      console.log('🔍 Claude used tools:', usedTools.map(t => t.name));
+    }
+    
+    // Extrahovat text odpověď
     const textContent = data.content
       ?.filter(item => item.type === 'text')
       ?.map(item => item.text)
       ?.join('\n')
       ?.trim() || "Nepodařilo se získat odpověď.";
 
+    console.log('💬 Response length:', textContent.length, 'characters');
+
     return res.status(200).json({
       success: true,
       content: [{ type: 'text', text: textContent }],
       model: data.model,
       usage: data.usage,
-      web_search_executed: !!searchContext,
-      mock_data_used: !!searchContext
+      tools_used: usedTools.length > 0,
+      web_search_executed: usedTools.some(t => t.name === 'web_search'),
+      debug_info: {
+        tools_available: ['web_search'],
+        tools_used: usedTools.map(t => t.name),
+        message_count: recentMessages.length
+      }
     });
 
   } catch (error) {
-    console.error('Fatal error:', error);
+    console.error('💥 Fatal error in Claude API:', error);
     return res.status(500).json({
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
