@@ -1,4 +1,4 @@
-// api/claude2.js - FIXED TOOLS CONFIGURATION
+// api/claude2.js - WORKING WEB SEARCH BASED ON CONSOLE
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🚀 Claude Sonnet 4 with fixed tools config');
+    console.log('🚀 Claude with web_search - based on console limits');
     
     const { messages, system, max_tokens = 2000 } = req.body;
     const API_KEY = process.env.CLAUDE_API_KEY;
@@ -28,60 +28,83 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-8);
     
-    // ✅ SIMPLIFIED SYSTEM PROMPT
+    // ✅ SYSTEM PROMPT PRO WEB_SEARCH
     const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý AI asistent."} 
 
-Odpovídej vždy v češtině, stručně a přirozeně. Když potřebuješ aktuální informace, automaticky je vyhledej. Nikdy nepiš technické tagy do finální odpovědi.`;
+Odpovídej vždy v češtině, stručně a přirozeně. Máš přístup k web_search nástroji pro vyhledávání aktuálních informací. Když uživatel potřebuje aktuální data (ceny akcií, počasí, zprávy), automaticky použij web_search a poskytni konkrétní aktuální informace.
 
-    // ✅ FIRST TRY: WITHOUT TOOLS (safer approach)
+DŮLEŽITÉ: Ve finální odpovědi nikdy neukazuj technické tagy nebo debugging informace.`;
+
+    // ✅ REQUEST S WEB_SEARCH TOOLS (based on console info)
     const claudeRequest = {
-      model: "claude-sonnet-4-20250514",
+      model: "claude-3-5-sonnet-20241022", // ✅ EXACTLY AS IN CONSOLE
       max_tokens: max_tokens,
       system: enhancedSystem,
-      messages: recentMessages
-      // ❌ NO TOOLS - avoid API errors
+      messages: recentMessages,
+      tools: [
+        {
+          type: "web_search", // ✅ SIMPLE TYPE AS SHOWN IN CONSOLE
+          description: "Search the web for current information"
+        }
+      ]
     };
 
-    console.log('🔧 Trying Sonnet 4 without tools first');
+    console.log('🔧 Using web_search tools with console-verified model');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01' // ✅ STABLE VERSION
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify(claudeRequest)
     });
 
+    console.log('📡 Response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Sonnet 4 error:', response.status, errorText);
+      console.error('❌ Web search API error:', response.status, errorText);
       
-      // ✅ FALLBACK TO PROVEN STABLE VERSION
-      return await fallbackStableVersion(req.body, API_KEY, res);
+      // ✅ LOG THE EXACT ERROR FOR DEBUGGING
+      console.error('Full error details:', errorText);
+      
+      return res.status(response.status).json({ 
+        error: 'Claude API error',
+        status: response.status,
+        details: errorText,
+        model_used: "claude-3-5-sonnet-20241022"
+      });
     }
 
     const data = await response.json();
-    console.log('✅ Sonnet 4 response received');
+    console.log('✅ Web search response received');
+    console.log('Response structure:', JSON.stringify(data, null, 2));
 
-    // ✅ EXTRACT RESPONSE
-    let responseText = '';
-    
-    if (data.content && Array.isArray(data.content)) {
-      responseText = data.content
-        .filter(c => c.type === 'text')
-        .map(c => c.text)
-        .join('\n');
+    if (!data.content || !Array.isArray(data.content)) {
+      return res.status(500).json({
+        error: 'Invalid response structure',
+        data_received: data
+      });
     }
 
-    if (!responseText) {
-      throw new Error('No text content in response');
+    // ✅ PROCESS RESPONSE (handle tool usage)
+    let responseText = '';
+    let toolUsed = false;
+    
+    for (const item of data.content) {
+      if (item.type === 'text') {
+        responseText += item.text + '\n';
+      } else if (item.type === 'tool_use') {
+        toolUsed = true;
+        console.log('🔍 Tool used:', item.name);
+      }
     }
 
     // ✅ CLEAN OUTPUT
     responseText = responseText
-      .replace(/<[^>]*>/g, '') // Remove all XML tags
+      .replace(/<[^>]*>/g, '') // Remove XML tags
       .replace(/\*\*web_search\*\*/gi, '')
       .trim();
 
@@ -90,50 +113,16 @@ Odpovídej vždy v češtině, stručně a přirozeně. Když potřebuješ aktu�
       content: [{ type: 'text', text: responseText }],
       model: data.model,
       usage: data.usage,
-      mode: 'sonnet4_basic'
+      web_search_used: toolUsed,
+      mode: 'web_search_enabled'
     });
 
   } catch (error) {
-    console.error('💥 Error:', error);
-    return await fallbackStableVersion(req.body, process.env.CLAUDE_API_KEY, res);
+    console.error('💥 Server error:', error);
+    return res.status(500).json({ 
+      error: 'Server error',
+      message: error.message,
+      stack: error.stack
+    });
   }
-}
-
-// ✅ FALLBACK TO PROVEN STABLE VERSION
-async function fallbackStableVersion(requestBody, apiKey, res) {
-  console.log('🔄 Fallback: Stable Claude 3.5 Sonnet');
-  
-  const { messages, system, max_tokens = 2000 } = requestBody;
-  
-  const fallbackRequest = {
-    model: "claude-3-5-sonnet-20241022", // ✅ PROVEN STABLE
-    max_tokens: max_tokens,
-    system: `${system || "Jsi Omnia v2"}\n\nOdpovídej v češtině, stručně a přirozeně. Pro aktuální finanční data doporučuji zkontrolovat Yahoo Finance nebo Bloomberg.`,
-    messages: messages.slice(-6)
-  };
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify(fallbackRequest)
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Fallback failed: ${response.status} ${errorText}`);
-  }
-
-  const data = await response.json();
-  
-  return res.status(200).json({
-    success: true,
-    content: data.content,
-    model: data.model,
-    usage: data.usage,
-    mode: 'stable_fallback'
-  });
 }
