@@ -60,7 +60,7 @@ const OmniaLogo = ({ size = 80, animate = false }) => {
   );
 };
 
-const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false }) => {
+const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false, streaming = false }) => {
   const getLogoStyle = () => {
     const baseStyle = {
       width: size,
@@ -83,6 +83,14 @@ const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = f
       position: 'relative',
       border: '1px solid rgba(255, 255, 255, 0.2)'
     };
+
+    if (streaming) {
+      return {
+        ...baseStyle,
+        animation: 'pulse-streaming 1.2s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 0.8}px rgba(0, 255, 255, 1)`
+      };
+    }
 
     if (loading) {
       return {
@@ -110,7 +118,7 @@ const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = f
     <div
       style={getLogoStyle()}
       onClick={onClick}
-      title="Klepněte pro Voice Screen"
+      title={streaming ? "Streaming probíhá..." : "Klepněte pro Voice Screen"}
     />
   );
 };
@@ -206,7 +214,7 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
   );
 };
 
-// 🎯 NOVÝ ČESKÝ TTS PREPROCESSING - Řeší problémy s výslovností
+// 🎯 ČESKÝ TTS PREPROCESSING - Řeší problémy s výslovností
 const preprocessCzechTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
@@ -279,22 +287,52 @@ const preprocessCzechTextForTTS = (text) => {
   return processedText;
 };
 
-// ⌨️ TYPEWRITER EFFECT
-function TypewriterText({ text }) {
+// ⌨️ ENHANCED TYPEWRITER EFFECT s real-time streaming podporou
+function TypewriterText({ text, isStreaming = false }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
   const chars = useMemo(() => Array.from(text), [text]);
 
   useEffect(() => {
+    // Reset při změně textu během streamingu
+    if (text.length < displayedText.length) {
+      setDisplayedText('');
+      setCharIndex(0);
+      return;
+    }
+
+    // Pokud je streaming aktivní, zobrazuj text okamžitě
+    if (isStreaming) {
+      setDisplayedText(text);
+      setCharIndex(text.length);
+      return;
+    }
+
+    // Klasický typewriter efekt pro dokončené zprávy
     if (charIndex >= chars.length) return;
+    
     const timeout = setTimeout(() => {
       setDisplayedText((prev) => prev + chars[charIndex]);
       setCharIndex((prev) => prev + 1);
     }, 20);
+    
     return () => clearTimeout(timeout);
-  }, [charIndex, chars]);
+  }, [charIndex, chars, text, isStreaming, displayedText]);
 
-  return <span>{displayedText}</span>;
+  return (
+    <span>
+      {displayedText}
+      {isStreaming && (
+        <span style={{ 
+          animation: 'blink 1s infinite',
+          color: '#00ffff',
+          fontWeight: 'bold'
+        }}>
+          |
+        </span>
+      )}
+    </span>
+  );
 }// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
@@ -608,7 +646,9 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       {getButtonIcon()}
     </button>
   );
-};// 🔊 ENHANCED VOICE BUTTON s českým TTS preprocessingem
+};
+
+// 🔊 ENHANCED VOICE BUTTON s českým TTS preprocessingem
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -651,7 +691,11 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       const response = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: processedText }) // Používáme předpracovaný text
+        body: JSON.stringify({ 
+          text: processedText, // Používáme předpracovaný text
+          language: 'cs', // Explicitně češtinu
+          voice: 'natural' // Přirozený hlas
+        })
       });
 
       if (!response.ok) {
@@ -748,9 +792,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       )}
     </button>
   );
-};
-
-// 🔎 ENHANCED SONAR SERVICE s lepší optimalizací
+};// 🔎 ENHANCED SONAR SERVICE s lepší optimalizací
 const sonarService = {
   async search(query, showNotification) {
     try {
@@ -765,8 +807,8 @@ const sonarService = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: enhancedQuery,
-          freshness: 'recent', // Přidáno pro aktuálnější výsledky
-          count: 10 // Více výsledků pro lepší kvalitu
+          freshness: 'recent',
+          count: 10
         })
       });
 
@@ -804,12 +846,10 @@ const sonarService = {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().toLocaleDateString('cs-CZ', { month: 'long' });
     
-    // Pokud už obsahuje rok, necháme tak
     if (query.includes('2024') || query.includes('2025')) {
       return originalQuery;
     }
 
-    // Rozšířené temporální triggery
     const temporalTriggers = [
       'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední', 'nejčerstvější',
       'zprávy', 'novinky', 'aktuality', 'události', 'situace',
@@ -824,7 +864,6 @@ const sonarService = {
       return `${originalQuery} ${currentYear} ${currentMonth} aktuální nejnovější`;
     }
 
-    // Specifické kategorie s lepším targetting
     const financialKeywords = ['cena', 'kurz', 'akcie', 'burza', 'bitcoin', 'krypto', 'ethereum', 'investice'];
     if (financialKeywords.some(keyword => query.includes(keyword))) {
       return `${originalQuery} ${currentYear} aktuální cena trh`;
@@ -840,7 +879,6 @@ const sonarService = {
       return `${originalQuery} dnes aktuální předpověď`;
     }
 
-    // Default enhancement
     return `${originalQuery} ${currentYear}`;
   }
 };
@@ -879,11 +917,96 @@ const googleSearchService = {
       return '';
     }
   }
-};// 🤖 ENHANCED API SERVICES
+};
+
+// 🔔 ENHANCED NOTIFICATION HELPER s lepšími styly
+const showNotificationHelper = (message, type = 'info', onClick = null) => {
+  const notification = document.createElement('div');
+  
+  const getNotificationStyle = (type) => {
+    const baseStyle = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 10000;
+      cursor: ${onClick ? 'pointer' : 'default'};
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      font-weight: 500;
+      max-width: 350px;
+      transition: all 0.3s ease;
+      border: 1px solid;
+    `;
+    
+    switch(type) {
+      case 'error':
+        return baseStyle + `
+          background: linear-gradient(135deg, #dc3545, #c82333);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+        `;
+      case 'success':
+        return baseStyle + `
+          background: linear-gradient(135deg, #28a745, #20c997);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+        `;
+      case 'streaming':
+        return baseStyle + `
+          background: linear-gradient(135deg, #00ffff, #0096ff);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+          animation: pulse-notification 1.5s ease-in-out infinite;
+        `;
+      case 'info':
+      default:
+        return baseStyle + `
+          background: linear-gradient(135deg, #007bff, #0096ff);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+        `;
+    }
+  };
+  
+  notification.style.cssText = getNotificationStyle(type);
+  notification.textContent = message;
+  
+  if (onClick) {
+    notification.addEventListener('click', () => {
+      onClick();
+      document.body.removeChild(notification);
+    });
+    notification.style.cursor = 'pointer';
+  }
+  
+  notification.addEventListener('mouseenter', () => {
+    notification.style.transform = 'translateY(-2px) scale(1.02)';
+  });
+  
+  notification.addEventListener('mouseleave', () => {
+    notification.style.transform = 'translateY(0) scale(1)';
+  });
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    if (document.body.contains(notification)) {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateY(-10px) scale(0.95)';
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }
+  }, type === 'error' ? 6000 : type === 'streaming' ? 8000 : 4000);
+};// 🚀 OPRAVENÝ STREAMING CLAUDE SERVICE - FUNGUJE!
 const claudeService = {
-  async sendMessage(messages) {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null) {
     try {
-      console.log('🔧 Enhanced Claude service: Using /api/claude2');
+      console.log('🔧 OPRAVENÝ STREAMING Claude service: Using /api/claude2');
       const claudeMessages = prepareClaudeMessages(messages);
       
       const systemPrompt = `Jsi Omnia, pokročilý český AI asistent s následujícími schopnostmi:
@@ -915,25 +1038,93 @@ DŮLEŽITÉ INSTRUKCE:
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        throw new Error(`Claude API failed: HTTP ${response.status}`);
       }
 
-      const data = await response.json();
+      console.log('✅ STREAMING response started from Claude');
+
+      // 🚀 OPRAVENÝ STREAMING READER SETUP
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
       
-      if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
-        throw new Error('Invalid response structure from Claude');
+      let fullText = '';
+      let buffer = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            console.log('✅ STREAMING completed');
+            break;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const data = JSON.parse(line);
+                
+                // 📺 Handle different stream events
+                if (data.type === 'text' && data.content) {
+                  fullText += data.content;
+                  
+                  // 🎯 REAL-TIME UPDATE CALLBACK
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, true); // true = still streaming
+                  }
+                }
+                else if (data.type === 'search_start') {
+                  console.log('🔍 Web search started during streaming');
+                  
+                  // 🔍 SEARCH NOTIFICATION CALLBACK  
+                  if (onSearchNotification) {
+                    onSearchNotification(data.message || '🔍 Vyhledávám aktuální informace...');
+                  }
+                }
+                else if (data.type === 'completed') {
+                  console.log('✅ Streaming completed with full text');
+                  
+                  if (data.fullText) {
+                    fullText = data.fullText;
+                  }
+                  
+                  // 🎯 FINAL UPDATE CALLBACK
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, false); // false = streaming finished
+                  }
+                }
+                else if (data.error) {
+                  throw new Error(data.message || 'Streaming error');
+                }
+
+              } catch (parseError) {
+                // Some lines might not be JSON, continue
+                console.warn('⚠️ Non-JSON line:', line);
+                continue;
+              }
+            }
+          }
+        }
+      } catch (streamError) {
+        console.error('💥 Streaming read error:', streamError);
+        throw streamError;
       }
 
-      console.log('✅ Enhanced Claude response received');
-      return data.content[0].text;
+      console.log('✅ OPRAVENÝ STREAMING Claude response completed');
+      return fullText;
+
     } catch (error) {
-      console.error('💥 Enhanced Claude error:', error);
+      console.error('💥 OPRAVENÝ STREAMING Claude error:', error);
       throw error;
     }
   }
 };
 
+// 🤖 ENHANCED OPENAI SERVICE (bez streaming, ale připravený)
 const openaiService = {
   async sendMessage(messages) {
     try {
@@ -1065,86 +1256,6 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     showNotification('🔇 Český hlas se nepodařilo vygenerovat', 'error');
     throw error;
   }
-};
-
-// 🔔 ENHANCED NOTIFICATION HELPER s lepšími styly
-const showNotificationHelper = (message, type = 'info', onClick = null) => {
-  const notification = document.createElement('div');
-  
-  const getNotificationStyle = (type) => {
-    const baseStyle = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      padding: 12px 18px;
-      border-radius: 10px;
-      font-size: 14px;
-      z-index: 10000;
-      cursor: ${onClick ? 'pointer' : 'default'};
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-      font-weight: 500;
-      max-width: 350px;
-      transition: all 0.3s ease;
-      border: 1px solid;
-    `;
-    
-    switch(type) {
-      case 'error':
-        return baseStyle + `
-          background: linear-gradient(135deg, #dc3545, #c82333);
-          color: white;
-          border-color: rgba(255,255,255,0.2);
-        `;
-      case 'success':
-        return baseStyle + `
-          background: linear-gradient(135deg, #28a745, #20c997);
-          color: white;
-          border-color: rgba(255,255,255,0.2);
-        `;
-      case 'info':
-      default:
-        return baseStyle + `
-          background: linear-gradient(135deg, #007bff, #0096ff);
-          color: white;
-          border-color: rgba(255,255,255,0.2);
-        `;
-    }
-  };
-  
-  notification.style.cssText = getNotificationStyle(type);
-  notification.textContent = message;
-  
-  if (onClick) {
-    notification.addEventListener('click', () => {
-      onClick();
-      document.body.removeChild(notification);
-    });
-    notification.style.cursor = 'pointer';
-  }
-  
-  // Hover efekt
-  notification.addEventListener('mouseenter', () => {
-    notification.style.transform = 'translateY(-2px) scale(1.02)';
-  });
-  
-  notification.addEventListener('mouseleave', () => {
-    notification.style.transform = 'translateY(0) scale(1)';
-  });
-  
-  document.body.appendChild(notification);
-  
-  // Auto-hide s fade out
-  setTimeout(() => {
-    if (document.body.contains(notification)) {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateY(-10px) scale(0.95)';
-      setTimeout(() => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      }, 300);
-    }
-  }, type === 'error' ? 6000 : 4000); // Error notifikace zůstanou déle
 };// 🚨 ENHANCED shouldSearchInternet - Claude NIKDY netrigguje search preprocessing
 const shouldSearchInternet = (userInput, model) => {
   if (model === 'claude') {
@@ -1203,7 +1314,7 @@ const shouldSearchInternet = (userInput, model) => {
   return false;
 };
 
-// ✅ ENHANCED VOICE SCREEN RESPONSE Handler
+// ✅ OPRAVENÝ VOICE SCREEN RESPONSE Handler s FUNKČNÍM STREAMING
 const handleVoiceScreenResponse = async (
   textInput,
   currentMessages,
@@ -1215,17 +1326,19 @@ const handleVoiceScreenResponse = async (
   setIsAudioPlaying,
   currentAudioRef,
   isIOS,
-  showNotification
+  showNotification,
+  setStreaming = null
 ) => {
   try {
-    console.log('🔧 Enhanced Voice Screen Model:', model);
-    let responseText = '';
+    console.log('🔧 OPRAVENÝ STREAMING Voice Screen Model:', model);
 
     // Přidání user message do historie před zpracováním
     const userMessage = { sender: 'user', text: textInput };
     const messagesWithUser = [...currentMessages, userMessage];
     setMessages(messagesWithUser);
     localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
+    let responseText = '';
 
     if (model === 'sonar') {
       showNotification('🔍 Omnia Search analyzuje dotaz...', 'info');
@@ -1238,11 +1351,54 @@ const handleVoiceScreenResponse = async (
       } else {
         responseText = `Omlouám se, ale nepodařilo se mi najít aktuální informace: ${searchResult.message}`;
       }
+      
+      // Pro non-Claude modely - standardní přidání odpovědi
+      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
     }
     else if (model === 'claude') {
-      console.log('🚀 Enhanced Claude Sonnet 4 via /api/claude2');
-      showNotification('🤖 Omnia zpracovává dotaz...', 'info');
-      responseText = await claudeService.sendMessage(messagesWithUser);
+      console.log('🚀 OPRAVENÝ STREAMING Claude Sonnet 4 via /api/claude2');
+      showNotification('🤖 Omnia začíná streamovat...', 'streaming');
+      
+      if (setStreaming) setStreaming(true);
+
+      // Vytvoření prázdné bot message pro streaming
+      const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
+      const messagesWithBot = [...messagesWithUser, streamingBotMessage];
+      setMessages(messagesWithBot);
+
+      // 🚀 OPRAVENÉ STREAMING CALLBACKS
+      const onStreamUpdate = (text, isStillStreaming) => {
+        console.log(`📺 Voice Stream update: ${text.length} chars, streaming: ${isStillStreaming}`);
+        
+        // Update bot message s novým textem
+        const updatedMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: text, 
+          isStreaming: isStillStreaming 
+        }];
+        setMessages(updatedMessages);
+        
+        if (!isStillStreaming) {
+          // Streaming dokončen
+          localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+          if (setStreaming) setStreaming(false);
+          showNotification('✅ Omnia dokončila odpověď!', 'success');
+          responseText = text; // Nastavit responseText pro audio
+        }
+      };
+
+      const onSearchNotification = (message) => {
+        console.log('🔍 Voice Search notification:', message);
+        showNotification(message, 'streaming');
+      };
+
+      responseText = await claudeService.sendMessage(
+        messagesWithUser, 
+        onStreamUpdate, 
+        onSearchNotification
+      );
     }
     else if (model === 'gpt-4o') {
       console.log('🚀 Enhanced GPT-4o via /api/openai');
@@ -1281,29 +1437,33 @@ DŮLEŽITÉ INSTRUKCE:
       ];
 
       responseText = await openaiService.sendMessage(openAiMessages);
+      
+      // Pro non-Claude modely - standardní přidání odpovědi
+      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
     }
     else {
       throw new Error(`Neznámý model: ${model}`);
     }
 
-    // Přidání bot response
-    const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-    setMessages(finalMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-    // Enhanced instant audio generation
-    await generateInstantAudio(
-      responseText,
-      setIsAudioPlaying,
-      currentAudioRef,
-      isIOS,
-      showNotification
-    );
+    // Enhanced instant audio generation (pouze pro dokončené odpovědi)
+    if (responseText && model !== 'claude') {
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification
+      );
+    }
 
     return responseText;
 
   } catch (error) {
-    console.error('💥 Enhanced Voice Screen response error:', error);
+    console.error('💥 OPRAVENÝ STREAMING Voice Screen response error:', error);
+
+    if (setStreaming) setStreaming(false);
 
     const errorText = `Omlouám se, ale vyskytla se chyba: ${error.message}`;
     const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
@@ -1316,7 +1476,7 @@ DŮLEŽITÉ INSTRUKCE:
   }
 };
 
-// ✅ ENHANCED TEXT RESPONSE Handler
+// ✅ OPRAVENÝ TEXT RESPONSE Handler s FUNKČNÍM STREAMING
 const handleTextResponse = async (
   textInput,
   currentMessages,
@@ -1324,16 +1484,18 @@ const handleTextResponse = async (
   openaiService,
   claudeService,
   setMessages,
-  showNotification
+  showNotification,
+  setStreaming = null
 ) => {
-  console.log('🔧 Enhanced Text Response Model:', model);
-  let responseText = '';
+  console.log('🔧 OPRAVENÝ STREAMING Text Response Model:', model);
 
   // Přidání user message do historie před zpracováním
   const userMessage = { sender: 'user', text: textInput };
   const messagesWithUser = [...currentMessages, userMessage];
   setMessages(messagesWithUser);
   localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
+  let responseText = '';
 
   if (model === 'sonar') {
     showNotification('🔍 Omnia Search vyhledává...', 'info');
@@ -1347,11 +1509,54 @@ const handleTextResponse = async (
     } else {
       responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
     }
+    
+    // Pro non-Claude modely - standardní přidání odpovědi
+    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+    showNotification('✅ Odpověď připravena', 'success');
   }
   else if (model === 'claude') {
-    console.log('🚀 Enhanced Claude Sonnet 4 via /api/claude2');
-    showNotification('🤖 Omnia zpracovává...', 'info');
-    responseText = await claudeService.sendMessage(messagesWithUser);
+    console.log('🚀 OPRAVENÝ STREAMING Claude Sonnet 4 via /api/claude2');
+    showNotification('🤖 Omnia začíná streamovat...', 'streaming');
+    
+    if (setStreaming) setStreaming(true);
+
+    // Vytvoření prázdné bot message pro streaming
+    const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
+    const messagesWithBot = [...messagesWithUser, streamingBotMessage];
+    setMessages(messagesWithBot);
+
+    // 🚀 OPRAVENÉ STREAMING CALLBACKS
+    const onStreamUpdate = (text, isStillStreaming) => {
+      console.log(`📺 Text Stream update: ${text.length} chars, streaming: ${isStillStreaming}`);
+      
+      // Update bot message s novým textem
+      const updatedMessages = [...messagesWithUser, { 
+        sender: 'bot', 
+        text: text, 
+        isStreaming: isStillStreaming 
+      }];
+      setMessages(updatedMessages);
+      
+      if (!isStillStreaming) {
+        // Streaming dokončen
+        localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+        if (setStreaming) setStreaming(false);
+        showNotification('✅ Omnia dokončila odpověď!', 'success');
+      }
+    };
+
+    const onSearchNotification = (message) => {
+      console.log('🔍 Text Search notification:', message);
+      showNotification(message, 'streaming');
+    };
+
+    responseText = await claudeService.sendMessage(
+      messagesWithUser, 
+      onStreamUpdate, 
+      onSearchNotification
+    );
   }
   else if (model === 'gpt-4o') {
     console.log('🚀 Enhanced GPT-4o via /api/openai');
@@ -1389,20 +1594,19 @@ DŮLEŽITÉ INSTRUKCE:
     ];
 
     responseText = await openaiService.sendMessage(openAiMessages);
+    
+    // Pro non-Claude modely - standardní přidání odpovědi
+    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+    showNotification('✅ Odpověď připravena', 'success');
   }
   else {
     throw new Error(`Neznámý model: ${model}`);
   }
 
-  // Přidání bot response
-  const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-  setMessages(updatedMessages);
-  localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-
-  showNotification('✅ Odpověď připravena', 'success');
-
   return responseText;
-};// 🎤 ENHANCED VOICE SCREEN COMPONENT
+};// 🎤 ENHANCED VOICE SCREEN COMPONENT s streaming podporou
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
@@ -1410,7 +1614,8 @@ const VoiceScreen = ({
   isAudioPlaying,
   isMobile,
   stopCurrentAudio,
-  model
+  model,
+  streaming = false
 }) => {
 
   const handleScreenClick = (e) => {
@@ -1448,11 +1653,24 @@ const VoiceScreen = ({
 
   const getModelDescription = () => {
     switch(model) {
-      case 'claude': return 'Pokročilý AI s web search';
+      case 'claude': return streaming ? 'Streamuje odpověď v reálném čase' : 'Pokročilý AI s web search';
       case 'sonar': return 'Vyhledávání v reálném čase';
       case 'gpt-4o': return 'Konverzační AI asistent';
       default: return 'AI asistent';
     }
+  };
+
+  const getStatusMessage = () => {
+    if (streaming) {
+      return `🚀 ${getModelName()} streamuje odpověď...`;
+    }
+    if (loading) {
+      return `🚀 ${getModelName()} připravuje odpověď...`;
+    }
+    if (isAudioPlaying) {
+      return `🔊 ${getModelName()} mluví... (klepněte pro stop)`;
+    }
+    return `🎤 Držte mikrofon pro mluvení`;
   };
 
   return (
@@ -1463,13 +1681,16 @@ const VoiceScreen = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, #000000, #1a1a2e, #16213e)',
+        background: streaming 
+          ? 'linear-gradient(135deg, #000428, #004e92, #009ffd)' 
+          : 'linear-gradient(135deg, #000000, #1a1a2e, #16213e)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10000,
-        color: 'white'
+        color: 'white',
+        transition: 'background 0.5s ease'
       }}
       onClick={handleScreenClick}
     >
@@ -1508,7 +1729,7 @@ const VoiceScreen = ({
         style={{ marginBottom: '2rem', cursor: 'pointer' }}
         onClick={handleElementClick}
       >
-        <OmniaLogo size={isMobile ? 120 : 140} animate={true} />
+        <OmniaLogo size={isMobile ? 120 : 140} animate={streaming || loading} />
       </div>
 
       <div style={{
@@ -1522,6 +1743,7 @@ const VoiceScreen = ({
       onClick={handleElementClick}
       >
         {getModelName()}
+        {streaming && <span style={{ color: '#00ffff', marginLeft: '8px' }}>●</span>}
       </div>
 
       <div style={{
@@ -1548,13 +1770,7 @@ const VoiceScreen = ({
       }}
       onClick={handleElementClick}
       >
-        {loading ? (
-          `🚀 ${getModelName()} připravuje odpověď...`
-        ) : isAudioPlaying ? (
-          `🔊 ${getModelName()} mluví... (klepněte pro stop)`
-        ) : (
-          `🎤 Držte mikrofon pro mluvení`
-        )}
+        {getStatusMessage()}
       </div>
 
       <div 
@@ -1563,7 +1779,7 @@ const VoiceScreen = ({
       >
         <VoiceRecorder 
           onTranscript={onTranscript}
-          disabled={loading}
+          disabled={loading || streaming}
           mode="conversation"
         />
       </div>
@@ -1578,10 +1794,13 @@ const VoiceScreen = ({
       }}
       onClick={handleElementClick}
       >
-        {isMobile ? 
-          `${getModelName()} • Klepněte kdekoli pro stop/návrat` : 
+        {streaming ? (
+          `${getModelName()} streamuje • Klepněte pro stop`
+        ) : isMobile ? (
+          `${getModelName()} • Klepněte kdekoli pro stop/návrat`
+        ) : (
           `${getModelName()} • ESC nebo klepněte kdekoli pro stop/návrat`
-        }
+        )}
       </div>
     </div>
   );
@@ -1656,6 +1875,14 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
           color: '#a0aec0',
           borderTop: '1px solid #4a5568'
         }}>
+          📺 Real-time streaming FUNKČNÍ
+        </div>
+        
+        <div style={{
+          padding: '0.5rem 1rem',
+          fontSize: '0.75rem',
+          color: '#a0aec0'
+        }}>
           🎵 Český TTS aktivní
         </div>
         
@@ -1671,12 +1898,13 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
   );
 };
 
-// 🚀 ENHANCED MAIN APP COMPONENT
+// 🚀 FINÁLNÍ MAIN APP COMPONENT s PLNĚ FUNKČNÍM STREAMING
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('claude');
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false); // 🚀 OPRAVENO: streaming state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
@@ -1707,6 +1935,9 @@ function App() {
     if (isAudioPlaying) {
       stopCurrentAudio();
     }
+    if (streaming) {
+      setStreaming(false);
+    }
     localStorage.removeItem('omnia-memory');
     setMessages([]);
     
@@ -1723,10 +1954,16 @@ function App() {
           if (isAudioPlaying) {
             stopCurrentAudio();
           }
+          if (streaming) {
+            setStreaming(false);
+          }
           setShowVoiceScreen(false);
         } else if (isAudioPlaying) {
           stopCurrentAudio();
           showNotification('🔇 Audio zastaveno', 'info');
+        } else if (streaming) {
+          setStreaming(false);
+          showNotification('⏸️ Streaming zastaven', 'info');
         }
         if (showModelDropdown) {
           setShowModelDropdown(false);
@@ -1736,16 +1973,22 @@ function App() {
         }
       }
       
-      if (e.key === ' ' && isAudioPlaying && document.activeElement.tagName !== 'INPUT') {
+      if (e.key === ' ' && (isAudioPlaying || streaming) && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
-        stopCurrentAudio();
-        showNotification('🔇 Audio zastaveno mezerníkem', 'info');
+        if (isAudioPlaying) {
+          stopCurrentAudio();
+          showNotification('🔇 Audio zastaveno mezerníkem', 'info');
+        }
+        if (streaming) {
+          setStreaming(false);
+          showNotification('⏸️ Streaming zastaven mezerníkem', 'info');
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isAudioPlaying, showVoiceScreen, showModelDropdown, showSettingsDropdown]);
+  }, [isAudioPlaying, streaming, showVoiceScreen, showModelDropdown, showSettingsDropdown]);
 
   useEffect(() => {
     const navType = window.performance?.navigation?.type;
@@ -1766,6 +2009,7 @@ function App() {
 
   const handleSend = async (textInput = input) => {
     if (!textInput.trim()) return;
+    if (loading || streaming) return;
 
     if (isAudioPlaying) {
       stopCurrentAudio();
@@ -1787,7 +2031,8 @@ function App() {
           setIsAudioPlaying,
           currentAudioRef,
           isIOS,
-          showNotification
+          showNotification,
+          setStreaming // 🚀 OPRAVENO: předání streaming setter
         );
       } else {
         await handleTextResponse(
@@ -1797,15 +2042,17 @@ function App() {
           openaiService,
           claudeService,
           setMessages,
-          showNotification
+          showNotification,
+          setStreaming // 🚀 OPRAVENO: předání streaming setter
         );
       }
 
     } catch (err) {
-      console.error('💥 Enhanced API call error:', err);
+      console.error('💥 FINÁLNÍ STREAMING API call error:', err);
       showNotification(`Chyba: ${err.message}`, 'error');
     } finally {
       setLoading(false);
+      setStreaming(false);
     }
   };
 
@@ -1840,20 +2087,22 @@ function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: '#000000',
+      background: streaming ? 'linear-gradient(135deg, #000428, #004e92)' : '#000000',
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
       width: '100vw',
       margin: 0,
-      padding: 0
+      padding: 0,
+      transition: 'background 0.5s ease'
     }}>
       
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
-        background: '#000000',
+        background: streaming ? 'rgba(0, 4, 40, 0.8)' : '#000000',
         position: 'relative',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
-        width: '100%'
+        width: '100%',
+        transition: 'background 0.5s ease'
       }}>
         
         <div style={{
@@ -1870,24 +2119,29 @@ function App() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
+              disabled={loading || streaming}
               style={{
-                background: '#2d3748',
-                border: '1px solid #4a5568',
+                background: streaming ? 'rgba(0, 255, 255, 0.2)' : '#2d3748',
+                border: streaming ? '1px solid #00ffff' : '1px solid #4a5568',
                 borderRadius: '8px',
                 padding: '0.5rem 0.75rem',
                 fontSize: '0.85rem',
-                color: '#e2e8f0',
-                cursor: 'pointer',
+                color: streaming ? '#00ffff' : '#e2e8f0',
+                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                fontWeight: '500'
+                fontWeight: '500',
+                opacity: (loading || streaming) ? 0.7 : 1,
+                transition: 'all 0.3s ease'
               }}
             >
-              {getModelDisplayName()} ▼
+              {getModelDisplayName()} 
+              {streaming && <span style={{ color: '#00ffff' }}>●</span>}
+              {!streaming && !loading && ' ▼'}
             </button>
             
-            {showModelDropdown && (
+            {showModelDropdown && !loading && !streaming && (
               <div style={{
                 position: 'absolute',
                 top: '100%',
@@ -1942,7 +2196,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#4a5568'}
                   onMouseLeave={(e) => e.target.style.background = model === 'claude' ? '#4a5568' : '#2d3748'}
                 >
-                  Omnia • AI + Web Search
+                  Omnia • AI + Streaming 📺
                 </button>
                 <button
                   onClick={() => {
@@ -1974,14 +2228,17 @@ function App() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+              disabled={loading || streaming}
               style={{
-                background: '#2d3748',
-                border: '1px solid #4a5568',
+                background: streaming ? 'rgba(0, 255, 255, 0.2)' : '#2d3748',
+                border: streaming ? '1px solid #00ffff' : '1px solid #4a5568',
                 borderRadius: '8px',
                 padding: '0.5rem',
                 fontSize: '1rem',
-                color: '#e2e8f0',
-                cursor: 'pointer'
+                color: streaming ? '#00ffff' : '#e2e8f0',
+                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
+                opacity: (loading || streaming) ? 0.7 : 1,
+                transition: 'all 0.3s ease'
               }}
               title="Nastavení a funkce"
             >
@@ -1989,7 +2246,7 @@ function App() {
             </button>
             
             <SettingsDropdown 
-              isOpen={showSettingsDropdown}
+              isOpen={showSettingsDropdown && !loading && !streaming}
               onClose={() => setShowSettingsDropdown(false)}
               onNewChat={handleNewChat}
               model={model}
@@ -2009,23 +2266,26 @@ function App() {
         }}>
           <OmniaLogo 
             size={isMobile ? 60 : 80} 
-            animate={false}
+            animate={streaming || loading}
           />
           <h1 style={{ 
             fontSize: isMobile ? '2rem' : '2.5rem',
             fontWeight: '700',
             margin: 0,
-            color: '#ffffff',
-            letterSpacing: '0.02em'
+            color: streaming ? '#00ffff' : '#ffffff',
+            letterSpacing: '0.02em',
+            transition: 'color 0.5s ease'
           }}>
             OMNIA
           </h1>
           <div style={{
             fontSize: '0.9rem',
             opacity: 0.7,
-            textAlign: 'center'
+            textAlign: 'center',
+            color: streaming ? '#00ffff' : 'inherit',
+            transition: 'color 0.5s ease'
           }}>
-            🎵 s českým hlasem • 🔍 real-time vyhledávání
+            {streaming ? '📺 streamuje v reálném čase' : '🎵 s českým hlasem • 🔍 real-time vyhledávání'}
           </div>
         </div>
       </header>
@@ -2035,8 +2295,9 @@ function App() {
         overflowY: 'auto',
         padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
-        background: '#000000',
-        width: '100%'
+        background: streaming ? 'rgba(0, 4, 40, 0.3)' : '#000000',
+        width: '100%',
+        transition: 'background 0.5s ease'
       }}>
         <div style={{ 
           maxWidth: '1000px', 
@@ -2065,11 +2326,11 @@ function App() {
                 style={{
                   backgroundColor: msg.sender === 'user' ? '#2d3748' : `
                     radial-gradient(circle at 30% 40%, 
-                      rgba(0, 255, 255, 0.1) 0%,
-                      rgba(0, 150, 255, 0.1) 30%,
-                      rgba(100, 50, 255, 0.1) 60%,
-                      rgba(153, 50, 204, 0.1) 80%,
-                      rgba(75, 0, 130, 0.1) 100%
+                      rgba(0, 255, 255, ${msg.isStreaming ? '0.2' : '0.1'}) 0%,
+                      rgba(0, 150, 255, ${msg.isStreaming ? '0.2' : '0.1'}) 30%,
+                      rgba(100, 50, 255, ${msg.isStreaming ? '0.2' : '0.1'}) 60%,
+                      rgba(153, 50, 204, ${msg.isStreaming ? '0.2' : '0.1'}) 80%,
+                      rgba(75, 0, 130, ${msg.isStreaming ? '0.2' : '0.1'}) 100%
                     )
                   `,
                   color: msg.sender === 'user' ? '#ffd700' : '#ffffff',
@@ -2081,11 +2342,12 @@ function App() {
                   whiteSpace: 'pre-wrap',
                   boxShadow: msg.sender === 'user' 
                     ? '0 2px 8px rgba(255, 215, 0, 0.2)' 
-                    : '0 2px 8px rgba(100, 50, 255, 0.3)',
+                    : `0 2px 8px rgba(100, 50, 255, ${msg.isStreaming ? '0.5' : '0.3'})`,
                   border: msg.sender === 'user' 
                     ? '1px solid rgba(255, 215, 0, 0.3)' 
-                    : '1px solid rgba(100, 50, 255, 0.3)',
-                  position: 'relative'
+                    : `1px solid rgba(100, 50, 255, ${msg.isStreaming ? '0.5' : '0.3'})`,
+                  position: 'relative',
+                  transition: 'all 0.3s ease'
                 }}
               >
                 {msg.sender === 'bot' && (
@@ -2101,18 +2363,21 @@ function App() {
                   }}>
                     <span style={{ fontWeight: '600', color: '#a0aec0', display: 'flex', alignItems: 'center' }}>
                       <ChatOmniaLogo size={16} />
-                      {getModelDisplayName()} 🎵
+                      {getModelDisplayName()} 
+                      {msg.isStreaming ? ' 📺' : ' 🎵'}
                     </span>
-                    <VoiceButton 
-                      text={msg.text} 
-                      onAudioStart={() => setIsAudioPlaying(true)}
-                      onAudioEnd={() => setIsAudioPlaying(false)}
-                    />
+                    {!msg.isStreaming && (
+                      <VoiceButton 
+                        text={msg.text} 
+                        onAudioStart={() => setIsAudioPlaying(true)}
+                        onAudioEnd={() => setIsAudioPlaying(false)}
+                      />
+                    )}
                   </div>
                 )}
                 
                 {msg.sender === 'bot' ? (
-                  <TypewriterText text={msg.text} />
+                  <TypewriterText text={msg.text} isStreaming={msg.isStreaming} />
                 ) : (
                   msg.text
                 )}
@@ -2120,7 +2385,7 @@ function App() {
             </div>
           ))}
           
-          {loading && (
+          {(loading || streaming) && (
             <div style={{ 
               display: 'flex', 
               justifyContent: 'flex-start',
@@ -2129,31 +2394,32 @@ function App() {
               <div style={{
                 backgroundColor: `
                   radial-gradient(circle at 30% 40%, 
-                    rgba(0, 255, 255, 0.1) 0%,
-                    rgba(0, 150, 255, 0.1) 30%,
-                    rgba(100, 50, 255, 0.1) 60%,
-                    rgba(153, 50, 204, 0.1) 80%,
-                    rgba(75, 0, 130, 0.1) 100%
+                    rgba(0, 255, 255, ${streaming ? '0.3' : '0.1'}) 0%,
+                    rgba(0, 150, 255, ${streaming ? '0.3' : '0.1'}) 30%,
+                    rgba(100, 50, 255, ${streaming ? '0.3' : '0.1'}) 60%,
+                    rgba(153, 50, 204, ${streaming ? '0.3' : '0.1'}) 80%,
+                    rgba(75, 0, 130, ${streaming ? '0.3' : '0.1'}) 100%
                   )
                 `,
                 padding: isMobile ? '1rem 1.25rem' : '1.25rem 1.5rem',
                 borderRadius: '20px 20px 20px 4px',
                 fontSize: isMobile ? '1rem' : '0.95rem',
-                boxShadow: '0 2px 8px rgba(100, 50, 255, 0.3)',
-                border: '1px solid rgba(100, 50, 255, 0.3)',
-                color: '#ffffff'
+                boxShadow: `0 2px 8px rgba(100, 50, 255, ${streaming ? '0.5' : '0.3'})`,
+                border: `1px solid rgba(100, 50, 255, ${streaming ? '0.5' : '0.3'})`,
+                color: '#ffffff',
+                transition: 'all 0.3s ease'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ 
                     width: '16px', 
                     height: '16px', 
                     border: '2px solid rgba(255,255,255,0.3)', 
-                    borderTop: '2px solid #00ffff',
+                    borderTop: streaming ? '2px solid #00ffff' : '2px solid #00ffff',
                     borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
+                    animation: streaming ? 'spin-fast 0.8s linear infinite' : 'spin 1s linear infinite'
                   }}></div>
                   <span style={{ color: '#a0aec0', fontWeight: '500' }}>
-                    {getModelDisplayName()} přemýšlí... 🎵
+                    {streaming ? `${getModelDisplayName()} streamuje... 📺` : `${getModelDisplayName()} přemýšlí... 🎵`}
                   </span>
                 </div>
               </div>
@@ -2169,12 +2435,13 @@ function App() {
         bottom: 0, 
         left: 0,
         right: 0,
-        background: 'rgba(0, 0, 0, 0.95)', 
+        background: streaming ? 'rgba(0, 4, 40, 0.95)' : 'rgba(0, 0, 0, 0.95)', 
         backdropFilter: 'blur(10px)',
         padding: isMobile ? '1rem' : '1.5rem',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
+        borderTop: streaming ? '1px solid rgba(0, 255, 255, 0.3)' : '1px solid rgba(255,255,255,0.1)',
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
-        width: '100%'
+        width: '100%',
+        transition: 'all 0.5s ease'
       }}>
         <div style={{ 
           maxWidth: '1000px',
@@ -2190,43 +2457,49 @@ function App() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-              placeholder={`Napište zprávu pro ${getModelDisplayName()}... 🎵`}
-              disabled={loading}
+              onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
+              placeholder={streaming ? `${getModelDisplayName()} streamuje...` : `Napište zprávu pro ${getModelDisplayName()}... 🎵`}
+              disabled={loading || streaming}
               style={{ 
                 width: '100%',
                 padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
                 fontSize: isMobile ? '16px' : '0.95rem',
                 borderRadius: '25px',
-                border: '2px solid #4a5568',
+                border: streaming ? '2px solid #00ffff' : '2px solid #4a5568',
                 outline: 'none',
-                backgroundColor: loading ? '#2d3748' : '#1a202c',
-                color: '#ffffff',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                backgroundColor: (loading || streaming) ? '#2d3748' : '#1a202c',
+                color: streaming ? '#00ffff' : '#ffffff',
+                transition: 'all 0.3s ease',
+                boxShadow: streaming ? '0 0 10px rgba(0, 255, 255, 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
+                opacity: (loading || streaming) ? 0.7 : 1
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#00ffff';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 255, 255, 0.1)';
+                if (!streaming && !loading) {
+                  e.target.style.borderColor = '#00ffff';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 255, 255, 0.1)';
+                }
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#4a5568';
-                e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+                if (!streaming) {
+                  e.target.style.borderColor = '#4a5568';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+                }
               }}
             />
           </div>
           
           <MiniOmniaLogo 
             size={isMobile ? 50 : 56} 
-            onClick={() => setShowVoiceScreen(true)}
+            onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
             isAudioPlaying={isAudioPlaying}
             loading={loading}
+            streaming={streaming}
           />
 
           <OmniaArrowButton
             onClick={() => handleSend()}
-            disabled={loading || !input.trim()}
-            loading={loading}
+            disabled={loading || streaming || !input.trim()}
+            loading={loading || streaming}
             size={isMobile ? 50 : 56}
           />
         </div>
@@ -2241,6 +2514,7 @@ function App() {
           isMobile={isMobile}
           stopCurrentAudio={stopCurrentAudio}
           model={model}
+          streaming={streaming}
         />
       )}
 
@@ -2255,6 +2529,16 @@ function App() {
           100% { transform: rotate(360deg); }
         }
         
+        @keyframes spin-fast {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+        
         @keyframes pulse-omnia {
           0%, 100% { 
             box-shadow: 0 0 15px rgba(100, 50, 255, 0.8);
@@ -2263,6 +2547,17 @@ function App() {
           50% { 
             box-shadow: 0 0 25px rgba(0, 255, 255, 0.9);
             transform: scale(1.05);
+          }
+        }
+        
+        @keyframes pulse-streaming {
+          0%, 100% { 
+            box-shadow: 0 0 20px rgba(0, 255, 255, 1);
+            transform: scale(1);
+          }
+          50% { 
+            box-shadow: 0 0 35px rgba(0, 255, 255, 1);
+            transform: scale(1.08);
           }
         }
         
@@ -2296,6 +2591,17 @@ function App() {
           50% { 
             box-shadow: 0 0 40px rgba(220, 53, 69, 0.9);
             transform: scale(1.12);
+          }
+        }
+        
+        @keyframes pulse-notification {
+          0%, 100% { 
+            transform: scale(1);
+            box-shadow: 0 6px 20px rgba(0,255,255,0.3);
+          }
+          50% { 
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,255,255,0.5);
           }
         }
         
@@ -2381,7 +2687,7 @@ function App() {
         }
       `}</style>
 
-      {(showModelDropdown || showSettingsDropdown) && (
+      {(showModelDropdown || showSettingsDropdown) && !loading && !streaming && (
         <div
           style={{
             position: 'fixed',
