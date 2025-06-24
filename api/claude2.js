@@ -1,4 +1,4 @@
-// api/claude2.js - FAKE STREAMING (funkční + simulované)
+// api/claude2.js - KOMPLETNÍ FAKE STREAMING kompatibilní s App.jsx
 export default async function handler(req, res) {
   // CORS headers pro fake streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -42,7 +42,6 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
       max_tokens: max_tokens,
       system: enhancedSystem,
       messages: recentMessages,
-      // stream: false, // 🔧 BEZ streaming - používáme tvůj funkční způsob
       tools: [
         {
           type: "web_search_20250305",
@@ -52,7 +51,7 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
       ]
     };
 
-    console.log('🚀 Sending FAKE STREAMING request (funkční způsob)...');
+    console.log('🎭 Starting FAKE STREAMING (funkční backend + streaming frontend)...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -75,22 +74,22 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
     }
 
     const data = await response.json();
-    console.log('✅ Claude Sonnet 4 response received');
+    console.log('✅ Claude Sonnet 4 response received - starting FAKE STREAMING...');
     
     // Check for web search usage
     const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
     if (webSearchUsed) {
-      console.log('🔍 Claude used web_search!');
-      // Send search notification
+      console.log('🔍 Claude used web_search - sending notification...');
+      // Send search notification (kompatibilní s App.jsx)
       res.write(JSON.stringify({
         type: 'search_start',
         message: '🔍 Vyhledávám aktuální informace...'
       }) + '\n');
       
       // Small delay to simulate search
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 800));
     }
     
     // Extrahovat text odpověď
@@ -101,35 +100,42 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
       ?.trim() || "Nepodařilo se získat odpověď.";
 
     console.log('💬 Response length:', textContent.length, 'characters');
-    console.log('🔍 Web search executed:', webSearchUsed);
+    console.log('🎭 Starting FAKE STREAMING simulation...');
 
     // 🎭 FAKE STREAMING: Postupné posílání textu po částech
     const words = textContent.split(' ');
-    const chunkSize = 3; // Posíláme po 3 slovech
+    const chunkSize = 2; // Posíláme po 2 slovech pro realističnost
+    let sentText = '';
     
     for (let i = 0; i < words.length; i += chunkSize) {
       const chunk = words.slice(i, i + chunkSize).join(' ');
+      sentText += chunk;
       
-      // Pošli chunk textu
+      // Pošli chunk textu (formát kompatibilní s App.jsx)
       res.write(JSON.stringify({
         type: 'text',
         content: chunk + (i + chunkSize < words.length ? ' ' : '')
       }) + '\n');
       
-      // Malá pauza pro realističnost streaming efektu
+      console.log(`📺 Sent chunk ${Math.floor(i/chunkSize) + 1}/${Math.ceil(words.length/chunkSize)}: "${chunk}"`);
+      
+      // Realistická pauza pro streaming efekt
       if (i + chunkSize < words.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 120)); // 120ms mezi chunky
       }
     }
     
-    // Send final completion
+    // Send final completion (kompatibilní s App.jsx)
     res.write(JSON.stringify({
       type: 'completed',
       fullText: textContent,
       webSearchUsed: webSearchUsed
     }) + '\n');
 
-    console.log('✅ FAKE STREAMING completed');
+    console.log('✅ FAKE STREAMING completed successfully!');
+    console.log('🎭 Total chunks sent:', Math.ceil(words.length/chunkSize));
+    console.log('📺 App.jsx should see real-time streaming effect!');
+    
     res.end();
 
   } catch (error) {
