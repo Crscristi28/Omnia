@@ -1,6 +1,6 @@
-// api/claude2.js - STREAMING s nejnovější API verzí
+// api/claude2.js - FAKE STREAMING (funkční + simulované)
 export default async function handler(req, res) {
-  // CORS headers pro streaming
+  // CORS headers pro fake streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -36,13 +36,13 @@ Máš přístup k web_search funkci pro vyhledávání aktuálních informací n
 Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
 Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
 
-    // ✅ STREAMING request s nejnovější API verzí
+    // ✅ PŮVODNÍ funkční request (BEZ streaming)
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
       system: enhancedSystem,
       messages: recentMessages,
-      stream: true, // 🚀 STREAMING
+      // stream: false, // 🔧 BEZ streaming - používáme tvůj funkční způsob
       tools: [
         {
           type: "web_search_20250305",
@@ -52,14 +52,14 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
       ]
     };
 
-    console.log('🚀 Sending STREAMING request with 2025-01-01 API...');
+    console.log('🚀 Sending FAKE STREAMING request (funkční způsob)...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2025-01-01' // 🔧 NEJNOVĚJŠÍ API VERZE
+        'anthropic-version': '2023-06-01' // ✅ Tvá funkční API verze
       },
       body: JSON.stringify(claudeRequest)
     });
@@ -74,97 +74,66 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
       return res.end();
     }
 
-    console.log('✅ STREAMING response started');
-
-    // 🚀 STREAMING reader setup
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    const data = await response.json();
+    console.log('✅ Claude Sonnet 4 response received');
     
-    let buffer = '';
-    let fullText = '';
-    let webSearchUsed = false;
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) {
-          console.log('✅ STREAMING completed');
-          
-          // Send final metadata
-          res.write(JSON.stringify({
-            type: 'completed',
-            fullText: fullText,
-            webSearchUsed: webSearchUsed
-          }) + '\n');
-          
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            
-            if (data === '[DONE]') {
-              continue;
-            }
-
-            try {
-              const parsed = JSON.parse(data);
-              
-              // Handle streaming events
-              if (parsed.type === 'content_block_delta') {
-                const text = parsed.delta?.text || '';
-                if (text) {
-                  fullText += text;
-                  
-                  // ✅ Send text chunk to frontend
-                  res.write(JSON.stringify({
-                    type: 'text',
-                    content: text
-                  }) + '\n');
-                }
-              }
-              
-              else if (parsed.type === 'content_block_start') {
-                if (parsed.content_block?.type === 'tool_use') {
-                  const toolName = parsed.content_block.name;
-                  
-                  if (toolName === 'web_search') {
-                    webSearchUsed = true;
-                    
-                    // ✅ Send search notification
-                    res.write(JSON.stringify({
-                      type: 'search_start',
-                      message: '🔍 Vyhledávám aktuální informace...'
-                    }) + '\n');
-                  }
-                }
-              }
-              
-            } catch (parseError) {
-              // Some lines might not be JSON, that's OK
-              continue;
-            }
-          }
-        }
-      }
-    } catch (streamError) {
-      console.error('💥 Streaming error:', streamError);
+    // Check for web search usage
+    const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
+    const webSearchUsed = toolUses.some(t => t.name === 'web_search');
+    
+    if (webSearchUsed) {
+      console.log('🔍 Claude used web_search!');
+      // Send search notification
       res.write(JSON.stringify({
-        error: true,
-        message: 'Streaming error: ' + streamError.message
+        type: 'search_start',
+        message: '🔍 Vyhledávám aktuální informace...'
       }) + '\n');
+      
+      // Small delay to simulate search
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
+    
+    // Extrahovat text odpověď
+    const textContent = data.content
+      ?.filter(item => item.type === 'text')
+      ?.map(item => item.text)
+      ?.join('\n')
+      ?.trim() || "Nepodařilo se získat odpověď.";
 
+    console.log('💬 Response length:', textContent.length, 'characters');
+    console.log('🔍 Web search executed:', webSearchUsed);
+
+    // 🎭 FAKE STREAMING: Postupné posílání textu po částech
+    const words = textContent.split(' ');
+    const chunkSize = 3; // Posíláme po 3 slovech
+    
+    for (let i = 0; i < words.length; i += chunkSize) {
+      const chunk = words.slice(i, i + chunkSize).join(' ');
+      
+      // Pošli chunk textu
+      res.write(JSON.stringify({
+        type: 'text',
+        content: chunk + (i + chunkSize < words.length ? ' ' : '')
+      }) + '\n');
+      
+      // Malá pauza pro realističnost streaming efektu
+      if (i + chunkSize < words.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    // Send final completion
+    res.write(JSON.stringify({
+      type: 'completed',
+      fullText: textContent,
+      webSearchUsed: webSearchUsed
+    }) + '\n');
+
+    console.log('✅ FAKE STREAMING completed');
     res.end();
 
   } catch (error) {
-    console.error('💥 Fatal error in Claude streaming:', error);
+    console.error('💥 Fatal error in FAKE streaming:', error);
     
     res.write(JSON.stringify({
       error: true,
