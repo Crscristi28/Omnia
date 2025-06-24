@@ -1,4 +1,4 @@
-// api/claude2.js - CLAUDE SONNET 4 WITH NATIVE TOOLS
+// api/claude2.js - DEBUGGING TOOLS CONFIGURATION
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,157 +14,120 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🚀 Claude Sonnet 4 API call with native tools');
-    console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🚀 Claude API call - DEBUGGING TOOLS');
     
-    const { messages, system, max_tokens = 2000, model } = req.body;
-    
-    if (!messages || !Array.isArray(messages)) {
-      console.log('❌ Invalid messages:', messages);
-      return res.status(400).json({ 
-        error: 'Invalid request',
-        message: 'Messages musí být array' 
-      });
-    }
-
+    const { messages, system, max_tokens = 2000 } = req.body;
     const API_KEY = process.env.CLAUDE_API_KEY;
     
     if (!API_KEY) {
-      console.error('❌ CLAUDE_API_KEY not set');
       return res.status(500).json({ 
         error: 'Configuration error',
         message: 'Claude API key není nastaven'
       });
     }
 
-    console.log('📝 Celkem zpráv:', messages.length);
+    const recentMessages = messages.slice(-10);
     
-    // Vezmi posledních 15 zpráv pro lepší kontext (Sonnet 4 zvládne více)
-    const recentMessages = messages.slice(-15);
-    console.log('📝 Posílám posledních 15 zpráv');
-    
-    // ✅ CLAUDE SONNET 4 REQUEST WITH NATIVE TOOLS
+    // ✅ TRY DIFFERENT TOOLS CONFIGURATION
     const claudeRequest = {
-      model: model || "claude-sonnet-4-20250514", // ✅ CLAUDE SONNET 4
+      model: "claude-3-5-sonnet-20241022", // Proven stable version
       max_tokens: max_tokens,
-      system: system || "Jsi Omnia v2, pokročilý AI asistent. Odpovídej vždy v češtině, stručně a přirozeně.",
+      system: system || "Jsi Omnia v2, pokročilý AI asistent. Odpovídej vždy v češtině, stručně a přirozeně. Když potřebuješ aktuální informace, použij web search.",
       messages: recentMessages,
       
-      // ✅ NATIVE TOOLS - web_search capability
+      // ✅ SIMPLIFIED TOOLS ARRAY
       tools: [
         {
-          type: "computer_use",
-          name: "web_search",
-          description: "Search the web for current information. Use this when users ask for recent/current data."
+          type: "web_search",
+          description: "Search the web for current information"
         }
-      ],
-      
-      // ✅ TOOL CHOICE - let Claude decide when to use tools
-      tool_choice: { type: "auto" }
+      ]
     };
 
-    console.log('🚀 Claude Sonnet 4 request with tools:', JSON.stringify(claudeRequest, null, 2));
+    console.log('🔧 Debugging request:', JSON.stringify(claudeRequest, null, 2));
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'computer-use-2024-10-22' // ✅ BETA HEADER FOR TOOLS
+        'anthropic-version': '2024-06-01', // ✅ NEWER VERSION
+        'anthropic-beta': 'tools-2024-05-16' // ✅ TOOLS BETA
       },
       body: JSON.stringify(claudeRequest)
     });
 
-    console.log('📡 Claude Sonnet 4 response status:', response.status);
+    console.log('📡 Response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Claude API error:', response.status, errorText);
       
-      // ✅ FALLBACK to basic model if tools fail
-      if (response.status === 400 && errorText.includes('tools')) {
-        console.log('🔄 Retrying without tools...');
-        return await fallbackWithoutTools(req.body, API_KEY, res);
-      }
-      
-      return res.status(response.status).json({ 
-        error: 'Claude API error',
-        status: response.status,
-        details: errorText 
-      });
+      // ✅ FALLBACK TO BASIC VERSION
+      console.log('🔄 Trying fallback without tools...');
+      return await fallbackBasicClaude(req.body, API_KEY, res);
     }
 
     const data = await response.json();
-    console.log('✅ Claude Sonnet 4 success');
-    console.log('📨 Response type:', data.content?.[0]?.type);
+    console.log('✅ Claude response structure:', JSON.stringify(data, null, 2));
+
+    // ✅ EXTRACT AND CLEAN RESPONSE
+    let responseText = '';
     
-    // ✅ HANDLE TOOL USAGE
-    if (data.content && data.content.some(c => c.type === 'tool_use')) {
-      console.log('🔍 Claude used web_search tool');
+    if (data.content && Array.isArray(data.content)) {
+      responseText = data.content
+        .filter(c => c.type === 'text')
+        .map(c => c.text)
+        .join('\n');
     }
 
-    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
-      console.error('❌ Invalid Claude response structure:', data);
-      return res.status(500).json({
-        error: 'Invalid response from Claude'
-      });
+    if (!responseText) {
+      throw new Error('No text content in response');
     }
 
-    // ✅ EXTRACT TEXT CONTENT (handle tool responses)
-    const textContent = data.content
-      .filter(c => c.type === 'text')
-      .map(c => c.text)
-      .join('\n');
-
-    if (!textContent) {
-      console.error('❌ No text content in response');
-      return res.status(500).json({
-        error: 'No text content in Claude response'
-      });
-    }
+    // ✅ CLEAN OUTPUT
+    responseText = responseText
+      .replace(/<\/?web_search>/g, '') // Remove web_search tags
+      .replace(/\*\*web_search\*\*/g, '') // Remove markdown web_search
+      .trim();
 
     return res.status(200).json({
       success: true,
-      content: [{ type: 'text', text: textContent }],
-      model: data.model || 'claude-sonnet-4-20250514',
+      content: [{ type: 'text', text: responseText }],
+      model: data.model,
       usage: data.usage,
-      tool_use_detected: data.content.some(c => c.type === 'tool_use'),
-      mode: 'sonnet4_with_tools'
+      debug_info: {
+        tools_used: data.content?.some(c => c.type === 'tool_use') || false,
+        content_types: data.content?.map(c => c.type) || []
+      }
     });
 
   } catch (error) {
-    console.error('💥 Claude Sonnet 4 error:', error);
-    console.error('💥 Error stack:', error.stack);
+    console.error('💥 Error:', error);
     
     // ✅ GRACEFUL FALLBACK
     try {
-      console.log('🔄 Attempting fallback...');
-      return await fallbackWithoutTools(req.body, process.env.CLAUDE_API_KEY, res);
+      return await fallbackBasicClaude(req.body, process.env.CLAUDE_API_KEY, res);
     } catch (fallbackError) {
-      console.error('💥 Fallback also failed:', fallbackError);
       return res.status(500).json({ 
         error: 'Server error',
-        message: error.message,
-        fallback_attempted: true
+        message: error.message
       });
     }
   }
 }
 
-// 🔄 FALLBACK FUNCTION - Claude Sonnet 4 without tools
-async function fallbackWithoutTools(requestBody, apiKey, res) {
-  console.log('🔄 Fallback: Claude Sonnet 4 without tools');
+// ✅ FALLBACK FUNCTION
+async function fallbackBasicClaude(requestBody, apiKey, res) {
+  console.log('🔄 Fallback: Basic Claude without tools');
   
   const { messages, system, max_tokens = 2000 } = requestBody;
-  const recentMessages = messages.slice(-10);
   
   const fallbackRequest = {
-    model: "claude-sonnet-4-20250514", // ✅ STILL SONNET 4
+    model: "claude-3-5-sonnet-20241022",
     max_tokens: max_tokens,
-    system: system + "\n\nHINT: Pokud uživatel potřebuje aktuální informace, řekni mu že Claude Sonnet 4 normálně má přístup k internetu, ale momentálně pracuje v omezeném režimu.",
-    messages: recentMessages
-    // ❌ NO TOOLS in fallback
+    system: (system || "Jsi Omnia v2") + "\n\nINFO: Claude pracuje v základním režimu bez web search. Pro aktuální informace doporuč uživateli ověřit na oficiálních zdrojích.",
+    messages: messages.slice(-8)
   };
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -172,8 +135,7 @@ async function fallbackWithoutTools(requestBody, apiKey, res) {
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-      // ❌ NO BETA HEADER in fallback
+      'anthropic-version': '2024-06-01'
     },
     body: JSON.stringify(fallbackRequest)
   });
@@ -184,13 +146,12 @@ async function fallbackWithoutTools(requestBody, apiKey, res) {
   }
 
   const data = await response.json();
-  console.log('✅ Fallback successful');
-
+  
   return res.status(200).json({
     success: true,
     content: data.content,
     model: data.model,
     usage: data.usage,
-    mode: 'sonnet4_fallback'
+    mode: 'fallback_basic'
   });
 }
