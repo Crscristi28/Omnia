@@ -1,4 +1,4 @@
-// api/claude2.js - SKUTEČNÝ Claude Sonnet 4 s Native Web Search
+// api/claude2.js - FINÁLNÍ s official Anthropic web_search tool
 
 export default async function handler(req, res) {
   // CORS headers
@@ -25,27 +25,16 @@ export default async function handler(req, res) {
       });
     }
 
-    // Připravit zprávy (max 8 posledních)
     const recentMessages = messages.slice(-8);
     
-    // ✅ SYSTEM PROMPT S INSTRUKCEMI PRO WEB_SEARCH
-    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent s přístupem k web_search funkci."}
+    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent."}
+    
+Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
+Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
+Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
+Vyhledávej v češtině a zaměř se na české a evropské zdroje kde je to relevantní.`;
 
-DŮLEŽITÉ INSTRUKCE:
-- Odpovídej VŽDY výhradně v češtině, gramaticky správně a přirozeně
-- Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu
-- AUTOMATICKY používej web_search když uživatel potřebuje:
-  * Aktuální ceny akcií, kryptoměn, kurzy měn
-  * Současné počasí
-  * Nejnovější zprávy a události
-  * Aktuální informace o firmách, produktech
-  * Jakékoli údaje, které se mění denně/týdně
-- Když použiješ web_search, VŽDY poskytni konkrétní odpověď na základě nalezených informací
-- NIKDY neříkej "zkontroluj na jiných stránkách" nebo "hledej jinde"
-- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku
-- Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}`;
-
-    // ✅ CLAUDE REQUEST S WEB_SEARCH TOOLS
+    // ✅ SPRÁVNÝ formát podle Anthropic dokumentace
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
@@ -53,15 +42,20 @@ DŮLEŽITÉ INSTRUKCE:
       messages: recentMessages,
       tools: [
         {
+          type: "web_search_20250305",
           name: "web_search",
-          description: "Search the web for current, up-to-date information. Use this when you need recent data like stock prices, weather, news, or any information that changes frequently."
+          max_uses: 5,
+          // Optional: Lokalizace pro Českou republiku
+          user_location: {
+            type: "approximate",
+            country: "CZ",
+            region: "Prague"
+          }
         }
       ]
     };
 
-    console.log('🚀 Sending request to Claude Sonnet 4...');
-    console.log('📊 Messages count:', recentMessages.length);
-    console.log('🔧 Tools available: web_search');
+    console.log('🚀 Sending request to Claude Sonnet 4 with official web_search...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -83,21 +77,14 @@ DŮLEŽITÉ INSTRUKCE:
     }
 
     const data = await response.json();
-    console.log('✅ Claude response received');
+    console.log('✅ Claude Sonnet 4 response received');
     
-    // Debug logging pro tools usage
-    if (data.usage) {
-      console.log('📈 Usage stats:', {
-        input_tokens: data.usage.input_tokens,
-        output_tokens: data.usage.output_tokens,
-        total_tokens: data.usage.input_tokens + data.usage.output_tokens
-      });
-    }
+    // Check for web search usage
+    const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
+    const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
-    // Zkontrolovat jestli Claude použil tools
-    const usedTools = data.content?.filter(item => item.type === 'tool_use') || [];
-    if (usedTools.length > 0) {
-      console.log('🔍 Claude used tools:', usedTools.map(t => t.name));
+    if (webSearchUsed) {
+      console.log('🔍 Claude used web_search tool!');
     }
     
     // Extrahovat text odpověď
@@ -108,17 +95,18 @@ DŮLEŽITÉ INSTRUKCE:
       ?.trim() || "Nepodařilo se získat odpověď.";
 
     console.log('💬 Response length:', textContent.length, 'characters');
+    console.log('🔍 Web search executed:', webSearchUsed);
 
     return res.status(200).json({
       success: true,
       content: [{ type: 'text', text: textContent }],
       model: data.model,
       usage: data.usage,
-      tools_used: usedTools.length > 0,
-      web_search_executed: usedTools.some(t => t.name === 'web_search'),
+      tools_used: toolUses.length > 0,
+      web_search_executed: webSearchUsed,
       debug_info: {
-        tools_available: ['web_search'],
-        tools_used: usedTools.map(t => t.name),
+        tools_available: ['web_search_20250305'],
+        tools_used: toolUses.map(t => t.name),
         message_count: recentMessages.length
       }
     });
@@ -127,8 +115,7 @@ DŮLEŽITÉ INSTRUKCE:
     console.error('💥 Fatal error in Claude API:', error);
     return res.status(500).json({
       error: 'Internal server error',
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: error.message
     });
   }
 }
