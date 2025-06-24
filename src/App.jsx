@@ -204,7 +204,82 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
       {loading ? '⏳' : '→'}
     </button>
   );
-};// ⌨️ TYPEWRITER EFFECT
+};
+
+// 🎯 NOVÝ ČESKÝ TTS PREPROCESSING - Řeší problémy s výslovností
+const preprocessCzechTextForTTS = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  
+  let processedText = text;
+  
+  // 1. Převod čísel na slova (základní čísla)
+  const numberMap = {
+    '0': 'nula', '1': 'jedna', '2': 'dva', '3': 'tři', '4': 'čtyři',
+    '5': 'pět', '6': 'šest', '7': 'sedm', '8': 'osm', '9': 'devět',
+    '10': 'deset', '11': 'jedenáct', '12': 'dvanáct', '13': 'třináct',
+    '14': 'čtrnáct', '15': 'patnáct', '16': 'šestnáct', '17': 'sedmnáct',
+    '18': 'osmnáct', '19': 'devatenáct', '20': 'dvacet'
+  };
+  
+  // Nahradit jednotlivá čísla slovy když nejsou součástí větších čísel
+  Object.entries(numberMap).forEach(([num, word]) => {
+    const regex = new RegExp(`\\b${num}\\b`, 'g');
+    processedText = processedText.replace(regex, word);
+  });
+  
+  // 2. Speciální případy pro ceny a měny
+  processedText = processedText.replace(/(\d+)\s*Kč/gi, '$1 korun českých');
+  processedText = processedText.replace(/(\d+)\s*€/gi, '$1 eur');
+  processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolarů');
+  
+  // 3. Procenta
+  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
+  
+  // 4. Teploty
+  processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů celsia');
+  processedText = processedText.replace(/(\d+)\s*°F/gi, '$1 stupňů fahrenheita');
+  
+  // 5. Časy
+  processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut');
+  
+  // 6. Zkratky a speciální znaky
+  const abbreviations = {
+    'atd': 'a tak dále',
+    'apod': 'a podobně',
+    'tj': 'to jest',
+    'tzn': 'to znamená',
+    'např': 'například',
+    'resp': 'respektive',
+    'tzv': 'takzvaný',
+    'AI': 'ajaj',
+    'API': 'á pé jaj',
+    'URL': 'jů ár el',
+    'HTML': 'há té em el',
+    'CSS': 'cé es es',
+    'JS': 'džej es',
+    'TTS': 'té té es'
+  };
+  
+  Object.entries(abbreviations).forEach(([abbr, expansion]) => {
+    const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
+    processedText = processedText.replace(regex, expansion);
+  });
+  
+  // 7. Vyčištění interpunkce pro lepší plynulost
+  processedText = processedText.replace(/\.\.\./g, ', pauza,');
+  processedText = processedText.replace(/--/g, ', pauza,');
+  processedText = processedText.replace(/\*/g, '');
+  processedText = processedText.replace(/#{1,6}/g, '');
+  
+  // 8. Oprava dvojitých mezer
+  processedText = processedText.replace(/\s+/g, ' ').trim();
+  
+  console.log('🎯 TTS Preprocessing:', { original: text.substring(0, 100), processed: processedText.substring(0, 100) });
+  
+  return processedText;
+};
+
+// ⌨️ TYPEWRITER EFFECT
 function TypewriterText({ text }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
@@ -220,9 +295,7 @@ function TypewriterText({ text }) {
   }, [charIndex, chars]);
 
   return <span>{displayedText}</span>;
-}
-
-// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
+}// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -264,7 +337,7 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-// 🎤 VOICE RECORDER for Voice Screen
+// 🎤 ENHANCED VOICE RECORDER s lepším error handlingem
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -276,7 +349,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
 
   const startRecording = async () => {
     try {
-      console.log('🎙️ Starting recording...');
+      console.log('🎙️ Starting enhanced recording...');
       
       const constraints = {
         audio: {
@@ -321,6 +394,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           });
           const arrayBuffer = await audioBlob.arrayBuffer();
 
+          console.log('📤 Sending audio to Whisper...');
           const response = await fetch('/api/whisper', {
             method: 'POST',
             headers: {
@@ -330,16 +404,22 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(`Whisper API failed: HTTP ${response.status}`);
           }
 
           const data = await response.json();
-          console.log('✅ Transcribed:', data.text);
+          console.log('✅ Whisper transcribed:', data.text);
           
-          onTranscript(data.text);
+          if (data.text && data.text.trim()) {
+            onTranscript(data.text.trim());
+          } else {
+            console.warn('⚠️ Empty transcription received');
+          }
 
         } catch (error) {
-          console.error('💥 Whisper error:', error);
+          console.error('💥 Whisper processing error:', error);
+          // Zobrazit uživatelsky přívětivou chybu
+          onTranscript('[Chyba při rozpoznávání řeči - zkuste to znovu]');
         } finally {
           setIsProcessing(false);
         }
@@ -349,13 +429,14 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       setIsRecording(true);
 
     } catch (error) {
-      console.error('💥 Recording error:', error);
-      alert('Nepodařilo se získat přístup k mikrofonu');
+      console.error('💥 Recording start error:', error);
+      alert('Nepodařilo se získat přístup k mikrofonu. Zkontrolujte oprávnění.');
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
       setIsRecording(false);
+      setIsProcessing(false);
     }
   };
 
@@ -383,6 +464,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     }
     
     setIsRecording(false);
+    setIsProcessing(false);
   };
 
   const handleTouchStart = (e) => {
@@ -480,14 +562,16 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       ...baseStyle,
       backgroundColor: '#ffc107',
       color: 'white',
-      boxShadow: '0 0 20px rgba(255, 193, 7, 0.5)'
+      boxShadow: '0 0 20px rgba(255, 193, 7, 0.5)',
+      animation: 'pulse-processing 1.5s ease-in-out infinite'
     };
     if (isRecording) return { 
       ...baseStyle,
       backgroundColor: '#dc3545',
       color: 'white',
       transform: 'scale(1.1)',
-      boxShadow: '0 0 30px rgba(220, 53, 69, 0.6)'
+      boxShadow: '0 0 30px rgba(220, 53, 69, 0.6)',
+      animation: 'pulse-recording 1s ease-in-out infinite'
     };
     return { 
       ...baseStyle,
@@ -503,6 +587,12 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     return '🎤';
   };
 
+  const getButtonTitle = () => {
+    if (isProcessing) return 'Zpracovávám nahrávku...';
+    if (isRecording) return 'Nahrávám - pusťte pro ukončení';
+    return 'Držte pro mluvení';
+  };
+
   return (
     <button
       onTouchStart={handleTouchStart}
@@ -512,15 +602,13 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={() => !isIOSPWA && isRecording && forceStopRecording()}
       disabled={disabled || isProcessing}
-      title="Držte pro mluvení"
+      title={getButtonTitle()}
       style={getButtonStyle()}
     >
       {getButtonIcon()}
     </button>
   );
-};
-
-// 🔊 VOICE BUTTON for message playback
+};// 🔊 ENHANCED VOICE BUTTON s českým TTS preprocessingem
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -556,14 +644,18 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       window.dispatchEvent(new CustomEvent('omnia-audio-start'));
       if (onAudioStart) onAudioStart();
 
+      // 🎯 NOVÉ: Použití českého TTS preprocessingu
+      const processedText = preprocessCzechTextForTTS(text);
+      console.log('🎵 Sending processed text to TTS:', processedText.substring(0, 100));
+
       const response = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text: processedText }) // Používáme předpracovaný text
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`TTS API failed: HTTP ${response.status}`);
       }
 
       const audioBlob = await response.blob();
@@ -576,13 +668,20 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
-      audio.onplay = () => setIsPlaying(true);
+      audio.onplay = () => {
+        setIsPlaying(true);
+        console.log('🔊 Enhanced TTS playback started');
+      };
+      
       audio.onended = () => {
         setIsPlaying(false);
         if (onAudioEnd) onAudioEnd();
         URL.revokeObjectURL(audioUrl);
+        console.log('✅ Enhanced TTS playback finished');
       };
-      audio.onerror = () => {
+      
+      audio.onerror = (e) => {
+        console.error('❌ TTS playback error:', e);
         setIsPlaying(false);
         setIsLoading(false);
         if (onAudioEnd) onAudioEnd();
@@ -592,50 +691,82 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       await audio.play();
 
     } catch (error) {
-      console.error('💥 Voice error:', error);
+      console.error('💥 Enhanced TTS error:', error);
       if (onAudioEnd) onAudioEnd();
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getButtonStyle = () => {
+    return {
+      background: 'none',
+      border: 'none',
+      cursor: isLoading ? 'wait' : 'pointer',
+      padding: '4px',
+      borderRadius: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: '0.9rem',
+      opacity: isLoading ? 0.5 : 0.7,
+      transition: 'all 0.2s ease',
+      position: 'relative'
+    };
+  };
+
+  const getButtonIcon = () => {
+    if (isLoading) return '⏳';
+    if (isPlaying) return '⏸️';
+    return '🔊';
+  };
+
+  const getButtonTitle = () => {
+    if (isLoading) return 'Generuji český zvuk...';
+    if (isPlaying) return 'Klepněte pro zastavení';
+    return 'Přehrát s českým TTS';
+  };
+
   return (
     <button
       onClick={handleSpeak}
       disabled={isLoading}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: isLoading ? 'wait' : 'pointer',
-        padding: '4px',
-        borderRadius: '4px',
-        display: 'flex',
-        alignItems: 'center',
-        fontSize: '0.9rem',
-        opacity: isLoading ? 0.5 : 0.7,
-        transition: 'opacity 0.2s'
-      }}
+      style={getButtonStyle()}
+      title={getButtonTitle()}
       onMouseEnter={(e) => e.target.style.opacity = '1'}
       onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '0.7'}
     >
-      {isLoading ? '⏳' : isPlaying ? '⏸️' : '🔊'}
+      {getButtonIcon()}
+      {isLoading && (
+        <span style={{ 
+          fontSize: '0.7rem', 
+          marginLeft: '4px', 
+          color: '#ffc107',
+          fontWeight: '500'
+        }}>
+          Čeština
+        </span>
+      )}
     </button>
   );
-};// 🔎 SONAR SERVICE - Pro Omnia Search model
+};
+
+// 🔎 ENHANCED SONAR SERVICE s lepší optimalizací
 const sonarService = {
   async search(query, showNotification) {
     try {
-      console.log('🔎 Sonar searching web for:', query);
-      showNotification('🔎 Vyhledávám aktuální informace na internetu...', 'info');
+      console.log('🔎 Enhanced Sonar searching for:', query);
+      showNotification('🔍 Vyhledávám nejnovější informace...', 'info');
 
       const enhancedQuery = this.enhanceQueryForCurrentData(query);
-      console.log('🎯 Enhanced query (Sonar):', enhancedQuery);
+      console.log('🎯 Enhanced query:', enhancedQuery);
 
       const response = await fetch('/api/sonar-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: enhancedQuery
+          query: enhancedQuery,
+          freshness: 'recent', // Přidáno pro aktuálnější výsledky
+          count: 10 // Více výsledků pro lepší kvalitu
         })
       });
 
@@ -648,16 +779,17 @@ const sonarService = {
         throw new Error('Invalid Sonar response');
       }
 
-      showNotification('🔍 Našel jsem aktuální informace!', 'info');
+      showNotification('✅ Nalezeny aktuální informace!', 'success');
       
       return {
         success: true,
         result: data.result,
         citations: data.citations || [],
+        sources: data.sources || [],
         source: 'sonar_search'
       };
     } catch (error) {
-      console.error('💥 Sonar search error:', error);
+      console.error('💥 Enhanced Sonar error:', error);
       showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
       return {
         success: false,
@@ -670,75 +802,96 @@ const sonarService = {
   enhanceQueryForCurrentData(originalQuery) {
     const query = originalQuery.toLowerCase();
     const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().toLocaleDateString('cs-CZ', { month: 'long' });
     
+    // Pokud už obsahuje rok, necháme tak
     if (query.includes('2024') || query.includes('2025')) {
       return originalQuery;
     }
 
+    // Rozšířené temporální triggery
     const temporalTriggers = [
-      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední',
-      'zprávy', 'novinky', 'aktuality', 'cena', 'kurz', 'počasí',
-      'dnes', 'teď', 'momentálně', 'current', 'latest', 'recent'
+      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední', 'nejčerstvější',
+      'zprávy', 'novinky', 'aktuality', 'události', 'situace',
+      'cena', 'kurz', 'počasí', 'teplota', 'předpověď',
+      'dnes', 'teď', 'momentálně', 'nyní', 'v současnosti',
+      'current', 'latest', 'recent', 'today', 'now'
     ];
 
     const needsTimeFilter = temporalTriggers.some(trigger => query.includes(trigger));
     
     if (needsTimeFilter) {
-      return `${originalQuery} ${currentYear} aktuální`;
+      return `${originalQuery} ${currentYear} ${currentMonth} aktuální nejnovější`;
     }
 
-    const financialKeywords = ['cena', 'kurz', 'akcie', 'burza', 'bitcoin', 'krypto'];
+    // Specifické kategorie s lepším targetting
+    const financialKeywords = ['cena', 'kurz', 'akcie', 'burza', 'bitcoin', 'krypto', 'ethereum', 'investice'];
     if (financialKeywords.some(keyword => query.includes(keyword))) {
-      return `${originalQuery} ${currentYear} aktuální cena`;
+      return `${originalQuery} ${currentYear} aktuální cena trh`;
     }
 
-    const newsKeywords = ['zprávy', 'novinky', 'aktuality', 'události', 'situace'];
+    const newsKeywords = ['zprávy', 'novinky', 'aktuality', 'události', 'situace', 'krize', 'válka'];
     if (newsKeywords.some(keyword => query.includes(keyword))) {
-      return `${originalQuery} ${currentYear} nejnovější zprávy`;
+      return `${originalQuery} ${currentYear} nejnovější zprávy aktuality`;
     }
 
+    const weatherKeywords = ['počasí', 'teplota', 'déšť', 'sníh', 'bouře', 'předpověď'];
+    if (weatherKeywords.some(keyword => query.includes(keyword))) {
+      return `${originalQuery} dnes aktuální předpověď`;
+    }
+
+    // Default enhancement
     return `${originalQuery} ${currentYear}`;
   }
 };
 
-// 🔍 GOOGLE SEARCH SERVICE for GPT-4o
+// 🔍 ENHANCED GOOGLE SEARCH SERVICE
 const googleSearchService = {
   async search(query, showNotification) {
     try {
-      showNotification('🔍 Vyhledávám aktuální informace na internetu (Google)...', 'info');
+      showNotification('🔍 Vyhledávám přes Google...', 'info');
+      
       const response = await fetch('/api/google-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ 
+          query,
+          freshness: 'recent',
+          lang: 'cs'
+        })
       });
+      
       if (!response.ok) {
         throw new Error(`Google search failed: ${response.status}`);
       }
+      
       const data = await response.json();
       if (!data.success || !data.results) {
         throw new Error('Invalid Google search response');
       }
+      
+      showNotification('✅ Google výsledky nalezeny!', 'success');
+      
       return data.results.map(r => `${r.title}\n${r.snippet}\n${r.link}`).join('\n\n');
     } catch (error) {
-      console.error('💥 Google search error:', error);
-      showNotification(`Chyba při Google vyhledávání: ${error.message}`, 'error');
+      console.error('💥 Enhanced Google search error:', error);
+      showNotification(`Google search chyba: ${error.message}`, 'error');
       return '';
     }
   }
-};
-
-// 🤖 API SERVICES - Claude používá claude2
+};// 🤖 ENHANCED API SERVICES
 const claudeService = {
   async sendMessage(messages) {
     try {
-      console.log('🔧 Claude service: Using /api/claude2');
+      console.log('🔧 Enhanced Claude service: Using /api/claude2');
       const claudeMessages = prepareClaudeMessages(messages);
       
       const systemPrompt = `Jsi Omnia, pokročilý český AI asistent s následujícími schopnostmi:
 
 🔍 WEB_SEARCH - Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu
-📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights
+📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights  
 🎯 EXTENDED THINKING - Používáš pokročilé reasoning s tool use
+🎵 ČESKÝ TTS - Tvoje odpovědi budou přečteny českým hlasem
 
 DŮLEŽITÉ INSTRUKCE:
 - Odpovídej VŽDY výhradně v češtině, gramaticky správně a přirozeně
@@ -746,8 +899,10 @@ DŮLEŽITÉ INSTRUKCE:
 - NEPIŠ "Jsem AI" ani se nijak nepředstavuj
 - Automaticky používej web_search když potřebuješ aktuální informace
 - Když použiješ web_search, VŽDY poskytni konkrétní odpověď na základě nalezených informací
-- NIKDY neříkaj "zkontroluj na jiných stránkách" nebo "hledej jinde"
-- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku`;
+- NIKDY neříkej "zkontroluj na jiných stránkách" nebo "hledej jinde"
+- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku
+- Tvoje text bude převeden na řeč, tak piš přirozeně pro mluvení
+- Vyhýbej se složitým technickým termínům bez vysvětlení`;
       
       const response = await fetch('/api/claude2', {
         method: 'POST',
@@ -767,13 +922,13 @@ DŮLEŽITÉ INSTRUKCE:
       const data = await response.json();
       
       if (!data.success || !data.content || !data.content[0] || !data.content[0].text) {
-        throw new Error('Invalid response structure');
+        throw new Error('Invalid response structure from Claude');
       }
 
-      console.log('✅ Claude response received from /api/claude2');
+      console.log('✅ Enhanced Claude response received');
       return data.content[0].text;
     } catch (error) {
-      console.error('💥 Claude error:', error);
+      console.error('💥 Enhanced Claude error:', error);
       throw error;
     }
   }
@@ -782,11 +937,15 @@ DŮLEŽITÉ INSTRUKCE:
 const openaiService = {
   async sendMessage(messages) {
     try {
-      console.log('🔧 OpenAI service: Using /api/openai');
+      console.log('🔧 Enhanced OpenAI service: Using /api/openai');
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages })
+        body: JSON.stringify({ 
+          messages,
+          temperature: 0.7,
+          max_tokens: 2000
+        })
       });
 
       if (!response.ok) {
@@ -797,33 +956,45 @@ const openaiService = {
       const data = await response.json();
       
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response structure');
+        throw new Error('Invalid response structure from OpenAI');
       }
 
+      console.log('✅ Enhanced OpenAI response received');
       return data.choices[0].message.content;
     } catch (error) {
-      console.error('💥 OpenAI error:', error);
+      console.error('💥 Enhanced OpenAI error:', error);
       throw error;
     }
   }
 };
 
-// 🎵 ENHANCED AUDIO GENERATION
+// 🎵 ENHANCED AUDIO GENERATION s českým TTS preprocessingem
 const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification) => {
   try {
-    console.log('🚀 Generating INSTANT audio response...');
+    console.log('🚀 Generating ENHANCED instant audio response...');
+    
+    // 🎯 NOVÉ: Použití českého TTS preprocessingu
+    const processedText = preprocessCzechTextForTTS(responseText);
+    console.log('🎵 Processed text for TTS:', processedText.substring(0, 100));
+    
+    showNotification('🎵 Generuji český hlas...', 'info');
     
     const response = await fetch('/api/voice', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: responseText })
+      body: JSON.stringify({ 
+        text: processedText, // Používáme předpracovaný text
+        language: 'cs', // Explicitně češtinu
+        voice: 'natural' // Přirozený hlas
+      })
     });
 
     if (!response.ok) {
-      throw new Error(`Voice API failed: ${response.status}`);
+      throw new Error(`Enhanced Voice API failed: ${response.status}`);
     }
 
     setIsAudioPlaying(true);
+    showNotification('🔊 Přehrávám odpověď...', 'success');
 
     const audioBlob = await response.blob();
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -854,12 +1025,12 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     
     audio.onplay = () => {
       if (!playbackInterrupted) {
-        console.log('🎵 INSTANT audio started!');
+        console.log('🎵 Enhanced Czech TTS started playing!');
       }
     };
     
     audio.onended = () => {
-      console.log('✅ Instant audio finished');
+      console.log('✅ Enhanced Czech TTS finished');
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
@@ -867,19 +1038,20 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     };
     
     audio.onerror = (e) => {
-      console.error('❌ Instant audio error:', e);
+      console.error('❌ Enhanced TTS audio error:', e);
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
       window.removeEventListener('omnia-audio-start', handleInterrupt);
+      showNotification('🔇 Chyba při přehrávání', 'error');
     };
     
     try {
       await audio.play();
-      console.log('🎯 Audio plays IMMEDIATELY after AI response!');
+      console.log('🎯 Enhanced Czech TTS plays IMMEDIATELY after AI response!');
     } catch (playError) {
       console.error('❌ Auto-play blocked:', playError);
-      showNotification('🔊 Klepněte pro přehrání odpovědi', 'info', () => {
+      showNotification('🔊 Klepněte pro přehrání české odpovědi', 'info', () => {
         audio.play().catch(console.error);
       });
     }
@@ -887,31 +1059,59 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     return audio;
     
   } catch (error) {
-    console.error('💥 Instant audio generation failed:', error);
+    console.error('💥 Enhanced instant audio generation failed:', error);
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    showNotification('🔇 Audio se nepodařilo vygenerovat', 'error');
+    showNotification('🔇 Český hlas se nepodařilo vygenerovat', 'error');
     throw error;
   }
 };
 
-// 🔔 NOTIFICATION HELPER
+// 🔔 ENHANCED NOTIFICATION HELPER s lepšími styly
 const showNotificationHelper = (message, type = 'info', onClick = null) => {
   const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    background: ${type === 'error' ? '#dc3545' : '#007bff'};
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    z-index: 10000;
-    cursor: ${onClick ? 'pointer' : 'default'};
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-weight: 500;
-  `;
+  
+  const getNotificationStyle = (type) => {
+    const baseStyle = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 10000;
+      cursor: ${onClick ? 'pointer' : 'default'};
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      font-weight: 500;
+      max-width: 350px;
+      transition: all 0.3s ease;
+      border: 1px solid;
+    `;
+    
+    switch(type) {
+      case 'error':
+        return baseStyle + `
+          background: linear-gradient(135deg, #dc3545, #c82333);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+        `;
+      case 'success':
+        return baseStyle + `
+          background: linear-gradient(135deg, #28a745, #20c997);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+        `;
+      case 'info':
+      default:
+        return baseStyle + `
+          background: linear-gradient(135deg, #007bff, #0096ff);
+          color: white;
+          border-color: rgba(255,255,255,0.2);
+        `;
+    }
+  };
+  
+  notification.style.cssText = getNotificationStyle(type);
   notification.textContent = message;
   
   if (onClick) {
@@ -919,21 +1119,33 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
       onClick();
       document.body.removeChild(notification);
     });
+    notification.style.cursor = 'pointer';
   }
+  
+  // Hover efekt
+  notification.addEventListener('mouseenter', () => {
+    notification.style.transform = 'translateY(-2px) scale(1.02)';
+  });
+  
+  notification.addEventListener('mouseleave', () => {
+    notification.style.transform = 'translateY(0) scale(1)';
+  });
   
   document.body.appendChild(notification);
   
+  // Auto-hide s fade out
   setTimeout(() => {
     if (document.body.contains(notification)) {
       notification.style.opacity = '0';
+      notification.style.transform = 'translateY(-10px) scale(0.95)';
       setTimeout(() => {
         if (document.body.contains(notification)) {
           document.body.removeChild(notification);
         }
       }, 300);
     }
-  }, 4000);
-};// 🚨 shouldSearchInternet - Claude NIKDY netrigguje search preprocessing
+  }, type === 'error' ? 6000 : 4000); // Error notifikace zůstanou déle
+};// 🚨 ENHANCED shouldSearchInternet - Claude NIKDY netrigguje search preprocessing
 const shouldSearchInternet = (userInput, model) => {
   if (model === 'claude') {
     return false; // Claude Sonnet 4 si web_search řídí sám
@@ -945,14 +1157,17 @@ const shouldSearchInternet = (userInput, model) => {
 
   const input = (userInput || '').toLowerCase();
 
+  // Rozšířené conversational phrases
   const conversationalPhrases = [
-    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer',
-    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi',
-    'umíš', 'můžeš mi', 'co umíš', 'jak funguje',
-    'co je to', 'vysvětli', 'řekni mi', 'pomoč', 'pomoz',
+    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer', 'dobré ráno',
+    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi', 'představ se',
+    'umíš', 'můžeš mi', 'co umíš', 'jak funguje', 'vysvětli mi',
+    'co je to', 'vysvětli', 'řekni mi', 'pomoč', 'pomoz', 'pomoz mi',
     'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
-    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej',
-    'napiš mi', 'vytvoř', 'spočítej', 'překladej'
+    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej', 'povídej si se mnou',
+    'napiš mi', 'vytvoř', 'spočítej', 'překladej', 'přelož mi',
+    'jak postupovat', 'co bys doporučil', 'máš radu', 'co dělat',
+    'shrň mi', 'zkrať mi', 'zjednodušuj', 'vyber hlavní body'
   ];
 
   for (const phrase of conversationalPhrases) {
@@ -961,11 +1176,15 @@ const shouldSearchInternet = (userInput, model) => {
     }
   }
 
+  // Rozšířené search triggers
   const searchTriggers = [
     'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
-    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena',
+    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena', 'ceny',
     'co je nového', 'co se děje', 'poslední', 'recent', 'latest',
-    'current', 'today', 'now', 'dnes', 'teď', 'momentálně'
+    'current', 'today', 'now', 'dnes', 'teď', 'momentálně',
+    'stav', 'situace', 'vývoj', 'trendy', 'statistiky',
+    'burza', 'akcie', 'investice', 'krypto', 'bitcoin',
+    'předpověď', 'prognóza', 'odhad', 'analýza trhu'
   ];
 
   for (const trigger of searchTriggers) {
@@ -974,15 +1193,17 @@ const shouldSearchInternet = (userInput, model) => {
     }
   }
 
+  // Automatic year/date triggers
   if (input.includes('2024') || input.includes('2025') ||
-      input.includes('bitcoin') || input.includes('akcie')) {
+      input.includes('bitcoin') || input.includes('ethereum') ||
+      input.includes('akcie') || input.includes('volby')) {
     return true;
   }
 
   return false;
 };
 
-// ✅ VOICE SCREEN RESPONSE Handler
+// ✅ ENHANCED VOICE SCREEN RESPONSE Handler
 const handleVoiceScreenResponse = async (
   textInput,
   currentMessages,
@@ -997,26 +1218,35 @@ const handleVoiceScreenResponse = async (
   showNotification
 ) => {
   try {
-    console.log('🔧 Voice Screen Model:', model);
+    console.log('🔧 Enhanced Voice Screen Model:', model);
     let responseText = '';
 
+    // Přidání user message do historie před zpracováním
+    const userMessage = { sender: 'user', text: textInput };
+    const messagesWithUser = [...currentMessages, userMessage];
+    setMessages(messagesWithUser);
+    localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
     if (model === 'sonar') {
+      showNotification('🔍 Omnia Search analyzuje dotaz...', 'info');
       const searchResult = await sonarService.search(textInput, showNotification);
       if (searchResult.success) {
         responseText = searchResult.result;
+        if (searchResult.sources && searchResult.sources.length > 0) {
+          responseText += `\n\nZdroje: ${searchResult.sources.slice(0, 3).join(', ')}`;
+        }
       } else {
-        responseText = `Chyba při vyhledávání: ${searchResult.message}`;
+        responseText = `Omlouám se, ale nepodařilo se mi najít aktuální informace: ${searchResult.message}`;
       }
     }
     else if (model === 'claude') {
-      console.log('🚀 Calling Claude Sonnet 4 via /api/claude2');
-      responseText = await claudeService.sendMessage([
-        ...currentMessages,
-        { sender: 'user', text: textInput }
-      ]);
+      console.log('🚀 Enhanced Claude Sonnet 4 via /api/claude2');
+      showNotification('🤖 Omnia zpracovává dotaz...', 'info');
+      responseText = await claudeService.sendMessage(messagesWithUser);
     }
     else if (model === 'gpt-4o') {
-      console.log('🚀 Calling GPT-4o via /api/openai');
+      console.log('🚀 Enhanced GPT-4o via /api/openai');
+      showNotification('🧠 GPT analyzuje dotaz...', 'info');
       
       let searchContext = '';
       const needsSearch = shouldSearchInternet(textInput, model);
@@ -1024,14 +1254,24 @@ const handleVoiceScreenResponse = async (
       if (needsSearch) {
         const googleResults = await googleSearchService.search(textInput, showNotification);
         if (googleResults) {
-          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli.`;
+          searchContext = `\n\nAKTUÁLNÍ INFORMACE Z INTERNETU (Google):\n${googleResults}\n\nNa základě těchto aktuálních informací z internetu odpověz uživateli česky a přirozeně.`;
         }
       }
 
       const openAiMessages = [
         {
           role: 'system',
-          content: `Jsi GPT, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
+          content: `Jsi GPT, český AI asistent optimalizovaný pro hlasové odpovědi. 
+
+DŮLEŽITÉ INSTRUKCE:
+- Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české
+- Nikdy nepoužívej anglická slova nebo výrazy
+- Začínej odpovědi přímo česky, bez anglických frází
+- Piš stručně a přirozeně jako rodilý mluvčí češtiny pro hlasové přehrání
+- Nepiš "Jsem AI" ani se nijak nepředstavuj
+- Tvoje odpověď bude přečtena českým hlasem, tak ji formuluj přirozeně
+- Vyhýbaj se složitým číslům a technickým termínům
+- Používej každodenní český jazyk${searchContext}`
         },
         ...currentMessages.map((msg) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1046,10 +1286,12 @@ const handleVoiceScreenResponse = async (
       throw new Error(`Neznámý model: ${model}`);
     }
 
-    const finalMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+    // Přidání bot response
+    const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
     setMessages(finalMessages);
     localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
 
+    // Enhanced instant audio generation
     await generateInstantAudio(
       responseText,
       setIsAudioPlaying,
@@ -1061,18 +1303,20 @@ const handleVoiceScreenResponse = async (
     return responseText;
 
   } catch (error) {
-    console.error('💥 Voice Screen response error:', error);
+    console.error('💥 Enhanced Voice Screen response error:', error);
 
-    const errorText = `Chyba: ${error.message}`;
+    const errorText = `Omlouám se, ale vyskytla se chyba: ${error.message}`;
     const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
     setMessages(errorMessages);
     localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
+    
+    showNotification(`Chyba: ${error.message}`, 'error');
 
     throw error;
   }
 };
 
-// ✅ TEXT RESPONSE Handler
+// ✅ ENHANCED TEXT RESPONSE Handler
 const handleTextResponse = async (
   textInput,
   currentMessages,
@@ -1082,26 +1326,36 @@ const handleTextResponse = async (
   setMessages,
   showNotification
 ) => {
-  console.log('🔧 Text Response Model:', model);
+  console.log('🔧 Enhanced Text Response Model:', model);
   let responseText = '';
 
+  // Přidání user message do historie před zpracováním
+  const userMessage = { sender: 'user', text: textInput };
+  const messagesWithUser = [...currentMessages, userMessage];
+  setMessages(messagesWithUser);
+  localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
   if (model === 'sonar') {
+    showNotification('🔍 Omnia Search vyhledává...', 'info');
     const searchResult = await sonarService.search(textInput, showNotification);
     if (searchResult.success) {
       responseText = searchResult.result;
+      // Přidání citací pokud existují
+      if (searchResult.citations && searchResult.citations.length > 0) {
+        responseText += `\n\n📚 Zdroje:\n${searchResult.citations.map(c => `• ${c}`).join('\n')}`;
+      }
     } else {
-      responseText = `Chyba při vyhledávání: ${searchResult.message}`;
+      responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
     }
   }
   else if (model === 'claude') {
-    console.log('🚀 Calling Claude Sonnet 4 via /api/claude2');
-    responseText = await claudeService.sendMessage([
-      ...currentMessages,
-      { sender: 'user', text: textInput }
-    ]);
+    console.log('🚀 Enhanced Claude Sonnet 4 via /api/claude2');
+    showNotification('🤖 Omnia zpracovává...', 'info');
+    responseText = await claudeService.sendMessage(messagesWithUser);
   }
   else if (model === 'gpt-4o') {
-    console.log('🚀 Calling GPT-4o via /api/openai');
+    console.log('🚀 Enhanced GPT-4o via /api/openai');
+    showNotification('🧠 GPT zpracovává...', 'info');
     
     let searchContext = '';
     const needsSearch = shouldSearchInternet(textInput, model);
@@ -1116,7 +1370,16 @@ const handleTextResponse = async (
     const openAiMessages = [
       {
         role: 'system',
-        content: `Jsi GPT, český AI asistent. DŮLEŽITÉ: Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české. Nikdy nepoužívej anglická slova. Začínej odpovědi přímo česky. Piš stručně a přirozeně jako rodilý mluvčí češtiny. Nepiš "Jsem AI" ani se nijak nepředstavuj.${searchContext}`
+        content: `Jsi GPT, český AI asistent. 
+
+DŮLEŽITÉ INSTRUKCE:
+- Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české
+- Nikdy nepoužívej anglická slova
+- Začínej odpovědi přímo česky
+- Piš stručně a přirozeně jako rodilý mluvčí češtiny
+- Nepiš "Jsem AI" ani se nijak nepředstavuj
+- Buď konkrétní a užitečný
+- Poskytuj strukturované odpovědi když je to vhodné${searchContext}`
       },
       ...currentMessages.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1131,14 +1394,15 @@ const handleTextResponse = async (
     throw new Error(`Neznámý model: ${model}`);
   }
 
-  const updatedMessages = [...currentMessages, { sender: 'bot', text: responseText }];
+  // Přidání bot response
+  const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
   setMessages(updatedMessages);
   localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
 
-  return responseText;
-};
+  showNotification('✅ Odpověď připravena', 'success');
 
-// 🎤 VOICE SCREEN COMPONENT
+  return responseText;
+};// 🎤 ENHANCED VOICE SCREEN COMPONENT
 const VoiceScreen = ({ 
   onClose, 
   onTranscript, 
@@ -1182,6 +1446,15 @@ const VoiceScreen = ({
     }
   };
 
+  const getModelDescription = () => {
+    switch(model) {
+      case 'claude': return 'Pokročilý AI s web search';
+      case 'sonar': return 'Vyhledávání v reálném čase';
+      case 'gpt-4o': return 'Konverzační AI asistent';
+      default: return 'AI asistent';
+    }
+  };
+
   return (
     <div 
       style={{
@@ -1190,7 +1463,7 @@ const VoiceScreen = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, #000000, #1a1a2e)',
+        background: 'linear-gradient(135deg, #000000, #1a1a2e, #16213e)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -1232,19 +1505,46 @@ const VoiceScreen = ({
       </button>
 
       <div 
-        style={{ marginBottom: '3rem', cursor: 'pointer' }}
+        style={{ marginBottom: '2rem', cursor: 'pointer' }}
         onClick={handleElementClick}
       >
-        <OmniaLogo size={140} animate={true} />
+        <OmniaLogo size={isMobile ? 120 : 140} animate={true} />
+      </div>
+
+      <div style={{
+        fontSize: isMobile ? '1.1rem' : '1.3rem',
+        fontWeight: '600',
+        marginBottom: '1rem',
+        textAlign: 'center',
+        opacity: 0.9,
+        cursor: 'pointer'
+      }}
+      onClick={handleElementClick}
+      >
+        {getModelName()}
+      </div>
+
+      <div style={{
+        fontSize: isMobile ? '0.9rem' : '1rem',
+        marginBottom: '2rem',
+        textAlign: 'center',
+        opacity: 0.7,
+        cursor: 'pointer'
+      }}
+      onClick={handleElementClick}
+      >
+        {getModelDescription()}
       </div>
 
       <div style={{
         fontSize: isMobile ? '1.2rem' : '1.5rem',
         fontWeight: '600',
-        marginBottom: '2rem',
+        marginBottom: '2.5rem',
         textAlign: 'center',
         opacity: 0.9,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        maxWidth: isMobile ? '300px' : '400px',
+        lineHeight: '1.4'
       }}
       onClick={handleElementClick}
       >
@@ -1253,7 +1553,7 @@ const VoiceScreen = ({
         ) : isAudioPlaying ? (
           `🔊 ${getModelName()} mluví... (klepněte pro stop)`
         ) : (
-          `🎤 Držte mikrofon pro mluvení s ${getModelName()}`
+          `🎤 Držte mikrofon pro mluvení`
         )}
       </div>
 
@@ -1287,9 +1587,18 @@ const VoiceScreen = ({
   );
 };
 
-// ⚙️ SETTINGS DROPDOWN
+// ⚙️ ENHANCED SETTINGS DROPDOWN
 const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
   if (!isOpen) return null;
+
+  const getModelName = () => {
+    switch(model) {
+      case 'claude': return 'Omnia';
+      case 'sonar': return 'Omnia Search';
+      case 'gpt-4o': return 'GPT';
+      default: return 'GPT';
+    }
+  };
 
   return (
     <>
@@ -1315,7 +1624,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         zIndex: 1000,
-        minWidth: '200px'
+        minWidth: '220px'
       }}>
         <button
           onClick={() => {
@@ -1338,7 +1647,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
           onMouseEnter={(e) => e.target.style.background = '#4a5568'}
           onMouseLeave={(e) => e.target.style.background = '#2d3748'}
         >
-          🗑️ Nový chat
+          🗑️ Nový chat s {getModelName()}
         </button>
         
         <div style={{
@@ -1347,12 +1656,22 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, model }) => {
           color: '#a0aec0',
           borderTop: '1px solid #4a5568'
         }}>
-          📊 Další funkce brzy...
+          🎵 Český TTS aktivní
+        </div>
+        
+        <div style={{
+          padding: '0.5rem 1rem',
+          fontSize: '0.75rem',
+          color: '#a0aec0'
+        }}>
+          📊 Více funkcí brzy...
         </div>
       </div>
     </>
   );
-};// 🚀 MAIN APP COMPONENT
+};
+
+// 🚀 ENHANCED MAIN APP COMPONENT
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -1393,7 +1712,7 @@ function App() {
     
     const modelName = model === 'claude' ? 'Omnia' : 
                      model === 'sonar' ? 'Omnia Search' : 'GPT';
-    showNotification(`Nový chat s ${modelName} vytvořen`, 'info');
+    showNotification(`Nový chat s ${modelName} vytvořen 🎵`, 'success');
   };
 
   useEffect(() => {
@@ -1420,7 +1739,7 @@ function App() {
       if (e.key === ' ' && isAudioPlaying && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         stopCurrentAudio();
-        showNotification('🔇 Audio zastaveno', 'info');
+        showNotification('🔇 Audio zastaveno mezerníkem', 'info');
       }
     };
 
@@ -1452,8 +1771,6 @@ function App() {
       stopCurrentAudio();
     }
 
-    const newMessages = [...messages, { sender: 'user', text: textInput }];
-    setMessages(newMessages);
     setInput('');
     setLoading(true);
 
@@ -1461,7 +1778,7 @@ function App() {
       if (showVoiceScreen) {
         await handleVoiceScreenResponse(
           textInput,
-          newMessages,
+          messages,
           model,
           openaiService,
           claudeService,
@@ -1475,7 +1792,7 @@ function App() {
       } else {
         await handleTextResponse(
           textInput,
-          newMessages,
+          messages,
           model,
           openaiService,
           claudeService,
@@ -1485,11 +1802,8 @@ function App() {
       }
 
     } catch (err) {
-      console.error('💥 Chyba při volání API:', err);
-      const responseText = `Chyba: ${err.message}`;
-      const updatedMessages = [...newMessages, { sender: 'bot', text: responseText }];
-      setMessages(updatedMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+      console.error('💥 Enhanced API call error:', err);
+      showNotification(`Chyba: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -1570,7 +1884,7 @@ function App() {
                 fontWeight: '500'
               }}
             >
-              Model ▼
+              {getModelDisplayName()} ▼
             </button>
             
             {showModelDropdown && (
@@ -1606,7 +1920,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#4a5568'}
                   onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? '#4a5568' : '#2d3748'}
                 >
-                  GPT
+                  GPT • Konverzace
                 </button>
                 <button
                   onClick={() => {
@@ -1628,7 +1942,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#4a5568'}
                   onMouseLeave={(e) => e.target.style.background = model === 'claude' ? '#4a5568' : '#2d3748'}
                 >
-                  Omnia
+                  Omnia • AI + Web Search
                 </button>
                 <button
                   onClick={() => {
@@ -1651,7 +1965,7 @@ function App() {
                   onMouseEnter={(e) => e.target.style.background = '#4a5568'}
                   onMouseLeave={(e) => e.target.style.background = model === 'sonar' ? '#4a5568' : '#2d3748'}
                 >
-                  Omnia Search
+                  Omnia Search • Real-time
                 </button>
               </div>
             )}
@@ -1706,8 +2020,17 @@ function App() {
           }}>
             OMNIA
           </h1>
+          <div style={{
+            fontSize: '0.9rem',
+            opacity: 0.7,
+            textAlign: 'center'
+          }}>
+            🎵 s českým hlasem • 🔍 real-time vyhledávání
+          </div>
         </div>
-      </header><main style={{ 
+      </header>
+
+      <main style={{ 
         flex: 1,
         overflowY: 'auto',
         padding: isMobile ? '1rem' : '2rem',
@@ -1778,7 +2101,7 @@ function App() {
                   }}>
                     <span style={{ fontWeight: '600', color: '#a0aec0', display: 'flex', alignItems: 'center' }}>
                       <ChatOmniaLogo size={16} />
-                      {getModelDisplayName()}
+                      {getModelDisplayName()} 🎵
                     </span>
                     <VoiceButton 
                       text={msg.text} 
@@ -1830,7 +2153,7 @@ function App() {
                     animation: 'spin 1s linear infinite'
                   }}></div>
                   <span style={{ color: '#a0aec0', fontWeight: '500' }}>
-                    {getModelDisplayName()} přemýšlí...
+                    {getModelDisplayName()} přemýšlí... 🎵
                   </span>
                 </div>
               </div>
@@ -1868,7 +2191,7 @@ function App() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
-              placeholder={`Napište zprávu pro ${getModelDisplayName()}...`}
+              placeholder={`Napište zprávu pro ${getModelDisplayName()}... 🎵`}
               disabled={loading}
               style={{ 
                 width: '100%',
@@ -1951,6 +2274,28 @@ function App() {
           50% { 
             box-shadow: 0 0 25px rgba(0, 255, 255, 1);
             transform: scale(1.05);
+          }
+        }
+        
+        @keyframes pulse-processing {
+          0%, 100% { 
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+            transform: scale(1);
+          }
+          50% { 
+            box-shadow: 0 0 30px rgba(255, 193, 7, 0.8);
+            transform: scale(1.03);
+          }
+        }
+        
+        @keyframes pulse-recording {
+          0%, 100% { 
+            box-shadow: 0 0 30px rgba(220, 53, 69, 0.6);
+            transform: scale(1.1);
+          }
+          50% { 
+            box-shadow: 0 0 40px rgba(220, 53, 69, 0.9);
+            transform: scale(1.12);
           }
         }
         
