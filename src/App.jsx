@@ -41,7 +41,7 @@ const detectLanguage = (text) => {
   return Object.keys(scores).find(key => scores[key] === maxScore) || 'cs';
 };
 
-// 🎨 ADAPTIVE OMNIA LOGO - Clean design, no animation text
+// 🎨 ADAPTIVE OMNIA LOGO - Zmizí po první zprávě (OPRAVENO)
 const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
   if (shouldHide) return null;
   
@@ -864,7 +864,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   );
 };
 
-// 🔊 ENHANCED VOICE BUTTON - Multilingual TTS with modern icons
+// 🔊 ENHANCED VOICE BUTTON - OPRAVENÁ VIDITELNOST
 const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -966,9 +966,10 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       alignItems: 'center',
       gap: '4px',
       fontSize: '0.85rem',
-      opacity: isLoading ? 0.5 : 0.7,
+      opacity: isLoading ? 0.5 : 1, // 🔊 OPRAVENO: Plně viditelný
       transition: 'all 0.2s ease',
-      position: 'relative'
+      position: 'relative',
+      color: 'white' // 🔊 OPRAVENO: Explicitně bílá barva
     };
   };
 
@@ -979,7 +980,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
         width: '14px', 
         height: '14px', 
         border: '2px solid rgba(255,255,255,0.3)', 
-        borderTop: '2px solid currentColor',
+        borderTop: '2px solid white',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite'
       }}></div>
@@ -1011,7 +1012,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       style={getButtonStyle()}
       title={getButtonTitle()}
       onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '0.7'}
+      onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '1'} // 🔊 OPRAVENO
     >
       {getButtonIcon()}
       {isLoading && (
@@ -1027,7 +1028,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   );
 };
 
-// 📋 COPY BUTTON - New functionality
+// 📋 COPY BUTTON - Perfect visibility (beze změn)
 const CopyButton = ({ text, language = 'cs' }) => {
   const [copied, setCopied] = useState(false);
 
@@ -1081,13 +1082,13 @@ const CopyButton = ({ text, language = 'cs' }) => {
         display: 'flex',
         alignItems: 'center',
         fontSize: '0.85rem',
-        opacity: copied ? 1 : 0.7,
+        opacity: copied ? 1 : 1, // 📋 Vždy plně viditelný
         transition: 'all 0.2s ease',
-        color: copied ? '#28a745' : 'inherit'
+        color: copied ? '#28a745' : 'white' // 📋 Bílá barva jako Voice button
       }}
       title={getButtonTitle()}
       onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = copied ? 1 : 0.7}
+      onMouseLeave={(e) => e.target.style.opacity = '1'} // 📋 Vždy viditelný
     >
       {copied ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -2075,7 +2076,7 @@ const VoiceScreen = ({
         bottom: 0,
         background: streaming 
           ? 'linear-gradient(135deg, #000428, #004e92, #009ffd)' 
-          : 'linear-gradient(135deg, #000000, #1a1a2e, #16213e)',
+          : 'linear-gradient(135deg, #000428, #004e92, #009ffd)', // 🎨 OPRAVENO: Gradient vždy
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -2281,10 +2282,11 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
   );
 };
 
-// ✏️ EDIT MESSAGE COMPONENT - New functionality
+// ✏️ EDIT MESSAGE COMPONENT - OPRAVENÉ HOVER EFFECTS
 const EditableMessage = ({ message, onEdit, onCancel }) => {
   const [editText, setEditText] = useState(message.text);
   const [isEditing, setIsEditing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSave = () => {
     if (editText.trim() && editText !== message.text) {
@@ -2301,7 +2303,11 @@ const EditableMessage = ({ message, onEdit, onCancel }) => {
 
   if (!isEditing) {
     return (
-      <div style={{ position: 'relative', group: true }}>
+      <div 
+        style={{ position: 'relative', width: '100%' }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <span>{message.text}</span>
         <button
           onClick={() => setIsEditing(true)}
@@ -2309,17 +2315,17 @@ const EditableMessage = ({ message, onEdit, onCancel }) => {
             position: 'absolute',
             top: '-8px',
             right: '-8px',
-            background: 'rgba(0,0,0,0.7)',
-            border: 'none',
+            background: 'rgba(255,255,255,0.2)', // 🔧 OPRAVENO: Světlý background
+            border: '1px solid rgba(255,255,255,0.3)',
             borderRadius: '4px',
             color: 'white',
             cursor: 'pointer',
             padding: '4px 6px',
             fontSize: '0.7rem',
-            opacity: 0,
-            transition: 'opacity 0.2s ease'
+            opacity: isHovered ? 1 : 0, // 🔧 OPRAVENO: Proper hover state
+            transition: 'opacity 0.2s ease',
+            pointerEvents: isHovered ? 'auto' : 'none'
           }}
-          onMouseEnter={(e) => e.target.style.opacity = '1'}
           title="Upravit zprávu"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -2392,7 +2398,7 @@ const EditableMessage = ({ message, onEdit, onCancel }) => {
   );
 };
 
-// 🚀 FINAL MAIN APP COMPONENT - Clean UI with all enhancements
+// 🚀 FINAL MAIN APP COMPONENT - VŠECHNY OPRAVY
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -2564,17 +2570,15 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  // 🎯 ADAPTIVE LOGO - Hide when user is typing
-  const shouldHideLogo = input.length > 0 && messages.length === 0;
+  // 🎯 ADAPTIVE LOGO - OPRAVENO: Zmizí po první zprávě
+  const shouldHideLogo = messages.length > 0;
 
   return (
     <div style={{ 
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: streaming 
-        ? 'linear-gradient(135deg, #000428, #004e92, #009ffd)' 
-        : 'linear-gradient(135deg, #000000, #1a1a2e, #16213e)',
+      background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)', // 🎨 OPRAVENO: Gradient VŽDY
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
       width: '100vw',
@@ -2585,9 +2589,7 @@ function App() {
       
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
-        background: streaming 
-          ? 'linear-gradient(135deg, rgba(0, 4, 40, 0.8), rgba(0, 78, 146, 0.6))' 
-          : 'linear-gradient(135deg, #000000, rgba(26, 26, 46, 0.8))',
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.8), rgba(0, 78, 146, 0.6))', // 🎨 OPRAVENO: Konzistentní gradient
         position: 'relative',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
         width: '100%',
@@ -2720,6 +2722,7 @@ function App() {
           alignItems: 'center', gap: '1rem', maxWidth: '1200px',
           margin: '0 auto', width: '100%'
         }}>
+          {/* 🎯 OPRAVENO: Logo zmizí PO PRVNÍ ZPRÁVĚ */}
           <OmniaLogo 
             size={isMobile ? 60 : 80} 
             animate={streaming || loading}
@@ -2749,9 +2752,7 @@ function App() {
       <main style={{ 
         flex: 1, overflowY: 'auto', padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
-        background: streaming 
-          ? 'linear-gradient(135deg, rgba(0, 4, 40, 0.3), rgba(0, 78, 146, 0.2))' 
-          : 'linear-gradient(135deg, #000000, rgba(26, 26, 46, 0.3))',
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.3), rgba(0, 78, 146, 0.2))', // 🎨 OPRAVENO: Konzistentní gradient
         width: '100%', transition: 'background 0.5s ease'
       }}>
         <div style={{ 
@@ -2794,7 +2795,7 @@ function App() {
                   />
                 </div>
               ) : (
-                // 🤖 BOT MESSAGES - Clean structured layout (no bubbles)
+                // 🤖 BOT MESSAGES - OPRAVENO: Clean structured layout (no bubbles)
                 <div style={{
                   maxWidth: isMobile ? '90%' : '85%',
                   padding: isMobile ? '1rem' : '1.5rem',
@@ -2872,9 +2873,7 @@ function App() {
 
       <div style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: streaming 
-          ? 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))' 
-          : 'linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(26, 26, 46, 0.9))', 
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))', // 🎨 OPRAVENO: Konzistentní gradient
         backdropFilter: 'blur(10px)',
         padding: isMobile ? '1rem' : '1.5rem',
         borderTop: streaming ? '1px solid rgba(0, 255, 255, 0.3)' : '1px solid rgba(255,255,255,0.1)',
@@ -3008,9 +3007,6 @@ function App() {
         input:focus { outline: none !important; }
         button, input, div[role="button"] { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         @media (max-width: 768px) { button { min-height: 44px; min-width: 44px; } }
-        
-        /* Edit message hover effect */
-        div[style*="position: relative"]:hover button[title="Upravit zprávu"] { opacity: 1 !important; }
       `}</style>
 
       {(showModelDropdown || showSettingsDropdown) && !loading && !streaming && (
