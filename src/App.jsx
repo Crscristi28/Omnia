@@ -1,47 +1,117 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './App.css';
 
-// 🌍 LANGUAGE DETECTION UTILITY
+// 🌍 OPRAVENÁ LANGUAGE DETECTION - Podporuje všechny jazyky
 const detectLanguage = (text) => {
   if (!text || typeof text !== 'string') return 'cs';
   
   const lowerText = text.toLowerCase();
   
-  // Czech indicators
-  const czechWords = ['být', 'mít', 'který', 'tento', 'jako', 'jeho', 'nebo', 'než', 'aby', 'když', 'kde', 'čau', 'ahoj', 'děkuji', 'prosím', 'ano', 'ne'];
+  // Rozšířené české indikátory
+  const czechWords = [
+    'být', 'mít', 'který', 'tento', 'jako', 'jeho', 'nebo', 'než', 'aby', 'když', 'kde',
+    'čau', 'ahoj', 'děkuji', 'prosím', 'ano', 'ne', 'dobré', 'dobrý', 'den', 'večer', 'ráno',
+    'co', 'jak', 'kde', 'proč', 'kdo', 'kdy', 'kolik', 'jaký', 'která', 'které',
+    'se', 'si', 'je', 'jsou', 'má', 'máte', 'můžu', 'můžeš', 'umíš', 'umím',
+    'dělám', 'děláš', 'dělá', 'děláme', 'děláte', 'dělají', 'učím', 'učíš', 'myslím',
+    'řekni', 'povídej', 'vysvětli', 'pomoć', 'pomoz', 'pomozte', 'díky', 'taky', 'také'
+  ];
+  
+  // Anglické indikátory
+  const englishWords = [
+    'the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they', 'be', 'at', 'one', 'have', 'this',
+    'hello', 'hi', 'thanks', 'thank', 'please', 'yes', 'no', 'what', 'how', 'where', 'why', 'who', 'when',
+    'doing', 'think', 'know', 'want', 'like', 'good', 'time', 'can', 'could', 'would', 'should'
+  ];
+  
+  // Německé indikátory
+  const germanWords = [
+    'der', 'die', 'und', 'ich', 'sie', 'mit', 'ist', 'auf', 'dem', 'zu', 'nicht', 'ein', 'eine', 'dass', 'hat',
+    'hallo', 'danke', 'bitte', 'ja', 'nein', 'was', 'wie', 'wo', 'warum', 'wer', 'wann',
+    'mache', 'machst', 'macht', 'machen', 'denke', 'denkst', 'kann', 'kannst', 'gute', 'guten'
+  ];
+  
+  // Španělské indikátory
+  const spanishWords = [
+    'que', 'de', 'no', 'la', 'el', 'en', 'es', 'se', 'le', 'da', 'por', 'un', 'con', 'su', 'para',
+    'hola', 'gracias', 'por favor', 'sí', 'qué', 'cómo', 'dónde', 'por qué', 'quién', 'cuándo',
+    'hago', 'haces', 'hace', 'hacemos', 'pienso', 'piensas', 'puedo', 'puedes', 'bueno', 'buena'
+  ];
+  
+  // Francouzské indikátory
+  const frenchWords = [
+    'le', 'de', 'et', 'un', 'il', 'être', 'et', 'en', 'avoir', 'que', 'pour', 'dans', 'ce', 'son', 'une',
+    'bonjour', 'merci', 'oui', 'non', 'quoi', 'comment', 'où', 'pourquoi', 'qui', 'quand',
+    'fais', 'fait', 'faites', 'pense', 'penses', 'peux', 'peut', 'bon', 'bonne'
+  ];
+
+  // Rumunské indikátory (NOVĚ PŘIDÁNO)
+  const romanianWords = [
+    'și', 'de', 'la', 'cu', 'în', 'pe', 'că', 'ce', 'să', 'nu', 'un', 'o', 'el', 'ea', 'eu',
+    'salut', 'bună', 'mulțumesc', 'te rog', 'da', 'nu', 'ce', 'cum', 'unde', 'de ce', 'cine', 'când',
+    'fac', 'faci', 'face', 'facem', 'gândesc', 'gândești', 'pot', 'poți', 'bun', 'bună'
+  ];
+
+  // Počítej výskyty
   const czechCount = czechWords.filter(word => lowerText.includes(word)).length;
-  
-  // English indicators  
-  const englishWords = ['the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they', 'hello', 'thanks', 'please', 'yes', 'no'];
   const englishCount = englishWords.filter(word => lowerText.includes(word)).length;
-  
-  // German indicators
-  const germanWords = ['der', 'die', 'und', 'ich', 'sie', 'mit', 'ist', 'auf', 'dem', 'zu', 'hallo', 'danke', 'bitte', 'ja', 'nein'];
   const germanCount = germanWords.filter(word => lowerText.includes(word)).length;
-  
-  // Spanish indicators
-  const spanishWords = ['que', 'de', 'no', 'la', 'el', 'en', 'es', 'se', 'le', 'da', 'hola', 'gracias', 'por favor', 'sí'];
   const spanishCount = spanishWords.filter(word => lowerText.includes(word)).length;
-  
-  // French indicators
-  const frenchWords = ['le', 'de', 'et', 'un', 'il', 'être', 'et', 'en', 'avoir', 'que', 'bonjour', 'merci', 'oui', 'non'];
   const frenchCount = frenchWords.filter(word => lowerText.includes(word)).length;
+  const romanianCount = romanianWords.filter(word => lowerText.includes(word)).length;
+
+  // Speciální konverzační fráze
+  const conversationalCzech = [
+    'co děláš', 'jak se máš', 'co se děje', 'jak to jde', 'co je nového',
+    'děláš si srandu', 'myslíš si', 'co si myslíš', 'máš čas', 'můžeš mi',
+    'řekni mi', 'vysvětli mi', 'pomož mi', 'pomoć mi', 'poradíš mi'
+  ];
+
+  const conversationalEnglish = [
+    'what are you doing', 'how are you', 'what\'s up', 'how\'s it going', 'what\'s new',
+    'are you kidding', 'do you think', 'what do you think', 'do you have time', 'can you',
+    'tell me', 'explain to me', 'help me', 'can you help'
+  ];
+
+  const conversationalRomanian = [
+    'ce faci', 'cum ești', 'ce mai faci', 'cum merge', 'ce e nou',
+    'îmi poți spune', 'mă poți ajuta', 'explică-mi', 'ce crezi'
+  ];
+
+  // Pokud najdeme konverzační frázi, použijeme ji
+  for (const phrase of conversationalCzech) {
+    if (lowerText.includes(phrase)) return 'cs';
+  }
+  
+  for (const phrase of conversationalEnglish) {
+    if (lowerText.includes(phrase)) return 'en';
+  }
+
+  for (const phrase of conversationalRomanian) {
+    if (lowerText.includes(phrase)) return 'ro';
+  }
 
   const scores = {
     'cs': czechCount,
-    'en': englishCount, 
+    'en': englishCount,
     'de': germanCount,
     'es': spanishCount,
-    'fr': frenchCount
+    'fr': frenchCount,
+    'ro': romanianCount
   };
 
   const maxScore = Math.max(...Object.values(scores));
-  if (maxScore === 0) return 'cs'; // Default to Czech
+  
+  // Pokud je český skór aspoň 1 a nejvyšší, vrať češtinu
+  if (scores.cs >= 1 && scores.cs === maxScore) return 'cs';
+  
+  // Jinak vrať jazyk s nejvyšším skórem, nebo češtinu jako default
+  if (maxScore === 0) return 'cs';
   
   return Object.keys(scores).find(key => scores[key] === maxScore) || 'cs';
 };
 
-// 🎨 ADAPTIVE OMNIA LOGO - Zmizí po první zprávě (OPRAVENO)
+// 🎨 ADAPTIVE OMNIA LOGO - Zmizí po první zprávě
 const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
   if (shouldHide) return null;
   
@@ -264,7 +334,7 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
       ) : '→'}
     </button>
   );
-};// 🎯 MULTILINGUAL TTS PREPROCESSING - Supports multiple languages
+};// 🎯 MULTILINGUAL TTS PREPROCESSING - Supports all languages
 const preprocessTextForTTS = (text, language = 'cs') => {
   if (!text || typeof text !== 'string') return '';
   
@@ -281,18 +351,20 @@ const preprocessTextForTTS = (text, language = 'cs') => {
       return preprocessSpanishTextForTTS(processedText);
     case 'fr':
       return preprocessFrenchTextForTTS(processedText);
+    case 'ro': // NOVĚ PŘIDÁNO - Rumunština
+      return preprocessRomanianTextForTTS(processedText);
     default:
-      return preprocessCzechTextForTTS(processedText); // Default fallback
+      return preprocessCzechTextForTTS(processedText);
   }
 };
 
-// 🇨🇿 CZECH TTS PREPROCESSING - Enhanced
+// 🇨🇿 CZECH TTS PREPROCESSING
 const preprocessCzechTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
   
-  // 1. Převod čísel na slova
+  // Číslá na slova
   const numberMap = {
     '0': 'nula', '1': 'jedna', '2': 'dva', '3': 'tři', '4': 'čtyři',
     '5': 'pět', '6': 'šest', '7': 'sedm', '8': 'osm', '9': 'devět',
@@ -306,22 +378,21 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, word);
   });
   
-  // 2. Měny a ceny
+  // Měny a procenta
   processedText = processedText.replace(/(\d+)\s*Kč/gi, '$1 korun českých');
   processedText = processedText.replace(/(\d+)\s*€/gi, '$1 eur');
   processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolarů');
   processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
   
-  // 3. Teploty a časy
+  // Teploty a časy
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů celsia');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut');
   
-  // 4. Zkratky
+  // Zkratky
   const abbreviations = {
     'atd': 'a tak dále', 'apod': 'a podobně', 'tj': 'to jest',
     'tzn': 'to znamená', 'např': 'například', 'resp': 'respektive',
-    'tzv': 'takzvaný', 'AI': 'ajaj', 'API': 'á pé jaj',
-    'URL': 'jů ár el', 'HTML': 'há té em el', 'CSS': 'cé es es'
+    'tzv': 'takzvaný', 'AI': 'ajaj', 'API': 'á pé jaj'
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -329,7 +400,7 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // 5. Cleanup
+  // Cleanup
   processedText = processedText.replace(/\.\.\./g, ', pauza,');
   processedText = processedText.replace(/--/g, ', pauza,');
   processedText = processedText.replace(/\*/g, '');
@@ -345,7 +416,7 @@ const preprocessEnglishTextForTTS = (text) => {
   
   let processedText = text;
   
-  // Numbers to words (basic)
+  // Numbers to words
   const numberMap = {
     '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
     '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine',
@@ -369,11 +440,10 @@ const preprocessEnglishTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 degrees celsius');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 $2');
   
-  // Common abbreviations
+  // Abbreviations
   const abbreviations = {
     'etc': 'et cetera', 'vs': 'versus', 'AI': 'artificial intelligence',
-    'API': 'application programming interface', 'URL': 'uniform resource locator',
-    'HTML': 'hypertext markup language', 'CSS': 'cascading style sheets'
+    'API': 'application programming interface'
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -419,17 +489,6 @@ const preprocessGermanTextForTTS = (text) => {
   // Temperature and time
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 grad celsius');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 uhr $2');
-  
-  // Common abbreviations
-  const abbreviations = {
-    'usw': 'und so weiter', 'bzw': 'beziehungsweise',
-    'z.B.': 'zum beispiel', 'AI': 'künstliche intelligenz'
-  };
-  
-  Object.entries(abbreviations).forEach(([abbr, expansion]) => {
-    const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
-    processedText = processedText.replace(regex, expansion);
-  });
   
   // Cleanup
   processedText = processedText.replace(/\.\.\./g, ', pause,');
@@ -491,6 +550,45 @@ const preprocessFrenchTextForTTS = (text) => {
   return processedText;
 };
 
+// 🇷🇴 ROMANIAN TTS PREPROCESSING - NOVĚ PŘIDÁNO
+const preprocessRomanianTextForTTS = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  
+  let processedText = text;
+  
+  // Numbers to words (basic)
+  const numberMap = {
+    '0': 'zero', '1': 'unu', '2': 'doi', '3': 'trei', '4': 'patru',
+    '5': 'cinci', '6': 'șase', '7': 'șapte', '8': 'opt', '9': 'nouă',
+    '10': 'zece', '11': 'unsprezece', '12': 'doisprezece', '13': 'treisprezece',
+    '14': 'paisprezece', '15': 'cincisprezece', '16': 'șaisprezece',
+    '17': 'șaptesprezece', '18': 'optsprezece', '19': 'nouăsprezece', '20': 'douăzeci'
+  };
+  
+  Object.entries(numberMap).forEach(([num, word]) => {
+    const regex = new RegExp(`\\b${num}\\b`, 'g');
+    processedText = processedText.replace(regex, word);
+  });
+  
+  // Currency and percentages
+  processedText = processedText.replace(/(\d+)\s*€/gi, '$1 euro');
+  processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolari');
+  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 la sută');
+  
+  // Temperature and time
+  processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 grade celsius');
+  processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 ore $2 minute');
+  
+  // Cleanup
+  processedText = processedText.replace(/\.\.\./g, ', pauză,');
+  processedText = processedText.replace(/--/g, ', pauză,');
+  processedText = processedText.replace(/\*/g, '');
+  processedText = processedText.replace(/#{1,6}/g, '');
+  processedText = processedText.replace(/\s+/g, ' ').trim();
+  
+  return processedText;
+};
+
 // ⌨️ ENHANCED TYPEWRITER EFFECT - Clean and smooth
 function TypewriterText({ text, isStreaming = false }) {
   const [displayedText, setDisplayedText] = useState('');
@@ -536,7 +634,7 @@ function TypewriterText({ text, isStreaming = false }) {
   );
 }
 
-// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES - Unchanged but clean
+// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -576,7 +674,7 @@ const prepareClaudeMessages = (messages) => {
       content: msg.text || ''
     }));
   }
-};// 🎤 ENHANCED VOICE RECORDER - Clean notifications
+};// 🎤 OPRAVENÝ VOICE RECORDER - Funguje pro všechny jazyky
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -588,6 +686,8 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
 
   const startRecording = async () => {
     try {
+      console.log('🎙️ Starting multilingual voice recording...');
+
       const constraints = {
         audio: {
           sampleRate: isIOSPWA ? 44100 : 16000,
@@ -615,6 +715,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       };
 
       mediaRecorder.onstop = async () => {
+        console.log('🛑 Recording stopped, processing with enhanced Whisper...');
         setIsProcessing(true);
         
         if (streamRef.current) {
@@ -630,6 +731,9 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           });
           const arrayBuffer = await audioBlob.arrayBuffer();
 
+          console.log('📤 Sending to enhanced Whisper API...');
+          
+          // 🎯 OPRAVENÉ WHISPER API CALL
           const response = await fetch('/api/whisper', {
             method: 'POST',
             headers: {
@@ -643,15 +747,23 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
           }
 
           const data = await response.json();
+          console.log('✅ Enhanced Whisper response:', data);
           
-          if (data.text && data.text.trim()) {
-            onTranscript(data.text.trim());
+          if (data.success && data.text && data.text.trim()) {
+            const transcribedText = data.text.trim();
+            const detectedLanguage = data.language || 'unknown';
+            
+            console.log('🌍 Detected language:', detectedLanguage);
+            console.log('📝 Transcribed text:', transcribedText);
+            
+            onTranscript(transcribedText);
           } else {
-            console.warn('Empty transcription received');
+            console.warn('⚠️ Empty or failed transcription');
+            onTranscript('[Nepodařilo se rozpoznat řeč - zkuste znovu]');
           }
 
         } catch (error) {
-          console.error('Whisper processing error:', error);
+          console.error('💥 Enhanced Whisper error:', error);
           onTranscript('[Chyba při rozpoznávání řeči - zkuste to znovu]');
         } finally {
           setIsProcessing(false);
@@ -662,7 +774,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       setIsRecording(true);
 
     } catch (error) {
-      console.error('Recording start error:', error);
+      console.error('💥 Recording start error:', error);
       alert('Nepodařilo se získat přístup k mikrofonu. Zkontrolujte oprávnění.');
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -674,6 +786,8 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   };
 
   const forceStopRecording = () => {
+    console.log('🚨 Force stopping recording...');
+
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state === 'recording') {
@@ -864,7 +978,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   );
 };
 
-// 🔊 ENHANCED VOICE BUTTON - OPRAVENÁ VIDITELNOST
+// 🔊 OPRAVENÝ VOICE BUTTON - Multilingual TTS
 const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -902,6 +1016,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
 
       // 🌍 MULTILINGUAL TTS PREPROCESSING
       const processedText = preprocessTextForTTS(text, language);
+      console.log('🎵 Processing text for TTS:', { language, original: text.substring(0, 50), processed: processedText.substring(0, 50) });
 
       const response = await fetch('/api/voice', {
         method: 'POST',
@@ -929,16 +1044,18 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
 
       audio.onplay = () => {
         setIsPlaying(true);
+        console.log('🔊 TTS playback started for language:', language);
       };
       
       audio.onended = () => {
         setIsPlaying(false);
         if (onAudioEnd) onAudioEnd();
         URL.revokeObjectURL(audioUrl);
+        console.log('✅ TTS playback finished');
       };
       
       audio.onerror = (e) => {
-        console.error('TTS playback error:', e);
+        console.error('❌ TTS playback error:', e);
         setIsPlaying(false);
         setIsLoading(false);
         if (onAudioEnd) onAudioEnd();
@@ -948,7 +1065,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       await audio.play();
 
     } catch (error) {
-      console.error('TTS error:', error);
+      console.error('💥 TTS error:', error);
       if (onAudioEnd) onAudioEnd();
     } finally {
       setIsLoading(false);
@@ -966,10 +1083,10 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       alignItems: 'center',
       gap: '4px',
       fontSize: '0.85rem',
-      opacity: isLoading ? 0.5 : 1, // 🔊 OPRAVENO: Plně viditelný
+      opacity: 1, // 🔧 OPRAVENO: Vždy viditelný
       transition: 'all 0.2s ease',
       position: 'relative',
-      color: 'white' // 🔊 OPRAVENO: Explicitně bílá barva
+      color: 'white'
     };
   };
 
@@ -1012,7 +1129,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       style={getButtonStyle()}
       title={getButtonTitle()}
       onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = isLoading ? '0.5' : '1'} // 🔊 OPRAVENO
+      onMouseLeave={(e) => e.target.style.opacity = '1'}
     >
       {getButtonIcon()}
       {isLoading && (
@@ -1028,7 +1145,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   );
 };
 
-// 📋 COPY BUTTON - Perfect visibility (beze změn)
+// 📋 COPY BUTTON - Perfect visibility
 const CopyButton = ({ text, language = 'cs' }) => {
   const [copied, setCopied] = useState(false);
 
@@ -1058,6 +1175,7 @@ const CopyButton = ({ text, language = 'cs' }) => {
         case 'de': return 'Kopiert!';
         case 'es': return '¡Copiado!';
         case 'fr': return 'Copié!';
+        case 'ro': return 'Copiat!';
         default: return 'Zkopírováno!';
       }
     }
@@ -1066,6 +1184,7 @@ const CopyButton = ({ text, language = 'cs' }) => {
       case 'de': return 'Text kopieren';
       case 'es': return 'Copiar texto';
       case 'fr': return 'Copier le texte';
+      case 'ro': return 'Copiază textul';
       default: return 'Zkopírovat text';
     }
   };
@@ -1082,13 +1201,13 @@ const CopyButton = ({ text, language = 'cs' }) => {
         display: 'flex',
         alignItems: 'center',
         fontSize: '0.85rem',
-        opacity: copied ? 1 : 1, // 📋 Vždy plně viditelný
+        opacity: 1, // 📋 Vždy plně viditelný
         transition: 'all 0.2s ease',
-        color: copied ? '#28a745' : 'white' // 📋 Bílá barva jako Voice button
+        color: copied ? '#28a745' : 'white'
       }}
       title={getButtonTitle()}
       onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = '1'} // 📋 Vždy viditelný
+      onMouseLeave={(e) => e.target.style.opacity = '1'}
     >
       {copied ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -1101,11 +1220,15 @@ const CopyButton = ({ text, language = 'cs' }) => {
       )}
     </button>
   );
-};// 🔎 ENHANCED SONAR SERVICE - Clean notifications
+};// 🔎 OPRAVENÝ SONAR SERVICE - Multilingual a méně agresivní
 const sonarService = {
   async search(query, showNotification) {
     try {
-      showNotification('Vyhledávám nejnovější informace...', 'info');
+      // 🌍 DETEKCE JAZYKA PRO SONAR
+      const detectedLang = detectLanguage(query);
+      console.log('🔍 Sonar detected language:', detectedLang);
+      
+      showNotification(this.getSearchMessage(detectedLang), 'info');
 
       const enhancedQuery = this.enhanceQueryForCurrentData(query);
 
@@ -1128,7 +1251,7 @@ const sonarService = {
         throw new Error('Invalid Sonar response');
       }
 
-      showNotification('Nalezeny aktuální informace!', 'success');
+      showNotification(this.getSuccessMessage(detectedLang), 'success');
       
       return {
         success: true,
@@ -1138,62 +1261,91 @@ const sonarService = {
         source: 'sonar_search'
       };
     } catch (error) {
-      console.error('Sonar error:', error);
-      showNotification(`Chyba při vyhledávání: ${error.message}`, 'error');
+      console.error('💥 Sonar error:', error);
+      const detectedLang = detectLanguage(query);
+      showNotification(this.getErrorMessage(detectedLang, error.message), 'error');
       return {
         success: false,
-        message: `Chyba při vyhledávání: ${error.message}`,
+        message: this.getErrorMessage(detectedLang, error.message),
         source: 'sonar_search'
       };
     }
   },
 
+  getSearchMessage(language) {
+    const messages = {
+      'cs': 'Vyhledávám nejnovější informace...',
+      'en': 'Searching for latest information...',
+      'de': 'Suche nach neuesten Informationen...',
+      'es': 'Buscando información más reciente...',
+      'fr': 'Recherche des dernières informations...',
+      'ro': 'Caut informații recente...'
+    };
+    return messages[language] || messages['cs'];
+  },
+
+  getSuccessMessage(language) {
+    const messages = {
+      'cs': 'Nalezeny aktuální informace!',
+      'en': 'Found current information!',
+      'de': 'Aktuelle Informationen gefunden!',
+      'es': '¡Información actual encontrada!',
+      'fr': 'Informations actuelles trouvées!',
+      'ro': 'Informații actuale găsite!'
+    };
+    return messages[language] || messages['cs'];
+  },
+
+  getErrorMessage(language, error) {
+    const messages = {
+      'cs': `Chyba při vyhledávání: ${error}`,
+      'en': `Search error: ${error}`,
+      'de': `Suchfehler: ${error}`,
+      'es': `Error de búsqueda: ${error}`,
+      'fr': `Erreur de recherche: ${error}`,
+      'ro': `Eroare de căutare: ${error}`
+    };
+    return messages[language] || messages['cs'];
+  },
+
   enhanceQueryForCurrentData(originalQuery) {
     const query = originalQuery.toLowerCase();
     const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().toLocaleDateString('cs-CZ', { month: 'long' });
     
     if (query.includes('2024') || query.includes('2025')) {
       return originalQuery;
     }
 
     const temporalTriggers = [
-      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední', 'nejčerstvější',
-      'zprávy', 'novinky', 'aktuality', 'události', 'situace',
-      'cena', 'kurz', 'počasí', 'teplota', 'předpověď',
-      'dnes', 'teď', 'momentálně', 'nyní', 'v současnosti',
-      'current', 'latest', 'recent', 'today', 'now'
+      // Czech
+      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední',
+      // English
+      'current', 'latest', 'recent', 'today', 'now',
+      // German
+      'aktuell', 'neueste', 'heute', 'jetzt',
+      // Spanish
+      'actual', 'reciente', 'hoy', 'ahora',
+      // French
+      'actuel', 'récent', 'aujourd\'hui', 'maintenant',
+      // Romanian
+      'actual', 'recent', 'astăzi', 'acum'
     ];
 
     const needsTimeFilter = temporalTriggers.some(trigger => query.includes(trigger));
     
     if (needsTimeFilter) {
-      return `${originalQuery} ${currentYear} ${currentMonth} aktuální nejnovější`;
+      return `${originalQuery} ${currentYear} latest current`;
     }
 
-    const financialKeywords = ['cena', 'kurz', 'akcie', 'burza', 'bitcoin', 'krypto', 'ethereum', 'investice'];
-    if (financialKeywords.some(keyword => query.includes(keyword))) {
-      return `${originalQuery} ${currentYear} aktuální cena trh`;
-    }
-
-    const newsKeywords = ['zprávy', 'novinky', 'aktuality', 'události', 'situace', 'krize', 'válka'];
-    if (newsKeywords.some(keyword => query.includes(keyword))) {
-      return `${originalQuery} ${currentYear} nejnovější zprávy aktuality`;
-    }
-
-    const weatherKeywords = ['počasí', 'teplota', 'déšť', 'sníh', 'bouře', 'předpověď'];
-    if (weatherKeywords.some(keyword => query.includes(keyword))) {
-      return `${originalQuery} dnes aktuální předpověď`;
-    }
-
-    return `${originalQuery} ${currentYear}`;
+    return originalQuery;
   }
 };
 
-// 🔍 ENHANCED GOOGLE SEARCH SERVICE - Clean
+// 🔍 ENHANCED GOOGLE SEARCH SERVICE
 const googleSearchService = {
   async search(query, showNotification) {
     try {
+      const detectedLang = detectLanguage(query);
       showNotification('Vyhledávám přes Google...', 'info');
       
       const response = await fetch('/api/google-search', {
@@ -1202,7 +1354,7 @@ const googleSearchService = {
         body: JSON.stringify({ 
           query,
           freshness: 'recent',
-          lang: 'cs'
+          lang: detectedLang
         })
       });
       
@@ -1219,14 +1371,379 @@ const googleSearchService = {
       
       return data.results.map(r => `${r.title}\n${r.snippet}\n${r.link}`).join('\n\n');
     } catch (error) {
-      console.error('Google search error:', error);
+      console.error('💥 Google search error:', error);
       showNotification(`Google search chyba: ${error.message}`, 'error');
       return '';
     }
   }
 };
 
-// 🔔 CLEAN NOTIFICATION HELPER - No emoji, modern design
+// 🚀 OPRAVENÝ CLAUDE SERVICE - Volnější pravidla
+const claudeService = {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
+    try {
+      console.log('🤖 Claude service with language:', detectedLanguage);
+      const claudeMessages = prepareClaudeMessages(messages);
+      
+      // 🌍 OPRAVENÝ SYSTEM PROMPT - Méně přísný
+      const systemPrompt = this.getSystemPrompt(detectedLanguage);
+      
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: claudeMessages,
+          system: systemPrompt,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Claude API failed: HTTP ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      
+      let fullText = '';
+      let buffer = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const data = JSON.parse(line);
+                
+                if (data.type === 'text' && data.content) {
+                  fullText += data.content;
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, true);
+                  }
+                }
+                else if (data.type === 'search_start') {
+                  if (onSearchNotification) {
+                    onSearchNotification(this.getSearchMessage(detectedLanguage));
+                  }
+                }
+                else if (data.type === 'completed') {
+                  if (data.fullText) {
+                    fullText = data.fullText;
+                  }
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, false);
+                  }
+                }
+                else if (data.error) {
+                  throw new Error(data.message || 'Streaming error');
+                }
+
+              } catch (parseError) {
+                continue;
+              }
+            }
+          }
+        }
+      } catch (streamError) {
+        console.error('💥 Streaming read error:', streamError);
+        throw streamError;
+      }
+
+      return fullText;
+
+    } catch (error) {
+      console.error('💥 Claude error:', error);
+      throw error;
+    }
+  },
+
+  getSystemPrompt(language) {
+    const prompts = {
+      'cs': `Jsi Omnia, pokročilý AI asistent.
+
+🔍 WEB_SEARCH - Máš přístup k web_search pro vyhledávání aktuálních informací
+📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights  
+🎯 POKROČILÉ MYŠLENÍ - Používáš pokročilé reasoning
+
+PRAVIDLA ODPOVĚDÍ:
+- Odpovídej přirozeně v českém jazyce
+- Na otázky typu "co děláš", "jak se máš" odpovídej normálně a přátelsky
+- Neříkej "jsem AI" - prostě odpověz jako inteligentní asistent
+- Web search používej jen když potřebuješ aktuální informace
+- Buď užitečný a odpověz přímo na otázku
+- Piš přirozeně pro hlasové přehrání`,
+
+      'en': `You are Omnia, an advanced AI assistant.
+
+🔍 WEB_SEARCH - You have access to web_search for finding current information
+📊 DATA ANALYSIS - You can analyze data and provide insights
+🎯 ADVANCED THINKING - You use advanced reasoning
+
+RESPONSE RULES:
+- Respond naturally in English
+- For questions like "what are you doing", "how are you" answer normally and friendly
+- Don't say "I'm an AI" - just respond as an intelligent assistant
+- Use web search only when you need current information
+- Be helpful and answer the question directly
+- Write naturally for voice playback`,
+
+      'de': `Du bist Omnia, ein fortschrittlicher KI-Assistent.
+
+🔍 WEB_SEARCH - Du hast Zugang zur web_search für aktuelle Informationen
+📊 DATENANALYSE - Du kannst Daten analysieren und Erkenntnisse liefern
+🎯 FORTGESCHRITTENES DENKEN - Du verwendest fortgeschrittenes Reasoning
+
+ANTWORTREGELN:
+- Antworte natürlich auf Deutsch
+- Auf Fragen wie "was machst du", "wie geht es dir" antworte normal und freundlich
+- Sage nicht "Ich bin eine KI" - antworte einfach als intelligenter Assistent
+- Verwende web search nur wenn du aktuelle Informationen benötigst
+- Sei hilfreich und beantworte die Frage direkt
+- Schreibe natürlich für Sprachwiedergabe`,
+
+      'es': `Eres Omnia, un asistente IA avanzado.
+
+🔍 WEB_SEARCH - Tienes acceso a web_search para encontrar información actual
+📊 ANÁLISIS DE DATOS - Puedes analizar datos y proporcionar insights
+🎯 PENSAMIENTO AVANZADO - Usas razonamiento avanzado
+
+REGLAS DE RESPUESTA:
+- Responde naturalmente en español
+- Para preguntas como "qué haces", "cómo estás" responde normal y amigable
+- No digas "Soy una IA" - solo responde como un asistente inteligente
+- Usa web search solo cuando necesites información actual
+- Sé útil y responde directamente la pregunta
+- Escribe naturalmente para reproducción de voz`,
+
+      'fr': `Tu es Omnia, un assistant IA avancé.
+
+🔍 WEB_SEARCH - Tu as accès à web_search pour trouver des informations actuelles
+📊 ANALYSE DE DONNÉES - Tu peux analyser des données et fournir des insights
+🎯 PENSÉE AVANCÉE - Tu utilises un raisonnement avancé
+
+RÈGLES DE RÉPONSE:
+- Réponds naturellement en français
+- Pour des questions comme "que fais-tu", "comment vas-tu" réponds normalement et amicalement
+- Ne dis pas "Je suis une IA" - réponds simplement comme un assistant intelligent
+- Utilise web search seulement quand tu as besoin d'informations actuelles
+- Sois utile et réponds directement à la question
+- Écris naturellement pour lecture vocale`,
+
+      'ro': `Ești Omnia, un asistent IA avansat.
+
+🔍 WEB_SEARCH - Ai acces la web_search pentru a găsi informații actuale
+📊 ANALIZA DATELOR - Poți analiza date și oferi perspective
+🎯 GÂNDIRE AVANSATĂ - Folosești raționament avansat
+
+REGULI DE RĂSPUNS:
+- Răspunde natural în română
+- La întrebări ca "ce faci", "cum ești" răspunde normal și prietenos
+- Nu spune "Sunt o IA" - răspunde pur și simplu ca un asistent inteligent
+- Folosește web search doar când ai nevoie de informații actuale
+- Fii util și răspunde direct la întrebare
+- Scrie natural pentru redarea vocală`
+    };
+
+    return prompts[language] || prompts['cs'];
+  },
+
+  getSearchMessage(language) {
+    const messages = {
+      'cs': 'Vyhledávám aktuální informace...',
+      'en': 'Searching for current information...',
+      'de': 'Suche nach aktuellen Informationen...',
+      'es': 'Buscando información actual...',
+      'fr': 'Recherche d\'informations actuelles...',
+      'ro': 'Caut informații actuale...'
+    };
+
+    return messages[language] || messages['cs'];
+  }
+};
+
+// 🤖 OPRAVENÝ OPENAI SERVICE - Lepší jazykové pravidla
+const openaiService = {
+  async sendMessage(messages, detectedLanguage = 'cs') {
+    try {
+      console.log('🧠 OpenAI service with language:', detectedLanguage);
+      
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages,
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response structure from OpenAI');
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('💥 OpenAI error:', error);
+      throw error;
+    }
+  },
+
+  getSystemPrompt(detectedLanguage) {
+    const prompts = {
+      'cs': `Jsi Omnia, český AI asistent.
+
+PRAVIDLA:
+- Odpovídej přirozeně v češtině
+- Na konverzační otázky ("co děláš", "jak se máš") odpovídej normálně
+- Neříkaj "jsem AI" - prostě odpověz přátelsky
+- Buď užitečný a přímý
+- Piš tak, aby to znělo přirozeně při hlasovém přehrání`,
+
+      'en': `You are Omnia, an English AI assistant.
+
+RULES:
+- Respond naturally in English
+- For conversational questions ("what are you doing", "how are you") answer normally
+- Don't say "I'm an AI" - just respond friendly
+- Be helpful and direct
+- Write so it sounds natural when spoken aloud`,
+
+      'de': `Du bist Omnia, ein deutscher KI-Assistent.
+
+REGELN:
+- Antworte natürlich auf Deutsch
+- Auf Konversationsfragen ("was machst du", "wie geht es dir") antworte normal
+- Sage nicht "Ich bin eine KI" - antworte einfach freundlich
+- Sei hilfreich und direkt
+- Schreibe so, dass es natürlich klingt wenn gesprochen`,
+
+      'es': `Eres Omnia, un asistente IA en español.
+
+REGLAS:
+- Responde naturalmente en español
+- Para preguntas conversacionales ("qué haces", "cómo estás") responde normalmente
+- No digas "Soy una IA" - solo responde amigablemente
+- Sé útil y directo
+- Escribe para que suene natural cuando se habla`,
+
+      'fr': `Tu es Omnia, un assistant IA français.
+
+RÈGLES:
+- Réponds naturellement en français
+- Pour les questions conversationnelles ("que fais-tu", "comment vas-tu") réponds normalement
+- Ne dis pas "Je suis une IA" - réponds juste amicalement
+- Sois utile et direct
+- Écris pour que ça sonne naturel quand c'est parlé`,
+
+      'ro': `Ești Omnia, un asistent IA român.
+
+REGULI:
+- Răspunde natural în română
+- Pentru întrebări conversaționale ("ce faci", "cum ești") răspunde normal
+- Nu spune "Sunt o IA" - răspunde doar prietenos
+- Fii util și direct
+- Scrie să sune natural când este vorbit`
+    };
+
+    return prompts[detectedLanguage] || prompts['cs'];
+  }
+};
+
+// 🚨 OPRAVENÝ shouldSearchInternet - Méně agresivní
+const shouldSearchInternet = (userInput, model) => {
+  if (model === 'claude') {
+    return false; // Claude si web_search řídí sám
+  }
+
+  if (model !== 'gpt-4o') {
+    return false;
+  }
+
+  const input = (userInput || '').toLowerCase();
+
+  // 🎯 ROZŠÍŘENÉ konverzační fráze (NEhledat)
+  const conversationalPhrases = [
+    // České
+    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer', 'dobré ráno',
+    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi', 'představ se', 'co jsi',
+    'umíš', 'můžeš mi', 'co umíš', 'jak funguje', 'vysvětli mi', 'poraď mi',
+    'co je to', 'vysvětli', 'řekni mi', 'pomoć', 'pomoz', 'pomoz mi',
+    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
+    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej', 'povídej si se mnou',
+    'napiš mi', 'vytvoř', 'spočítej', 'překladej', 'přelož mi',
+    'jak postupovat', 'co bys doporučil', 'máš radu', 'co dělat',
+    'shrň mi', 'zkrať mi', 'zjednodušuj', 'vyber hlavní body',
+    'co znamená', 'co to znamená', 'vysvětli význam',
+    // Anglické
+    'hello', 'hi', 'how are you', 'what are you', 'who are you', 'thank you',
+    'thanks', 'can you', 'please', 'help me', 'explain', 'what is',
+    'what does', 'what means', 'how do you', 'tell me', 'show me',
+    // Německé
+    'hallo', 'wie geht', 'was bist du', 'wer bist du', 'danke', 'kannst du',
+    'erkläre', 'was ist', 'hilf mir', 'was bedeutet', 'sage mir',
+    // Španělské
+    'hola', 'cómo estás', 'qué eres', 'quién eres', 'gracias', 'puedes',
+    'explica', 'qué es', 'ayúdame', 'qué significa', 'dime',
+    // Francouzské
+    'bonjour', 'comment allez', 'qu\'est-ce que', 'qui êtes', 'merci',
+    'pouvez-vous', 'expliquez', 'qu\'est-ce', 'aidez-moi', 'que signifie',
+    // Rumunské
+    'salut', 'bună', 'cum ești', 'ce ești', 'cine ești', 'mulțumesc',
+    'poți să', 'explică', 'ce este', 'ajută-mă', 'ce înseamnă', 'spune-mi'
+  ];
+
+  // Pokud najdeme konverzační frázi, NEhledej
+  for (const phrase of conversationalPhrases) {
+    if (input.includes(phrase)) {
+      return false;
+    }
+  }
+
+  // 🔍 PŘESNĚJŠÍ search triggery (jen pro opravdu aktuální info)
+  const searchTriggers = [
+    // České - jen pro aktuální info
+    'aktuální cena', 'dnešní počasí', 'současný kurz', 'nejnovější zprávy',
+    'dnes v', 'aktuální situace', 'poslední novinky', 'čerstvé aktuality',
+    'právě teď', 'momentální stav', 'nové zprávy', 'breaking news',
+    'aktuální výsledky', 'dnešní výsledek', 'současné dění',
+    // Anglické - jen pro aktuální info  
+    'current price', 'today weather', 'latest news', 'breaking news',
+    'right now', 'current situation', 'fresh news', 'today results',
+    'current exchange rate', 'stock price today', 'weather forecast today',
+    // Německé
+    'aktuelle preis', 'heute wetter', 'neueste nachrichten', 'aktueller kurs',
+    // Španělské
+    'precio actual', 'tiempo hoy', 'noticias recientes', 'tipo de cambio actual',
+    // Francouzské
+    'prix actuel', 'météo aujourd\'hui', 'dernières nouvelles', 'taux actuel',
+    // Rumunské
+    'preț actual', 'vremea azi', 'știri recente', 'curs actual'
+  ];
+
+  // Jen pokud explicitně žádá aktuální info
+  for (const trigger of searchTriggers) {
+    if (input.includes(trigger)) {
+      return true;
+    }
+  }
+
+  return false;
+};// 🔔 CLEAN NOTIFICATION HELPER - Modern design
 const showNotificationHelper = (message, type = 'info', onClick = null) => {
   const notification = document.createElement('div');
   
@@ -1311,285 +1828,11 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
   }, type === 'error' ? 6000 : type === 'streaming' ? 8000 : 4000);
 };
 
-// 🚀 MULTILINGUAL CLAUDE SERVICE - Dynamic language adaptation
-const claudeService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
-    try {
-      const claudeMessages = prepareClaudeMessages(messages);
-      
-      // 🌍 MULTILINGUAL SYSTEM PROMPT
-      const systemPrompt = this.getSystemPrompt(detectedLanguage);
-      
-      const response = await fetch('/api/claude2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages: claudeMessages,
-          system: systemPrompt,
-          max_tokens: 2000
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Claude API failed: HTTP ${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      
-      let fullText = '';
-      let buffer = '';
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          
-          if (done) {
-            break;
-          }
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.trim()) {
-              try {
-                const data = JSON.parse(line);
-                
-                if (data.type === 'text' && data.content) {
-                  fullText += data.content;
-                  
-                  if (onStreamUpdate) {
-                    onStreamUpdate(fullText, true);
-                  }
-                }
-                else if (data.type === 'search_start') {
-                  if (onSearchNotification) {
-                    onSearchNotification(this.getSearchMessage(detectedLanguage));
-                  }
-                }
-                else if (data.type === 'completed') {
-                  if (data.fullText) {
-                    fullText = data.fullText;
-                  }
-                  
-                  if (onStreamUpdate) {
-                    onStreamUpdate(fullText, false);
-                  }
-                }
-                else if (data.error) {
-                  throw new Error(data.message || 'Streaming error');
-                }
-
-              } catch (parseError) {
-                continue;
-              }
-            }
-          }
-        }
-      } catch (streamError) {
-        console.error('Streaming read error:', streamError);
-        throw streamError;
-      }
-
-      return fullText;
-
-    } catch (error) {
-      console.error('Claude error:', error);
-      throw error;
-    }
-  },
-
-  getSystemPrompt(language) {
-    const prompts = {
-      'cs': `Jsi Omnia, pokročilý AI asistent. Tvoje schopnosti:
-
-🔍 WEB_SEARCH - Máš přístup k web_search pro vyhledávání aktuálních informací
-📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights  
-🎯 EXTENDED THINKING - Používáš pokročilé reasoning
-
-DŮLEŽITÉ INSTRUKCE:
-- Odpovídej VŽDY výhradně v češtině, gramaticky správně a přirozeně
-- Piš stručně, jako chytrý a lidsky znějící člověk
-- NEPIŠ "Jsem AI" ani se nijak nepředstavuj
-- Automaticky používej web_search když potřebuješ aktuální informace
-- Buď konkrétní, užitečný a přímo odpověz na uživatelovu otázku
-- Tvoje text bude převeden na řeč, tak piš přirozeně pro mluvení`,
-
-      'en': `You are Omnia, an advanced AI assistant with these capabilities:
-
-🔍 WEB_SEARCH - You have access to web_search for finding current information
-📊 DATA ANALYSIS - You can analyze data and provide insights
-🎯 EXTENDED THINKING - You use advanced reasoning
-
-IMPORTANT INSTRUCTIONS:
-- Always respond EXCLUSIVELY in English, grammatically correct and naturally
-- Write concisely, like a smart and human-sounding person
-- DON'T write "I'm an AI" or introduce yourself
-- Automatically use web_search when you need current information
-- Be specific, helpful and directly answer the user's question
-- Your text will be converted to speech, so write naturally for speaking`,
-
-      'de': `Du bist Omnia, ein fortschrittlicher KI-Assistent mit diesen Fähigkeiten:
-
-🔍 WEB_SEARCH - Du hast Zugang zur web_search für aktuelle Informationen
-📊 DATENANALYSE - Du kannst Daten analysieren und Erkenntnisse liefern
-🎯 EXTENDED THINKING - Du verwendest fortgeschrittenes Reasoning
-
-WICHTIGE ANWEISUNGEN:
-- Antworte IMMER ausschließlich auf Deutsch, grammatikalisch korrekt und natürlich
-- Schreibe prägnant, wie eine kluge und menschlich klingende Person
-- Schreibe NICHT "Ich bin eine KI" oder stelle dich vor
-- Verwende automatisch web_search, wenn du aktuelle Informationen benötigst
-- Sei spezifisch, hilfreich und beantworte die Frage des Nutzers direkt
-- Dein Text wird in Sprache umgewandelt, also schreibe natürlich zum Sprechen`,
-
-      'es': `Eres Omnia, un asistente de IA avanzado con estas capacidades:
-
-🔍 WEB_SEARCH - Tienes acceso a web_search para encontrar información actual
-📊 ANÁLISIS DE DATOS - Puedes analizar datos y proporcionar insights
-🎯 EXTENDED THINKING - Usas razonamiento avanzado
-
-INSTRUCCIONES IMPORTANTES:
-- Responde SIEMPRE exclusivamente en español, gramaticalmente correcto y natural
-- Escribe de forma concisa, como una persona inteligente y que suena humana
-- NO escribas "Soy una IA" ni te presentes
-- Usa automáticamente web_search cuando necesites información actual
-- Sé específico, útil y responde directamente la pregunta del usuario
-- Tu texto será convertido a voz, así que escribe naturalmente para hablar`,
-
-      'fr': `Tu es Omnia, un assistant IA avancé avec ces capacités:
-
-🔍 WEB_SEARCH - Tu as accès à web_search pour trouver des informations actuelles
-📊 ANALYSE DE DONNÉES - Tu peux analyser des données et fournir des insights
-🎯 EXTENDED THINKING - Tu utilises un raisonnement avancé
-
-INSTRUCTIONS IMPORTANTES:
-- Réponds TOUJOURS exclusivement en français, grammaticalement correct et naturel
-- Écris de manière concise, comme une personne intelligente et humaine
-- N'écris PAS "Je suis une IA" ou ne te présente pas
-- Utilise automatiquement web_search quand tu as besoin d'informations actuelles
-- Sois spécifique, utile et réponds directement à la question de l'utilisateur
-- Ton texte sera converti en parole, alors écris naturellement pour parler`
-    };
-
-    return prompts[language] || prompts['cs'];
-  },
-
-  getSearchMessage(language) {
-    const messages = {
-      'cs': 'Vyhledávám aktuální informace...',
-      'en': 'Searching for current information...',
-      'de': 'Suche nach aktuellen Informationen...',
-      'es': 'Buscando información actual...',
-      'fr': 'Recherche d\'informations actuelles...'
-    };
-
-    return messages[language] || messages['cs'];
-  }
-};
-
-// 🤖 MULTILINGUAL OPENAI SERVICE
-const openaiService = {
-  async sendMessage(messages, detectedLanguage = 'cs') {
-    try {
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages,
-          temperature: 0.7,
-          max_tokens: 2000
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response structure from OpenAI');
-      }
-
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error('OpenAI error:', error);
-      throw error;
-    }
-  },
-
-  getSystemPrompt(detectedLanguage) {
-    const prompts = {
-      'cs': `Jsi Omnia, český AI asistent optimalizovaný pro hlasové odpovědi. 
-
-DŮLEŽITÉ INSTRUKCE:
-- Odpovídej VÝHRADNĚ v češtině, každé slovo musí být české
-- Nikdy nepoužívej anglická slova nebo výrazy
-- Začínej odpovědi přímo česky, bez anglických frází
-- Piš stručně a přirozeně jako rodilý mluvčí češtiny pro hlasové přehrání
-- Nepiš "Jsem AI" ani se nijak nepředstavuj
-- Tvoje odpověď bude přečtena českým hlasem, tak ji formuluj přirozeně
-- Vyhýbaj se složitým číslům a technickým termínům
-- Používej každodenní český jazyk`,
-
-      'en': `You are Omnia, an AI assistant optimized for voice responses.
-
-IMPORTANT INSTRUCTIONS:
-- Respond EXCLUSIVELY in English, every word must be English
-- Never use foreign words or expressions
-- Start responses directly in English, without foreign phrases
-- Write concisely and naturally as a native English speaker for voice playback
-- Don't write "I'm an AI" or introduce yourself
-- Your response will be read by English voice, so formulate it naturally
-- Avoid complex numbers and technical terms
-- Use everyday English language`,
-
-      'de': `Du bist Omnia, ein KI-Assistent optimiert für Sprachantworten.
-
-WICHTIGE ANWEISUNGEN:
-- Antworte AUSSCHLIESSLICH auf Deutsch, jedes Wort muss deutsch sein
-- Verwende niemals fremdsprachige Wörter oder Ausdrücke
-- Beginne Antworten direkt auf Deutsch, ohne fremdsprachige Phrasen
-- Schreibe prägnant und natürlich als deutscher Muttersprachler für Sprachwiedergabe
-- Schreibe nicht "Ich bin eine KI" oder stelle dich vor
-- Deine Antwort wird von deutscher Stimme gelesen, also formuliere sie natürlich
-- Vermeide komplexe Zahlen und Fachbegriffe
-- Verwende alltägliche deutsche Sprache`,
-
-      'es': `Eres Omnia, un asistente IA optimizado para respuestas de voz.
-
-INSTRUCCIONES IMPORTANTES:
-- Responde EXCLUSIVAMENTE en español, cada palabra debe ser española
-- Nunca uses palabras o expresiones extranjeras
-- Comienza las respuestas directamente en español, sin frases extranjeras
-- Escribe de forma concisa y natural como hablante nativo de español para reproducción de voz
-- No escribas "Soy una IA" o te presentes
-- Tu respuesta será leída por voz española, así que formula naturalmente
-- Evita números complejos y términos técnicos
-- Usa lenguaje español cotidiano`,
-
-      'fr': `Tu es Omnia, un assistant IA optimisé pour les réponses vocales.
-
-INSTRUCTIONS IMPORTANTES:
-- Réponds EXCLUSIVEMENT en français, chaque mot doit être français
-- N'utilise jamais de mots ou expressions étrangères
-- Commence les réponses directement en français, sans phrases étrangères
-- Écris de manière concise et naturelle comme un locuteur natif français pour lecture vocale
-- N'écris pas "Je suis une IA" ou ne te présente pas
-- Ta réponse sera lue par une voix française, alors formule-la naturellement
-- Évite les nombres complexes et les termes techniques
-- Utilise le langage français quotidien`
-    };
-
-    return prompts[detectedLanguage] || prompts['cs'];
-  }
-};// 🎵 ENHANCED MULTILINGUAL AUDIO GENERATION
+// 🎵 OPRAVENÉ MULTILINGUAL AUDIO GENERATION
 const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification, language = 'cs') => {
   try {
+    console.log('🎵 Generating audio for language:', language);
+    
     const processedText = preprocessTextForTTS(responseText, language);
     
     showNotification('Generuji hlas...', 'info');
@@ -1640,11 +1883,12 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     
     audio.onplay = () => {
       if (!playbackInterrupted) {
-        console.log('TTS started playing');
+        console.log('🎵 Audio started playing for language:', language);
       }
     };
     
     audio.onended = () => {
+      console.log('✅ Audio playback finished');
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
@@ -1652,7 +1896,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     };
     
     audio.onerror = (e) => {
-      console.error('TTS audio error:', e);
+      console.error('❌ Audio playback error:', e);
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
@@ -1662,8 +1906,9 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     
     try {
       await audio.play();
+      console.log('🎯 Audio plays IMMEDIATELY after AI response!');
     } catch (playError) {
-      console.error('Auto-play blocked:', playError);
+      console.error('❌ Auto-play blocked:', playError);
       showNotification('Klepněte pro přehrání odpovědi', 'info', () => {
         audio.play().catch(console.error);
       });
@@ -1672,7 +1917,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     return audio;
     
   } catch (error) {
-    console.error('Audio generation failed:', error);
+    console.error('💥 Audio generation failed:', error);
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
     showNotification('Hlas se nepodařilo vygenerovat', 'error');
@@ -1680,91 +1925,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
   }
 };
 
-// 🚨 ENHANCED shouldSearchInternet - Clean logic
-const shouldSearchInternet = (userInput, model) => {
-  if (model === 'claude') {
-    return false; // Claude handles web_search internally
-  }
-
-  if (model !== 'gpt-4o') {
-    return false;
-  }
-
-  const input = (userInput || '').toLowerCase();
-
-  // Conversational phrases (no search needed)
-  const conversationalPhrases = [
-    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer', 'dobré ráno',
-    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi', 'představ se',
-    'umíš', 'můžeš mi', 'co umíš', 'jak funguje', 'vysvětli mi',
-    'co je to', 'vysvětli', 'řekni mi', 'pomoč', 'pomoz', 'pomoz mi',
-    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
-    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej', 'povídej si se mnou',
-    'napiš mi', 'vytvoř', 'spočítej', 'překladej', 'přelož mi',
-    'jak postupovat', 'co bys doporučil', 'máš radu', 'co dělat',
-    'shrň mi', 'zkrať mi', 'zjednodušuj', 'vyber hlavní body',
-    // English
-    'hello', 'hi', 'how are you', 'what are you', 'who are you', 'thank you',
-    'thanks', 'can you', 'please', 'help me', 'explain', 'what is',
-    // German
-    'hallo', 'wie geht', 'was bist du', 'wer bist du', 'danke', 'kannst du',
-    'erkläre', 'was ist', 'hilf mir',
-    // Spanish
-    'hola', 'cómo estás', 'qué eres', 'quién eres', 'gracias', 'puedes',
-    'explica', 'qué es', 'ayúdame',
-    // French
-    'bonjour', 'comment allez', 'qu\'est-ce que', 'qui êtes', 'merci',
-    'pouvez-vous', 'expliquez', 'qu\'est-ce', 'aidez-moi'
-  ];
-
-  for (const phrase of conversationalPhrases) {
-    if (input.includes(phrase)) {
-      return false;
-    }
-  }
-
-  // Search triggers (need current info)
-  const searchTriggers = [
-    // Czech
-    'najdi', 'vyhledej', 'hledej', 'aktuální', 'dnešní', 'současný', 'nejnovější',
-    'zprávy', 'novinky', 'aktuality', 'počasí', 'kurz', 'cena', 'ceny',
-    'co je nového', 'co se děje', 'poslední', 'dnes', 'teď', 'momentálně',
-    'stav', 'situace', 'vývoj', 'trendy', 'statistiky',
-    'burza', 'akcie', 'investice', 'krypto', 'bitcoin',
-    'předpověď', 'prognóza', 'odhad', 'analýza trhu',
-    // English
-    'find', 'search', 'look for', 'current', 'today', 'recent', 'latest',
-    'news', 'weather', 'price', 'rate', 'stock', 'bitcoin', 'crypto',
-    'what\'s new', 'what\'s happening', 'now', 'currently',
-    // German
-    'finde', 'suche', 'aktuell', 'heute', 'neueste', 'nachrichten',
-    'wetter', 'preis', 'kurs', 'aktien', 'was ist neu', 'was passiert',
-    // Spanish
-    'busca', 'encuentra', 'actual', 'hoy', 'reciente', 'noticias',
-    'tiempo', 'precio', 'qué hay de nuevo', 'qué pasa',
-    // French
-    'trouve', 'cherche', 'actuel', 'aujourd\'hui', 'récent', 'nouvelles',
-    'météo', 'prix', 'quoi de neuf', 'que se passe'
-  ];
-
-  for (const trigger of searchTriggers) {
-    if (input.includes(trigger)) {
-      return true;
-    }
-  }
-
-  // Automatic triggers
-  if (input.includes('2024') || input.includes('2025') ||
-      input.includes('bitcoin') || input.includes('ethereum') ||
-      input.includes('akcie') || input.includes('volby') ||
-      input.includes('stock') || input.includes('election')) {
-    return true;
-  }
-
-  return false;
-};
-
-// ✅ ENHANCED VOICE SCREEN RESPONSE Handler
+// ✅ OPRAVENÝ VOICE SCREEN RESPONSE Handler
 const handleVoiceScreenResponse = async (
   textInput,
   currentMessages,
@@ -1780,8 +1941,11 @@ const handleVoiceScreenResponse = async (
   setStreaming = null
 ) => {
   try {
+    console.log('🎤 Voice Screen Response with model:', model);
+
     // 🌍 DETECT LANGUAGE
     const detectedLanguage = detectLanguage(textInput);
+    console.log('🌍 Detected language:', detectedLanguage);
 
     const userMessage = { sender: 'user', text: textInput };
     const messagesWithUser = [...currentMessages, userMessage];
@@ -1816,6 +1980,8 @@ const handleVoiceScreenResponse = async (
       setMessages(messagesWithBot);
 
       const onStreamUpdate = (text, isStillStreaming) => {
+        console.log(`📺 Voice Stream update: ${text.length} chars, streaming: ${isStillStreaming}`);
+        
         const updatedMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: text, 
@@ -1832,6 +1998,7 @@ const handleVoiceScreenResponse = async (
       };
 
       const onSearchNotification = (message) => {
+        console.log('🔍 Voice Search notification:', message);
         showNotification(message, 'streaming');
       };
 
@@ -1843,6 +2010,7 @@ const handleVoiceScreenResponse = async (
       );
     }
     else if (model === 'gpt-4o') {
+      console.log('🧠 Enhanced GPT-4o via /api/openai');
       showNotification('GPT analyzuje dotaz...', 'info');
       
       let searchContext = '';
@@ -1877,7 +2045,7 @@ const handleVoiceScreenResponse = async (
       throw new Error(`Neznámý model: ${model}`);
     }
 
-    // 🎵 MULTILINGUAL AUDIO GENERATION
+    // 🎵 MULTILINGUAL AUDIO GENERATION (pouze pro dokončené odpovědi)
     if (responseText && model !== 'claude') {
       await generateInstantAudio(
         responseText,
@@ -1892,7 +2060,7 @@ const handleVoiceScreenResponse = async (
     return responseText;
 
   } catch (error) {
-    console.error('Voice Screen response error:', error);
+    console.error('💥 Voice Screen response error:', error);
 
     if (setStreaming) setStreaming(false);
 
@@ -1907,7 +2075,7 @@ const handleVoiceScreenResponse = async (
   }
 };
 
-// ✅ ENHANCED TEXT RESPONSE Handler
+// ✅ OPRAVENÝ TEXT RESPONSE Handler
 const handleTextResponse = async (
   textInput,
   currentMessages,
@@ -1918,8 +2086,11 @@ const handleTextResponse = async (
   showNotification,
   setStreaming = null
 ) => {
+  console.log('💬 Text Response with model:', model);
+
   // 🌍 DETECT LANGUAGE
   const detectedLanguage = detectLanguage(textInput);
+  console.log('🌍 Detected language:', detectedLanguage);
 
   const userMessage = { sender: 'user', text: textInput };
   const messagesWithUser = [...currentMessages, userMessage];
@@ -1955,6 +2126,8 @@ const handleTextResponse = async (
     setMessages(messagesWithBot);
 
     const onStreamUpdate = (text, isStillStreaming) => {
+      console.log(`📺 Text Stream update: ${text.length} chars, streaming: ${isStillStreaming}`);
+      
       const updatedMessages = [...messagesWithUser, { 
         sender: 'bot', 
         text: text, 
@@ -1970,6 +2143,7 @@ const handleTextResponse = async (
     };
 
     const onSearchNotification = (message) => {
+      console.log('🔍 Text Search notification:', message);
       showNotification(message, 'streaming');
     };
 
@@ -2076,7 +2250,7 @@ const VoiceScreen = ({
         bottom: 0,
         background: streaming 
           ? 'linear-gradient(135deg, #000428, #004e92, #009ffd)' 
-          : 'linear-gradient(135deg, #000428, #004e92, #009ffd)', // 🎨 OPRAVENO: Gradient vždy
+          : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -2282,7 +2456,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat }) => {
   );
 };
 
-// ✏️ EDIT MESSAGE COMPONENT - OPRAVENÉ HOVER EFFECTS
+// ✏️ EDIT MESSAGE COMPONENT
 const EditableMessage = ({ message, onEdit, onCancel }) => {
   const [editText, setEditText] = useState(message.text);
   const [isEditing, setIsEditing] = useState(false);
@@ -2315,14 +2489,14 @@ const EditableMessage = ({ message, onEdit, onCancel }) => {
             position: 'absolute',
             top: '-8px',
             right: '-8px',
-            background: 'rgba(255,255,255,0.2)', // 🔧 OPRAVENO: Světlý background
+            background: 'rgba(255,255,255,0.2)',
             border: '1px solid rgba(255,255,255,0.3)',
             borderRadius: '4px',
             color: 'white',
             cursor: 'pointer',
             padding: '4px 6px',
             fontSize: '0.7rem',
-            opacity: isHovered ? 1 : 0, // 🔧 OPRAVENO: Proper hover state
+            opacity: isHovered ? 1 : 0,
             transition: 'opacity 0.2s ease',
             pointerEvents: isHovered ? 'auto' : 'none'
           }}
@@ -2521,6 +2695,7 @@ function App() {
     if (messages.length === 0) {
       const detectedLang = detectLanguage(textInput);
       setUserLanguage(detectedLang);
+      console.log('🌍 User language set to:', detectedLang);
     }
 
     if (isAudioPlaying) {
@@ -2545,7 +2720,7 @@ function App() {
       }
 
     } catch (err) {
-      console.error('API call error:', err);
+      console.error('💥 API call error:', err);
       showNotification(`Chyba: ${err.message}`, 'error');
     } finally {
       setLoading(false);
@@ -2570,7 +2745,7 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  // 🎯 ADAPTIVE LOGO - OPRAVENO: Zmizí po první zprávě
+  // 🎯 ADAPTIVE LOGO - Zmizí po první zprávě
   const shouldHideLogo = messages.length > 0;
 
   return (
@@ -2578,7 +2753,7 @@ function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)', // 🎨 OPRAVENO: Gradient VŽDY
+      background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
       width: '100vw',
@@ -2589,7 +2764,7 @@ function App() {
       
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.8), rgba(0, 78, 146, 0.6))', // 🎨 OPRAVENO: Konzistentní gradient
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.8), rgba(0, 78, 146, 0.6))',
         position: 'relative',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
         width: '100%',
@@ -2722,7 +2897,6 @@ function App() {
           alignItems: 'center', gap: '1rem', maxWidth: '1200px',
           margin: '0 auto', width: '100%'
         }}>
-          {/* 🎯 OPRAVENO: Logo zmizí PO PRVNÍ ZPRÁVĚ */}
           <OmniaLogo 
             size={isMobile ? 60 : 80} 
             animate={streaming || loading}
@@ -2752,7 +2926,7 @@ function App() {
       <main style={{ 
         flex: 1, overflowY: 'auto', padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.3), rgba(0, 78, 146, 0.2))', // 🎨 OPRAVENO: Konzistentní gradient
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.3), rgba(0, 78, 146, 0.2))',
         width: '100%', transition: 'background 0.5s ease'
       }}>
         <div style={{ 
@@ -2795,7 +2969,7 @@ function App() {
                   />
                 </div>
               ) : (
-                // 🤖 BOT MESSAGES - OPRAVENO: Clean structured layout (no bubbles)
+                // 🤖 BOT MESSAGES - Clean structured layout (no bubbles)
                 <div style={{
                   maxWidth: isMobile ? '90%' : '85%',
                   padding: isMobile ? '1rem' : '1.5rem',
@@ -2873,7 +3047,7 @@ function App() {
 
       <div style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))', // 🎨 OPRAVENO: Konzistentní gradient
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(10px)',
         padding: isMobile ? '1rem' : '1.5rem',
         borderTop: streaming ? '1px solid rgba(0, 255, 255, 0.3)' : '1px solid rgba(255,255,255,0.1)',
