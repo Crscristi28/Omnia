@@ -170,9 +170,7 @@ const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
       )}
     </div>
   );
-};
-
-const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false, streaming = false }) => {
+};const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false, streaming = false }) => {
   const getLogoStyle = () => {
     const baseStyle = {
       width: size,
@@ -334,6 +332,93 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
       ) : '→'}
     </button>
   );
+};
+
+// ⌨️ ENHANCED TYPEWRITER EFFECT - Clean and smooth
+function TypewriterText({ text, isStreaming = false }) {
+  const [displayedText, setDisplayedText] = useState('');
+  const [charIndex, setCharIndex] = useState(0);
+  const chars = useMemo(() => Array.from(text), [text]);
+
+  useEffect(() => {
+    if (text.length < displayedText.length) {
+      setDisplayedText('');
+      setCharIndex(0);
+      return;
+    }
+
+    if (isStreaming) {
+      setDisplayedText(text);
+      setCharIndex(text.length);
+      return;
+    }
+
+    if (charIndex >= chars.length) return;
+    
+    const timeout = setTimeout(() => {
+      setDisplayedText((prev) => prev + chars[charIndex]);
+      setCharIndex((prev) => prev + 1);
+    }, 20);
+    
+    return () => clearTimeout(timeout);
+  }, [charIndex, chars, text, isStreaming, displayedText]);
+
+  return (
+    <span>
+      {displayedText}
+      {isStreaming && (
+        <span style={{ 
+          animation: 'blink 1s infinite',
+          color: '#00ffff',
+          fontWeight: 'bold'
+        }}>
+          |
+        </span>
+      )}
+    </span>
+  );
+}
+
+// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
+const prepareClaudeMessages = (messages) => {
+  try {
+    const validMessages = messages.filter(msg => 
+      msg.sender === 'user' || msg.sender === 'bot'
+    );
+
+    let claudeMessages = validMessages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text || ''
+    }));
+
+    if (claudeMessages.length > 0 && claudeMessages[0].role === 'assistant') {
+      claudeMessages = claudeMessages.slice(1);
+    }
+
+    const cleanMessages = [];
+    for (let i = 0; i < claudeMessages.length; i++) {
+      const current = claudeMessages[i];
+      const previous = cleanMessages[cleanMessages.length - 1];
+      
+      if (!previous || previous.role !== current.role) {
+        cleanMessages.push(current);
+      }
+    }
+
+    if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
+      cleanMessages.pop();
+    }
+
+    return cleanMessages;
+
+  } catch (error) {
+    console.error('Error preparing Claude messages:', error);
+    const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
+    return lastUserMessage.map(msg => ({
+      role: 'user',
+      content: msg.text || ''
+    }));
+  }
 };// 🎯 MULTILINGUAL TTS PREPROCESSING - Supports all languages
 const preprocessTextForTTS = (text, language = 'cs') => {
   if (!text || typeof text !== 'string') return '';
@@ -587,93 +672,6 @@ const preprocessRomanianTextForTTS = (text) => {
   processedText = processedText.replace(/\s+/g, ' ').trim();
   
   return processedText;
-};
-
-// ⌨️ ENHANCED TYPEWRITER EFFECT - Clean and smooth
-function TypewriterText({ text, isStreaming = false }) {
-  const [displayedText, setDisplayedText] = useState('');
-  const [charIndex, setCharIndex] = useState(0);
-  const chars = useMemo(() => Array.from(text), [text]);
-
-  useEffect(() => {
-    if (text.length < displayedText.length) {
-      setDisplayedText('');
-      setCharIndex(0);
-      return;
-    }
-
-    if (isStreaming) {
-      setDisplayedText(text);
-      setCharIndex(text.length);
-      return;
-    }
-
-    if (charIndex >= chars.length) return;
-    
-    const timeout = setTimeout(() => {
-      setDisplayedText((prev) => prev + chars[charIndex]);
-      setCharIndex((prev) => prev + 1);
-    }, 20);
-    
-    return () => clearTimeout(timeout);
-  }, [charIndex, chars, text, isStreaming, displayedText]);
-
-  return (
-    <span>
-      {displayedText}
-      {isStreaming && (
-        <span style={{ 
-          animation: 'blink 1s infinite',
-          color: '#00ffff',
-          fontWeight: 'bold'
-        }}>
-          |
-        </span>
-      )}
-    </span>
-  );
-}
-
-// 🔧 HELPER FUNKCE PRO CLAUDE MESSAGES
-const prepareClaudeMessages = (messages) => {
-  try {
-    const validMessages = messages.filter(msg => 
-      msg.sender === 'user' || msg.sender === 'bot'
-    );
-
-    let claudeMessages = validMessages.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'assistant',
-      content: msg.text || ''
-    }));
-
-    if (claudeMessages.length > 0 && claudeMessages[0].role === 'assistant') {
-      claudeMessages = claudeMessages.slice(1);
-    }
-
-    const cleanMessages = [];
-    for (let i = 0; i < claudeMessages.length; i++) {
-      const current = claudeMessages[i];
-      const previous = cleanMessages[cleanMessages.length - 1];
-      
-      if (!previous || previous.role !== current.role) {
-        cleanMessages.push(current);
-      }
-    }
-
-    if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
-      cleanMessages.pop();
-    }
-
-    return cleanMessages;
-
-  } catch (error) {
-    console.error('Error preparing Claude messages:', error);
-    const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
-    return lastUserMessage.map(msg => ({
-      role: 'user',
-      content: msg.text || ''
-    }));
-  }
 };// 🎤 OPRAVENÝ VOICE RECORDER - Funguje pro všechny jazyky
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -976,9 +974,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       {getButtonIcon()}
     </button>
   );
-};
-
-// 🔊 OPRAVENÝ VOICE BUTTON - Multilingual TTS
+};// 🔊 OPRAVENÝ VOICE BUTTON - Multilingual TTS
 const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1378,7 +1374,86 @@ const googleSearchService = {
   }
 };
 
-// 🚀 OPRAVENÝ CLAUDE SERVICE - Volnější pravidla
+// 🚨 OPRAVENÝ shouldSearchInternet - Méně agresivní
+const shouldSearchInternet = (userInput, model) => {
+  if (model === 'claude') {
+    return false; // Claude si web_search řídí sám
+  }
+
+  if (model !== 'gpt-4o') {
+    return false;
+  }
+
+  const input = (userInput || '').toLowerCase();
+
+  // 🎯 ROZŠÍŘENÉ konverzační fráze (NEhledat)
+  const conversationalPhrases = [
+    // České
+    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer', 'dobré ráno',
+    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi', 'představ se', 'co jsi',
+    'umíš', 'můžeš mi', 'co umíš', 'jak funguje', 'vysvětli mi', 'poraď mi',
+    'co je to', 'vysvětli', 'řekni mi', 'pomoć', 'pomoz', 'pomoz mi',
+    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
+    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej', 'povídej si se mnou',
+    'napiš mi', 'vytvoř', 'spočítej', 'překladej', 'přelož mi',
+    'jak postupovat', 'co bys doporučil', 'máš radu', 'co dělat',
+    'shrň mi', 'zkrať mi', 'zjednodušuj', 'vyber hlavní body',
+    'co znamená', 'co to znamená', 'vysvětli význam',
+    // Anglické
+    'hello', 'hi', 'how are you', 'what are you', 'who are you', 'thank you',
+    'thanks', 'can you', 'please', 'help me', 'explain', 'what is',
+    'what does', 'what means', 'how do you', 'tell me', 'show me',
+    // Německé
+    'hallo', 'wie geht', 'was bist du', 'wer bist du', 'danke', 'kannst du',
+    'erkläre', 'was ist', 'hilf mir', 'was bedeutet', 'sage mir',
+    // Španělské
+    'hola', 'cómo estás', 'qué eres', 'quién eres', 'gracias', 'puedes',
+    'explica', 'qué es', 'ayúdame', 'qué significa', 'dime',
+    // Francouzské
+    'bonjour', 'comment allez', 'qu\'est-ce que', 'qui êtes', 'merci',
+    'pouvez-vous', 'expliquez', 'qu\'est-ce', 'aidez-moi', 'que signifie',
+    // Rumunské
+    'salut', 'bună', 'cum ești', 'ce ești', 'cine ești', 'mulțumesc',
+    'poți să', 'explică', 'ce este', 'ajută-mă', 'ce înseamnă', 'spune-mi'
+  ];
+
+  // Pokud najdeme konverzační frázi, NEhledej
+  for (const phrase of conversationalPhrases) {
+    if (input.includes(phrase)) {
+      return false;
+    }
+  }
+
+  // 🔍 PŘESNĚJŠÍ search triggery (jen pro opravdu aktuální info)
+  const searchTriggers = [
+    // České - jen pro aktuální info
+    'aktuální cena', 'dnešní počasí', 'současný kurz', 'nejnovější zprávy',
+    'dnes v', 'aktuální situace', 'poslední novinky', 'čerstvé aktuality',
+    'právě teď', 'momentální stav', 'nové zprávy', 'breaking news',
+    'aktuální výsledky', 'dnešní výsledek', 'současné dění',
+    // Anglické - jen pro aktuální info  
+    'current price', 'today weather', 'latest news', 'breaking news',
+    'right now', 'current situation', 'fresh news', 'today results',
+    'current exchange rate', 'stock price today', 'weather forecast today',
+    // Německé
+    'aktuelle preis', 'heute wetter', 'neueste nachrichten', 'aktueller kurs',
+    // Španělské
+    'precio actual', 'tiempo hoy', 'noticias recientes', 'tipo de cambio actual',
+    // Francouzské
+    'prix actuel', 'météo aujourd\'hui', 'dernières nouvelles', 'taux actuel',
+    // Rumunské
+    'preț actual', 'vremea azi', 'știri recente', 'curs actual'
+  ];
+
+  // Jen pokud explicitně žádá aktuální info
+  for (const trigger of searchTriggers) {
+    if (input.includes(trigger)) {
+      return true;
+    }
+  }
+
+  return false;
+};// 🚀 OPRAVENÝ CLAUDE SERVICE - Volnější pravidla
 const claudeService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
@@ -1662,87 +1737,6 @@ REGULI:
 
     return prompts[detectedLanguage] || prompts['cs'];
   }
-};
-
-// 🚨 OPRAVENÝ shouldSearchInternet - Méně agresivní
-const shouldSearchInternet = (userInput, model) => {
-  if (model === 'claude') {
-    return false; // Claude si web_search řídí sám
-  }
-
-  if (model !== 'gpt-4o') {
-    return false;
-  }
-
-  const input = (userInput || '').toLowerCase();
-
-  // 🎯 ROZŠÍŘENÉ konverzační fráze (NEhledat)
-  const conversationalPhrases = [
-    // České
-    'jak se má', 'co děláš', 'ahoj', 'čau', 'dobrý den', 'dobrý večer', 'dobré ráno',
-    'děkuji', 'díky', 'jak se jmenuješ', 'kdo jsi', 'představ se', 'co jsi',
-    'umíš', 'můžeš mi', 'co umíš', 'jak funguje', 'vysvětli mi', 'poraď mi',
-    'co je to', 'vysvětli', 'řekni mi', 'pomoć', 'pomoz', 'pomoz mi',
-    'jak na to', 'co si myslíš', 'jaký je tvůj názor', 'co myslíš',
-    'doporuč mi', 'jak se cítíš', 'bavíme se', 'povídej', 'povídej si se mnou',
-    'napiš mi', 'vytvoř', 'spočítej', 'překladej', 'přelož mi',
-    'jak postupovat', 'co bys doporučil', 'máš radu', 'co dělat',
-    'shrň mi', 'zkrať mi', 'zjednodušuj', 'vyber hlavní body',
-    'co znamená', 'co to znamená', 'vysvětli význam',
-    // Anglické
-    'hello', 'hi', 'how are you', 'what are you', 'who are you', 'thank you',
-    'thanks', 'can you', 'please', 'help me', 'explain', 'what is',
-    'what does', 'what means', 'how do you', 'tell me', 'show me',
-    // Německé
-    'hallo', 'wie geht', 'was bist du', 'wer bist du', 'danke', 'kannst du',
-    'erkläre', 'was ist', 'hilf mir', 'was bedeutet', 'sage mir',
-    // Španělské
-    'hola', 'cómo estás', 'qué eres', 'quién eres', 'gracias', 'puedes',
-    'explica', 'qué es', 'ayúdame', 'qué significa', 'dime',
-    // Francouzské
-    'bonjour', 'comment allez', 'qu\'est-ce que', 'qui êtes', 'merci',
-    'pouvez-vous', 'expliquez', 'qu\'est-ce', 'aidez-moi', 'que signifie',
-    // Rumunské
-    'salut', 'bună', 'cum ești', 'ce ești', 'cine ești', 'mulțumesc',
-    'poți să', 'explică', 'ce este', 'ajută-mă', 'ce înseamnă', 'spune-mi'
-  ];
-
-  // Pokud najdeme konverzační frázi, NEhledej
-  for (const phrase of conversationalPhrases) {
-    if (input.includes(phrase)) {
-      return false;
-    }
-  }
-
-  // 🔍 PŘESNĚJŠÍ search triggery (jen pro opravdu aktuální info)
-  const searchTriggers = [
-    // České - jen pro aktuální info
-    'aktuální cena', 'dnešní počasí', 'současný kurz', 'nejnovější zprávy',
-    'dnes v', 'aktuální situace', 'poslední novinky', 'čerstvé aktuality',
-    'právě teď', 'momentální stav', 'nové zprávy', 'breaking news',
-    'aktuální výsledky', 'dnešní výsledek', 'současné dění',
-    // Anglické - jen pro aktuální info  
-    'current price', 'today weather', 'latest news', 'breaking news',
-    'right now', 'current situation', 'fresh news', 'today results',
-    'current exchange rate', 'stock price today', 'weather forecast today',
-    // Německé
-    'aktuelle preis', 'heute wetter', 'neueste nachrichten', 'aktueller kurs',
-    // Španělské
-    'precio actual', 'tiempo hoy', 'noticias recientes', 'tipo de cambio actual',
-    // Francouzské
-    'prix actuel', 'météo aujourd\'hui', 'dernières nouvelles', 'taux actuel',
-    // Rumunské
-    'preț actual', 'vremea azi', 'știri recente', 'curs actual'
-  ];
-
-  // Jen pokud explicitně žádá aktuální info
-  for (const trigger of searchTriggers) {
-    if (input.includes(trigger)) {
-      return true;
-    }
-  }
-
-  return false;
 };// 🔔 CLEAN NOTIFICATION HELPER - Modern design
 const showNotificationHelper = (message, type = 'info', onClick = null) => {
   const notification = document.createElement('div');
@@ -1923,9 +1917,7 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     showNotification('Hlas se nepodařilo vygenerovat', 'error');
     throw error;
   }
-};
-
-// ✅ OPRAVENÝ VOICE SCREEN RESPONSE Handler
+};// ✅ OPRAVENÝ VOICE SCREEN RESPONSE Handler - KLÍČOVÁ OPRAVA AUDIO!
 const handleVoiceScreenResponse = async (
   textInput,
   currentMessages,
@@ -1969,6 +1961,16 @@ const handleVoiceScreenResponse = async (
       const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
       setMessages(finalMessages);
       localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+      // 🎵 AUDIO PRO SONAR
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification,
+        detectedLanguage
+      );
     }
     else if (model === 'claude') {
       showNotification('Omnia začíná streamovat...', 'streaming');
@@ -1994,6 +1996,24 @@ const handleVoiceScreenResponse = async (
           if (setStreaming) setStreaming(false);
           showNotification('Omnia dokončila odpověď!', 'success');
           responseText = text;
+          
+          // 🎵 KLÍČOVÁ OPRAVA: AUTOMATICKÉ AUDIO PO CLAUDE STREAMING
+          console.log('🎤 Starting auto-audio for Voice Screen...');
+          setTimeout(async () => {
+            try {
+              await generateInstantAudio(
+                text,
+                setIsAudioPlaying,
+                currentAudioRef,
+                isIOS,
+                showNotification,
+                detectedLanguage
+              );
+              console.log('✅ Voice Screen auto-audio completed');
+            } catch (error) {
+              console.error('❌ Voice Screen auto-audio failed:', error);
+            }
+          }, 800); // Delší pauza pro lepší timing
         }
       };
 
@@ -2006,7 +2026,7 @@ const handleVoiceScreenResponse = async (
         messagesWithUser, 
         onStreamUpdate, 
         onSearchNotification,
-        detectedLanguage // 🌍 PASS DETECTED LANGUAGE
+        detectedLanguage
       );
     }
     else if (model === 'gpt-4o') {
@@ -2040,21 +2060,19 @@ const handleVoiceScreenResponse = async (
       const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
       setMessages(finalMessages);
       localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-    }
-    else {
-      throw new Error(`Neznámý model: ${model}`);
-    }
 
-    // 🎵 MULTILINGUAL AUDIO GENERATION (pouze pro dokončené odpovědi)
-    if (responseText && model !== 'claude') {
+      // 🎵 AUDIO PRO GPT
       await generateInstantAudio(
         responseText,
         setIsAudioPlaying,
         currentAudioRef,
         isIOS,
         showNotification,
-        detectedLanguage // 🌍 PASS DETECTED LANGUAGE
+        detectedLanguage
       );
+    }
+    else {
+      throw new Error(`Neznámý model: ${model}`);
     }
 
     return responseText;
@@ -2151,7 +2169,7 @@ const handleTextResponse = async (
       messagesWithUser, 
       onStreamUpdate, 
       onSearchNotification,
-      detectedLanguage // 🌍 PASS DETECTED LANGUAGE
+      detectedLanguage
     );
   }
   else if (model === 'gpt-4o') {
@@ -2570,9 +2588,7 @@ const EditableMessage = ({ message, onEdit, onCancel }) => {
       </div>
     </div>
   );
-};
-
-// 🚀 FINAL MAIN APP COMPONENT - VŠECHNY OPRAVY
+};// 🚀 FINAL MAIN APP COMPONENT - VŠECHNY OPRAVY
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
