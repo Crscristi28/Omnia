@@ -1,9 +1,9 @@
-// api/whisper.js - OpenAI Whisper Speech-to-Text API
+// api/whisper.js - Enhanced OpenAI Whisper with Multilingual Support
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept-Language');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🎙️ Whisper STT API call');
+    console.log('🎙️ Enhanced Multilingual Whisper STT API call');
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     
@@ -36,7 +36,12 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('🎵 Přepisuji audio, velikost:', audioBuffer.length, 'bytes');
+    // 🌍 ENHANCED: Get preferred language from headers (optional)
+    const acceptLanguage = req.headers['accept-language'];
+    const preferredLanguage = acceptLanguage && acceptLanguage !== 'auto' ? acceptLanguage : null;
+
+    console.log('🎵 Processing audio, size:', audioBuffer.length, 'bytes');
+    console.log('🌍 Preferred language:', preferredLanguage || 'AUTO-DETECT');
 
     // Vytvoř FormData pro Whisper API
     const formData = new FormData();
@@ -45,7 +50,16 @@ export default async function handler(req, res) {
     const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
     formData.append('file', audioBlob, 'audio.webm');
     formData.append('model', 'whisper-1');
-    formData.append('language', 'cs'); // Čeština
+    
+    // 🎯 KLÍČOVÁ ZMĚNA: Conditional language parameter
+    // Pokud není specifikován jazyk, Whisper automaticky detekuje
+    if (preferredLanguage) {
+      formData.append('language', preferredLanguage);
+      console.log('🎯 Using preferred language:', preferredLanguage);
+    } else {
+      console.log('🔍 Using automatic language detection');
+    }
+    
     formData.append('response_format', 'json');
 
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -70,7 +84,11 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Text přepsán:', data.text);
+    
+    // 🌍 ENHANCED: Log detected language and text
+    const detectedLanguage = data.language || 'unknown';
+    console.log('✅ Detected language:', detectedLanguage);
+    console.log('✅ Transcribed text:', data.text);
 
     if (!data.text) {
       return res.status(500).json({
@@ -78,17 +96,39 @@ export default async function handler(req, res) {
       });
     }
 
+    // 🎯 ENHANCED: Return both text and detected language
     return res.status(200).json({
       success: true,
       text: data.text,
-      language: data.language || 'cs'
+      language: detectedLanguage,
+      confidence: data.confidence || null,
+      duration: data.duration || null
     });
 
   } catch (error) {
-    console.error('💥 Whisper API error:', error);
+    console.error('💥 Enhanced Whisper API error:', error);
     return res.status(500).json({ 
       error: 'Server error',
-      message: error.message
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
+
+// 🌍 ENHANCED: Language mapping for common languages
+const SUPPORTED_LANGUAGES = {
+  'cs': 'čeština',
+  'en': 'English', 
+  'de': 'Deutsch',
+  'es': 'Español',
+  'fr': 'Français',
+  'it': 'Italiano',
+  'pl': 'Polski',
+  'ru': 'Русский',
+  'ja': '日本語',
+  'ko': '한국어',
+  'zh': '中文'
+};
+
+// Export language mapping for potential use
+export { SUPPORTED_LANGUAGES };
