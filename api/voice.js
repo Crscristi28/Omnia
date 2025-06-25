@@ -1,4 +1,4 @@
-// api/voice.js - POUZE ELEVENLABS TTS
+// api/voice.js - BEZ OPENAI FALLBACK
 export const config = {
   runtime: 'edge',
 }
@@ -15,61 +15,37 @@ export default async function handler(req) {
   }
 
   if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }), 
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
+      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 
   try {
-    console.log('🎵 ElevenLabs TTS API called');
-
     const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
     
     if (!ELEVENLABS_API_KEY) {
       console.error('❌ ElevenLabs API key missing');
-      return new Response(
-        JSON.stringify({ 
-          error: 'ElevenLabs API key missing',
-          message: 'ElevenLabs API key není nastaven'
-        }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ 
+        error: 'ElevenLabs API key missing' 
+      }), { 
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
     }
 
     const requestData = await req.json();
-    const { text, language = 'cs', voice = 'natural' } = requestData;
+    const { text } = requestData;
     
-    if (!text || text.trim().length === 0) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'No text provided',
-          message: 'Text pro TTS nebyl poskytnut' 
-        }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!text?.trim()) {
+      return new Response(JSON.stringify({ 
+        error: 'No text provided' 
+      }), { 
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
     }
 
-    console.log('🎤 ElevenLabs TTS Request:', { 
-      text: text.substring(0, 50) + '...', 
-      language, 
-      voice,
-      textLength: text.length 
-    });
+    console.log('🎵 ElevenLabs only - using voice: MpbYQvoTmXjHkaxtLiSh');
 
-    // ElevenLabs voice IDs - můžeš změnit podle preference
-    const voiceIds = {
-      'cs': 'pNInz6obpgDQGcFmaJgB', // Adam (multilingual) - dobrý pro češtinu
-      'en': 'pNInz6obpgDQGcFmaJgB', // Adam (multilingual)
-      'de': 'pNInz6obpgDQGcFmaJgB', // Adam (multilingual)
-      'es': 'pNInz6obpgDQGcFmaJgB', // Adam (multilingual)
-      'fr': 'pNInz6obpgDQGcFmaJgB', // Adam (multilingual)
-      'ro': 'pNInz6obpgDQGcFmaJgB'  // Adam (multilingual)
-    };
-
-    const voiceId = voiceIds[language] || voiceIds['cs'];
-
-    const audioResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/MpbYQvoTmXjHkaxtLiSh`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -80,60 +56,38 @@ export default async function handler(req) {
         text: text,
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.6,        // Stabilita hlasu (0.0-1.0)
-          similarity_boost: 0.7, // Podobnost originálnímu hlasu (0.0-1.0)
-          style: 0.4,            // Styl/výraznost (0.0-1.0)
-          use_speaker_boost: true // Zlepšení kvality
+          stability: 0.85,
+          similarity_boost: 0.9,
+          style: 0.25,
+          use_speaker_boost: true
         }
       })
     });
 
-    if (!audioResponse.ok) {
-      const errorText = await audioResponse.text();
-      console.error('❌ ElevenLabs API error:', {
-        status: audioResponse.status,
-        statusText: audioResponse.statusText,
-        error: errorText
-      });
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'ElevenLabs API failed',
-          message: `ElevenLabs API chyba: ${audioResponse.status}`,
-          details: errorText
-        }), 
-        { status: audioResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ ElevenLabs failed:', response.status, errorText);
+      throw new Error(`ElevenLabs failed: ${response.status}`);
     }
 
-    console.log('✅ ElevenLabs TTS successful');
-    const audioBlob = await audioResponse.blob();
-    
-    console.log('🎵 Audio generated:', {
-      size: audioBlob.size,
-      type: audioBlob.type
-    });
+    const audioBlob = await response.blob();
+    console.log('✅ ElevenLabs success!');
     
     return new Response(audioBlob, {
       status: 200,
       headers: {
         ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBlob.size.toString(),
-        'Cache-Control': 'public, max-age=3600' // Cache na 1 hodinu
+        'Content-Type': 'audio/mpeg'
       }
     });
 
   } catch (error) {
-    console.error('💥 ElevenLabs TTS unexpected error:', error);
-    
-    return new Response(
-      JSON.stringify({ 
-        error: 'TTS generation failed',
-        message: 'Generování hlasu selhalo',
-        details: error.message
-      }), 
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('💥 Voice API error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Voice generation failed',
+      details: error.message 
+    }), { 
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 }
