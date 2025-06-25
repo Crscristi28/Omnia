@@ -1,4 +1,4 @@
-// api/voice.js - KOMPLETNÍ CZECH PREPROCESSING FIX
+// api/voice.js - KOMPLETNÍ FIX BEZ ZBYTKOVÝCH MĚNOVÝCH ZKRATEK
 export const config = {
   runtime: 'edge',
 }
@@ -39,10 +39,10 @@ function convertNumberToWords(num) {
     return result;
   }
   
-  return num.toString(); // Pro větší čísla vrať původní
+  return num.toString();
 }
 
-// 🎯 KOMPLETNÍ CZECH PREPROCESSING - OPRAVUJE VŠE
+// 🎯 KOMPLETNÍ CZECH PREPROCESSING - OPRAVUJE VŠE + ČISTÍ ZBYTKY
 function preprocessCzechTextForTTS(text) {
   if (!text || typeof text !== 'string') return '';
   
@@ -50,67 +50,121 @@ function preprocessCzechTextForTTS(text) {
   
   console.log('🔧 Original text:', text);
   
-  // 🎯 OPRAVA MĚNY A DESETINNÝCH ČÍSEL
-  // $176.6USD → "sto sedmdesát šest dolarů a šedesát centů"
+  // 🎯 NEJDŘÍVE PROCENTA (před obecnými desetinnými čísly!)
+  
+  // 7.46% → "sedm celá čtyřicet šest procent"
+  processedText = processedText.replace(/(\d+)\.(\d+)\s*%/gi, (match, whole, decimal) => {
+    const wholeWords = convertNumberToWords(parseInt(whole));
+    const decimalWords = convertNumberToWords(parseInt(decimal));
+    return `${wholeWords} celá ${decimalWords} procent`;
+  });
+  
+  // 7% → "sedm procent"
+  processedText = processedText.replace(/(\d+)\s*%/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} procent`;
+  });
+  
+  // 🎯 MĚNA S DESETINNÝMI MÍSTY (kompletní pokrytí)
+  
+  // $167.8USD → "sto šedesát sedm dolarů a osm centů"
   processedText = processedText.replace(/\$(\d+)\.(\d+)\s*USD/gi, (match, dollars, cents) => {
     const dollarWords = convertNumberToWords(parseInt(dollars));
     const centWords = convertNumberToWords(parseInt(cents));
     return `${dollarWords} dolarů a ${centWords} centů`;
   });
   
-  // $176USD → "sto sedmdesát šest dolarů"
+  // 167.8USD → "sto šedesát sedm dolarů a osm centů"
+  processedText = processedText.replace(/(\d+)\.(\d+)\s*USD/gi, (match, dollars, cents) => {
+    const dollarWords = convertNumberToWords(parseInt(dollars));
+    const centWords = convertNumberToWords(parseInt(cents));
+    return `${dollarWords} dolarů a ${centWords} centů`;
+  });
+  
+  // $167.8 (bez USD) → "sto šedesát sedm dolarů a osm centů"
+  processedText = processedText.replace(/\$(\d+)\.(\d+)(?!\s*USD)/gi, (match, dollars, cents) => {
+    const dollarWords = convertNumberToWords(parseInt(dollars));
+    const centWords = convertNumberToWords(parseInt(cents));
+    return `${dollarWords} dolarů a ${centů} centů`;
+  });
+  
+  // 167.8 EUR → "sto šedesát sedm eur a osm centů"
+  processedText = processedText.replace(/(\d+)\.(\d+)\s*EUR/gi, (match, euros, cents) => {
+    const euroWords = convertNumberToWords(parseInt(euros));
+    const centWords = convertNumberToWords(parseInt(cents));
+    return `${euroWords} eur a ${centWords} centů`;
+  });
+  
+  // 167.8 Kč → "sto šedesát sedm korun a osm haléřů"
+  processedText = processedText.replace(/(\d+)\.(\d+)\s*Kč/gi, (match, crowns, haleru) => {
+    const crownWords = convertNumberToWords(parseInt(crowns));
+    const haleruWords = convertNumberToWords(parseInt(haleru));
+    return `${crownWords} korun a ${haleruWords} haléřů`;
+  });
+  
+  // 🎯 MĚNA BEZ DESETIN
+  
+  // $167USD → "sto šedesát sedm dolarů"
   processedText = processedText.replace(/\$(\d+)\s*USD/gi, (match, amount) => {
     const words = convertNumberToWords(parseInt(amount));
     return `${words} dolarů`;
   });
   
-  // Obyčejné $176 → "sto sedmdesát šest dolarů"
-  processedText = processedText.replace(/\$(\d+)/gi, (match, amount) => {
+  // $167 (bez USD) → "sto šedesát sedm dolarů"
+  processedText = processedText.replace(/\$(\d+)(?!\.\d)/gi, (match, amount) => {
     const words = convertNumberToWords(parseInt(amount));
     return `${words} dolarů`;
   });
   
-  // 🎯 OPRAVA EUR
+  // 167 USD → "sto šedesát sedm dolarů"
+  processedText = processedText.replace(/(\d+)\s*USD/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} dolarů`;
+  });
+  
+  // 167 EUR → "sto šedesát sedm eur"
   processedText = processedText.replace(/(\d+)\s*EUR/gi, (match, amount) => {
     const words = convertNumberToWords(parseInt(amount));
     return `${words} eur`;
   });
   
-  // 🎯 OPRAVA ČESKÝCH KORUN
+  // 167 Kč → "sto šedesát sedm korun českých"
   processedText = processedText.replace(/(\d+)\s*Kč/gi, (match, amount) => {
     const words = convertNumberToWords(parseInt(amount));
     return `${words} korun českých`;
   });
   
-  // 🎯 OPRAVA DOMÉN
+  // 🎯 KONTEXTOVÁ DETEKCE CENY
+  processedText = processedText.replace(/(za|stojí|obchoduje za|cena je|cena)\s+(\d+)\.(\d+)/gi, (match, prefix, whole, decimal) => {
+    const wholeWords = convertNumberToWords(parseInt(whole));
+    const decimalWords = convertNumberToWords(parseInt(decimal));
+    return `${prefix} ${wholeWords} dolarů a ${decimalWords} centů`;
+  });
+  
+  // 🎯 DOMÉNY
   processedText = processedText.replace(/\.cz\b/gi, ' tečka cé zet');
   processedText = processedText.replace(/\.com\b/gi, ' tečka kom');
   processedText = processedText.replace(/\.org\b/gi, ' tečka org');
   processedText = processedText.replace(/\.net\b/gi, ' tečka net');
+  processedText = processedText.replace(/\.co\b/gi, ' tečka ko');
   
-  // 🎯 OPRAVA DESETINNÝCH ČÍSEL (obecně)
+  // 🎯 OBECNÉ DESETINNÉ ČÍSLA (pokud nejsou měna ani procenta)
   processedText = processedText.replace(/(\d+)\.(\d+)/g, (match, whole, decimal) => {
     const wholeWords = convertNumberToWords(parseInt(whole));
     const decimalWords = convertNumberToWords(parseInt(decimal));
     return `${wholeWords} celá ${decimalWords}`;
   });
   
-  // 🎯 OPRAVA PROCENT
-  processedText = processedText.replace(/(\d+)\s*%/gi, (match, amount) => {
-    const words = convertNumberToWords(parseInt(amount));
-    return `${words} procent`;
-  });
-  
-  // 🎯 OPRAVA ZÁKLADNÍCH ČÍSEL (jen malá čísla pro plynulost)
+  // 🎯 ZÁKLADNÍ ČÍSLA (jen malá pro plynulost)
   processedText = processedText.replace(/\b(\d{1,2})\b/g, (match, num) => {
     const number = parseInt(num);
-    if (number >= 0 && number <= 30) {
+    if (number >= 0 && number <= 20) {
       return convertNumberToWords(number);
     }
-    return match; // Větší čísla nech být aby nebyl hlas moc pozměněný
+    return match;
   });
   
-  // 🎯 ZKRATKY A SPECIÁLNÍ VÝRAZY
+  // 🎯 ZKRATKY
   const abbreviations = {
     'AI': 'ajaj',
     'API': 'á pé jaj',
@@ -134,13 +188,16 @@ function preprocessCzechTextForTTS(text) {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // 🎯 CLEANUP SPECIÁLNÍCH ZNAKŮ
+  // 🎯 VYČISTI ZBYTKOVÉ MĚNOVÉ ZKRATKY (KLÍČOVÁ OPRAVA!)
+  processedText = processedText.replace(/\s*USD\b/gi, '');
+  processedText = processedText.replace(/\s*EUR\b/gi, '');
+  processedText = processedText.replace(/\s*CZK\b/gi, '');
+  
+  // 🎯 CLEANUP
   processedText = processedText.replace(/\.\.\./g, ', pauza,');
   processedText = processedText.replace(/--/g, ', pauza,');
   processedText = processedText.replace(/\*/g, '');
   processedText = processedText.replace(/#{1,6}/g, '');
-  
-  // Vyčisti vícenásobné mezery
   processedText = processedText.replace(/\s+/g, ' ').trim();
   
   console.log('🔧 Processed text:', processedText);
@@ -188,10 +245,10 @@ export default async function handler(req) {
       });
     }
 
-    // 🎯 POUŽIJ KOMPLETNÍ CZECH PREPROCESSING
+    // 🎯 POUŽIJ KOMPLETNÍ PREPROCESSING S CLEANUP
     const processedText = preprocessCzechTextForTTS(text);
     
-    console.log('🎵 Voice generation with preprocessing:', {
+    console.log('🎵 Final voice generation:', {
       originalLength: text.length,
       processedLength: processedText.length,
       voiceId: 'MpbYQvoTmXjHkaxtLiSh'
@@ -205,13 +262,13 @@ export default async function handler(req) {
         'xi-api-key': ELEVENLABS_API_KEY
       },
       body: JSON.stringify({
-        text: processedText, // 🎯 PŘEDPRACOVANÝ TEXT
+        text: processedText,
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.85,        // Stabilita pro plynulý hlas
-          similarity_boost: 0.8,  // Podobnost původnímu hlasu
-          style: 0.2,            // Mírně expresivní
-          use_speaker_boost: true // Zlepšení kvality
+          stability: 0.85,
+          similarity_boost: 0.8,
+          style: 0.2,
+          use_speaker_boost: true
         }
       })
     });
@@ -223,7 +280,7 @@ export default async function handler(req) {
     }
 
     const audioBlob = await response.blob();
-    console.log('✅ Czech TTS with full preprocessing success!');
+    console.log('✅ Perfect Czech TTS success!');
     
     return new Response(audioBlob, {
       status: 200,
