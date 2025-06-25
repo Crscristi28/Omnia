@@ -1,100 +1,142 @@
-// api/whisper.js - BACKUP VERZE (vrať se k tomuto, pokud nová nefunguje)
+// api/whisper.js - VERCEL EDGE RUNTIME COMPATIBLE
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export const config = {
+  runtime: 'edge',
+}
+
+export default async function handler(req) {
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }), 
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
-    console.log('🎙️ Whisper API call');
+    console.log('🎙️ Edge Whisper API called');
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     
     if (!OPENAI_API_KEY) {
       console.error('❌ OPENAI_API_KEY not set');
-      return res.status(500).json({ 
-        error: 'Configuration error',
-        message: 'OpenAI API key není nastaven'
-      });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Configuration error',
+          message: 'OpenAI API key není nastaven'
+        }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Získej audio data z body
-    const audioBuffer = req.body;
+    // 🔧 EDGE RUNTIME: Získej audio data jako ArrayBuffer
+    const arrayBuffer = await req.arrayBuffer();
     
-    if (!audioBuffer || audioBuffer.length === 0) {
-      return res.status(400).json({ 
-        error: 'Invalid request',
-        message: 'Audio data musí být poskytnut' 
-      });
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      console.error('❌ No audio data received');
+      return new Response(
+        JSON.stringify({ 
+          error: 'No audio data',
+          message: 'Audio data nebyla přijata' 
+        }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log('🎵 Processing audio, size:', audioBuffer.length, 'bytes');
+    console.log('📊 Audio buffer size:', arrayBuffer.byteLength, 'bytes');
 
-    // PŮVODNÍ FUNGUJÍCÍ ZPŮSOB
-    const FormData = require('form-data');
+    // 🔧 EDGE RUNTIME: FormData s Blob
     const formData = new FormData();
     
-    formData.append('file', audioBuffer, {
-      filename: 'audio.webm',
-      contentType: 'audio/webm'
-    });
-    
+    // Vytvoř Blob z ArrayBuffer
+    const audioBlob = new Blob([arrayBuffer], { type: 'audio/webm' });
+    formData.append('file', audioBlob, 'audio.webm');
     formData.append('model', 'whisper-1');
     formData.append('response_format', 'json');
-
+    
     console.log('🔍 Using automatic language detection');
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    // API call k OpenAI Whisper
+    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        ...formData.getHeaders()
       },
       body: formData
     });
 
-    console.log('📡 Whisper response status:', response.status);
+    console.log('📡 Whisper API response status:', whisperResponse.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Whisper API error:', response.status, errorText);
+    if (!whisperResponse.ok) {
+      const errorText = await whisperResponse.text();
+      console.error('❌ Whisper API error:', whisperResponse.status, errorText);
       
-      return res.status(response.status).json({ 
-        error: 'Whisper API error',
-        status: response.status,
-        details: errorText 
-      });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Whisper API failed',
+          status: whisperResponse.status,
+          message: 'Rozpoznávání řeči selhalo',
+          details: errorText 
+        }), 
+        { status: whisperResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const data = await response.json();
-    
-    console.log('✅ Transcribed text:', data.text);
+    const whisperData = await whisperResponse.json();
+    console.log('🎯 Whisper response:', whisperData);
 
-    if (!data.text) {
-      return res.status(500).json({
-        error: 'No transcription received'
-      });
+    // Získej text a jazyk
+    const transcribedText = whisperData.text;
+    const detectedLanguage = whisperData.language || 'unknown';
+
+    console.log('✅ Transcribed text:', transcribedText);
+    console.log('🌍 Detected language:', detectedLanguage);
+
+    if (!transcribedText || transcribedText.trim().length === 0) {
+      console.warn('⚠️ Empty transcription received');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          text: '',
+          language: detectedLanguage,
+          message: 'Žádný text nebyl rozpoznán'
+        }), 
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    return res.status(200).json({
-      success: true,
-      text: data.text,
-      language: data.language || 'unknown'
-    });
+    // 🎯 ÚSPĚŠNÁ ODPOVĚĎ
+    return new Response(
+      JSON.stringify({
+        success: true,
+        text: transcribedText.trim(),
+        language: detectedLanguage,
+        message: 'Řeč úspěšně rozpoznána'
+      }), 
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
-    console.error('💥 Whisper API error:', error);
-    return res.status(500).json({ 
-      error: 'Server error',
-      message: error.message
-    });
+    console.error('💥 Edge Whisper API Critical Error:', error);
+    console.error('Stack trace:', error.stack);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: 'Internal server error',
+        message: 'Chyba při rozpoznávání řeči',
+        details: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+      }), 
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 }
