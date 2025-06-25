@@ -1,52 +1,149 @@
-// api/voice.js - JEMNĚJŠÍ CZECH PREPROCESSING
+// api/voice.js - KOMPLETNÍ CZECH PREPROCESSING FIX
 export const config = {
   runtime: 'edge',
 }
 
-// 🎯 JEMNĚJŠÍ CZECH PREPROCESSING - Méně agresivní
+// 🔢 CONVERT NUMBER TO CZECH WORDS
+function convertNumberToWords(num) {
+  if (num === 0) return 'nula';
+  
+  const ones = ['', 'jedna', 'dva', 'tři', 'čtyři', 'pět', 'šest', 'sedm', 'osm', 'devět'];
+  const teens = ['deset', 'jedenáct', 'dvanáct', 'třináct', 'čtrnáct', 'patnáct', 'šestnáct', 'sedmnáct', 'osmnáct', 'devatenáct'];
+  const tens = ['', '', 'dvacet', 'třicet', 'čtyřicet', 'padesát', 'šedesát', 'sedmdesát', 'osmdesát', 'devadesát'];
+  const hundreds = ['', 'sto', 'dvě stě', 'tři sta', 'čtyři sta', 'pět set', 'šest set', 'sedm set', 'osm set', 'devět set'];
+  
+  if (num < 10) return ones[num];
+  if (num < 20) return teens[num - 10];
+  if (num < 100) {
+    const ten = Math.floor(num / 10);
+    const one = num % 10;
+    return tens[ten] + (one > 0 ? ' ' + ones[one] : '');
+  }
+  if (num < 1000) {
+    const hundred = Math.floor(num / 100);
+    const rest = num % 100;
+    return hundreds[hundred] + (rest > 0 ? ' ' + convertNumberToWords(rest) : '');
+  }
+  
+  // Pro tisíce
+  if (num < 1000000) {
+    const thousands = Math.floor(num / 1000);
+    const rest = num % 1000;
+    let result = '';
+    
+    if (thousands === 1) result += 'tisíc';
+    else if (thousands < 5) result += convertNumberToWords(thousands) + ' tisíce';
+    else result += convertNumberToWords(thousands) + ' tisíc';
+    
+    if (rest > 0) result += ' ' + convertNumberToWords(rest);
+    return result;
+  }
+  
+  return num.toString(); // Pro větší čísla vrať původní
+}
+
+// 🎯 KOMPLETNÍ CZECH PREPROCESSING - OPRAVUJE VŠE
 function preprocessCzechTextForTTS(text) {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
   
-  // ✅ POUZE ZÁKLADNÍ ČÍSLA (méně změn = méně artefaktů)
-  const basicNumbers = {
-    ' 0 ': ' nula ',
-    ' 1 ': ' jedna ',
-    ' 2 ': ' dva ',
-    ' 3 ': ' tři ',
-    ' 4 ': ' čtyři ',
-    ' 5 ': ' pět ',
-    ' 6 ': ' šest ',
-    ' 7 ': ' sedm ',
-    ' 8 ': ' osm ',
-    ' 9 ': ' devět ',
-    ' 10 ': ' deset '
-  };
+  console.log('🔧 Original text:', text);
   
-  // Nahradit jen pokud jsou čísla oddělená mezerami
-  Object.entries(basicNumbers).forEach(([num, word]) => {
-    processedText = processedText.replace(new RegExp(num, 'g'), word);
+  // 🎯 OPRAVA MĚNY A DESETINNÝCH ČÍSEL
+  // $176.6USD → "sto sedmdesát šest dolarů a šedesát centů"
+  processedText = processedText.replace(/\$(\d+)\.(\d+)\s*USD/gi, (match, dollars, cents) => {
+    const dollarWords = convertNumberToWords(parseInt(dollars));
+    const centWords = convertNumberToWords(parseInt(cents));
+    return `${dollarWords} dolarů a ${centWords} centů`;
   });
   
-  // ✅ JEN ZÁKLADNÍ ZKRATKY (ne všechny)
-  const essentialAbbreviations = {
+  // $176USD → "sto sedmdesát šest dolarů"
+  processedText = processedText.replace(/\$(\d+)\s*USD/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} dolarů`;
+  });
+  
+  // Obyčejné $176 → "sto sedmdesát šest dolarů"
+  processedText = processedText.replace(/\$(\d+)/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} dolarů`;
+  });
+  
+  // 🎯 OPRAVA EUR
+  processedText = processedText.replace(/(\d+)\s*EUR/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} eur`;
+  });
+  
+  // 🎯 OPRAVA ČESKÝCH KORUN
+  processedText = processedText.replace(/(\d+)\s*Kč/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} korun českých`;
+  });
+  
+  // 🎯 OPRAVA DOMÉN
+  processedText = processedText.replace(/\.cz\b/gi, ' tečka cé zet');
+  processedText = processedText.replace(/\.com\b/gi, ' tečka kom');
+  processedText = processedText.replace(/\.org\b/gi, ' tečka org');
+  processedText = processedText.replace(/\.net\b/gi, ' tečka net');
+  
+  // 🎯 OPRAVA DESETINNÝCH ČÍSEL (obecně)
+  processedText = processedText.replace(/(\d+)\.(\d+)/g, (match, whole, decimal) => {
+    const wholeWords = convertNumberToWords(parseInt(whole));
+    const decimalWords = convertNumberToWords(parseInt(decimal));
+    return `${wholeWords} celá ${decimalWords}`;
+  });
+  
+  // 🎯 OPRAVA PROCENT
+  processedText = processedText.replace(/(\d+)\s*%/gi, (match, amount) => {
+    const words = convertNumberToWords(parseInt(amount));
+    return `${words} procent`;
+  });
+  
+  // 🎯 OPRAVA ZÁKLADNÍCH ČÍSEL (jen malá čísla pro plynulost)
+  processedText = processedText.replace(/\b(\d{1,2})\b/g, (match, num) => {
+    const number = parseInt(num);
+    if (number >= 0 && number <= 30) {
+      return convertNumberToWords(number);
+    }
+    return match; // Větší čísla nech být aby nebyl hlas moc pozměněný
+  });
+  
+  // 🎯 ZKRATKY A SPECIÁLNÍ VÝRAZY
+  const abbreviations = {
     'AI': 'ajaj',
     'API': 'á pé jaj',
-    'např': 'například'
+    'URL': 'jů ár el',
+    'HTTP': 'há té té pé',
+    'HTTPS': 'há té té pé es',
+    'HTML': 'há té em el',
+    'CSS': 'cé es es',
+    'JS': 'džej es',
+    'např': 'například',
+    'atd': 'a tak dále',
+    'apod': 'a podobně',
+    'tj': 'to jest',
+    'tzn': 'to znamená',
+    'resp': 'respektive',
+    'tzv': 'takzvaný'
   };
   
-  Object.entries(essentialAbbreviations).forEach(([abbr, expansion]) => {
+  Object.entries(abbreviations).forEach(([abbr, expansion]) => {
     const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
     processedText = processedText.replace(regex, expansion);
   });
   
-  // ✅ JEMNÉ ÚPRAVY (bez radikálních změn)
-  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
-  processedText = processedText.replace(/(\d+)\s*Kč/gi, '$1 korun');
+  // 🎯 CLEANUP SPECIÁLNÍCH ZNAKŮ
+  processedText = processedText.replace(/\.\.\./g, ', pauza,');
+  processedText = processedText.replace(/--/g, ', pauza,');
+  processedText = processedText.replace(/\*/g, '');
+  processedText = processedText.replace(/#{1,6}/g, '');
   
-  // ✅ MINIMÁLNÍ CLEANUP
+  // Vyčisti vícenásobné mezery
   processedText = processedText.replace(/\s+/g, ' ').trim();
+  
+  console.log('🔧 Processed text:', processedText);
   
   return processedText;
 }
@@ -72,6 +169,7 @@ export default async function handler(req) {
     const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
     
     if (!ELEVENLABS_API_KEY) {
+      console.error('❌ ElevenLabs API key missing');
       return new Response(JSON.stringify({ 
         error: 'ElevenLabs API key missing' 
       }), { 
@@ -90,13 +188,13 @@ export default async function handler(req) {
       });
     }
 
-    // 🎯 JEMNÝ PREPROCESSING
+    // 🎯 POUŽIJ KOMPLETNÍ CZECH PREPROCESSING
     const processedText = preprocessCzechTextForTTS(text);
     
-    console.log('🎵 Gentle Czech preprocessing:', {
-      original: text.substring(0, 80),
-      processed: processedText.substring(0, 80),
-      changed: text !== processedText
+    console.log('🎵 Voice generation with preprocessing:', {
+      originalLength: text.length,
+      processedLength: processedText.length,
+      voiceId: 'MpbYQvoTmXjHkaxtLiSh'
     });
 
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/MpbYQvoTmXjHkaxtLiSh`, {
@@ -107,13 +205,13 @@ export default async function handler(req) {
         'xi-api-key': ELEVENLABS_API_KEY
       },
       body: JSON.stringify({
-        text: processedText,
+        text: processedText, // 🎯 PŘEDPRACOVANÝ TEXT
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.9,         // 🎯 VYŠŠÍ stabilita = méně artefaktů
-          similarity_boost: 0.8,  // 🎯 Mírnější boost
-          style: 0.1,            // 🎯 NIŽŠÍ styl = přírodzenější
-          use_speaker_boost: true
+          stability: 0.85,        // Stabilita pro plynulý hlas
+          similarity_boost: 0.8,  // Podobnost původnímu hlasu
+          style: 0.2,            // Mírně expresivní
+          use_speaker_boost: true // Zlepšení kvality
         }
       })
     });
@@ -125,7 +223,7 @@ export default async function handler(req) {
     }
 
     const audioBlob = await response.blob();
-    console.log('✅ Gentle TTS success!');
+    console.log('✅ Czech TTS with full preprocessing success!');
     
     return new Response(audioBlob, {
       status: 200,
