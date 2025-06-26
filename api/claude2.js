@@ -1,12 +1,9 @@
-// api/claude2.js - FAKE STREAMING (funkční + simulované)
+// api/claude2.js - COMPATIBLE WITH REVOLUTIONARY APP.JSX
 export default async function handler(req, res) {
-  // CORS headers pro fake streaming
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -16,33 +13,58 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, system, max_tokens = 2000 } = req.body;
+    const { messages, language = 'cs', temperature = 0.7, max_tokens = 2000 } = req.body;
     const API_KEY = process.env.CLAUDE_API_KEY;
     
     if (!API_KEY) {
-      res.write(JSON.stringify({
-        error: true,
-        message: 'Claude API key není nastaven'
-      }) + '\n');
-      return res.end();
+      return res.status(500).json({
+        error: 'Claude API key není nastaven'
+      });
     }
+
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({
+        error: 'Invalid messages format'
+      });
+    }
+
+    console.log('🤖 Claude Sonnet 4 API call:', {
+      messageCount: messages.length,
+      language: language
+    });
 
     const recentMessages = messages.slice(-8);
     
-    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent."}
-    
-Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
+    // Enhanced system prompts for different languages
+    const systemPrompts = {
+      cs: `Jsi OMNIA, pokročilý český AI asistent. Odpovídej VŽDY výhradně v češtině.
+      
+Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
 Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
 Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
-Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
+Pro české lokální informace vyhledávej česky a zaměřuj se na české zdroje.`,
 
-    // ✅ PŮVODNÍ funkční request (BEZ streaming)
+      en: `You are OMNIA, an advanced AI assistant. Always respond in English.
+      
+Today's date is ${new Date().toLocaleDateString('en-US')}.
+You have access to web_search for current information.
+Automatically use web_search when you need current information about prices, weather, news, or any changing data.`,
+
+      ro: `Ești OMNIA, un asistent AI avansat. Răspunde ÎNTOTDEAUNA în română.
+      
+Data de astăzi este ${new Date().toLocaleDateString('ro-RO')}.
+Ai acces la web_search pentru informații actuale.
+Folosește automat web_search când ai nevoie de informații actuale despre prețuri, vremea, știri sau orice date care se schimbă.`
+    };
+
+    const enhancedSystem = systemPrompts[language] || systemPrompts.cs;
+
     const claudeRequest = {
-      model: "claude-sonnet-4-20250514",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: max_tokens,
+      temperature: temperature,
       system: enhancedSystem,
       messages: recentMessages,
-      // stream: false, // 🔧 BEZ streaming - používáme tvůj funkční způsob
       tools: [
         {
           type: "web_search_20250305",
@@ -52,14 +74,14 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
       ]
     };
 
-    console.log('🚀 Sending FAKE STREAMING request (funkční způsob)...');
+    console.log('🚀 Sending to Claude Sonnet 4 with web search...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01' // ✅ Tvá funkční API verze
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify(claudeRequest)
     });
@@ -67,79 +89,49 @@ Pro české lokální informace (počasí měst, české zprávy) vyhledávej č
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Claude API error:', response.status, errorText);
-      res.write(JSON.stringify({
-        error: true,
-        message: `HTTP ${response.status}: ${errorText}`
-      }) + '\n');
-      return res.end();
+      
+      return res.status(response.status).json({
+        error: 'Claude API failed',
+        details: errorText
+      });
     }
 
     const data = await response.json();
-    console.log('✅ Claude Sonnet 4 response received');
     
     // Check for web search usage
     const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
-    if (webSearchUsed) {
-      console.log('🔍 Claude used web_search!');
-      // Send search notification
-      res.write(JSON.stringify({
-        type: 'search_start',
-        message: '🔍 Vyhledávám aktuální informace...'
-      }) + '\n');
-      
-      // Small delay to simulate search
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
-    // Extrahovat text odpověď
+    // Extract text response
     const textContent = data.content
       ?.filter(item => item.type === 'text')
       ?.map(item => item.text)
       ?.join('\n')
       ?.trim() || "Nepodařilo se získat odpověď.";
 
-    console.log('💬 Response length:', textContent.length, 'characters');
-    console.log('🔍 Web search executed:', webSearchUsed);
+    console.log('✅ Claude Sonnet 4 success:', {
+      responseLength: textContent.length,
+      webSearchUsed: webSearchUsed,
+      toolUses: toolUses.length
+    });
 
-    // 🎭 FAKE STREAMING: Postupné posílání textu po částech
-    const words = textContent.split(' ');
-    const chunkSize = 3; // Posíláme po 3 slovech
-    
-    for (let i = 0; i < words.length; i += chunkSize) {
-      const chunk = words.slice(i, i + chunkSize).join(' ');
-      
-      // Pošli chunk textu
-      res.write(JSON.stringify({
-        type: 'text',
-        content: chunk + (i + chunkSize < words.length ? ' ' : '')
-      }) + '\n');
-      
-      // Malá pauza pro realističnost streaming efektu
-      if (i + chunkSize < words.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
-    
-    // Send final completion
-    res.write(JSON.stringify({
-      type: 'completed',
-      fullText: textContent,
-      webSearchUsed: webSearchUsed
-    }) + '\n');
-
-    console.log('✅ FAKE STREAMING completed');
-    res.end();
+    // 🎯 COMPATIBLE RESPONSE FORMAT for Revolutionary App.jsx
+    return res.status(200).json({
+      content: textContent,           // ✅ Revolutionary App expects this
+      model: data.model || 'claude-3-5-sonnet-20241022',
+      usage: data.usage || {
+        input_tokens: 0,
+        output_tokens: 0
+      },
+      webSearchUsed: webSearchUsed,   // Extra info
+      toolUses: toolUses.length       // Extra info
+    });
 
   } catch (error) {
-    console.error('💥 Fatal error in FAKE streaming:', error);
-    
-    res.write(JSON.stringify({
-      error: true,
-      message: 'Server error: ' + error.message
-    }) + '\n');
-    
-    res.end();
+    console.error('💥 Claude API error:', error);
+    return res.status(500).json({
+      error: 'Server error',
+      message: error.message
+    });
   }
 }
