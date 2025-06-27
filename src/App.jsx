@@ -698,7 +698,72 @@ const preprocessEnglishTextForTTS = (text) => {
   
   // Cleanup
   processedText = processedText.replace(/\.\.\./g, ', pause,');
-  processedText =// 🚀 MAIN APP COMPONENT - Enhanced with better error handling
+  processedText = processedText.replace(/--/g, ', pause,');
+  processedText = processedText.replace(/\*+/g, '');
+  processedText = processedText.replace(/#{1,6}/g, '');
+  processedText = processedText.replace(/\s+/g, ' ').trim();
+  
+  return processedText;
+};
+
+// 🇷🇴 FIXED ROMANIAN TTS PREPROCESSING - 🔧 FIX 5: Site pronunciation
+const preprocessRomanianTextForTTS = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  
+  let processedText = text;
+  
+  // Numbers to words
+  const numberMap = {
+    '0': 'zero', '1': 'unu', '2': 'doi', '3': 'trei', '4': 'patru',
+    '5': 'cinci', '6': 'șase', '7': 'șapte', '8': 'opt', '9': 'nouă',
+    '10': 'zece', '11': 'unsprezece', '12': 'doisprezece', '13': 'treisprezece',
+    '14': 'paisprezece', '15': 'cincisprezece', '16': 'șaisprezece',
+    '17': 'șaptesprezece', '18': 'optsprezece', '19': 'nouăsprezece', '20': 'douăzeci'
+  };
+  
+  Object.entries(numberMap).forEach(([num, word]) => {
+    const regex = new RegExp(`\\b${num}\\b`, 'g');
+    processedText = processedText.replace(regex, word);
+  });
+  
+  // Currency and percentages
+  processedText = processedText.replace(/(\d+)\s*€/gi, '$1 euro');
+  processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolari');
+  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 la sută');
+  
+  // Temperature and time
+  processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 grade celsius');
+  processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 ore $2 minute');
+  
+  // 🔧 FIXED ABBREVIATIONS + 🔧 FIX 5: Site pronunciation
+  const abbreviations = {
+    'AI': 'a i',
+    'API': 'a pi i',
+    'URL': 'u ăr el',
+    'USD': 'dolari americani',
+    'EUR': 'euro',
+    'GPT': 'g p t',
+    'TTS': 't t s',
+    // 🔧 FIX 5: Site pronunciation fix
+    'site': 'sait',              // ✅ "sait" pro rumunštinu  
+    'website': 'websait',        // ✅ "websait" pro rumunštinu
+    'web site': 'web sait'       // ✅ pro oddělené psaní
+  };
+  
+  Object.entries(abbreviations).forEach(([abbr, expansion]) => {
+    const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
+    processedText = processedText.replace(regex, expansion);
+  });
+  
+  // Cleanup
+  processedText = processedText.replace(/\.\.\./g, ', pauză,');
+  processedText = processedText.replace(/--/g, ', pauză,');
+  processedText = processedText.replace(/\*+/g, '');
+  processedText = processedText.replace(/#{1,6}/g, '');
+  processedText = processedText.replace(/\s+/g, ' ').trim();
+  
+  return processedText;
+};// 🚀 MAIN APP COMPONENT - Enhanced with better error handling
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -3242,5 +3307,5 @@ return (
     </div>
   );
 }
-}
+
 export default App;
