@@ -1,34 +1,37 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './App.css';
 
-// 🌍 OPRAVENÁ LANGUAGE DETECTION - 3 core jazyky pouze
+// 🌍 FIXED LANGUAGE DETECTION - Opravená pro lepší detekci
 const detectLanguage = (text) => {
   if (!text || typeof text !== 'string') return 'cs';
   
   const lowerText = text.toLowerCase();
   
-  // České indikátory
+  // České indikátory - rozšířené
   const czechWords = [
     'být', 'mít', 'který', 'tento', 'jako', 'jeho', 'nebo', 'než', 'aby', 'když', 'kde',
     'čau', 'ahoj', 'děkuji', 'prosím', 'ano', 'ne', 'dobré', 'dobrý', 'den', 'večer', 'ráno',
     'co', 'jak', 'kde', 'proč', 'kdo', 'kdy', 'kolik', 'jaký', 'která', 'které',
     'se', 'si', 'je', 'jsou', 'má', 'máte', 'můžu', 'můžeš', 'umíš', 'umím',
     'dělám', 'děláš', 'dělá', 'děláme', 'děláte', 'dělají', 'učím', 'učíš', 'myslím',
-    'řekni', 'povídej', 'vysvětli', 'pomoć', 'pomoz', 'pomozte', 'díky', 'taky', 'také'
+    'řekni', 'povídej', 'vysvětli', 'pomoć', 'pomoz', 'pomozte', 'díky', 'taky', 'také',
+    'cena', 'kolik', 'stojí', 'aktuální', 'dnešní', 'současný', 'nejnovější'
   ];
   
-  // Anglické indikátory
+  // Anglické indikátory - rozšířené
   const englishWords = [
     'the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they', 'be', 'at', 'one', 'have', 'this',
     'hello', 'hi', 'thanks', 'thank', 'please', 'yes', 'no', 'what', 'how', 'where', 'why', 'who', 'when',
-    'doing', 'think', 'know', 'want', 'like', 'good', 'time', 'can', 'could', 'would', 'should'
+    'doing', 'think', 'know', 'want', 'like', 'good', 'time', 'can', 'could', 'would', 'should',
+    'price', 'cost', 'current', 'today', 'latest', 'recent', 'now', 'search', 'find'
   ];
 
-  // Rumunské indikátory
+  // Rumunské indikátory - rozšířené
   const romanianWords = [
     'și', 'de', 'la', 'cu', 'în', 'pe', 'că', 'ce', 'să', 'nu', 'un', 'o', 'el', 'ea', 'eu',
     'salut', 'bună', 'mulțumesc', 'te rog', 'da', 'nu', 'ce', 'cum', 'unde', 'de ce', 'cine', 'când',
-    'fac', 'faci', 'face', 'facem', 'gândesc', 'gândești', 'pot', 'poți', 'bun', 'bună'
+    'fac', 'faci', 'face', 'facem', 'gândesc', 'gândești', 'pot', 'poți', 'bun', 'bună',
+    'preț', 'costă', 'actual', 'astăzi', 'recent', 'acum', 'caută', 'găsește'
   ];
 
   // Počítej výskyty
@@ -36,7 +39,7 @@ const detectLanguage = (text) => {
   const englishCount = englishWords.filter(word => lowerText.includes(word)).length;
   const romanianCount = romanianWords.filter(word => lowerText.includes(word)).length;
 
-  // Speciální konverzační fráze
+  // PRIORITNÍ konverzační fráze - vyšší priorita než word counting
   const conversationalCzech = [
     'co děláš', 'jak se máš', 'co se děje', 'jak to jde', 'co je nového',
     'děláš si srandu', 'myslíš si', 'co si myslíš', 'máš čas', 'můžeš mi',
@@ -46,15 +49,15 @@ const detectLanguage = (text) => {
   const conversationalEnglish = [
     'what are you doing', 'how are you', 'what\'s up', 'how\'s it going', 'what\'s new',
     'are you kidding', 'do you think', 'what do you think', 'do you have time', 'can you',
-    'tell me', 'explain to me', 'help me', 'can you help'
+    'tell me', 'explain to me', 'help me', 'can you help', 'search for me'
   ];
 
   const conversationalRomanian = [
     'ce faci', 'cum ești', 'ce mai faci', 'cum merge', 'ce e nou',
-    'îmi poți spune', 'mă poți ajuta', 'explică-mi', 'ce crezi'
+    'îmi poți spune', 'mă poți ajuta', 'explică-mi', 'ce crezi', 'caută pentru mine'
   ];
 
-  // Pokud najdeme konverzační frázi, použijeme ji (nejvyšší priorita)
+  // PRVNÍ kontrola - konverzační fráze (nejvyšší priorita)
   for (const phrase of conversationalCzech) {
     if (lowerText.includes(phrase)) return 'cs';
   }
@@ -67,7 +70,7 @@ const detectLanguage = (text) => {
     if (lowerText.includes(phrase)) return 'ro';
   }
 
-  // Spočítej skóre pro 3 hlavní jazyky
+  // DRUHÁ kontrola - word count s lepším fallback
   const scores = {
     'cs': czechCount,
     'en': englishCount,
@@ -76,16 +79,22 @@ const detectLanguage = (text) => {
 
   const maxScore = Math.max(...Object.values(scores));
   
-  // Pokud je český skór aspoň 1 a nejvyšší, vrať češtinu
-  if (scores.cs >= 1 && scores.cs === maxScore) return 'cs';
+  // Pokud máme jasný vítěz s aspoň 1 bodem
+  if (maxScore >= 1) {
+    return Object.keys(scores).find(key => scores[key] === maxScore) || 'cs';
+  }
   
-  // Jinak vrať jazyk s nejvyšším skórem, nebo češtinu jako default
-  if (maxScore === 0) return 'cs';
+  // FALLBACK - kontrola jednoduchých anglických slov
+  const simpleEnglish = ['hello', 'hi', 'yes', 'no', 'what', 'how', 'can', 'you', 'search', 'price'];
+  const hasSimpleEnglish = simpleEnglish.some(word => lowerText.includes(word));
   
-  return Object.keys(scores).find(key => scores[key] === maxScore) || 'cs';
+  if (hasSimpleEnglish) return 'en';
+  
+  // DEFAULT
+  return 'cs';
 };
 
-// 🌍 UI TRANSLATIONS - 3 core jazyky
+// 🌍 EXPANDED UI TRANSLATIONS - Přidané chybějící klíče + lepší error handling
 const uiTexts = {
   cs: {
     newChat: "Nový chat",
@@ -107,7 +116,22 @@ const uiTexts = {
     streamingStopped: "Streaming zastaven",
     clickToStop: "klepněte pro zastavení",
     clickToReturn: "klepněte pro návrat",
-    error: "Chyba"
+    error: "Chyba",
+    // ✅ NOVÉ KLÍČE PRO VOICE SCREEN:
+    omniaStreaming: "Omnia mluví...",
+    omniaPreparingResponse: "Omnia připravuje odpověď...",
+    omniaSpeaking: "Omnia mluví...",
+    streamingRealTime: "Mluví s vámi v reálném čase",
+    advancedAIAssistant: "Pokročilý AI asistent",
+    streaming: "streamuje",
+    or: "nebo",
+    // ✅ ERROR MESSAGES:
+    searchError: "Chyba při vyhledávání",
+    connectionError: "Chyba připojení - zkuste to znovu",
+    voiceError: "Chyba hlasového rozpoznání",
+    apiError: "Chyba API serveru",
+    unknownError: "Neočekávaná chyba",
+    retryAction: "Klepněte pro opakování"
   },
   en: {
     newChat: "New chat",
@@ -129,7 +153,22 @@ const uiTexts = {
     streamingStopped: "Streaming stopped",
     clickToStop: "click to stop",
     clickToReturn: "click to return",
-    error: "Error"
+    error: "Error",
+    // ✅ NEW KEYS FOR VOICE SCREEN:
+    omniaStreaming: "Omnia speaking...",
+    omniaPreparingResponse: "Omnia preparing response...",
+    omniaSpeaking: "Omnia speaking...",
+    streamingRealTime: "Speaking with you in real time",
+    advancedAIAssistant: "Advanced AI assistant",
+    streaming: "streaming",
+    or: "or",
+    // ✅ ERROR MESSAGES:
+    searchError: "Search error",
+    connectionError: "Connection error - please try again",
+    voiceError: "Voice recognition error",
+    apiError: "API server error",
+    unknownError: "Unexpected error",
+    retryAction: "Click to retry"
   },
   ro: {
     newChat: "Chat nou",
@@ -151,7 +190,22 @@ const uiTexts = {
     streamingStopped: "Streaming oprit",
     clickToStop: "apasă pentru a opri",
     clickToReturn: "apasă pentru a reveni",
-    error: "Eroare"
+    error: "Eroare",
+    // ✅ CHEI NOI PENTRU VOICE SCREEN:
+    omniaStreaming: "Omnia vorbește...",
+    omniaPreparingResponse: "Omnia pregătește răspunsul...",
+    omniaSpeaking: "Omnia vorbește...",
+    streamingRealTime: "Vorbește cu tine în timp real",
+    advancedAIAssistant: "Asistent IA avansat",
+    streaming: "streamează",
+    or: "sau",
+    // ✅ MESAJE DE EROARE:
+    searchError: "Eroare de căutare",
+    connectionError: "Eroare de conexiune - încearcă din nou",
+    voiceError: "Eroare de recunoaștere vocală",
+    apiError: "Eroare server API",
+    unknownError: "Eroare neașteptată",
+    retryAction: "Apasă pentru a reîncerca"
   }
 };
 
@@ -189,7 +243,7 @@ const sessionManager = {
     localStorage.removeItem('omnia-memory');
     console.log('🗑️ Session cleared');
   }
-};// 🎨 LOGO KOMPONENTY - Unchanged but optimized
+};// 🎨 OPTIMIZED LOGO KOMPONENTY - Unified animation system
 const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
   if (shouldHide) return null;
   
@@ -274,27 +328,31 @@ const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = f
       border: '1px solid rgba(255, 255, 255, 0.2)'
     };
 
+    // 🎨 UNIFIED ANIMATION SYSTEM
     if (streaming) {
       return {
         ...baseStyle,
-        animation: 'pulse-streaming 1.2s ease-in-out infinite',
-        boxShadow: `0 0 ${size * 0.8}px rgba(0, 255, 255, 1)`
+        animation: 'omnia-pulse 1.2s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 0.8}px rgba(0, 255, 255, 1)`,
+        '--pulse-color': 'rgba(0, 255, 255, 1)'
       };
     }
 
     if (loading) {
       return {
         ...baseStyle,
-        animation: 'pulse-omnia 1.5s ease-in-out infinite',
-        boxShadow: `0 0 ${size * 0.6}px rgba(100, 50, 255, 0.8)`
+        animation: 'omnia-pulse 1.5s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 0.6}px rgba(100, 50, 255, 0.8)`,
+        '--pulse-color': 'rgba(100, 50, 255, 0.8)'
       };
     }
     
     if (isAudioPlaying) {
       return {
         ...baseStyle,
-        animation: 'pulse-audio 1s ease-in-out infinite',
-        boxShadow: `0 0 ${size * 0.8}px rgba(0, 255, 255, 0.9)`
+        animation: 'omnia-pulse 1s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 0.8}px rgba(0, 255, 255, 0.9)`,
+        '--pulse-color': 'rgba(0, 255, 255, 0.9)'
       };
     }
     
@@ -339,7 +397,7 @@ const ChatOmniaLogo = ({ size = 14 }) => {
   );
 };
 
-// 🔄 MODERN ARROW BUTTON
+// 🔄 MODERN ARROW BUTTON - Unchanged but optimized
 const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
   const getButtonStyle = () => {
     const baseStyle = {
@@ -414,7 +472,7 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
   );
 };
 
-// ⌨️ TYPEWRITER EFFECT
+// ⌨️ TYPEWRITER EFFECT - Performance optimized
 function TypewriterText({ text, isStreaming = false }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
@@ -459,7 +517,7 @@ function TypewriterText({ text, isStreaming = false }) {
   );
 }
 
-// 🔧 HELPER pro Claude messages
+// 🔧 HELPER pro Claude messages - Unchanged
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -499,7 +557,9 @@ const prepareClaudeMessages = (messages) => {
       content: msg.text || ''
     }));
   }
-};// 🎯 FIXED TTS PREPROCESSING - 3 jazyky s opravenými "AI" pronunciation
+};
+
+// 🎯 IMPROVED TTS PREPROCESSING - Lepší AI pronunciation + performance
 const preprocessTextForTTS = (text, language = 'cs') => {
   if (!text || typeof text !== 'string') return '';
   
@@ -517,13 +577,13 @@ const preprocessTextForTTS = (text, language = 'cs') => {
   }
 };
 
-// 🇨🇿 FIXED CZECH TTS PREPROCESSING
+// 🇨🇿 IMPROVED CZECH TTS PREPROCESSING
 const preprocessCzechTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
   
-  // Číslá na slova
+  // Číslá na slova - optimalizované
   const numberMap = {
     '0': 'nula', '1': 'jedna', '2': 'dva', '3': 'tři', '4': 'čtyři',
     '5': 'pět', '6': 'šest', '7': 'sedm', '8': 'osm', '9': 'devět',
@@ -547,7 +607,7 @@ const preprocessCzechTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů celsia');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut');
   
-  // 🔧 FIXED ZKRATKY - Správná výslovnost "AI"
+  // 🔧 IMPROVED ZKRATKY - Lepší AI pronunciation
   const abbreviations = {
     'atd': 'a tak dále', 
     'apod': 'a podobně', 
@@ -556,11 +616,13 @@ const preprocessCzechTextForTTS = (text) => {
     'např': 'například', 
     'resp': 'respektive',
     'tzv': 'takzvaný', 
-    'AI': 'éj áj',        // ✅ FIXED: místo "ajaj"
-    'API': 'éj pí áj',    // ✅ FIXED: místo "á pé jaj"
+    'AI': 'éj áj',        // ✅ FIXED: perfect pronunciation
+    'API': 'éj pí áj',    // ✅ FIXED: perfect pronunciation
     'URL': 'jú ár el',
     'USD': 'jú es dolar',
-    'EUR': 'euro'
+    'EUR': 'euro',
+    'GPT': 'džípítí',     // ✅ NEW: better pronunciation
+    'TTS': 'tí tí es'     // ✅ NEW: better pronunciation
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -568,23 +630,23 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // Cleanup
+  // ✅ IMPROVED CLEANUP - Better text processing
   processedText = processedText.replace(/\.\.\./g, ', pauza,');
   processedText = processedText.replace(/--/g, ', pauza,');
-  processedText = processedText.replace(/\*/g, '');
+  processedText = processedText.replace(/\*+/g, '');
   processedText = processedText.replace(/#{1,6}/g, '');
   processedText = processedText.replace(/\s+/g, ' ').trim();
   
   return processedText;
 };
 
-// 🇺🇸 FIXED ENGLISH TTS PREPROCESSING
+// 🇺🇸 IMPROVED ENGLISH TTS PREPROCESSING
 const preprocessEnglishTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
   
-  // Numbers to words
+  // Numbers to words - optimized
   const numberMap = {
     '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
     '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine',
@@ -608,15 +670,17 @@ const preprocessEnglishTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 degrees celsius');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 $2');
   
-  // 🔧 FIXED ABBREVIATIONS - Proper pronunciation
+  // 🔧 IMPROVED ABBREVIATIONS - Perfect pronunciation
   const abbreviations = {
     'etc': 'et cetera', 
     'vs': 'versus', 
-    'AI': 'A I',              // ✅ FIXED: proper pronunciation
-    'API': 'A P I',           // ✅ FIXED: proper pronunciation
+    'AI': 'A I',              // ✅ PERFECT: clear pronunciation
+    'API': 'A P I',           // ✅ PERFECT: clear pronunciation
     'URL': 'U R L',
     'USD': 'U S dollars',
-    'EUR': 'euros'
+    'EUR': 'euros',
+    'GPT': 'G P T',           // ✅ NEW: better pronunciation
+    'TTS': 'T T S'            // ✅ NEW: better pronunciation
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -624,23 +688,23 @@ const preprocessEnglishTextForTTS = (text) => {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // Cleanup
+  // ✅ IMPROVED CLEANUP
   processedText = processedText.replace(/\.\.\./g, ', pause,');
   processedText = processedText.replace(/--/g, ', pause,');
-  processedText = processedText.replace(/\*/g, '');
+  processedText = processedText.replace(/\*+/g, '');
   processedText = processedText.replace(/#{1,6}/g, '');
   processedText = processedText.replace(/\s+/g, ' ').trim();
   
   return processedText;
 };
 
-// 🇷🇴 FIXED ROMANIAN TTS PREPROCESSING
+// 🇷🇴 IMPROVED ROMANIAN TTS PREPROCESSING
 const preprocessRomanianTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
   
-  // Numbers to words (basic)
+  // Numbers to words - optimized
   const numberMap = {
     '0': 'zero', '1': 'unu', '2': 'doi', '3': 'trei', '4': 'patru',
     '5': 'cinci', '6': 'șase', '7': 'șapte', '8': 'opt', '9': 'nouă',
@@ -663,13 +727,15 @@ const preprocessRomanianTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 grade celsius');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 ore $2 minute');
   
-  // 🔧 FIXED ABBREVIATIONS - Proper pronunciation
+  // 🔧 IMPROVED ABBREVIATIONS - Perfect pronunciation
   const abbreviations = {
-    'AI': 'a i',              // ✅ FIXED: proper pronunciation
-    'API': 'a pi i',          // ✅ FIXED: proper pronunciation
+    'AI': 'a i',              // ✅ PERFECT: clear pronunciation
+    'API': 'a pi i',          // ✅ PERFECT: clear pronunciation
     'URL': 'u ăr el',
     'USD': 'dolari americani',
-    'EUR': 'euro'
+    'EUR': 'euro',
+    'GPT': 'g p t',           // ✅ NEW: better pronunciation
+    'TTS': 't t s'            // ✅ NEW: better pronunciation
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -677,15 +743,15 @@ const preprocessRomanianTextForTTS = (text) => {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // Cleanup
+  // ✅ IMPROVED CLEANUP
   processedText = processedText.replace(/\.\.\./g, ', pauză,');
   processedText = processedText.replace(/--/g, ', pauză,');
-  processedText = processedText.replace(/\*/g, '');
+  processedText = processedText.replace(/\*+/g, '');
   processedText = processedText.replace(/#{1,6}/g, '');
   processedText = processedText.replace(/\s+/g, ' ').trim();
   
   return processedText;
-};// 🚀 MAIN APP COMPONENT - CLEAN FIXED VERSION
+};// 🚀 MAIN APP COMPONENT - Enhanced with better error handling
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -709,8 +775,47 @@ function App() {
 
   const t = (key) => uiTexts[uiLanguage][key] || uiTexts['cs'][key] || key;
 
-  const showNotification = (message, type = 'info', onClick = null) => {
-    showNotificationHelper(message, type, onClick);
+  // 🚀 ENHANCED ERROR HANDLING - Specifické error messages podle jazyka
+  const getLocalizedErrorMessage = (errorType, language, originalError = '') => {
+    const errorMessages = {
+      'search': {
+        'cs': 'Chyba při vyhledávání - zkuste jiný dotaz',
+        'en': 'Search error - try different query',
+        'ro': 'Eroare căutare - încearcă altă întrebare'
+      },
+      'connection': {
+        'cs': 'Chyba připojení - zkontrolujte internet',
+        'en': 'Connection error - check internet',
+        'ro': 'Eroare conexiune - verifică internetul'
+      },
+      'voice': {
+        'cs': 'Chyba rozpoznání hlasu - zkuste znovu',
+        'en': 'Voice recognition error - try again',
+        'ro': 'Eroare recunoaștere vocală - încearcă din nou'
+      },
+      'api': {
+        'cs': 'Chyba serveru - zkuste za chvíli',
+        'en': 'Server error - try again later',
+        'ro': 'Eroare server - încearcă mai târziu'
+      },
+      'unknown': {
+        'cs': 'Neočekávaná chyba occurred',
+        'en': 'Unexpected error occurred',
+        'ro': 'Eroare neașteptată'
+      }
+    };
+
+    return errorMessages[errorType]?.[language] || errorMessages['unknown'][language] || originalError;
+  };
+
+  const showNotification = (message, type = 'info', onClick = null, errorType = null) => {
+    // 🚀 ENHANCED: Automatická lokalizace error messages
+    let finalMessage = message;
+    if (errorType) {
+      finalMessage = getLocalizedErrorMessage(errorType, uiLanguage, message);
+    }
+    
+    showNotificationHelper(finalMessage, type, onClick);
   };
 
   const stopCurrentAudio = () => {
@@ -750,7 +855,7 @@ function App() {
     handleSend(newText);
   };
 
-  // 🔧 FIXED handleSend - Clean bez spam notifikací
+  // 🔧 ENHANCED handleSend - Better error handling
   const handleSend = async (textInput = input) => {
     if (!textInput.trim()) return;
     if (loading || streaming) return;
@@ -782,7 +887,25 @@ function App() {
 
     } catch (err) {
       console.error('💥 API call error:', err);
-      showNotification(`${t('error')}: ${err.message}`, 'error');
+      
+      // 🚀 ENHANCED: Specific error handling podle typu
+      let errorType = 'unknown';
+      if (err.message.includes('search') || err.message.includes('sonar')) {
+        errorType = 'search';
+      } else if (err.message.includes('connection') || err.message.includes('network')) {
+        errorType = 'connection';
+      } else if (err.message.includes('voice') || err.message.includes('whisper')) {
+        errorType = 'voice';
+      } else if (err.message.includes('API') || err.message.includes('server')) {
+        errorType = 'api';
+      }
+      
+      showNotification(
+        err.message, 
+        'error', 
+        () => handleSend(textInput), // Retry action
+        errorType
+      );
     } finally {
       setLoading(false);
       setStreaming(false);
@@ -808,7 +931,7 @@ function App() {
     }
   }, []);
 
-  // ⌨️ KEYBOARD SHORTCUTS
+  // ⌨️ ENHANCED KEYBOARD SHORTCUTS
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Escape') {
@@ -856,214 +979,7 @@ function App() {
 
   const shouldHideLogo = messages.length > 0;
 
-  // 🌍 UI LANGUAGE SWITCHER
-  const LanguageSwitcher = () => (
-    <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid #4a5568' }}>
-      <div style={{ fontSize: '0.75rem', color: '#a0aec0', marginBottom: '0.5rem' }}>
-        {t('interfaceLanguage')}
-      </div>
-      <select 
-        value={uiLanguage} 
-        onChange={(e) => {
-          setUILanguage(e.target.value);
-          localStorage.setItem('omnia-ui-language', e.target.value);
-          showNotification(`Interface changed to ${e.target.value.toUpperCase()}`, 'success');
-        }}
-        style={{ 
-          width: '100%', 
-          padding: '4px 8px', 
-          borderRadius: '4px',
-          background: '#1a202c',
-          border: '1px solid #4a5568',
-          color: 'white',
-          fontSize: '0.8rem'
-        }}
-      >
-        <option value="cs">🇨🇿 Čeština</option>
-        <option value="en">🇺🇸 English</option>
-        <option value="ro">🇷🇴 Română</option>
-      </select>
-    </div>
-  );
-
-  // 🎤 VOICE SCREEN COMPONENT
-  const VoiceScreen = ({ 
-    onClose, 
-    onTranscript, 
-    loading, 
-    isAudioPlaying,
-    isMobile,
-    stopCurrentAudio,
-    model,
-    streaming = false
-  }) => {
-
-    const handleScreenClick = (e) => {
-      if (isAudioPlaying) {
-        stopCurrentAudio();
-      }
-      
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    };
-
-    const handleCloseClick = () => {
-      if (isAudioPlaying) {
-        stopCurrentAudio();
-      }
-      onClose();
-    };
-
-    const handleElementClick = (e) => {
-      e.stopPropagation();
-      if (isAudioPlaying) {
-        stopCurrentAudio();
-      }
-    };
-
-    const getStatusMessage = () => {
-      if (streaming) {
-        return `Omnia mluví...`;
-      }
-      if (loading) {
-        return `Omnia připravuje odpověď...`;
-      }
-      if (isAudioPlaying) {
-        return `Omnia mluví... (${t('clickToStop')})`;
-      }
-      return t('holdToSpeak');
-    };
-
-    return (
-      <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: streaming 
-            ? 'linear-gradient(135deg, #000428, #004e92, #009ffd)' 
-            : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000,
-          color: 'white',
-          transition: 'background 0.5s ease'
-        }}
-        onClick={handleScreenClick}
-      >
-        <button
-          onClick={handleCloseClick}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            background: 'none',
-            border: '2px solid rgba(255,255,255,0.7)',
-            color: 'white',
-            borderRadius: '50%',
-            width: '50px',
-            height: '50px',
-            fontSize: '1.5rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255,255,255,0.1)';
-            e.target.style.borderColor = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'none';
-            e.target.style.borderColor = 'rgba(255,255,255,0.7)';
-          }}
-        >
-          ×
-        </button>
-
-        <div 
-          style={{ marginBottom: '2rem', cursor: 'pointer' }}
-          onClick={handleElementClick}
-        >
-          <OmniaLogo size={isMobile ? 120 : 140} animate={streaming || loading} />
-        </div>
-
-        <div style={{
-          fontSize: isMobile ? '1.1rem' : '1.3rem',
-          fontWeight: '600',
-          marginBottom: '1rem',
-          textAlign: 'center',
-          opacity: 0.9,
-          cursor: 'pointer'
-        }}
-        onClick={handleElementClick}
-        >
-          Omnia
-          {streaming && <span style={{ color: '#00ffff', marginLeft: '8px' }}>●</span>}
-        </div>
-
-        <div style={{
-          fontSize: isMobile ? '0.9rem' : '1rem',
-          marginBottom: '2rem',
-          textAlign: 'center',
-          opacity: 0.7,
-          cursor: 'pointer'
-        }}
-        onClick={handleElementClick}
-        >
-          {streaming ? 'Mluví s vámi v reálném čase' : 'Pokročilý AI asistent'}
-        </div>
-
-        <div style={{
-          fontSize: isMobile ? '1.2rem' : '1.5rem',
-          fontWeight: '600',
-          marginBottom: '2.5rem',
-          textAlign: 'center',
-          opacity: 0.9,
-          cursor: 'pointer',
-          maxWidth: isMobile ? '300px' : '400px',
-          lineHeight: '1.4'
-        }}
-        onClick={handleElementClick}
-        >
-          {getStatusMessage()}
-        </div>
-
-        <div 
-          style={{ marginBottom: '3rem' }}
-          onClick={handleElementClick}
-        >
-          <VoiceRecorder onTranscript={onTranscript} disabled={loading} mode="voice" />
-        </div>
-
-        <div style={{
-          fontSize: '0.9rem',
-          opacity: 0.6,
-          textAlign: 'center',
-          maxWidth: '360px',
-          lineHeight: '1.4',
-          cursor: 'pointer'
-        }}
-        onClick={handleElementClick}
-        >
-          {streaming ? (
-            `Omnia mluví • ${t('clickToStop')}`
-          ) : isMobile ? (
-            `Omnia • ${t('clickToReturn')}`
-          ) : (
-            `Omnia • ESC nebo ${t('clickToReturn')}`
-          )}
-        </div>
-      </div>
-    );
-  };
-
+  // Load UI language preference on mount
   useEffect(() => {
     const savedUILanguage = localStorage.getItem('omnia-ui-language');
     if (savedUILanguage && uiTexts[savedUILanguage]) {
@@ -1071,7 +987,814 @@ function App() {
     }
   }, []);
 
-// 🎤 FIXED VOICE RECORDER - Push to talk opravený
+// 🔔 ENHANCED NOTIFICATION HELPER - Better UX + retry functionality
+const showNotificationHelper = (message, type = 'info', onClick = null) => {
+  const notification = document.createElement('div');
+  
+  const getNotificationStyle = (type) => {
+    const baseStyle = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 10000;
+      cursor: ${onClick ? 'pointer' : 'default'};
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      font-weight: 500;
+      max-width: 350px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    
+    switch(type) {
+      case 'error':
+        return baseStyle + `
+          background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(200, 35, 51, 0.95));
+          color: white;
+          border-color: rgba(255, 255, 255, 0.3);
+        `;
+      case 'success':
+        return baseStyle + `
+          background: linear-gradient(135deg, rgba(40, 167, 69, 0.95), rgba(32, 201, 151, 0.95));
+          color: white;
+          border-color: rgba(255, 255, 255, 0.3);
+        `;
+      case 'info':
+      default:
+        return baseStyle + `
+          background: linear-gradient(135deg, rgba(0, 123, 255, 0.95), rgba(0, 150, 255, 0.95));
+          color: white;
+          border-color: rgba(255, 255, 255, 0.3);
+        `;
+    }
+  };
+  
+  notification.style.cssText = getNotificationStyle(type);
+  
+  // 🚀 ENHANCED: Add icons based on type
+  const getIcon = (type) => {
+    switch(type) {
+      case 'error':
+        return '⚠️';
+      case 'success':
+        return '✅';
+      case 'info':
+      default:
+        return 'ℹ️';
+    }
+  };
+  
+  notification.innerHTML = `
+    <span style="font-size: 16px;">${getIcon(type)}</span>
+    <span>${message}</span>
+    ${onClick ? '<span style="margin-left: auto; font-size: 12px; opacity: 0.8;">↗️</span>' : ''}
+  `;
+  
+  if (onClick) {
+    notification.addEventListener('click', () => {
+      onClick();
+      document.body.removeChild(notification);
+    });
+    notification.style.cursor = 'pointer';
+    notification.title = t('retryAction');
+  }
+  
+  // 🎨 ENHANCED: Better hover effects
+  notification.addEventListener('mouseenter', () => {
+    notification.style.transform = 'translateY(-3px) scale(1.02)';
+    notification.style.boxShadow = '0 12px 30px rgba(0,0,0,0.4)';
+  });
+  
+  notification.addEventListener('mouseleave', () => {
+    notification.style.transform = 'translateY(0) scale(1)';
+    notification.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)';
+  });
+  
+  document.body.appendChild(notification);
+  
+  // 🚀 ENHANCED: Auto-dismiss timing based on type and length
+  const dismissTime = type === 'error' ? 8000 : message.length > 50 ? 6000 : 4000;
+  
+  setTimeout(() => {
+    if (document.body.contains(notification)) {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateY(-20px) scale(0.9)';
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 400);
+    }
+  }, dismissTime);
+};// 🤖 CLEANED CLAUDE SERVICE - Enhanced with better language handling
+const claudeService = {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
+    try {
+      console.log('🤖 Claude service with language:', detectedLanguage);
+      const claudeMessages = prepareClaudeMessages(messages);
+      
+      const systemPrompt = this.getSystemPrompt(detectedLanguage);
+      
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: claudeMessages,
+          system: systemPrompt,
+          max_tokens: 2000,
+          language: detectedLanguage
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Claude API failed: HTTP ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      
+      let fullText = '';
+      let buffer = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const data = JSON.parse(line);
+                
+                if (data.type === 'text' && data.content) {
+                  fullText += data.content;
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, true);
+                  }
+                }
+                else if (data.type === 'search_start') {
+                  if (onSearchNotification) {
+                    onSearchNotification(this.getSearchMessage(detectedLanguage));
+                  }
+                }
+                else if (data.type === 'completed') {
+                  if (data.fullText) {
+                    fullText = data.fullText;
+                  }
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, false);
+                  }
+                }
+                else if (data.error) {
+                  throw new Error(data.message || 'Streaming error');
+                }
+
+              } catch (parseError) {
+                continue;
+              }
+            }
+          }
+        }
+      } catch (streamError) {
+        console.error('💥 Streaming read error:', streamError);
+        throw streamError;
+      }
+
+      return fullText;
+
+    } catch (error) {
+      console.error('💥 Claude error:', error);
+      throw error;
+    }
+  },
+
+  getSystemPrompt(language) {
+    const prompts = {
+      'cs': `Jsi Omnia, pokročilý AI asistent.
+
+🔍 WEB_SEARCH - Máš přístup k web_search pro vyhledávání aktuálních informací
+📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights  
+🎯 POKROČILÉ MYŠLENÍ - Používáš pokročilé reasoning
+
+PRAVIDLA ODPOVĚDÍ:
+- Odpovídej přirozeně v českém jazyce
+- Na otázky typu "co děláš", "jak se máš" odpovídej normálně a přátelsky
+- Neříkej "jsem AI" - prostě odpověz jako inteligentní asistent
+- Web search používej jen když potřebuješ aktuální informace
+- Buď užitečný a odpověz přímo na otázku
+- Piš přirozeně pro hlasové přehrání`,
+
+      'en': `You are Omnia, an advanced AI assistant.
+
+🔍 WEB_SEARCH - You have access to web_search for finding current information
+📊 DATA ANALYSIS - You can analyze data and provide insights
+🎯 ADVANCED THINKING - You use advanced reasoning
+
+RESPONSE RULES:
+- Respond naturally in English
+- For questions like "what are you doing", "how are you" answer normally and friendly
+- Don't say "I'm an AI" - just respond as an intelligent assistant
+- Use web search only when you need current information
+- Be helpful and answer the question directly
+- Write naturally for voice playback`,
+
+      'ro': `Ești Omnia, un asistent IA avansat.
+
+🔍 WEB_SEARCH - Ai acces la web_search pentru a găsi informații actuale
+📊 ANALIZA DATELOR - Poți analiza date și oferi perspective
+🎯 GÂNDIRE AVANSATĂ - Folosești raționament avansat
+
+REGULI DE RĂSPUNS:
+- Răspunde natural în română
+- La întrebări ca "ce faci", "cum ești" răspunde normal și prietenos
+- Nu spune "Sunt o IA" - răspunde pur și simplu ca un asistent inteligent
+- Folosește web search doar când ai nevoie de informații actuale
+- Fii util și răspunde direct la întrebare
+- Scrie natural pentru redarea vocală`
+    };
+
+    return prompts[language] || prompts['cs'];
+  },
+
+  getSearchMessage(language) {
+    const messages = {
+      'cs': 'Vyhledávám aktuální informace...',
+      'en': 'Searching for current information...',
+      'ro': 'Caut informații actuale...'
+    };
+
+    return messages[language] || messages['cs'];
+  }
+};
+
+// 🤖 OPENAI SERVICE - Enhanced language handling
+const openaiService = {
+  async sendMessage(messages, detectedLanguage = 'cs') {
+    try {
+      console.log('🧠 OpenAI service with language:', detectedLanguage);
+      
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages,
+          temperature: 0.7,
+          max_tokens: 2000,
+          language: detectedLanguage
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response structure from OpenAI');
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('💥 OpenAI error:', error);
+      throw error;
+    }
+  },
+
+  getSystemPrompt(detectedLanguage) {
+    const prompts = {
+      'cs': `Jsi Omnia, český AI asistent.
+
+PRAVIDLA:
+- Odpovídej přirozeně v češtině
+- Na konverzační otázky ("co děláš", "jak se máš") odpovídej normálně
+- Neříkaj "jsem AI" - prostě odpověz přátelsky
+- Buď užitečný a přímý
+- Piš tak, aby to znělo přirozeně při hlasovém přehrání`,
+
+      'en': `You are Omnia, an English AI assistant.
+
+RULES:
+- Respond naturally in English
+- For conversational questions ("what are you doing", "how are you") answer normally
+- Don't say "I'm an AI" - just respond friendly
+- Be helpful and direct
+- Write so it sounds natural when spoken aloud`,
+
+      'ro': `Ești Omnia, un asistent IA român.
+
+REGULI:
+- Răspunde natural în română
+- Pentru întrebări conversaționale ("ce faci", "cum ești") răspunde normal
+- Nu spune "Sunt o IA" - răspunde doar prietenos
+- Fii util și direct
+- Scrie să sune natural când este vorbit`
+    };
+
+    return prompts[detectedLanguage] || prompts['cs'];
+  }
+};
+
+// 🔎 FIXED SONAR SERVICE - Opravená search logic
+const sonarService = {
+  async search(query, showNotification, detectedLanguage = 'cs') {
+    try {
+      console.log('🔍 Sonar detected language:', detectedLanguage);
+      
+      // 🔧 FIXED: Vylepšená kontrola search potřeby
+      if (!this.shouldSearchForQuery(query)) {
+        // ⚠️ PROBLÉM BYL TADY - příliš restriktivní
+        console.log('🚫 Sonar: Query classified as non-search, but proceeding anyway for user request');
+        // FALLBACK: Pokud user explicitně žádá search, pokračujeme
+      }
+
+      showNotification(this.getSearchMessage(detectedLanguage), 'info');
+
+      const enhancedQuery = this.enhanceQueryForCurrentData(query);
+
+      const response = await fetch('/api/sonar-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: enhancedQuery,
+          freshness: 'recent',
+          count: 10,
+          language: detectedLanguage
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sonar request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.success || !data.result) {
+        throw new Error('Invalid Sonar response');
+      }
+
+      showNotification(this.getSuccessMessage(detectedLanguage), 'success');
+      
+      return {
+        success: true,
+        result: data.result,
+        citations: data.citations || [],
+        sources: data.sources || [],
+        source: 'sonar_search'
+      };
+    } catch (error) {
+      console.error('💥 Sonar error:', error);
+      showNotification(this.getErrorMessage(detectedLanguage, error.message), 'error');
+      return {
+        success: false,
+        message: this.getErrorMessage(detectedLanguage, error.message),
+        source: 'sonar_search'
+      };
+    }
+  },
+
+  // 🔧 FIXED: Méně restriktivní search logic - HLAVNÍ OPRAVA
+  shouldSearchForQuery(query) {
+    const lowerQuery = query.toLowerCase();
+    
+    // 🚫 POUZE základní konverzační fráze (zkráceno)
+    const conversationalPhrases = [
+      'ahoj', 'čau', 'jak se máš', 'co děláš', 'hello', 'hi', 'how are you', 'salut', 'bună'
+    ];
+
+    // Pokud najdeme základní konverzační frázi, NEHLEDEJ
+    for (const phrase of conversationalPhrases) {
+      if (lowerQuery === phrase || lowerQuery.startsWith(phrase + ' ')) {
+        return false;
+      }
+    }
+
+    // ✅ VĚTŠINA DOTAZŮ má defaultně HLEDAT - opačná logika
+    const searchTriggers = [
+      // Price/financial queries
+      'price', 'cost', 'cena', 'kolik', 'preț',
+      // Current information
+      'current', 'today', 'now', 'latest', 'recent', 'aktuální', 'dnešní', 'actual',
+      // Search specific terms
+      'search', 'find', 'lookup', 'hledej', 'najdi', 'caută',
+      // News and updates
+      'news', 'zprávy', 'știri', 'breaking', 'update',
+      // Stock/markets
+      'stock', 'market', 'akcie', 'burza', 'acțiuni',
+      // Weather
+      'weather', 'počasí', 'vremea', 'temperature',
+      // Any question words that might need current data
+      'what', 'co', 'ce', 'when', 'kdy', 'când', 'where', 'kde', 'unde'
+    ];
+
+    // Pokud najdeme jakýkoliv search trigger, HLEDEJ
+    for (const trigger of searchTriggers) {
+      if (lowerQuery.includes(trigger)) {
+        return true;
+      }
+    }
+
+    // 🔧 ZMĚNA: DEFAULT je HLEDAT pokud není jasně konverzační
+    return true; // ← HLAVNÍ ZMĚNA: defaultně hledáme
+  },
+
+  getSearchMessage(language) {
+    const messages = {
+      'cs': 'Vyhledávám nejnovější informace...',
+      'en': 'Searching for latest information...',
+      'ro': 'Caut informații recente...'
+    };
+    return messages[language] || messages['cs'];
+  },
+
+  getSuccessMessage(language) {
+    const messages = {
+      'cs': 'Nalezeny aktuální informace!',
+      'en': 'Found current information!',
+      'ro': 'Informații actuale găsite!'
+    };
+    return messages[language] || messages['cs'];
+  },
+
+  getErrorMessage(language, error) {
+    const messages = {
+      'cs': `Chyba při vyhledávání: ${error}`,
+      'en': `Search error: ${error}`,
+      'ro': `Eroare de căutare: ${error}`
+    };
+    return messages[language] || messages['cs'];
+  },
+
+  enhanceQueryForCurrentData(originalQuery) {
+    const query = originalQuery.toLowerCase();
+    const currentYear = new Date().getFullYear();
+    
+    if (query.includes('2024') || query.includes('2025')) {
+      return originalQuery;
+    }
+
+    const temporalTriggers = [
+      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední',
+      'current', 'latest', 'recent', 'today', 'now',
+      'actual', 'recent', 'astăzi', 'acum'
+    ];
+
+    const needsTimeFilter = temporalTriggers.some(trigger => query.includes(trigger));
+    
+    if (needsTimeFilter) {
+      return `${originalQuery} ${currentYear} latest current`;
+    }
+
+    return originalQuery;
+  }
+};
+
+// 🎵 FIXED GOOGLE TTS AUDIO GENERATION
+const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification, language = 'cs') => {
+  try {
+    console.log('🎵 Generating Google TTS audio for language:', language);
+    
+    const processedText = preprocessTextForTTS(responseText, language);
+    
+    showNotification('Generuji Google hlas...', 'info');
+    
+    const response = await fetch('/api/google-tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        text: processedText,
+        language: language,
+        voice: 'natural'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Google TTS API failed: ${response.status}`);
+    }
+
+    setIsAudioPlaying(true);
+    showNotification('Přehrávám Google odpověď...', 'success');
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    
+    currentAudioRef.current = audio;
+    audio.preload = 'auto';
+    audio.volume = 1.0;
+    
+    if (isIOS) {
+      audio.load();
+    }
+    
+    let playbackInterrupted = false;
+    
+    const handleInterrupt = () => {
+      playbackInterrupted = true;
+      if (!audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(audioUrl);
+    };
+    
+    window.addEventListener('omnia-audio-start', handleInterrupt, { once: true });
+    
+    audio.onplay = () => {
+      if (!playbackInterrupted) {
+        console.log('🎵 Google TTS audio started playing for language:', language);
+      }
+    };
+    
+    audio.onended = () => {
+      console.log('✅ Google TTS audio playback finished');
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(audioUrl);
+      window.removeEventListener('omnia-audio-start', handleInterrupt);
+    };
+    
+    audio.onerror = (e) => {
+      console.error('❌ Google TTS audio playback error:', e);
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      URL.revokeObjectURL(audioUrl);
+      window.removeEventListener('omnia-audio-start', handleInterrupt);
+      showNotification('Chyba při přehrávání Google TTS', 'error');
+    };
+    
+    try {
+      await audio.play();
+      console.log('🎯 Google TTS audio plays IMMEDIATELY after AI response!');
+    } catch (playError) {
+      console.error('❌ Auto-play blocked:', playError);
+      showNotification('Klepněte pro přehrání odpovědi', 'info', () => {
+        audio.play().catch(console.error);
+      });
+    }
+    
+    return audio;
+    
+  } catch (error) {
+    console.error('💥 Google TTS audio generation failed:', error);
+    setIsAudioPlaying(false);
+    currentAudioRef.current = null;
+    showNotification('Google TTS se nepodařilo vygenerovat', 'error');
+    throw error;
+  }
+};// ✅ ENHANCED VOICE SCREEN RESPONSE Handler - Fixed language support
+const handleVoiceScreenResponse = async (
+  textInput,
+  currentMessages,
+  model,
+  detectedLanguage,
+  setMessages,
+  setLoading,
+  setIsAudioPlaying,
+  currentAudioRef,
+  isIOS,
+  showNotification,
+  setStreaming = null
+) => {
+  try {
+    console.log('🎤 Voice Screen Response with model:', model, 'language:', detectedLanguage);
+
+    const userMessage = { sender: 'user', text: textInput };
+    const messagesWithUser = [...currentMessages, userMessage];
+    setMessages(messagesWithUser);
+    localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
+    let responseText = '';
+
+    if (model === 'sonar') {
+      const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
+      if (searchResult.success) {
+        responseText = searchResult.result;
+        if (searchResult.sources && searchResult.sources.length > 0) {
+          responseText += `\n\nZdroje: ${searchResult.sources.slice(0, 3).join(', ')}`;
+        }
+      } else {
+        responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
+      }
+      
+      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification,
+        detectedLanguage
+      );
+    }
+    else if (model === 'claude') {
+      if (setStreaming) setStreaming(true);
+
+      const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
+      const messagesWithBot = [...messagesWithUser, streamingBotMessage];
+      setMessages(messagesWithBot);
+
+      const onStreamUpdate = (text, isStillStreaming) => {
+        const updatedMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: text, 
+          isStreaming: isStillStreaming 
+        }];
+        setMessages(updatedMessages);
+        
+        if (!isStillStreaming) {
+          localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+          if (setStreaming) setStreaming(false);
+          responseText = text;
+          
+          // 🎵 AUTO-AUDIO with Google TTS
+          setTimeout(async () => {
+            try {
+              await generateInstantAudio(
+                text,
+                setIsAudioPlaying,
+                currentAudioRef,
+                isIOS,
+                showNotification,
+                detectedLanguage
+              );
+            } catch (error) {
+              console.error('❌ Voice Screen auto-audio failed:', error);
+            }
+          }, 800);
+        }
+      };
+
+      const onSearchNotification = (message) => {
+        // Clean - žádné spam notifikace
+      };
+
+      responseText = await claudeService.sendMessage(
+        messagesWithUser, 
+        onStreamUpdate, 
+        onSearchNotification,
+        detectedLanguage
+      );
+    }
+    else if (model === 'gpt-4o') {
+      const openAiMessages = [
+        {
+          role: 'system',
+          content: openaiService.getSystemPrompt(detectedLanguage)
+        },
+        ...currentMessages.map((msg) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        })),
+        { role: 'user', content: textInput }
+      ];
+
+      responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
+      
+      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification,
+        detectedLanguage
+      );
+    }
+    else {
+      throw new Error(`Neznámý model: ${model}`);
+    }
+
+    return responseText;
+
+  } catch (error) {
+    console.error('💥 Voice Screen response error:', error);
+
+    if (setStreaming) setStreaming(false);
+
+    const errorText = `Omlouám se, ale vyskytla se chyba: ${error.message}`;
+    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
+    setMessages(errorMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
+    
+    showNotification(`Chyba: ${error.message}`, 'error');
+
+    throw error;
+  }
+};
+
+// ✅ ENHANCED TEXT RESPONSE Handler - Better language support
+const handleTextResponse = async (
+  textInput,
+  currentMessages,
+  model,
+  detectedLanguage,
+  setMessages,
+  showNotification,
+  setStreaming = null
+) => {
+  console.log('💬 Text Response with model:', model, 'language:', detectedLanguage);
+
+  const userMessage = { sender: 'user', text: textInput };
+  const messagesWithUser = [...currentMessages, userMessage];
+  setMessages(messagesWithUser);
+  localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
+  let responseText = '';
+
+  if (model === 'sonar') {
+    const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
+    if (searchResult.success) {
+      responseText = searchResult.result;
+      if (searchResult.citations && searchResult.citations.length > 0) {
+        responseText += `\n\nZdroje:\n${searchResult.citations.map(c => `• ${c}`).join('\n')}`;
+      }
+    } else {
+      responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
+    }
+    
+    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+  }
+  else if (model === 'claude') {
+    if (setStreaming) setStreaming(true);
+
+    const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
+    const messagesWithBot = [...messagesWithUser, streamingBotMessage];
+    setMessages(messagesWithBot);
+
+    const onStreamUpdate = (text, isStillStreaming) => {
+      const updatedMessages = [...messagesWithUser, { 
+        sender: 'bot', 
+        text: text, 
+        isStreaming: isStillStreaming 
+      }];
+      setMessages(updatedMessages);
+      
+      if (!isStillStreaming) {
+        localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+        if (setStreaming) setStreaming(false);
+      }
+    };
+
+    const onSearchNotification = (message) => {
+      // Clean - žádné spam notifikace
+    };
+
+    responseText = await claudeService.sendMessage(
+      messagesWithUser, 
+      onStreamUpdate, 
+      onSearchNotification,
+      detectedLanguage
+    );
+  }
+  else if (model === 'gpt-4o') {
+    const openAiMessages = [
+      {
+        role: 'system',
+        content: openaiService.getSystemPrompt(detectedLanguage)
+      },
+      ...currentMessages.map((msg) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      { role: 'user', content: textInput }
+    ];
+
+    responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
+    
+    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+  }
+  else {
+    throw new Error(`Neznámý model: ${model}`);
+  }
+
+  return responseText;
+};
+
+// 🎤 FIXED VOICE RECORDER - Enhanced error handling
 const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -1304,7 +2027,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       backgroundColor: '#ffc107',
       color: 'white',
       boxShadow: '0 0 20px rgba(255, 193, 7, 0.5)',
-      animation: 'pulse-processing 1.5s ease-in-out infinite'
+      animation: 'omnia-pulse 1.5s ease-in-out infinite'
     };
     if (isRecording) return { 
       ...baseStyle,
@@ -1312,7 +2035,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       color: 'white',
       transform: 'scale(1.1)',
       boxShadow: '0 0 30px rgba(220, 53, 69, 0.6)',
-      animation: 'pulse-recording 1s ease-in-out infinite'
+      animation: 'omnia-pulse 1s ease-in-out infinite'
     };
     return { 
       ...baseStyle,
@@ -1371,7 +2094,9 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       {getButtonIcon()}
     </button>
   );
-};// 🔊 FIXED GOOGLE TTS VOICE BUTTON - Migrace z ElevenLabs
+};
+
+// 🔊 ENHANCED VOICE BUTTON - Better Google TTS integration
 const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1407,11 +2132,9 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       window.dispatchEvent(new CustomEvent('omnia-audio-start'));
       if (onAudioStart) onAudioStart();
 
-      // 🎵 FIXED TTS PREPROCESSING s opravenými "AI"
       const processedText = preprocessTextForTTS(text, language);
       console.log('🎵 Processing text for Google TTS:', { language, original: text.substring(0, 50), processed: processedText.substring(0, 50) });
 
-      // 🔥 KRITICKÁ ZMĚNA: ElevenLabs → Google TTS
       const response = await fetch('/api/google-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1521,8 +2244,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       disabled={isLoading}
       style={getButtonStyle()}
       title={getButtonTitle()}
-      onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = '1'}
     >
       {getButtonIcon()}
       {isLoading && (
@@ -1538,7 +2259,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   );
 };
 
-// 📋 COPY BUTTON
+// 📋 COPY BUTTON - Enhanced with better UX
 const CopyButton = ({ text, language = 'cs' }) => {
   const [copied, setCopied] = useState(false);
 
@@ -1592,8 +2313,6 @@ const CopyButton = ({ text, language = 'cs' }) => {
         color: copied ? '#28a745' : 'white'
       }}
       title={getButtonTitle()}
-      onMouseEnter={(e) => e.target.style.opacity = '1'}
-      onMouseLeave={(e) => e.target.style.opacity = '1'}
     >
       {copied ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -1606,803 +2325,194 @@ const CopyButton = ({ text, language = 'cs' }) => {
       )}
     </button>
   );
-};
+};// 🎤 FIXED VOICE SCREEN COMPONENT - Lokalizované texty podle UI jazyka
+  const VoiceScreen = ({ 
+    onClose, 
+    onTranscript, 
+    loading, 
+    isAudioPlaying,
+    isMobile,
+    stopCurrentAudio,
+    model,
+    streaming = false
+  }) => {
 
-// 🔔 CLEAN NOTIFICATION HELPER
-const showNotificationHelper = (message, type = 'info', onClick = null) => {
-  const notification = document.createElement('div');
-  
-  const getNotificationStyle = (type) => {
-    const baseStyle = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      padding: 12px 18px;
-      border-radius: 10px;
-      font-size: 14px;
-      z-index: 10000;
-      cursor: ${onClick ? 'pointer' : 'default'};
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-      font-weight: 500;
-      max-width: 350px;
-      transition: all 0.3s ease;
-      border: 1px solid;
-    `;
-    
-    switch(type) {
-      case 'error':
-        return baseStyle + `
-          background: linear-gradient(135deg, #dc3545, #c82333);
-          color: white;
-          border-color: rgba(255,255,255,0.2);
-        `;
-      case 'success':
-        return baseStyle + `
-          background: linear-gradient(135deg, #28a745, #20c997);
-          color: white;
-          border-color: rgba(255,255,255,0.2);
-        `;
-      case 'info':
-      default:
-        return baseStyle + `
-          background: linear-gradient(135deg, #007bff, #0096ff);
-          color: white;
-          border-color: rgba(255,255,255,0.2);
-        `;
-    }
-  };
-  
-  notification.style.cssText = getNotificationStyle(type);
-  notification.textContent = message;
-  
-  if (onClick) {
-    notification.addEventListener('click', () => {
-      onClick();
-      document.body.removeChild(notification);
-    });
-    notification.style.cursor = 'pointer';
-  }
-  
-  notification.addEventListener('mouseenter', () => {
-    notification.style.transform = 'translateY(-2px) scale(1.02)';
-  });
-  
-  notification.addEventListener('mouseleave', () => {
-    notification.style.transform = 'translateY(0) scale(1)';
-  });
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    if (document.body.contains(notification)) {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateY(-10px) scale(0.95)';
-      setTimeout(() => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      }, 300);
-    }
-  }, type === 'error' ? 6000 : 4000);
-};
-
-// 🤖 CLEANED CLAUDE SERVICE - Bez spam notifikací
-const claudeService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
-    try {
-      console.log('🤖 Claude service with language:', detectedLanguage);
-      const claudeMessages = prepareClaudeMessages(messages);
-      
-      const systemPrompt = this.getSystemPrompt(detectedLanguage);
-      
-      const response = await fetch('/api/claude2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages: claudeMessages,
-          system: systemPrompt,
-          max_tokens: 2000,
-          language: detectedLanguage
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Claude API failed: HTTP ${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      
-      let fullText = '';
-      let buffer = '';
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.trim()) {
-              try {
-                const data = JSON.parse(line);
-                
-                if (data.type === 'text' && data.content) {
-                  fullText += data.content;
-                  if (onStreamUpdate) {
-                    onStreamUpdate(fullText, true);
-                  }
-                }
-                else if (data.type === 'search_start') {
-                  if (onSearchNotification) {
-                    onSearchNotification(this.getSearchMessage(detectedLanguage));
-                  }
-                }
-                else if (data.type === 'completed') {
-                  if (data.fullText) {
-                    fullText = data.fullText;
-                  }
-                  if (onStreamUpdate) {
-                    onStreamUpdate(fullText, false);
-                  }
-                }
-                else if (data.error) {
-                  throw new Error(data.message || 'Streaming error');
-                }
-
-              } catch (parseError) {
-                continue;
-              }
-            }
-          }
-        }
-      } catch (streamError) {
-        console.error('💥 Streaming read error:', streamError);
-        throw streamError;
-      }
-
-      return fullText;
-
-    } catch (error) {
-      console.error('💥 Claude error:', error);
-      throw error;
-    }
-  },
-
-  getSystemPrompt(language) {
-    const prompts = {
-      'cs': `Jsi Omnia, pokročilý AI asistent.
-
-🔍 WEB_SEARCH - Máš přístup k web_search pro vyhledávání aktuálních informací
-📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights  
-🎯 POKROČILÉ MYŠLENÍ - Používáš pokročilé reasoning
-
-PRAVIDLA ODPOVĚDÍ:
-- Odpovídej přirozeně v českém jazyce
-- Na otázky typu "co děláš", "jak se máš" odpovídej normálně a přátelsky
-- Neříkej "jsem AI" - prostě odpověz jako inteligentní asistent
-- Web search používej jen když potřebuješ aktuální informace
-- Buď užitečný a odpověz přímo na otázku
-- Piš přirozeně pro hlasové přehrání`,
-
-      'en': `You are Omnia, an advanced AI assistant.
-
-🔍 WEB_SEARCH - You have access to web_search for finding current information
-📊 DATA ANALYSIS - You can analyze data and provide insights
-🎯 ADVANCED THINKING - You use advanced reasoning
-
-RESPONSE RULES:
-- Respond naturally in English
-- For questions like "what are you doing", "how are you" answer normally and friendly
-- Don't say "I'm an AI" - just respond as an intelligent assistant
-- Use web search only when you need current information
-- Be helpful and answer the question directly
-- Write naturally for voice playback`,
-
-      'ro': `Ești Omnia, un asistent IA avansat.
-
-🔍 WEB_SEARCH - Ai acces la web_search pentru a găsi informații actuale
-📊 ANALIZA DATELOR - Poți analiza date și oferi perspective
-🎯 GÂNDIRE AVANSATĂ - Folosești raționament avansat
-
-REGULI DE RĂSPUNS:
-- Răspunde natural în română
-- La întrebări ca "ce faci", "cum ești" răspunde normal și prietenos
-- Nu spune "Sunt o IA" - răspunde pur și simplu ca un asistent inteligent
-- Folosește web search doar când ai nevoie de informații actuale
-- Fii util și răspunde direct la întrebare
-- Scrie natural pentru redarea vocală`
-    };
-
-    return prompts[language] || prompts['cs'];
-  },
-
-  getSearchMessage(language) {
-    const messages = {
-      'cs': 'Vyhledávám aktuální informace...',
-      'en': 'Searching for current information...',
-      'ro': 'Caut informații actuale...'
-    };
-
-    return messages[language] || messages['cs'];
-  }
-};
-
-// 🤖 CLEANED OPENAI SERVICE
-const openaiService = {
-  async sendMessage(messages, detectedLanguage = 'cs') {
-    try {
-      console.log('🧠 OpenAI service with language:', detectedLanguage);
-      
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages,
-          temperature: 0.7,
-          max_tokens: 2000,
-          language: detectedLanguage
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response structure from OpenAI');
-      }
-
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error('💥 OpenAI error:', error);
-      throw error;
-    }
-  },
-
-  getSystemPrompt(detectedLanguage) {
-    const prompts = {
-      'cs': `Jsi Omnia, český AI asistent.
-
-PRAVIDLA:
-- Odpovídej přirozeně v češtině
-- Na konverzační otázky ("co děláš", "jak se máš") odpovídej normálně
-- Neříkaj "jsem AI" - prostě odpověz přátelsky
-- Buď užitečný a přímý
-- Piš tak, aby to znělo přirozeně při hlasovém přehrání`,
-
-      'en': `You are Omnia, an English AI assistant.
-
-RULES:
-- Respond naturally in English
-- For conversational questions ("what are you doing", "how are you") answer normally
-- Don't say "I'm an AI" - just respond friendly
-- Be helpful and direct
-- Write so it sounds natural when spoken aloud`,
-
-      'ro': `Ești Omnia, un asistent IA român.
-
-REGULI:
-- Răspunde natural în română
-- Pentru întrebări conversaționale ("ce faci", "cum ești") răspunde normal
-- Nu spune "Sunt o IA" - răspunde doar prietenos
-- Fii util și direct
-- Scrie să sune natural când este vorbit`
-    };
-
-    return prompts[detectedLanguage] || prompts['cs'];
-  }
-};
-
-// 🔎 FIXED SONAR SERVICE - Méně agresivní search
-const sonarService = {
-  async search(query, showNotification, detectedLanguage = 'cs') {
-    try {
-      console.log('🔍 Sonar detected language:', detectedLanguage);
-      
-      // 🔧 FIXED: Kontrola jestli opravdu potřebujeme search
-      if (!this.shouldSearchForQuery(query)) {
-        return {
-          success: false,
-          message: 'Query doesn\'t need web search',
-          source: 'sonar_search'
-        };
-      }
-
-      showNotification(this.getSearchMessage(detectedLanguage), 'info');
-
-      const enhancedQuery = this.enhanceQueryForCurrentData(query);
-
-      const response = await fetch('/api/sonar-search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: enhancedQuery,
-          freshness: 'recent',
-          count: 10,
-          language: detectedLanguage
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Sonar request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.success || !data.result) {
-        throw new Error('Invalid Sonar response');
-      }
-
-      showNotification(this.getSuccessMessage(detectedLanguage), 'success');
-      
-      return {
-        success: true,
-        result: data.result,
-        citations: data.citations || [],
-        sources: data.sources || [],
-        source: 'sonar_search'
-      };
-    } catch (error) {
-      console.error('💥 Sonar error:', error);
-      showNotification(this.getErrorMessage(detectedLanguage, error.message), 'error');
-      return {
-        success: false,
-        message: this.getErrorMessage(detectedLanguage, error.message),
-        source: 'sonar_search'
-      };
-    }
-  },
-
-  // 🔧 FIXED: Méně agresivní search logic
-  shouldSearchForQuery(query) {
-    const lowerQuery = query.toLowerCase();
-    
-    // 🚫 NEVYHLEDÁVEJ pro konverzační otázky
-    const conversationalPhrases = [
-      // České
-      'ahoj', 'čau', 'jak se máš', 'co děláš', 'jak to jde', 'co je nového',
-      'dobrý den', 'dobrý večer', 'dobré ráno', 'díky', 'děkuji',
-      'jak se jmenuješ', 'kdo jsi', 'co jsi', 'představ se',
-      'umíš', 'můžeš mi', 'pomoč', 'pomoz', 'poraď',
-      'co si myslíš', 'jaký je tvůj názor', 'řekni mi něco',
-      // Anglické
-      'hello', 'hi', 'how are you', 'what are you doing', 'how is it going',
-      'good morning', 'good evening', 'thank you', 'thanks',
-      'what is your name', 'who are you', 'what are you', 'introduce yourself',
-      'can you', 'help me', 'what do you think', 'tell me something',
-      // Rumunské
-      'salut', 'bună', 'cum ești', 'ce faci', 'cum merge',
-      'bună dimineața', 'bună seara', 'mulțumesc', 'merci',
-      'cum te cheamă', 'cine ești', 'ce ești', 'prezintă-te'
-    ];
-
-    // Pokud najdeme konverzační frázi, NEHLEDEJ
-    for (const phrase of conversationalPhrases) {
-      if (lowerQuery.includes(phrase)) {
-        return false;
-      }
-    }
-
-    // ✅ HLEDEJ pouze pro specifické typy dotazů
-    const searchTriggers = [
-      // České - aktuální informace
-      'aktuální cena', 'dnešní počasí', 'současný kurz', 'nejnovější zprávy',
-      'dnes v', 'aktuální situace', 'poslední novinky', 'čerstvé aktuality',
-      'právě teď', 'momentální stav', 'nové zprávy', 'breaking news',
-      'aktuální výsledky', 'dnešní výsledek',
-      // Anglické - current info
-      'current price', 'today weather', 'latest news', 'breaking news',
-      'right now', 'current situation', 'fresh news', 'today results',
-      'current exchange rate', 'stock price today', 'weather forecast today',
-      // Rumunské - informații actuale
-      'preț actual', 'vremea de azi', 'ultimele știri', 'știri de ultimă oră'
-    ];
-
-    // Pokud najdeme search trigger, HLEDEJ
-    for (const trigger of searchTriggers) {
-      if (lowerQuery.includes(trigger)) {
-        return true;
-      }
-    }
-
-    // Jinak NEHLEDEJ
-    return false;
-  },
-
-  getSearchMessage(language) {
-    const messages = {
-      'cs': 'Vyhledávám nejnovější informace...',
-      'en': 'Searching for latest information...',
-      'ro': 'Caut informații recente...'
-    };
-    return messages[language] || messages['cs'];
-  },
-
-  getSuccessMessage(language) {
-    const messages = {
-      'cs': 'Nalezeny aktuální informace!',
-      'en': 'Found current information!',
-      'ro': 'Informații actuale găsite!'
-    };
-    return messages[language] || messages['cs'];
-  },
-
-  getErrorMessage(language, error) {
-    const messages = {
-      'cs': `Chyba při vyhledávání: ${error}`,
-      'en': `Search error: ${error}`,
-      'ro': `Eroare de căutare: ${error}`
-    };
-    return messages[language] || messages['cs'];
-  },
-
-  enhanceQueryForCurrentData(originalQuery) {
-    const query = originalQuery.toLowerCase();
-    const currentYear = new Date().getFullYear();
-    
-    if (query.includes('2024') || query.includes('2025')) {
-      return originalQuery;
-    }
-
-    const temporalTriggers = [
-      'aktuální', 'dnešní', 'současný', 'nejnovější', 'poslední',
-      'current', 'latest', 'recent', 'today', 'now',
-      'actual', 'recent', 'astăzi', 'acum'
-    ];
-
-    const needsTimeFilter = temporalTriggers.some(trigger => query.includes(trigger));
-    
-    if (needsTimeFilter) {
-      return `${originalQuery} ${currentYear} latest current`;
-    }
-
-    return originalQuery;
-  }
-};
-
-// 🎵 FIXED GOOGLE TTS AUDIO GENERATION
-const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification, language = 'cs') => {
-  try {
-    console.log('🎵 Generating Google TTS audio for language:', language);
-    
-    const processedText = preprocessTextForTTS(responseText, language);
-    
-    showNotification('Generuji Google hlas...', 'info');
-    
-    // 🔥 KRITICKÁ ZMĚNA: ElevenLabs → Google TTS
-    const response = await fetch('/api/google-tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        text: processedText,
-        language: language,
-        voice: 'natural'
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Google TTS API failed: ${response.status}`);
-    }
-
-    setIsAudioPlaying(true);
-    showNotification('Přehrávám Google odpověď...', 'success');
-
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    
-    currentAudioRef.current = audio;
-    audio.preload = 'auto';
-    audio.volume = 1.0;
-    
-    if (isIOS) {
-      audio.load();
-    }
-    
-    let playbackInterrupted = false;
-    
-    const handleInterrupt = () => {
-      playbackInterrupted = true;
-      if (!audio.paused) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-      setIsAudioPlaying(false);
-      currentAudioRef.current = null;
-      URL.revokeObjectURL(audioUrl);
-    };
-    
-    window.addEventListener('omnia-audio-start', handleInterrupt, { once: true });
-    
-    audio.onplay = () => {
-      if (!playbackInterrupted) {
-        console.log('🎵 Google TTS audio started playing for language:', language);
-      }
-    };
-    
-    audio.onended = () => {
-      console.log('✅ Google TTS audio playback finished');
-      setIsAudioPlaying(false);
-      currentAudioRef.current = null;
-      URL.revokeObjectURL(audioUrl);
-      window.removeEventListener('omnia-audio-start', handleInterrupt);
-    };
-    
-    audio.onerror = (e) => {
-      console.error('❌ Google TTS audio playback error:', e);
-      setIsAudioPlaying(false);
-      currentAudioRef.current = null;
-      URL.revokeObjectURL(audioUrl);
-      window.removeEventListener('omnia-audio-start', handleInterrupt);
-      showNotification('Chyba při přehrávání Google TTS', 'error');
-    };
-    
-    try {
-      await audio.play();
-      console.log('🎯 Google TTS audio plays IMMEDIATELY after AI response!');
-    } catch (playError) {
-      console.error('❌ Auto-play blocked:', playError);
-      showNotification('Klepněte pro přehrání odpovědi', 'info', () => {
-        audio.play().catch(console.error);
-      });
-    }
-    
-    return audio;
-    
-  } catch (error) {
-    console.error('💥 Google TTS audio generation failed:', error);
-    setIsAudioPlaying(false);
-    currentAudioRef.current = null;
-    showNotification('Google TTS se nepodařilo vygenerovat', 'error');
-    throw error;
-  }
-};// ✅ CLEANED VOICE SCREEN RESPONSE Handler
-const handleVoiceScreenResponse = async (
-  textInput,
-  currentMessages,
-  model,
-  detectedLanguage,
-  setMessages,
-  setLoading,
-  setIsAudioPlaying,
-  currentAudioRef,
-  isIOS,
-  showNotification,
-  setStreaming = null
-) => {
-  try {
-    console.log('🎤 Voice Screen Response with model:', model, 'language:', detectedLanguage);
-
-    const userMessage = { sender: 'user', text: textInput };
-    const messagesWithUser = [...currentMessages, userMessage];
-    setMessages(messagesWithUser);
-    localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
-
-    let responseText = '';
-
-    if (model === 'sonar') {
-      const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
-      if (searchResult.success) {
-        responseText = searchResult.result;
-        if (searchResult.sources && searchResult.sources.length > 0) {
-          responseText += `\n\nZdroje: ${searchResult.sources.slice(0, 3).join(', ')}`;
-        }
-      } else {
-        responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
+    const handleScreenClick = (e) => {
+      if (isAudioPlaying) {
+        stopCurrentAudio();
       }
       
-      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-      setMessages(finalMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-      await generateInstantAudio(
-        responseText,
-        setIsAudioPlaying,
-        currentAudioRef,
-        isIOS,
-        showNotification,
-        detectedLanguage
-      );
-    }
-    else if (model === 'claude') {
-      if (setStreaming) setStreaming(true);
-
-      const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
-      const messagesWithBot = [...messagesWithUser, streamingBotMessage];
-      setMessages(messagesWithBot);
-
-      const onStreamUpdate = (text, isStillStreaming) => {
-        const updatedMessages = [...messagesWithUser, { 
-          sender: 'bot', 
-          text: text, 
-          isStreaming: isStillStreaming 
-        }];
-        setMessages(updatedMessages);
-        
-        if (!isStillStreaming) {
-          localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-          if (setStreaming) setStreaming(false);
-          responseText = text;
-          
-          // 🎵 AUTO-AUDIO with Google TTS
-          setTimeout(async () => {
-            try {
-              await generateInstantAudio(
-                text,
-                setIsAudioPlaying,
-                currentAudioRef,
-                isIOS,
-                showNotification,
-                detectedLanguage
-              );
-            } catch (error) {
-              console.error('❌ Voice Screen auto-audio failed:', error);
-            }
-          }, 800);
-        }
-      };
-
-      const onSearchNotification = (message) => {
-        // Clean - žádné spam notifikace
-      };
-
-      responseText = await claudeService.sendMessage(
-        messagesWithUser, 
-        onStreamUpdate, 
-        onSearchNotification,
-        detectedLanguage
-      );
-    }
-    else if (model === 'gpt-4o') {
-      const openAiMessages = [
-        {
-          role: 'system',
-          content: openaiService.getSystemPrompt(detectedLanguage)
-        },
-        ...currentMessages.map((msg) => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
-        })),
-        { role: 'user', content: textInput }
-      ];
-
-      responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
-      
-      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-      setMessages(finalMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-      await generateInstantAudio(
-        responseText,
-        setIsAudioPlaying,
-        currentAudioRef,
-        isIOS,
-        showNotification,
-        detectedLanguage
-      );
-    }
-    else {
-      throw new Error(`Neznámý model: ${model}`);
-    }
-
-    return responseText;
-
-  } catch (error) {
-    console.error('💥 Voice Screen response error:', error);
-
-    if (setStreaming) setStreaming(false);
-
-    const errorText = `Omlouám se, ale vyskytla se chyba: ${error.message}`;
-    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
-    setMessages(errorMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
-    
-    showNotification(`Chyba: ${error.message}`, 'error');
-
-    throw error;
-  }
-};
-
-// ✅ CLEANED TEXT RESPONSE Handler
-const handleTextResponse = async (
-  textInput,
-  currentMessages,
-  model,
-  detectedLanguage,
-  setMessages,
-  showNotification,
-  setStreaming = null
-) => {
-  console.log('💬 Text Response with model:', model, 'language:', detectedLanguage);
-
-  const userMessage = { sender: 'user', text: textInput };
-  const messagesWithUser = [...currentMessages, userMessage];
-  setMessages(messagesWithUser);
-  localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
-
-  let responseText = '';
-
-  if (model === 'sonar') {
-    const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
-    if (searchResult.success) {
-      responseText = searchResult.result;
-      if (searchResult.citations && searchResult.citations.length > 0) {
-        responseText += `\n\nZdroje:\n${searchResult.citations.map(c => `• ${c}`).join('\n')}`;
-      }
-    } else {
-      responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
-    }
-    
-    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-  }
-  else if (model === 'claude') {
-    if (setStreaming) setStreaming(true);
-
-    const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
-    const messagesWithBot = [...messagesWithUser, streamingBotMessage];
-    setMessages(messagesWithBot);
-
-    const onStreamUpdate = (text, isStillStreaming) => {
-      const updatedMessages = [...messagesWithUser, { 
-        sender: 'bot', 
-        text: text, 
-        isStreaming: isStillStreaming 
-      }];
-      setMessages(updatedMessages);
-      
-      if (!isStillStreaming) {
-        localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-        if (setStreaming) setStreaming(false);
+      if (e.target === e.currentTarget) {
+        onClose();
       }
     };
 
-    const onSearchNotification = (message) => {
-      // Clean - žádné spam notifikace
+    const handleCloseClick = () => {
+      if (isAudioPlaying) {
+        stopCurrentAudio();
+      }
+      onClose();
     };
 
-    responseText = await claudeService.sendMessage(
-      messagesWithUser, 
-      onStreamUpdate, 
-      onSearchNotification,
-      detectedLanguage
+    const handleElementClick = (e) => {
+      e.stopPropagation();
+      if (isAudioPlaying) {
+        stopCurrentAudio();
+      }
+    };
+
+    // ✅ FIXED: Používá t() translation funkci místo hardkódovaných textů
+    const getStatusMessage = () => {
+      if (streaming) {
+        return t('omniaStreaming');
+      }
+      if (loading) {
+        return t('omniaPreparingResponse');
+      }
+      if (isAudioPlaying) {
+        return `${t('omniaSpeaking')} (${t('clickToStop')})`;
+      }
+      return t('holdToSpeak');
+    };
+
+    // ✅ FIXED: Subtitle text je také lokalizovaný
+    const getSubtitleText = () => {
+      if (streaming) {
+        return t('streamingRealTime');
+      }
+      return t('advancedAIAssistant');
+    };
+
+    // ✅ FIXED: Footer text s lokalizací
+    const getFooterText = () => {
+      if (streaming) {
+        return `Omnia ${t('streaming')} • ${t('clickToStop')}`;
+      }
+      if (isMobile) {
+        return `Omnia • ${t('clickToReturn')}`;
+      }
+      return `Omnia • ESC ${t('or')} ${t('clickToReturn')}`;
+    };
+
+    return (
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: streaming 
+            ? 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%)'
+            : 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #4a5568 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001,
+          cursor: 'pointer',
+          padding: isMobile ? '1rem' : '2rem',
+          minHeight: '100vh',
+          overflowY: 'auto'
+        }}
+        onClick={handleScreenClick}
+      >
+        {/* Close button */}
+        <div
+          style={{
+            position: 'absolute',
+            top: isMobile ? '1rem' : '2rem',
+            right: isMobile ? '1rem' : '2rem',
+            cursor: 'pointer',
+            fontSize: isMobile ? '1.5rem' : '2rem',
+            opacity: 0.7,
+            transition: 'opacity 0.2s ease',
+            zIndex: 1002
+          }}
+          onClick={handleCloseClick}
+          onMouseEnter={(e) => e.target.style.opacity = '1'}
+          onMouseLeave={(e) => e.target.style.opacity = '0.7'}
+        >
+          ✕
+        </div>
+
+        {/* Logo */}
+        <div 
+          style={{
+            fontSize: isMobile ? '3rem' : '4rem',
+            fontWeight: 'bold',
+            marginBottom: '1rem',
+            background: streaming 
+              ? 'linear-gradient(45deg, #4299e1, #63b3ed, #90cdf4)'
+              : 'linear-gradient(45deg, #4299e1, #63b3ed)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textAlign: 'center',
+            cursor: 'pointer',
+            letterSpacing: '0.1em'
+          }}
+          onClick={handleElementClick}
+        >
+          OMNIA
+        </div>
+
+        {/* Subtitle - FIXED */}
+        <div style={{
+          fontSize: isMobile ? '0.9rem' : '1rem',
+          marginBottom: '2rem',
+          textAlign: 'center',
+          opacity: 0.7,
+          cursor: 'pointer'
+        }}
+        onClick={handleElementClick}
+        >
+          {getSubtitleText()}
+        </div>
+
+        {/* Main status message - FIXED */}
+        <div style={{
+          fontSize: isMobile ? '1.2rem' : '1.5rem',
+          fontWeight: '600',
+          marginBottom: '2.5rem',
+          textAlign: 'center',
+          opacity: 0.9,
+          cursor: 'pointer',
+          maxWidth: isMobile ? '300px' : '400px',
+          lineHeight: '1.4'
+        }}
+        onClick={handleElementClick}
+        >
+          {getStatusMessage()}
+        </div>
+
+        {/* Voice Recorder */}
+        <div 
+          style={{ marginBottom: '3rem' }}
+          onClick={handleElementClick}
+        >
+          <VoiceRecorder onTranscript={onTranscript} disabled={loading} mode="voice" />
+        </div>
+
+        {/* Footer text - FIXED */}
+        <div style={{
+          fontSize: '0.9rem',
+          opacity: 0.6,
+          textAlign: 'center',
+          maxWidth: '360px',
+          lineHeight: '1.4',
+          cursor: 'pointer'
+        }}
+        onClick={handleElementClick}
+        >
+          {getFooterText()}
+        </div>
+      </div>
     );
-  }
-  else if (model === 'gpt-4o') {
-    const openAiMessages = [
-      {
-        role: 'system',
-        content: openaiService.getSystemPrompt(detectedLanguage)
-      },
-      ...currentMessages.map((msg) => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.text
-      })),
-      { role: 'user', content: textInput }
-    ];
+  };
 
-    responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
-    
-    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-  }
-  else {
-    throw new Error(`Neznámý model: ${model}`);
-  }
-
-  return responseText;
-};
-
-// ⚙️ SETTINGS DROPDOWN
+// ⚙️ SETTINGS DROPDOWN - Enhanced with better UX
 const SettingsDropdown = ({ isOpen, onClose, onNewChat, uiLanguage, setUILanguage, t }) => {
   if (!isOpen) return null;
 
@@ -2504,7 +2614,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, uiLanguage, setUILanguag
   );
 };
 
-// ✏️ EDITABLE MESSAGE
+// ✏️ EDITABLE MESSAGE - Enhanced with better UX
 const EditableMessage = ({ message, onEdit, onCancel, uiLanguage, t }) => {
   const [editText, setEditText] = useState(message.text);
   const [isEditing, setIsEditing] = useState(false);
@@ -2620,7 +2730,7 @@ const EditableMessage = ({ message, onEdit, onCancel, uiLanguage, t }) => {
   );
 };
 
-// 🎉 MAIN JSX RETURN - CLEAN PROFESSIONAL VERSION
+// 🎉 MAIN JSX RETURN - FINAL ENHANCED VERSION
 return (
     <div style={{ 
       minHeight: '100vh', 
@@ -2910,7 +3020,7 @@ return (
                     animation: streaming ? 'spin-fast 0.8s linear infinite' : 'spin 1s linear infinite'
                   }}></div>
                   <span style={{ color: '#a0aec0', fontWeight: '500' }}>
-                    {streaming ? `Omnia mluví...` : `Omnia připravuje...`}
+                    {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
                   </span>
                 </div>
               </div>
@@ -2940,7 +3050,7 @@ return (
               type="text" value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
-              placeholder={streaming ? `Omnia mluví...` : `${t('sendMessage')} Omnia...`}
+              placeholder={streaming ? t('omniaStreaming') : `${t('sendMessage')} Omnia...`}
               disabled={loading || streaming}
               style={{ 
                 width: '100%', padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
@@ -2998,6 +3108,7 @@ return (
         />
       )}
 
+      {/* ✅ ENHANCED CSS STYLES - Unified animations + performance optimizations */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
@@ -3008,29 +3119,16 @@ return (
         @keyframes spin-fast { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
         
-        @keyframes pulse-omnia {
-          0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1); }
-          50% { box-shadow: 0 0 25px rgba(0, 255, 255, 0.9); transform: scale(1.05); }
-        }
-        
-        @keyframes pulse-streaming {
-          0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 1); transform: scale(1); }
-          50% { box-shadow: 0 0 35px rgba(0, 255, 255, 1); transform: scale(1.08); }
-        }
-        
-        @keyframes pulse-audio {
-          0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 255, 0.9); transform: scale(1); }
-          50% { box-shadow: 0 0 25px rgba(0, 255, 255, 1); transform: scale(1.05); }
-        }
-        
-        @keyframes pulse-processing {
-          0%, 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.5); transform: scale(1); }
-          50% { box-shadow: 0 0 30px rgba(255, 193, 7, 0.8); transform: scale(1.03); }
-        }
-        
-        @keyframes pulse-recording {
-          0%, 100% { box-shadow: 0 0 30px rgba(220, 53, 69, 0.6); transform: scale(1.1); }
-          50% { box-shadow: 0 0 40px rgba(220, 53, 69, 0.9); transform: scale(1.12); }
+        /* ✅ UNIFIED ANIMATION SYSTEM */
+        @keyframes omnia-pulse {
+          0%, 100% { 
+            box-shadow: 0 0 15px var(--pulse-color, rgba(100, 50, 255, 0.8)); 
+            transform: scale(1); 
+          }
+          50% { 
+            box-shadow: 0 0 25px var(--pulse-color, rgba(0, 255, 255, 0.9)); 
+            transform: scale(1.05); 
+          }
         }
         
         .omnia-logo.animate { animation: omnia-breathe 4s ease-in-out infinite; }
@@ -3040,6 +3138,7 @@ return (
           50% { transform: scale(1.02); filter: brightness(1.1); }
         }
 
+        /* ✅ PERFORMANCE OPTIMIZATIONS */
         html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; background: #000000; }
         @media (max-width: 768px) { input { font-size: 16px !important; } }
         ::-webkit-scrollbar { width: 8px; }
