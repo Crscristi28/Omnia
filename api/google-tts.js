@@ -98,13 +98,13 @@ export default async function handler(req, res) {
       selectedVoice = `${voicePrefix}-${voice}`;
     }
 
-    // 🚀 FAST & ENERGETIC AUDIO CONFIG
+    // 🎵 OPTIMÁLNÍ RYCHLOST - Živě ale příjemně
     const audioConfig = {
       audioEncoding: 'MP3',
-      speakingRate: 1.35,  // 35% rychleji než normálně!
-      pitch: 0.8,          // Vyšší, živější tón
-      volumeGainDb: 4.0,   // Výrazně hlasitější
-      effectsProfileId: ['telephony-class-application'] // Energičtější profil
+      speakingRate: 1.15,  // 15% rychleji - příjemná rychlost
+      pitch: 0.4,          // Mírně vyšší, ale ne moc
+      volumeGainDb: 2.5,   // Hlasitější, ale ne příliš
+      effectsProfileId: ['headphone-class-device'] // Kvalitní ale ne agresivní
     };
 
     // Google TTS API call
@@ -158,10 +158,10 @@ export default async function handler(req, res) {
           res.setHeader('Content-Length', audioBuffer.length);
           res.status(200).send(audioBuffer);
           
-          console.log('✅ Fast TTS fallback success:', { 
+          console.log('✅ Optimized TTS fallback success:', { 
             language: langConfig.name, 
             voice: fallbackVoice,
-            speed: 'Fast (1.35x)',
+            speed: 'Optimized (1.15x)',
             audioSize: audioBuffer.length 
           });
           return;
@@ -183,12 +183,12 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=1800'); // 30min cache
     res.status(200).send(audioBuffer);
 
-    console.log('✅ FAST TTS SUCCESS:', { 
+    console.log('✅ OPTIMIZED TTS SUCCESS:', { 
       language: langConfig.name,
       voice: selectedVoice, 
-      speed: 'Fast (1.35x)',
-      pitch: 'High (+0.8)',
-      volume: 'Loud (+4.0dB)',
+      speed: 'Optimized (1.15x)',
+      pitch: 'Pleasant (+0.4)',
+      volume: 'Clear (+2.5dB)',
       audioSize: audioBuffer.length,
       duration: `${Math.round(audioBuffer.length / 1000)}KB`
     });
