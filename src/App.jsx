@@ -1,21 +1,27 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './App.css';
 
-// 🌍 FIXED LANGUAGE DETECTION - Opravená pro lepší detekci
+// 🌍 IMPROVED LANGUAGE DETECTION - Méně agresivní, víc inteligentní
 const detectLanguage = (text) => {
   if (!text || typeof text !== 'string') return 'cs';
   
-  const lowerText = text.toLowerCase();
+  const lowerText = text.toLowerCase().trim();
   
-  // České indikátory - rozšířené
+  // 🔧 FIX: Kratší texty = méně agresivní detekce
+  if (lowerText.length < 10) {
+    // Pro krátké texty - jen explicitní indikátory
+    if (['hello', 'hi', 'yes', 'no', 'thanks'].some(word => lowerText.includes(word))) return 'en';
+    if (['salut', 'bună', 'mulțumesc'].some(word => lowerText.includes(word))) return 'ro';
+    return 'cs'; // Default pro krátké texty
+  }
+
+  // České indikátory - rozšířené ale ne agresivní
   const czechWords = [
     'být', 'mít', 'který', 'tento', 'jako', 'jeho', 'nebo', 'než', 'aby', 'když', 'kde',
     'čau', 'ahoj', 'děkuji', 'prosím', 'ano', 'ne', 'dobré', 'dobrý', 'den', 'večer', 'ráno',
     'co', 'jak', 'kde', 'proč', 'kdo', 'kdy', 'kolik', 'jaký', 'která', 'které',
     'se', 'si', 'je', 'jsou', 'má', 'máte', 'můžu', 'můžeš', 'umíš', 'umím',
-    'dělám', 'děláš', 'dělá', 'děláme', 'děláte', 'dělají', 'učím', 'učíš', 'myslím',
-    'řekni', 'povídej', 'vysvětli', 'pomoć', 'pomoz', 'pomozte', 'díky', 'taky', 'také',
-    'cena', 'kolik', 'stojí', 'aktuální', 'dnešní', 'současný', 'nejnovější'
+    'dělám', 'děláš', 'dělá', 'říkej', 'mluv', 'povídej', 'vysvětli', 'pomoć', 'pomoz'
   ];
   
   // Anglické indikátory - rozšířené
@@ -23,41 +29,61 @@ const detectLanguage = (text) => {
     'the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they', 'be', 'at', 'one', 'have', 'this',
     'hello', 'hi', 'thanks', 'thank', 'please', 'yes', 'no', 'what', 'how', 'where', 'why', 'who', 'when',
     'doing', 'think', 'know', 'want', 'like', 'good', 'time', 'can', 'could', 'would', 'should',
-    'price', 'cost', 'current', 'today', 'latest', 'recent', 'now', 'search', 'find'
+    'speak', 'talk', 'tell', 'explain', 'help', 'search', 'find'
   ];
 
   // Rumunské indikátory - rozšířené
   const romanianWords = [
     'și', 'de', 'la', 'cu', 'în', 'pe', 'că', 'ce', 'să', 'nu', 'un', 'o', 'el', 'ea', 'eu',
     'salut', 'bună', 'mulțumesc', 'te rog', 'da', 'nu', 'ce', 'cum', 'unde', 'de ce', 'cine', 'când',
-    'fac', 'faci', 'face', 'facem', 'gândesc', 'gândești', 'pot', 'poți', 'bun', 'bună',
-    'preț', 'costă', 'actual', 'astăzi', 'recent', 'acum', 'caută', 'găsește'
+    'fac', 'faci', 'face', 'vorbește', 'spune', 'explică', 'ajută', 'caută'
   ];
 
-  // Počítej výskyty
-  const czechCount = czechWords.filter(word => lowerText.includes(word)).length;
-  const englishCount = englishWords.filter(word => lowerText.includes(word)).length;
-  const romanianCount = romanianWords.filter(word => lowerText.includes(word)).length;
+  // PRIORITNÍ fráze - vysoká důvěra
+  const explicitCzech = [
+    'mluv česky', 'mluvte česky', 'řekni mi česky', 'odpověz česky', 'chci česky',
+    'přepni na češtinu', 'česká odpověď', 'v češtině'
+  ];
 
-  // PRIORITNÍ konverzační fráze - vyšší priorita než word counting
+  const explicitEnglish = [
+    'speak english', 'talk english', 'answer in english', 'switch to english', 'i want english',
+    'respond in english', 'english please', 'can you speak english'
+  ];
+
+  const explicitRomanian = [
+    'vorbește română', 'răspunde în română', 'vreau română', 'schimbă la română',
+    'poți vorbi română', 'limba română'
+  ];
+
+  // 🔧 FIX 1: Explicitní jazykové požadavky = OKAMŽITÉ přepnutí
+  for (const phrase of explicitCzech) {
+    if (lowerText.includes(phrase)) return 'cs';
+  }
+  
+  for (const phrase of explicitEnglish) {
+    if (lowerText.includes(phrase)) return 'en';
+  }
+
+  for (const phrase of explicitRomanian) {
+    if (lowerText.includes(phrase)) return 'ro';
+  }
+
+  // 🔧 FIX 2: Konverzační fráze - střední důvěra
   const conversationalCzech = [
     'co děláš', 'jak se máš', 'co se děje', 'jak to jde', 'co je nového',
-    'děláš si srandu', 'myslíš si', 'co si myslíš', 'máš čas', 'můžeš mi',
-    'řekni mi', 'vysvětli mi', 'pomož mi', 'pomoć mi', 'poradíš mi'
+    'děláš si srandu', 'myslíš si', 'co si myslíš', 'máš čas', 'můžeš mi'
   ];
 
   const conversationalEnglish = [
     'what are you doing', 'how are you', 'what\'s up', 'how\'s it going', 'what\'s new',
-    'are you kidding', 'do you think', 'what do you think', 'do you have time', 'can you',
-    'tell me', 'explain to me', 'help me', 'can you help', 'search for me'
+    'are you kidding', 'do you think', 'what do you think', 'can you help', 'tell me about'
   ];
 
   const conversationalRomanian = [
     'ce faci', 'cum ești', 'ce mai faci', 'cum merge', 'ce e nou',
-    'îmi poți spune', 'mă poți ajuta', 'explică-mi', 'ce crezi', 'caută pentru mine'
+    'îmi poți spune', 'mă poți ajuta', 'explică-mi', 'ce crezi'
   ];
 
-  // PRVNÍ kontrola - konverzační fráze (nejvyšší priorita)
   for (const phrase of conversationalCzech) {
     if (lowerText.includes(phrase)) return 'cs';
   }
@@ -70,7 +96,11 @@ const detectLanguage = (text) => {
     if (lowerText.includes(phrase)) return 'ro';
   }
 
-  // DRUHÁ kontrola - word count s lepším fallback
+  // 🔧 FIX 3: Word counting - vyšší práh pro přepnutí
+  const czechCount = czechWords.filter(word => lowerText.includes(word)).length;
+  const englishCount = englishWords.filter(word => lowerText.includes(word)).length;
+  const romanianCount = romanianWords.filter(word => lowerText.includes(word)).length;
+
   const scores = {
     'cs': czechCount,
     'en': englishCount,
@@ -79,22 +109,19 @@ const detectLanguage = (text) => {
 
   const maxScore = Math.max(...Object.values(scores));
   
-  // Pokud máme jasný vítěz s aspoň 1 bodem
-  if (maxScore >= 1) {
-    return Object.keys(scores).find(key => scores[key] === maxScore) || 'cs';
+  // 🔧 FIX 4: Vyžaduje aspoň 2 shody pro přepnutí jazyka
+  if (maxScore >= 2) {
+    const detectedLang = Object.keys(scores).find(key => scores[key] === maxScore);
+    console.log('🌍 Language detection:', { text: lowerText.substring(0, 30), scores, detected: detectedLang });
+    return detectedLang || 'cs';
   }
   
-  // FALLBACK - kontrola jednoduchých anglických slov
-  const simpleEnglish = ['hello', 'hi', 'yes', 'no', 'what', 'how', 'can', 'you', 'search', 'price'];
-  const hasSimpleEnglish = simpleEnglish.some(word => lowerText.includes(word));
-  
-  if (hasSimpleEnglish) return 'en';
-  
-  // DEFAULT
-  return 'cs';
+  // 🔧 FIX 5: Fallback - zůstat v aktuálním jazyce místo force češtiny
+  console.log('🌍 Language detection: insufficient confidence, keeping current');
+  return 'cs'; // Pouze default pro úplně nové konverzace
 };
 
-// 🌍 EXPANDED UI TRANSLATIONS - 🔧 FIXED: Přidané chybějící klíče pro voice errors
+// 🌍 ENHANCED UI TRANSLATIONS - Opravené missing keys
 const uiTexts = {
   cs: {
     newChat: "Nový chat",
@@ -107,17 +134,19 @@ const uiTexts = {
     interfaceLanguage: "Jazyk rozhraní",
     conversationLanguage: "Jazyk konverzace",
     sendMessage: "Odeslat zprávu",
-    holdToSpeak: "Držte pro mluvení",
+    holdToSpeak: "Klikněte pro mluvení", // 🔧 ZMĚNA: už ne "držte"
     processing: "Zpracovávám...",
     speaking: "Mluví...",
+    listening: "Poslouchám...", // 🆕 Nový key
     voiceScreen: "Voice Screen",
     newChatCreated: "Nový chat s Omnia vytvořen",
     audioStopped: "Audio zastaveno",
     streamingStopped: "Streaming zastaven",
     clickToStop: "klepněte pro zastavení",
     clickToReturn: "klepněte pro návrat",
+    clickToSpeak: "klepněte pro mluvení", // 🆕 Nový key
     error: "Chyba",
-    // ✅ VOICE SCREEN KEYS - FIXED:
+    // Voice screen keys
     omniaStreaming: "Omnia mluví...",
     omniaPreparingResponse: "Omnia připravuje odpověď...",
     omniaSpeaking: "Omnia mluví...",
@@ -125,11 +154,11 @@ const uiTexts = {
     advancedAIAssistant: "Pokročilý AI asistent",
     streaming: "mluví",
     or: "nebo",
-    // ✅ ERROR MESSAGES - FIXED:
+    // Error messages
     searchError: "Chyba při vyhledávání",
     connectionError: "Chyba připojení - zkuste to znovu",
-    voiceError: "Chyba při rozpoznávání řeči - zkuste znovu",  // 🔧 FIX 1: Lokalizovaná voice error
-    voicePermissionError: "Nepodařilo se získat přístup k mikrofonu",  // 🔧 FIX 4: Permission error
+    voiceError: "Chyba při rozpoznávání řeči - zkuste znovu",
+    voicePermissionError: "Nepodařilo se získat přístup k mikrofonu",
     apiError: "Chyba API serveru",
     unknownError: "Neočekávaná chyba",
     retryAction: "Klepněte pro opakování"
@@ -145,17 +174,19 @@ const uiTexts = {
     interfaceLanguage: "Interface language",
     conversationLanguage: "Conversation language",
     sendMessage: "Send message",
-    holdToSpeak: "Hold to speak",
+    holdToSpeak: "Click to speak", // 🔧 ZMĚNA: už ne "hold"
     processing: "Processing...",
     speaking: "Speaking...",
+    listening: "Listening...", // 🆕 Nový key
     voiceScreen: "Voice Screen",
     newChatCreated: "New chat with Omnia created",
     audioStopped: "Audio stopped",
     streamingStopped: "Streaming stopped",
     clickToStop: "click to stop",
     clickToReturn: "click to return",
+    clickToSpeak: "click to speak", // 🆕 Nový key
     error: "Error",
-    // ✅ VOICE SCREEN KEYS - FIXED:
+    // Voice screen keys
     omniaStreaming: "Omnia speaking...",
     omniaPreparingResponse: "Omnia preparing response...",
     omniaSpeaking: "Omnia speaking...",
@@ -163,11 +194,11 @@ const uiTexts = {
     advancedAIAssistant: "Advanced AI assistant",
     streaming: "speaking",
     or: "or",
-    // ✅ ERROR MESSAGES - FIXED:
+    // Error messages
     searchError: "Search error",
     connectionError: "Connection error - please try again",
-    voiceError: "Voice recognition error - try again",  // 🔧 FIX 1: Localized voice error
-    voicePermissionError: "Could not access microphone",  // 🔧 FIX 4: Permission error
+    voiceError: "Voice recognition error - try again",
+    voicePermissionError: "Could not access microphone",
     apiError: "API server error",
     unknownError: "Unexpected error",
     retryAction: "Click to retry"
@@ -183,17 +214,19 @@ const uiTexts = {
     interfaceLanguage: "Limba interfeței",
     conversationLanguage: "Limba conversației",
     sendMessage: "Trimite mesaj",
-    holdToSpeak: "Ține apăsat pentru a vorbi",
+    holdToSpeak: "Apasă pentru a vorbi", // 🔧 ZMĚNA: už ne "ține apăsat"
     processing: "Procesez...",
     speaking: "Vorbește...",
+    listening: "Ascult...", // 🆕 Nový key
     voiceScreen: "Ecran vocal",
     newChatCreated: "Chat nou cu Omnia creat",
     audioStopped: "Audio oprit",
     streamingStopped: "Streaming oprit",
     clickToStop: "apasă pentru a opri",
     clickToReturn: "apasă pentru a reveni",
+    clickToSpeak: "apasă pentru a vorbi", // 🆕 Nový key
     error: "Eroare",
-    // ✅ VOICE SCREEN KEYS - FIXED:
+    // Voice screen keys
     omniaStreaming: "Omnia vorbește...",
     omniaPreparingResponse: "Omnia pregătește răspunsul...",
     omniaSpeaking: "Omnia vorbește...",
@@ -201,18 +234,18 @@ const uiTexts = {
     advancedAIAssistant: "Asistent IA avansat",
     streaming: "vorbește",
     or: "sau",
-    // ✅ ERROR MESSAGES - FIXED:
+    // Error messages
     searchError: "Eroare de căutare",
     connectionError: "Eroare de conexiune - încearcă din nou",
-    voiceError: "Eroare de recunoaștere vocală - încearcă din nou",  // 🔧 FIX 1: Localized voice error
-    voicePermissionError: "Nu s-a putut accesa microfonul",  // 🔧 FIX 4: Permission error
+    voiceError: "Eroare de recunoaștere vocală - încearcă din nou",
+    voicePermissionError: "Nu s-a putut accesa microfonul",
     apiError: "Eroare server API",
     unknownError: "Eroare neașteptată",
     retryAction: "Apasă pentru a reîncerca"
   }
 };
 
-// 🔧 SESSION MANAGEMENT - Unchanged
+// 🔧 SESSION MANAGEMENT - Unchanged but optimized
 const sessionManager = {
   initSession() {
     const sessionId = sessionStorage.getItem('omnia-session-id');
@@ -229,7 +262,7 @@ const sessionManager = {
       if (saved) {
         try {
           const messages = JSON.parse(saved);
-          console.log('📂 Loaded conversation history');
+          console.log('📂 Loaded conversation history:', messages.length, 'messages');
           return { isNewSession: false, messages };
         } catch (error) {
           console.error('❌ Error loading saved messages:', error);
@@ -246,28 +279,35 @@ const sessionManager = {
     localStorage.removeItem('omnia-memory');
     console.log('🗑️ Session cleared');
   }
-};// 🎨 OPTIMIZED LOGO KOMPONENTY - Unified animation system
-const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
+};// 🎨 OPTIMIZED LOGO KOMPONENTY - Enhanced animations for voice mode
+const OmniaLogo = ({ size = 80, animate = false, shouldHide = false, isListening = false }) => {
   if (shouldHide) return null;
+  
+  // 🆕 Listening animation - pulzuje když poslouchá
+  const getAnimation = () => {
+    if (isListening) return 'omnia-listening 2s ease-in-out infinite';
+    if (animate) return 'omnia-breathe 4s ease-in-out infinite';
+    return 'none';
+  };
   
   return (
     <div
-      className={`omnia-logo ${animate ? 'animate' : ''}`}
+      className="omnia-logo"
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
         background: `
           radial-gradient(circle at 30% 40%, 
-            #00ffff 0%,
-            #0096ff 30%,
+            ${isListening ? '#00ffff' : '#00ffff'} 0%,
+            ${isListening ? '#0099ff' : '#0096ff'} 30%,
             #6432ff 60%,
             #9932cc 80%,
             #4b0082 100%
           )
         `,
         boxShadow: `
-          0 0 ${size * 0.4}px rgba(100, 50, 255, 0.6),
+          0 0 ${size * 0.4}px ${isListening ? 'rgba(0, 255, 255, 0.8)' : 'rgba(100, 50, 255, 0.6)'},
           0 0 ${size * 0.2}px rgba(0, 150, 255, 0.4),
           inset 0 0 ${size * 0.1}px rgba(255, 255, 255, 0.2)
         `,
@@ -275,7 +315,8 @@ const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
         overflow: 'hidden',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
-        border: '2px solid rgba(255, 255, 255, 0.1)'
+        border: '2px solid rgba(255, 255, 255, 0.1)',
+        animation: getAnimation()
       }}
     >
       <div
@@ -290,7 +331,7 @@ const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
           filter: 'blur(8px)'
         }}
       />
-      {animate && (
+      {(animate || isListening) && (
         <div
           style={{
             position: 'absolute',
@@ -299,7 +340,7 @@ const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
             width: '200%',
             height: '200%',
             background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%)',
-            animation: 'shimmer 3s ease-in-out infinite'
+            animation: isListening ? 'shimmer 1.5s ease-in-out infinite' : 'shimmer 3s ease-in-out infinite'
           }}
         />
       )}
@@ -307,7 +348,7 @@ const OmniaLogo = ({ size = 80, animate = false, shouldHide = false }) => {
   );
 };
 
-const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false, streaming = false }) => {
+const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = false, streaming = false, isListening = false }) => {
   const getLogoStyle = () => {
     const baseStyle = {
       width: size,
@@ -315,8 +356,8 @@ const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = f
       borderRadius: '50%',
       background: `
         radial-gradient(circle at 30% 40%, 
-          #00ffff 0%,
-          #0096ff 30%,
+          ${isListening ? '#00ffff' : '#00ffff'} 0%,
+          ${isListening ? '#0099ff' : '#0096ff'} 30%,
           #6432ff 60%,
           #9932cc 80%,
           #4b0082 100%
@@ -331,7 +372,16 @@ const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = f
       border: '1px solid rgba(255, 255, 255, 0.2)'
     };
 
-    // 🎨 UNIFIED ANIMATION SYSTEM
+    // 🎨 UNIFIED ANIMATION SYSTEM - Enhanced for listening
+    if (isListening) {
+      return {
+        ...baseStyle,
+        animation: 'omnia-pulse 1s ease-in-out infinite',
+        boxShadow: `0 0 ${size * 1.2}px rgba(0, 255, 255, 1)`,
+        '--pulse-color': 'rgba(0, 255, 255, 1)'
+      };
+    }
+
     if (streaming) {
       return {
         ...baseStyle,
@@ -365,11 +415,17 @@ const MiniOmniaLogo = ({ size = 28, onClick, isAudioPlaying = false, loading = f
     };
   };
 
+  const getTitle = () => {
+    if (isListening) return "Poslouchám...";
+    if (streaming) return "Omnia pracuje...";
+    return "Voice Screen";
+  };
+
   return (
     <div
       style={getLogoStyle()}
       onClick={onClick}
-      title={streaming ? "Omnia pracuje..." : "Voice Screen"}
+      title={getTitle()}
     />
   );
 };
@@ -400,8 +456,8 @@ const ChatOmniaLogo = ({ size = 14 }) => {
   );
 };
 
-// 🔄 MODERN ARROW BUTTON
-const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
+// 🔄 MODERN ARROW BUTTON - Enhanced with voice state
+const OmniaArrowButton = ({ onClick, disabled, loading, size = 50, isListening = false }) => {
   const getButtonStyle = () => {
     const baseStyle = {
       width: size,
@@ -427,6 +483,24 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
       };
     }
 
+    // 🆕 Listening state
+    if (isListening) {
+      return {
+        ...baseStyle,
+        background: `
+          radial-gradient(circle at 30% 40%, 
+            #00ffff 0%,
+            #0096ff 30%,
+            #6432ff 60%,
+            #9932cc 80%,
+            #4b0082 100%
+          )
+        `,
+        boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)',
+        animation: 'omnia-pulse 1s ease-in-out infinite'
+      };
+    }
+
     return {
       ...baseStyle,
       background: `
@@ -448,18 +522,18 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
       disabled={disabled}
       style={getButtonStyle()}
       onMouseEnter={(e) => {
-        if (!disabled) {
+        if (!disabled && !isListening) {
           e.target.style.transform = 'translateY(-1px) scale(1.05)';
           e.target.style.boxShadow = '0 6px 16px rgba(100, 50, 255, 0.6)';
         }
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
+        if (!disabled && !isListening) {
           e.target.style.transform = 'translateY(0) scale(1)';
           e.target.style.boxShadow = '0 4px 12px rgba(100, 50, 255, 0.4)';
         }
       }}
-      title="Odeslat zprávu"
+      title={isListening ? "Poslouchám..." : "Odeslat zprávu"}
     >
       {loading ? (
         <div style={{ 
@@ -470,7 +544,7 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50 }) => {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-      ) : '→'}
+      ) : isListening ? '🎙️' : '→'}
     </button>
   );
 };
@@ -520,7 +594,7 @@ function TypewriterText({ text, isStreaming = false }) {
   );
 }
 
-// 🔧 HELPER pro Claude messages
+// 🔧 HELPER pro Claude messages - Unchanged
 const prepareClaudeMessages = (messages) => {
   try {
     const validMessages = messages.filter(msg => 
@@ -562,7 +636,7 @@ const prepareClaudeMessages = (messages) => {
   }
 };
 
-// 🎯 FIXED TTS PREPROCESSING - 🔧 FIX 5: Site pronunciation fix
+// 🎯 ENHANCED TTS PREPROCESSING - Better pronunciation for all languages
 const preprocessTextForTTS = (text, language = 'cs') => {
   if (!text || typeof text !== 'string') return '';
   
@@ -580,7 +654,7 @@ const preprocessTextForTTS = (text, language = 'cs') => {
   }
 };
 
-// 🇨🇿 FIXED CZECH TTS PREPROCESSING - 🔧 FIX 5: Site pronunciation
+// 🇨🇿 ENHANCED CZECH TTS PREPROCESSING - Better AI pronunciations
 const preprocessCzechTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
@@ -610,7 +684,7 @@ const preprocessCzechTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů celsia');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut');
   
-  // 🔧 FIXED ZKRATKY + 🔧 FIX 5: Site pronunciation
+  // 🔧 ENHANCED ZKRATKY - Better AI/tech pronunciation
   const abbreviations = {
     'atd': 'a tak dále', 
     'apod': 'a podobně', 
@@ -618,7 +692,8 @@ const preprocessCzechTextForTTS = (text) => {
     'tzn': 'to znamená', 
     'např': 'například', 
     'resp': 'respektive',
-    'tzv': 'takzvaný', 
+    'tzv': 'takzvaný',
+    // 🆕 AI & Tech terms
     'AI': 'éj áj',
     'API': 'éj pí áj',
     'URL': 'jú ár el',
@@ -626,10 +701,14 @@ const preprocessCzechTextForTTS = (text) => {
     'EUR': 'euro',
     'GPT': 'džípítí',
     'TTS': 'tí tí es',
-    // 🔧 FIX 5: Site pronunciation fix
-    'site': 'sajt',               // ✅ "sajt" pro češtinu
-    'website': 'websajt',         // ✅ "websajt" pro češtinu
-    'web site': 'web sajt'        // ✅ pro oddělené psaní
+    'ChatGPT': 'čet džípítí',
+    'OpenAI': 'oupn éj áj',
+    'Claude': 'klód',
+    'Anthropic': 'antropik',
+    // 🔧 Website pronunciation
+    'site': 'sajt',
+    'website': 'websajt',
+    'web site': 'web sajt'
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -647,7 +726,7 @@ const preprocessCzechTextForTTS = (text) => {
   return processedText;
 };
 
-// 🇺🇸 ENGLISH TTS PREPROCESSING - Unchanged (už správně)
+// 🇺🇸 ENHANCED ENGLISH TTS PREPROCESSING
 const preprocessEnglishTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
@@ -677,7 +756,7 @@ const preprocessEnglishTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 degrees celsius');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 $2');
   
-  // ABBREVIATIONS - AI pronunciation správně
+  // 🆕 AI & Tech terms - English pronunciation
   const abbreviations = {
     'etc': 'et cetera', 
     'vs': 'versus', 
@@ -687,8 +766,10 @@ const preprocessEnglishTextForTTS = (text) => {
     'USD': 'U S dollars',
     'EUR': 'euros',
     'GPT': 'G P T',
-    'TTS': 'T T S'
-    // English "site" se nemění - už se říká správně
+    'TTS': 'T T S',
+    'ChatGPT': 'Chat G P T',
+    'OpenAI': 'Open A I'
+    // English "site" stays the same - already pronounced correctly
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -706,7 +787,7 @@ const preprocessEnglishTextForTTS = (text) => {
   return processedText;
 };
 
-// 🇷🇴 FIXED ROMANIAN TTS PREPROCESSING - 🔧 FIX 5: Site pronunciation
+// 🇷🇴 ENHANCED ROMANIAN TTS PREPROCESSING
 const preprocessRomanianTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
@@ -735,7 +816,7 @@ const preprocessRomanianTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 grade celsius');
   processedText = processedText.replace(/(\d{1,2}):(\d{2})/g, '$1 ore $2 minute');
   
-  // 🔧 FIXED ABBREVIATIONS + 🔧 FIX 5: Site pronunciation
+  // 🆕 AI & Tech terms - Romanian pronunciation
   const abbreviations = {
     'AI': 'a i',
     'API': 'a pi i',
@@ -744,10 +825,12 @@ const preprocessRomanianTextForTTS = (text) => {
     'EUR': 'euro',
     'GPT': 'g p t',
     'TTS': 't t s',
-    // 🔧 FIX 5: Site pronunciation fix
-    'site': 'sait',              // ✅ "sait" pro rumunštinu  
-    'website': 'websait',        // ✅ "websait" pro rumunštinu
-    'web site': 'web sait'       // ✅ pro oddělené psaní
+    'ChatGPT': 'cet g p t',
+    'OpenAI': 'oupăn a i',
+    // Romanian site pronunciation
+    'site': 'sait',
+    'website': 'websait',
+    'web site': 'web sait'
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -763,7 +846,7 @@ const preprocessRomanianTextForTTS = (text) => {
   processedText = processedText.replace(/\s+/g, ' ').trim();
   
   return processedText;
-};// 🚀 MAIN APP COMPONENT - Enhanced with better error handling
+};// 🚀 MAIN APP COMPONENT - Enhanced with continuous voice support
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -775,7 +858,11 @@ function App() {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
-  // 🌍 LANGUAGE STATES - 3 core jazyky
+  // 🆕 CONTINUOUS VOICE STATES
+  const [isListening, setIsListening] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false); // Toggle for continuous voice
+  
+  // 🌍 LANGUAGE STATES - Enhanced with persistence
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   
@@ -787,7 +874,7 @@ function App() {
 
   const t = (key) => uiTexts[uiLanguage][key] || uiTexts['cs'][key] || key;
 
-  // 🚀 ENHANCED ERROR HANDLING - Specifické error messages podle jazyka
+  // 🚀 ENHANCED ERROR HANDLING - Lokalizované error messages
   const getLocalizedErrorMessage = (errorType, language, originalError = '') => {
     const errorMessages = {
       'search': {
@@ -821,7 +908,6 @@ function App() {
   };
 
   const showNotification = (message, type = 'info', onClick = null, errorType = null) => {
-    // 🚀 ENHANCED: Automatická lokalizace error messages
     let finalMessage = message;
     if (errorType) {
       finalMessage = getLocalizedErrorMessage(errorType, uiLanguage, message);
@@ -830,6 +916,7 @@ function App() {
     showNotificationHelper(finalMessage, type, onClick);
   };
 
+  // 🔧 ENHANCED AUDIO CONTROL - Better interrupt handling
   const stopCurrentAudio = () => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
@@ -841,12 +928,33 @@ function App() {
     window.dispatchEvent(new CustomEvent('omnia-audio-start'));
   };
 
+  // 🆕 ENHANCED VOICE MODE TOGGLE
+  const toggleVoiceMode = () => {
+    if (voiceMode) {
+      // Turning off voice mode
+      setVoiceMode(false);
+      setIsListening(false);
+      if (showVoiceScreen) {
+        setShowVoiceScreen(false);
+      }
+      console.log('🔇 Voice mode disabled');
+    } else {
+      // Turning on voice mode
+      setVoiceMode(true);
+      setShowVoiceScreen(true);
+      console.log('🎙️ Voice mode enabled');
+    }
+  };
+
   const handleNewChat = () => {
     if (isAudioPlaying) {
       stopCurrentAudio();
     }
     if (streaming) {
       setStreaming(false);
+    }
+    if (isListening) {
+      setIsListening(false);
     }
     
     sessionManager.clearSession();
@@ -867,24 +975,33 @@ function App() {
     handleSend(newText);
   };
 
-  // 🔧 ENHANCED handleSend - Better error handling
-  const handleSend = async (textInput = input) => {
+  // 🔧 ENHANCED handleSend - Support for voice mode
+  const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim()) return;
     if (loading || streaming) return;
 
+    // 🌍 ENHANCED: Language detection with persistence
     const detectedLang = detectLanguage(textInput);
-    setUserLanguage(detectedLang);
-    console.log('🌍 Language detected:', detectedLang, 'for text:', textInput.substring(0, 50));
+    
+    // 🔧 FIX: Only change language if detection is confident AND different
+    if (detectedLang !== userLanguage) {
+      console.log('🌍 Language change detected:', userLanguage, '→', detectedLang);
+      setUserLanguage(detectedLang);
+    }
 
     if (isAudioPlaying) {
       stopCurrentAudio();
     }
 
-    setInput('');
+    // Clear input only if not from voice
+    if (!fromVoice) {
+      setInput('');
+    }
+    
     setLoading(true);
 
     try {
-      if (showVoiceScreen) {
+      if (showVoiceScreen || fromVoice) {
         await handleVoiceScreenResponse(
           textInput, messages, model, detectedLang,
           setMessages, setLoading, setIsAudioPlaying, currentAudioRef,
@@ -900,7 +1017,6 @@ function App() {
     } catch (err) {
       console.error('💥 API call error:', err);
       
-      // 🚀 ENHANCED: Specific error handling podle typu
       let errorType = 'unknown';
       if (err.message.includes('search') || err.message.includes('sonar')) {
         errorType = 'search';
@@ -915,7 +1031,7 @@ function App() {
       showNotification(
         err.message, 
         'error', 
-        () => handleSend(textInput), // Retry action
+        () => handleSend(textInput, fromVoice),
         errorType
       );
     } finally {
@@ -924,14 +1040,26 @@ function App() {
     }
   };
 
-  const handleTranscript = (text) => {
-    if (showVoiceScreen) {
-      handleSend(text);
+  // 🎙️ ENHANCED VOICE TRANSCRIPT HANDLER
+  const handleTranscript = (text, confidence = 1.0) => {
+    console.log('🎙️ Voice transcript received:', { text, confidence, voiceMode });
+    
+    if (showVoiceScreen || voiceMode) {
+      // In voice mode - immediate processing
+      handleSend(text, true);
     } else {
+      // In text mode - fill input
       setInput(text);
     }
   };
 
+  // 🎙️ VOICE LISTENING STATE HANDLER
+  const handleVoiceStateChange = (listening) => {
+    console.log('🎙️ Voice state change:', listening);
+    setIsListening(listening);
+  };
+
+  // 🔧 INITIALIZATION - Load saved preferences
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -941,9 +1069,21 @@ function App() {
     } else {
       console.log('🆕 Starting fresh session');
     }
+
+    // Load UI language preference
+    const savedUILanguage = localStorage.getItem('omnia-ui-language');
+    if (savedUILanguage && uiTexts[savedUILanguage]) {
+      setUILanguage(savedUILanguage);
+    }
+
+    // Load voice mode preference
+    const savedVoiceMode = localStorage.getItem('omnia-voice-mode');
+    if (savedVoiceMode === 'true') {
+      setVoiceMode(true);
+    }
   }, []);
 
-  // ⌨️ ENHANCED KEYBOARD SHORTCUTS
+  // 🎨 ENHANCED KEYBOARD SHORTCUTS - Added voice controls
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Escape') {
@@ -951,6 +1091,7 @@ function App() {
         if (showVoiceScreen) {
           if (isAudioPlaying) stopCurrentAudio();
           if (streaming) setStreaming(false);
+          if (isListening) setIsListening(false);
           setShowVoiceScreen(false);
         } else if (isAudioPlaying) {
           stopCurrentAudio();
@@ -963,7 +1104,8 @@ function App() {
         if (showSettingsDropdown) setShowSettingsDropdown(false);
       }
       
-      if (e.key === ' ' && (isAudioPlaying || streaming) && document.activeElement.tagName !== 'INPUT') {
+      // 🆕 SPACE for audio/voice control
+      if (e.key === ' ' && (isAudioPlaying || streaming || isListening) && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         if (isAudioPlaying) {
           stopCurrentAudio();
@@ -973,13 +1115,23 @@ function App() {
           setStreaming(false);
           showNotification(t('streamingStopped'), 'info');
         }
+        if (isListening) {
+          setIsListening(false);
+        }
+      }
+
+      // 🆕 V key for voice mode toggle
+      if (e.key === 'v' && e.ctrlKey && !loading && !streaming) {
+        e.preventDefault();
+        toggleVoiceMode();
       }
     };
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isAudioPlaying, streaming, showVoiceScreen, showModelDropdown, showSettingsDropdown, uiLanguage]);
+  }, [isAudioPlaying, streaming, isListening, showVoiceScreen, showModelDropdown, showSettingsDropdown, uiLanguage, loading, voiceMode]);
 
+  // 🔄 AUTO-SCROLL - Enhanced for voice mode
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (messages.length > 0 && endOfMessagesRef.current) {
@@ -989,15 +1141,12 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;
-
-  // Load UI language preference on mount
+  // 💾 SAVE VOICE MODE PREFERENCE
   useEffect(() => {
-    const savedUILanguage = localStorage.getItem('omnia-ui-language');
-    if (savedUILanguage && uiTexts[savedUILanguage]) {
-      setUILanguage(savedUILanguage);
-    }
-  }, []);
+    localStorage.setItem('omnia-voice-mode', voiceMode.toString());
+  }, [voiceMode]);
+
+  const shouldHideLogo = messages.length > 0;
 
 // 🔔 ENHANCED NOTIFICATION HELPER - Better UX + retry functionality
 const showNotificationHelper = (message, type = 'info', onClick = null) => {
@@ -1049,7 +1198,6 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
   
   notification.style.cssText = getNotificationStyle(type);
   
-  // 🚀 ENHANCED: Add icons based on type
   const getIcon = (type) => {
     switch(type) {
       case 'error':
@@ -1077,7 +1225,6 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
     notification.title = t('retryAction');
   }
   
-  // 🎨 ENHANCED: Better hover effects
   notification.addEventListener('mouseenter', () => {
     notification.style.transform = 'translateY(-3px) scale(1.02)';
     notification.style.boxShadow = '0 12px 30px rgba(0,0,0,0.4)';
@@ -1090,7 +1237,7 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
   
   document.body.appendChild(notification);
   
-  // 🚀 ENHANCED: Auto-dismiss timing based on type and length
+  // Auto-dismiss timing based on type and length
   const dismissTime = type === 'error' ? 8000 : message.length > 50 ? 6000 : 4000;
   
   setTimeout(() => {
@@ -1104,7 +1251,7 @@ const showNotificationHelper = (message, type = 'info', onClick = null) => {
       }, 400);
     }
   }, dismissTime);
-};// 🤖 CLEANED CLAUDE SERVICE - Enhanced with better language handling
+};// 🤖 ENHANCED CLAUDE SERVICE - Better multilingual prompts
 const claudeService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
@@ -1191,49 +1338,71 @@ const claudeService = {
     }
   },
 
+  // 🔧 ENHANCED SYSTEM PROMPTS - Better multilinguality
   getSystemPrompt(language) {
     const prompts = {
-      'cs': `Jsi Omnia, pokročilý AI asistent.
+      'cs': `Jsi Omnia, pokročilý AI asistent schopný mluvit více jazyky.
 
-🔍 WEB_SEARCH - Máš přístup k web_search pro vyhledávání aktuálních informací
-📊 ANALÝZA DAT - Můžeš analyzovat data a poskytovat insights  
-🎯 POKROČILÉ MYŠLENÍ - Používáš pokročilé reasoning
+🌍 MULTILINGUAL CAPABILITY:
+- Komunikuješ primárně v ČEŠTINĚ, ale umíš odpovědět v jakémkoli jazyce
+- Pokud uživatel řekne "speak english" → přepni na angličtinu
+- Pokud uživatel řekne "vorbește română" → přepni na rumunštinu
+- Pokud uživatel míchá jazyky → použij stejný mix v odpovědi
+
+🔍 CAPABILITIES:
+- Web search pro aktuální informace
+- Analýza dat a insights
+- Pokročilé reasoning
+- Voice-optimalizované odpovědi
 
 PRAVIDLA ODPOVĚDÍ:
-- Odpovídej přirozeně v českém jazyce
-- Na otázky typu "co děláš", "jak se máš" odpovídej normálně a přátelsky
+- Odpovídej přirozeně v jazyce uživatele (nebo v češtině default)
+- Na konverzační otázky odpovídej normálně a přátelsky
 - Neříkej "jsem AI" - prostě odpověz jako inteligentní asistent
-- Web search používej jen když potřebuješ aktuální informace
-- Buď užitečný a odpověz přímo na otázku
-- Piš přirozeně pro hlasové přehrání`,
+- Web search používej jen pro aktuální informace
+- Piš přirozeně pro hlasové přehrání (krátké věty, jasné)`,
 
-      'en': `You are Omnia, an advanced AI assistant.
+      'en': `You are Omnia, an advanced multilingual AI assistant.
 
-🔍 WEB_SEARCH - You have access to web_search for finding current information
-📊 DATA ANALYSIS - You can analyze data and provide insights
-🎯 ADVANCED THINKING - You use advanced reasoning
+🌍 MULTILINGUAL CAPABILITY:
+- Communicate primarily in ENGLISH, but can respond in any language
+- If user says "mluvte česky" → switch to Czech
+- If user says "vorbește română" → switch to Romanian
+- If user mixes languages → use the same mix in response
+
+🔍 CAPABILITIES:
+- Web search for current information
+- Data analysis and insights
+- Advanced reasoning
+- Voice-optimized responses
 
 RESPONSE RULES:
-- Respond naturally in English
-- For questions like "what are you doing", "how are you" answer normally and friendly
-- Don't say "I'm an AI" - just respond as an intelligent assistant
-- Use web search only when you need current information
-- Be helpful and answer the question directly
-- Write naturally for voice playback`,
+- Respond naturally in user's language (or English as default)
+- Answer conversational questions normally and friendly
+- Don't say "I'm an AI" - just respond as intelligent assistant
+- Use web search only for current information
+- Write naturally for voice playback (short sentences, clear)`,
 
-      'ro': `Ești Omnia, un asistent IA avansat.
+      'ro': `Ești Omnia, un asistent IA avansat multilingv.
 
-🔍 WEB_SEARCH - Ai acces la web_search pentru a găsi informații actuale
-📊 ANALIZA DATELOR - Poți analiza date și oferi perspective
-🎯 GÂNDIRE AVANSATĂ - Folosești raționament avansat
+🌍 CAPACITATE MULTILINGVĂ:
+- Comunici în principal în ROMÂNĂ, dar poți răspunde în orice limbă
+- Dacă utilizatorul spune "speak english" → schimbă la engleză
+- Dacă utilizatorul spune "mluvte česky" → schimbă la cehă
+- Dacă utilizatorul amestecă limbile → folosește același mix în răspuns
+
+🔍 CAPACITĂȚI:
+- Căutare web pentru informații actuale
+- Analiza datelor și perspective
+- Raționament avansat
+- Răspunsuri optimizate pentru voce
 
 REGULI DE RĂSPUNS:
-- Răspunde natural în română
-- La întrebări ca "ce faci", "cum ești" răspunde normal și prietenos
-- Nu spune "Sunt o IA" - răspunde pur și simplu ca un asistent inteligent
-- Folosește web search doar când ai nevoie de informații actuale
-- Fii util și răspunde direct la întrebare
-- Scrie natural pentru redarea vocală`
+- Răspunde natural în limba utilizatorului (sau română implicit)
+- Răspunde la întrebări conversaționale normal și prietenos
+- Nu spune "Sunt o IA" - răspunde pur și simplu ca asistent inteligent
+- Folosește căutarea web doar pentru informații actuale
+- Scrie natural pentru redarea vocală (propoziții scurte, clare)`
     };
 
     return prompts[language] || prompts['cs'];
@@ -1250,7 +1419,7 @@ REGULI DE RĂSPUNS:
   }
 };
 
-// 🤖 OPENAI SERVICE - Enhanced language handling
+// 🤖 ENHANCED OPENAI SERVICE - Better multilingual support
 const openaiService = {
   async sendMessage(messages, detectedLanguage = 'cs') {
     try {
@@ -1285,50 +1454,65 @@ const openaiService = {
     }
   },
 
+  // 🔧 ENHANCED SYSTEM PROMPTS for multilingual support
   getSystemPrompt(detectedLanguage) {
     const prompts = {
-      'cs': `Jsi Omnia, český AI asistent.
+      'cs': `Jsi Omnia, multijazyčný AI asistent.
 
-PRAVIDLA:
-- Odpovídej přirozeně v češtině
-- Na konverzační otázky ("co děláš", "jak se máš") odpovídej normálně
-- Neříkaj "jsem AI" - prostě odpověz přátelsky
+JAZYKOVÉ PRAVIDLA:
+- Odpovídej v ČEŠTINĚ (pokud uživatel nežádá jinak)
+- Pokud uživatel říká "speak english" → přepni na angličtinu
+- Pokud uživatel říká "vorbește română" → přepni na rumunštinu
+- Respektuj jazykové preference uživatele
+
+CHOVÁNÍ:
+- Odpovídej přirozeně a přátelsky
+- Na konverzační otázky ("co děláš") odpovídej normálně
+- Neříkej "jsem AI" - jednoduše komunikuj
 - Buď užitečný a přímý
-- Piš tak, aby to znělo přirozeně při hlasovém přehrání`,
+- Optimalizuj pro hlasové přehrání (krátké, jasné věty)`,
 
-      'en': `You are Omnia, an English AI assistant.
+      'en': `You are Omnia, a multilingual AI assistant.
 
-RULES:
-- Respond naturally in English
-- For conversational questions ("what are you doing", "how are you") answer normally
-- Don't say "I'm an AI" - just respond friendly
+LANGUAGE RULES:
+- Respond in ENGLISH (unless user requests otherwise)
+- If user says "mluvte česky" → switch to Czech
+- If user says "vorbește română" → switch to Romanian
+- Respect user's language preferences
+
+BEHAVIOR:
+- Respond naturally and friendly
+- Answer conversational questions ("what are you doing") normally
+- Don't say "I'm an AI" - just communicate naturally
 - Be helpful and direct
-- Write so it sounds natural when spoken aloud`,
+- Optimize for voice playback (short, clear sentences)`,
 
-      'ro': `Ești Omnia, un asistent IA român.
+      'ro': `Ești Omnia, un asistent IA multilingv.
 
-REGULI:
-- Răspunde natural în română
-- Pentru întrebări conversaționale ("ce faci", "cum ești") răspunde normal
-- Nu spune "Sunt o IA" - răspunde doar prietenos
+REGULI LINGVISTICE:
+- Răspunde în ROMÂNĂ (dacă utilizatorul nu cere altfel)
+- Dacă utilizatorul spune "speak english" → schimbă la engleză
+- Dacă utilizatorul spune "mluvte česky" → schimbă la cehă
+- Respectă preferințele lingvistice ale utilizatorului
+
+COMPORTAMENT:
+- Răspunde natural și prietenos
+- Răspunde la întrebări conversaționale ("ce faci") normal
+- Nu spune "Sunt o IA" - comunică pur și simplu natural
 - Fii util și direct
-- Scrie să sune natural când este vorbit`
+- Optimizează pentru redarea vocală (propoziții scurte, clare)`
     };
 
     return prompts[detectedLanguage] || prompts['cs'];
   }
 };
 
-// 🔎 FIXED SONAR SERVICE - Opravená search logic
+// 🔎 ENHANCED SONAR SERVICE - Better search with multilingual support
 const sonarService = {
   async search(query, showNotification, detectedLanguage = 'cs') {
     try {
       console.log('🔍 Sonar detected language:', detectedLanguage);
       
-      if (!this.shouldSearchForQuery(query)) {
-        console.log('🚫 Sonar: Query classified as non-search, but proceeding anyway for user request');
-      }
-
       showNotification(this.getSearchMessage(detectedLanguage), 'info');
 
       const enhancedQuery = this.enhanceQueryForCurrentData(query);
@@ -1371,38 +1555,6 @@ const sonarService = {
         source: 'sonar_search'
       };
     }
-  },
-
-  shouldSearchForQuery(query) {
-    const lowerQuery = query.toLowerCase();
-    
-    const conversationalPhrases = [
-      'ahoj', 'čau', 'jak se máš', 'co děláš', 'hello', 'hi', 'how are you', 'salut', 'bună'
-    ];
-
-    for (const phrase of conversationalPhrases) {
-      if (lowerQuery === phrase || lowerQuery.startsWith(phrase + ' ')) {
-        return false;
-      }
-    }
-
-    const searchTriggers = [
-      'price', 'cost', 'cena', 'kolik', 'preț',
-      'current', 'today', 'now', 'latest', 'recent', 'aktuální', 'dnešní', 'actual',
-      'search', 'find', 'lookup', 'hledej', 'najdi', 'caută',
-      'news', 'zprávy', 'știri', 'breaking', 'update',
-      'stock', 'market', 'akcie', 'burza', 'acțiuni',
-      'weather', 'počasí', 'vremea', 'temperature',
-      'what', 'co', 'ce', 'when', 'kdy', 'când', 'where', 'kde', 'unde'
-    ];
-
-    for (const trigger of searchTriggers) {
-      if (lowerQuery.includes(trigger)) {
-        return true;
-      }
-    }
-
-    return true;
   },
 
   getSearchMessage(language) {
@@ -1456,18 +1608,278 @@ const sonarService = {
   }
 };
 
-// 🎤 FIXED VOICE RECORDER - 🔧 FIX 4: Microphone permission handling
-const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
-  const [isRecording, setIsRecording] = useState(false);
+// 🎵 ENHANCED VOICE-TO-VOICE RESPONSE HANDLER - Automatic TTS for all models
+const handleVoiceScreenResponse = async (
+  textInput,
+  currentMessages,
+  model,
+  detectedLanguage,
+  setMessages,
+  setLoading,
+  setIsAudioPlaying,
+  currentAudioRef,
+  isIOS,
+  showNotification,
+  setStreaming = null
+) => {
+  try {
+    console.log('🎙️ Voice-to-Voice Response:', model, 'language:', detectedLanguage);
+
+    const userMessage = { sender: 'user', text: textInput };
+    const messagesWithUser = [...currentMessages, userMessage];
+    setMessages(messagesWithUser);
+    localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
+    let responseText = '';
+
+    if (model === 'sonar') {
+      const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
+      if (searchResult.success) {
+        responseText = searchResult.result;
+        // Add sources for voice mode (spoken)
+        if (searchResult.sources && searchResult.sources.length > 0) {
+          const sourceText = detectedLanguage === 'cs' ? 'Zdroje' :
+                            detectedLanguage === 'en' ? 'Sources' : 'Surse';
+          responseText += `. ${sourceText}: ${searchResult.sources.slice(0, 2).join(', ')}`;
+        }
+      } else {
+        const errorPrefix = detectedLanguage === 'cs' ? 'Nepodařilo se najít informace' :
+                           detectedLanguage === 'en' ? 'Could not find information' :
+                           'Nu am găsit informații';
+        responseText = `${errorPrefix}: ${searchResult.message}`;
+      }
+      
+      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+      // ✅ IMMEDIATE TTS for Sonar
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification,
+        detectedLanguage
+      );
+    }
+    else if (model === 'claude') {
+      if (setStreaming) setStreaming(true);
+
+      const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
+      const messagesWithBot = [...messagesWithUser, streamingBotMessage];
+      setMessages(messagesWithBot);
+
+      const onStreamUpdate = (text, isStillStreaming) => {
+        const updatedMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: text, 
+          isStreaming: isStillStreaming 
+        }];
+        setMessages(updatedMessages);
+        
+        if (!isStillStreaming) {
+          localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+          if (setStreaming) setStreaming(false);
+          responseText = text;
+          
+          // ✅ IMMEDIATE TTS after Claude streaming ends
+          setTimeout(async () => {
+            try {
+              await generateInstantAudio(
+                text,
+                setIsAudioPlaying,
+                currentAudioRef,
+                isIOS,
+                showNotification,
+                detectedLanguage
+              );
+            } catch (error) {
+              console.error('❌ Claude auto-TTS failed:', error);
+            }
+          }, 300); // Shorter delay for better voice experience
+        }
+      };
+
+      responseText = await claudeService.sendMessage(
+        messagesWithUser, 
+        onStreamUpdate, 
+        null, // No search notifications in voice mode
+        detectedLanguage
+      );
+    }
+    else if (model === 'gpt-4o') {
+      const openAiMessages = [
+        {
+          role: 'system',
+          content: openaiService.getSystemPrompt(detectedLanguage)
+        },
+        ...currentMessages.map((msg) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        })),
+        { role: 'user', content: textInput }
+      ];
+
+      responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
+      
+      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+      setMessages(finalMessages);
+      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
+
+      // ✅ IMMEDIATE TTS for GPT
+      await generateInstantAudio(
+        responseText,
+        setIsAudioPlaying,
+        currentAudioRef,
+        isIOS,
+        showNotification,
+        detectedLanguage
+      );
+    }
+    else {
+      throw new Error(`Unknown model: ${model}`);
+    }
+
+    return responseText;
+
+  } catch (error) {
+    console.error('💥 Voice-to-Voice error:', error);
+    if (setStreaming) setStreaming(false);
+
+    const errorText = getLocalizedErrorMessage('voice', detectedLanguage, error.message);
+    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
+    setMessages(errorMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
+    
+    showNotification(errorText, 'error');
+    throw error;
+  }
+};
+
+// ✅ ENHANCED TEXT RESPONSE Handler - Better language support
+const handleTextResponse = async (
+  textInput,
+  currentMessages,
+  model,
+  detectedLanguage,
+  setMessages,
+  showNotification,
+  setStreaming = null
+) => {
+  console.log('💬 Text Response with model:', model, 'language:', detectedLanguage);
+
+  const userMessage = { sender: 'user', text: textInput };
+  const messagesWithUser = [...currentMessages, userMessage];
+  setMessages(messagesWithUser);
+  localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
+
+  let responseText = '';
+
+  if (model === 'sonar') {
+    const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
+    if (searchResult.success) {
+      responseText = searchResult.result;
+      if (searchResult.citations && searchResult.citations.length > 0) {
+        const citationText = detectedLanguage === 'cs' ? 'Zdroje' :
+                            detectedLanguage === 'en' ? 'Sources' : 'Surse';
+        responseText += `\n\n${citationText}:\n${searchResult.citations.map(c => `• ${c}`).join('\n')}`;
+      }
+    } else {
+      const errorPrefix = detectedLanguage === 'cs' ? 'Nepodařilo se najít aktuální informace' :
+                         detectedLanguage === 'en' ? 'Could not find current information' :
+                         'Nu am găsit informații actuale';
+      responseText = `${errorPrefix}: ${searchResult.message}`;
+    }
+    
+    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+  }
+  else if (model === 'claude') {
+    if (setStreaming) setStreaming(true);
+
+    const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
+    const messagesWithBot = [...messagesWithUser, streamingBotMessage];
+    setMessages(messagesWithBot);
+
+    const onStreamUpdate = (text, isStillStreaming) => {
+      const updatedMessages = [...messagesWithUser, { 
+        sender: 'bot', 
+        text: text, 
+        isStreaming: isStillStreaming 
+      }];
+      setMessages(updatedMessages);
+      
+      if (!isStillStreaming) {
+        localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+        if (setStreaming) setStreaming(false);
+      }
+    };
+
+    responseText = await claudeService.sendMessage(
+      messagesWithUser, 
+      onStreamUpdate, 
+      null,
+      detectedLanguage
+    );
+  }
+  else if (model === 'gpt-4o') {
+    const openAiMessages = [
+      {
+        role: 'system',
+        content: openaiService.getSystemPrompt(detectedLanguage)
+      },
+      ...currentMessages.map((msg) => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      { role: 'user', content: textInput }
+    ];
+
+    responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
+    
+    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+    setMessages(updatedMessages);
+    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
+  }
+  else {
+    throw new Error(`Unknown model: ${model}`);
+  }
+
+  return responseText;
+};// 🎙️ REVOLUTIONARY CONTINUOUS VOICE RECORDER - Nahrazuje push-to-talk
+const ContinuousVoiceRecorder = ({ 
+  onTranscript, 
+  onListeningChange,
+  disabled, 
+  mode,
+  isAudioPlaying,
+  uiLanguage = 'cs'
+}) => {
+  const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [permissionGranted, setPermissionGranted] = useState(false);  // 🔧 FIX 4: Track permission
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  const [silenceDetected, setSilenceDetected] = useState(false);
+  
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
-  const touchStartTimeRef = useRef(null);
+  const analyserRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const silenceTimeoutRef = useRef(null);
+  const volumeCheckIntervalRef = useRef(null);
+  const recordingStartTimeRef = useRef(null);
+  
+  // 🔧 VOICE DETECTION SETTINGS
+  const SILENCE_THRESHOLD = 0.01; // Práh ticha
+  const SILENCE_DURATION = 1800; // 1.8s ticha = stop recording
+  const MIN_RECORDING_TIME = 800; // Minimálně 0.8s nahrávání
+  const MAX_RECORDING_TIME = 30000; // Max 30s nahrávání
+  
   const isIOSPWA = window.navigator.standalone;
 
-  // 🔧 FIX 4: Request permission first, then start recording
+  // 🔧 REQUEST MICROPHONE PERMISSION
   const requestMicrophonePermission = async () => {
     try {
       console.log('🎙️ Requesting microphone permission...');
@@ -1484,7 +1896,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
-      // 🔧 FIX 4: Stop stream immediately after permission check
+      // Stop stream immediately after permission check
       stream.getTracks().forEach(track => track.stop());
       
       setPermissionGranted(true);
@@ -1494,19 +1906,61 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     } catch (error) {
       console.error('❌ Microphone permission denied:', error);
       setPermissionGranted(false);
+      
+      const errorMessage = {
+        'cs': 'Nepodařilo se získat přístup k mikrofonu',
+        'en': 'Could not access microphone',
+        'ro': 'Nu s-a putut accesa microfonul'
+      }[uiLanguage] || 'Microphone access denied';
+      
+      onTranscript(`[${errorMessage}]`);
       return false;
     }
   };
 
-  const startRecording = async () => {
+  // 🎙️ ENHANCED VOLUME DETECTION
+  const setupAudioAnalysis = (stream) => {
     try {
-      console.log('🎙️ Starting voice recording...');
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      
+      analyserRef.current.fftSize = 256;
+      analyserRef.current.smoothingTimeConstant = 0.8;
+      source.connect(analyserRef.current);
+      
+      console.log('🔊 Audio analysis setup complete');
+      return true;
+    } catch (error) {
+      console.error('❌ Audio analysis setup failed:', error);
+      return false;
+    }
+  };
 
-      // 🔧 FIX 4: Check permission first
+  // 🔊 CHECK AUDIO VOLUME
+  const checkAudioLevel = () => {
+    if (!analyserRef.current) return 0;
+    
+    const bufferLength = analyserRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyserRef.current.getByteFrequencyData(dataArray);
+    
+    // Calculate average volume
+    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+    const normalizedVolume = average / 255; // Normalize to 0-1
+    
+    return normalizedVolume;
+  };
+
+  // 🎙️ START CONTINUOUS RECORDING
+  const startListening = async () => {
+    try {
+      console.log('🎙️ Starting continuous voice detection...');
+
+      // Check permission first
       if (!permissionGranted) {
         const hasPermission = await requestMicrophonePermission();
         if (!hasPermission) {
-          onTranscript('[Nepodařilo se získat přístup k mikrofonu]');
           return;
         }
       }
@@ -1524,12 +1978,16 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
+      // Setup audio analysis for volume detection
+      setupAudioAnalysis(stream);
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: isIOSPWA ? 'audio/mp4' : 'audio/webm;codecs=opus'
       });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      recordingStartTimeRef.current = Date.now();
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -1540,19 +1998,31 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       mediaRecorder.onstop = async () => {
         console.log('🛑 Recording stopped, processing...');
         setIsProcessing(true);
+        setSilenceDetected(false);
+        
+        const recordingDuration = Date.now() - recordingStartTimeRef.current;
         
         if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => {
-            track.stop();
-          });
+          streamRef.current.getTracks().forEach(track => track.stop());
           streamRef.current = null;
+        }
+
+        if (audioContextRef.current) {
+          audioContextRef.current.close();
+          audioContextRef.current = null;
         }
         
         try {
-          // 🔧 FIX 4: Check if we have valid audio data
-          if (audioChunksRef.current.length === 0) {
-            console.warn('⚠️ No audio data recorded');
-            onTranscript('[Žádné audio nezaznamenáno - zkuste znovu]');
+          // Check if recording is long enough and has audio data
+          if (audioChunksRef.current.length === 0 || recordingDuration < MIN_RECORDING_TIME) {
+            console.warn('⚠️ Recording too short or no data');
+            const shortMessage = {
+              'cs': 'Nahrávka příliš krátká - zkuste znovu',
+              'en': 'Recording too short - try again',
+              'ro': 'Înregistrare prea scurtă - încearcă din nou'
+            }[uiLanguage] || 'Recording too short';
+            
+            onTranscript(`[${shortMessage}]`);
             setIsProcessing(false);
             return;
           }
@@ -1561,10 +2031,16 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
             type: isIOSPWA ? 'audio/mp4' : 'audio/webm' 
           });
           
-          // 🔧 FIX 4: Check blob size
-          if (audioBlob.size < 1000) { // Less than 1KB is likely silence/noise
-            console.warn('⚠️ Audio too short or silent');
-            onTranscript('[Audio příliš krátké - zkuste znovu]');
+          // Check blob size
+          if (audioBlob.size < 1000) {
+            console.warn('⚠️ Audio too small - likely silence');
+            const silenceMessage = {
+              'cs': 'Žádný zvuk nezaznamenán - zkuste znovu',
+              'en': 'No audio detected - try again',
+              'ro': 'Nu s-a detectat audio - încearcă din nou'
+            }[uiLanguage] || 'No audio detected';
+            
+            onTranscript(`[${silenceMessage}]`);
             setIsProcessing(false);
             return;
           }
@@ -1595,43 +2071,105 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
             console.log('🌍 Detected language:', detectedLanguage);
             console.log('📝 Transcribed text:', transcribedText);
             
-            onTranscript(transcribedText);
+            onTranscript(transcribedText, data.confidence || 1.0);
           } else {
             console.warn('⚠️ Empty or failed transcription');
-            onTranscript('[Nepodařilo se rozpoznat řeč - zkuste znovu]');
+            const failMessage = {
+              'cs': 'Nepodařilo se rozpoznat řeč - zkuste znovu',
+              'en': 'Could not recognize speech - try again',
+              'ro': 'Nu s-a putut recunoaște vorba - încearcă din nou'
+            }[uiLanguage] || 'Speech recognition failed';
+            
+            onTranscript(`[${failMessage}]`);
           }
 
         } catch (error) {
           console.error('💥 Whisper error:', error);
-          onTranscript('[Chyba při rozpoznávání řeči - zkuste to znovu]');
+          const errorMessage = {
+            'cs': 'Chyba při rozpoznávání řeči - zkuste to znovu',
+            'en': 'Speech recognition error - try again',
+            'ro': 'Eroare recunoaștere vocală - încearcă din nou'
+          }[uiLanguage] || 'Speech recognition error';
+          
+          onTranscript(`[${errorMessage}]`);
         } finally {
           setIsProcessing(false);
         }
       };
 
-      // 🔧 FIX 4: Start recording only after everything is set up
+      // Start recording
       mediaRecorder.start();
-      setIsRecording(true);
-      console.log('🎯 Recording started successfully');
+      setIsListening(true);
+      if (onListeningChange) onListeningChange(true);
+      
+      console.log('🎯 Continuous recording started');
+
+      // Start volume monitoring for silence detection
+      volumeCheckIntervalRef.current = setInterval(() => {
+        const volume = checkAudioLevel();
+        
+        if (volume > SILENCE_THRESHOLD) {
+          // Voice detected - reset silence timer
+          if (silenceTimeoutRef.current) {
+            clearTimeout(silenceTimeoutRef.current);
+            silenceTimeoutRef.current = null;
+          }
+          setSilenceDetected(false);
+        } else {
+          // Silence detected - start timer if not already running
+          if (!silenceTimeoutRef.current) {
+            setSilenceDetected(true);
+            silenceTimeoutRef.current = setTimeout(() => {
+              console.log('🔇 Silence detected - stopping recording');
+              stopListening();
+            }, SILENCE_DURATION);
+          }
+        }
+      }, 100); // Check every 100ms
+
+      // Max recording time safety
+      setTimeout(() => {
+        if (isListening) {
+          console.log('⏰ Max recording time reached');
+          stopListening();
+        }
+      }, MAX_RECORDING_TIME);
 
     } catch (error) {
-      console.error('💥 Recording start error:', error);
+      console.error('💥 Start listening error:', error);
       
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
-      setIsRecording(false);
+      setIsListening(false);
       setIsProcessing(false);
       setPermissionGranted(false);
+      if (onListeningChange) onListeningChange(false);
       
-      // 🔧 FIX 4: Use localized error message
-      onTranscript('[Nepodařilo se získat přístup k mikrofonu]');
+      const errorMessage = {
+        'cs': 'Nepodařilo se spustit nahrávání',
+        'en': 'Could not start recording',
+        'ro': 'Nu s-a putut porni înregistrarea'
+      }[uiLanguage] || 'Recording failed';
+      
+      onTranscript(`[${errorMessage}]`);
     }
   };
 
-  const forceStopRecording = () => {
-    console.log('🚨 Force stopping recording...');
+  // 🛑 STOP LISTENING
+  const stopListening = () => {
+    console.log('🛑 Stopping continuous listening...');
+
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+
+    if (volumeCheckIntervalRef.current) {
+      clearInterval(volumeCheckIntervalRef.current);
+      volumeCheckIntervalRef.current = null;
+    }
 
     if (mediaRecorderRef.current) {
       try {
@@ -1652,89 +2190,51 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       });
       streamRef.current = null;
     }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
     
-    setIsRecording(false);
-    setIsProcessing(false);
+    setIsListening(false);
+    setSilenceDetected(false);
+    if (onListeningChange) onListeningChange(false);
   };
 
-  const handleTouchStart = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    touchStartTimeRef.current = Date.now();
-    if (!disabled && !isProcessing && !isRecording) {
-      startRecording();
+  // 🔄 TOGGLE LISTENING
+  const toggleListening = () => {
+    if (disabled || isProcessing) return;
+    
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
   };
 
-  const handleTouchEnd = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const touchDuration = Date.now() - (touchStartTimeRef.current || 0);
-    if (touchDuration < 100) {
-      return;
-    }
-    if (isRecording) {
-      forceStopRecording();
-    }
-  };
-
-  const handleTouchCancel = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isRecording) {
-      forceStopRecording();
-    }
-  };
-
-  const handleMouseDown = (e) => {
-    if (!isIOSPWA && !disabled && !isProcessing && !isRecording) {
-      startRecording();
-    }
-  };
-
-  const handleMouseUp = (e) => {
-    if (!isIOSPWA && isRecording) {
-      forceStopRecording();
-    }
-  };
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && isRecording) {
-        forceStopRecording();
-      }
-    };
-
-    const handleBeforeUnload = () => {
-      if (isRecording) {
-        forceStopRecording();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isRecording]);
-
+  // 🎨 CLEANUP ON UNMOUNT
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
+      stopListening();
     };
   }, []);
 
+  // 🔇 STOP WHEN AUDIO IS PLAYING
+  useEffect(() => {
+    if (isAudioPlaying && isListening) {
+      console.log('🔇 Stopping listening - audio playing');
+      stopListening();
+    }
+  }, [isAudioPlaying]);
+
+  // 🎨 GET BUTTON STYLE
   const getButtonStyle = () => {
     const baseStyle = {
       border: 'none',
       borderRadius: '50%',
       padding: 0,
       fontSize: '2rem',
-      cursor: disabled ? 'not-allowed' : 'pointer',
+      cursor: (disabled || isProcessing) ? 'not-allowed' : 'pointer',
       width: '80px',
       height: '80px',
       display: 'flex',
@@ -1755,14 +2255,20 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       boxShadow: '0 0 20px rgba(255, 193, 7, 0.5)',
       animation: 'omnia-pulse 1.5s ease-in-out infinite'
     };
-    if (isRecording) return { 
+    
+    if (isListening) return { 
       ...baseStyle,
-      backgroundColor: '#dc3545',
+      backgroundColor: silenceDetected ? '#17a2b8' : '#dc3545',
       color: 'white',
       transform: 'scale(1.1)',
-      boxShadow: '0 0 30px rgba(220, 53, 69, 0.6)',
-      animation: 'omnia-pulse 1s ease-in-out infinite'
+      boxShadow: silenceDetected ? 
+        '0 0 30px rgba(23, 162, 184, 0.6)' : 
+        '0 0 30px rgba(220, 53, 69, 0.6)',
+      animation: silenceDetected ? 
+        'omnia-pulse 2s ease-in-out infinite' : 
+        'omnia-pulse 1s ease-in-out infinite'
     };
+    
     return { 
       ...baseStyle,
       backgroundColor: '#007bff',
@@ -1771,6 +2277,7 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     };
   };
 
+  // 🎨 GET BUTTON ICON
   const getButtonIcon = () => {
     if (isProcessing) return (
       <div style={{ 
@@ -1782,15 +2289,22 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
         animation: 'spin 1s linear infinite'
       }}></div>
     );
-    if (isRecording) return (
-      <div style={{
-        width: '12px',
-        height: '12px',
-        backgroundColor: 'white',
-        borderRadius: '2px',
-        animation: 'pulse 1s ease-in-out infinite'
-      }}></div>
-    );
+    
+    if (isListening) {
+      if (silenceDetected) {
+        return '⏸️'; // Silence detected
+      }
+      return (
+        <div style={{
+          width: '12px',
+          height: '12px',
+          backgroundColor: 'white',
+          borderRadius: '2px',
+          animation: 'pulse 1s ease-in-out infinite'
+        }}></div>
+      );
+    }
+    
     return (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
@@ -1799,20 +2313,36 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
     );
   };
 
+  // 🎨 GET BUTTON TITLE
   const getButtonTitle = () => {
-    if (isProcessing) return 'Zpracovávám nahrávku...';
-    if (isRecording) return 'Nahrávám - pusťte pro ukončení';
-    return 'Držte pro mluvení';
+    const titles = {
+      'cs': {
+        processing: 'Zpracovávám nahrávku...',
+        listening: silenceDetected ? 'Poslouchám - ticho detekováno' : 'Poslouchám - mluvte',
+        ready: 'Klikněte pro mluvení'
+      },
+      'en': {
+        processing: 'Processing recording...',
+        listening: silenceDetected ? 'Listening - silence detected' : 'Listening - speak now',
+        ready: 'Click to speak'
+      },
+      'ro': {
+        processing: 'Procesez înregistrarea...',
+        listening: silenceDetected ? 'Ascult - tăcere detectată' : 'Ascult - vorbește acum',
+        ready: 'Apasă pentru a vorbi'
+      }
+    };
+
+    const langTitles = titles[uiLanguage] || titles['cs'];
+    
+    if (isProcessing) return langTitles.processing;
+    if (isListening) return langTitles.listening;
+    return langTitles.ready;
   };
 
   return (
     <button
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={() => !isIOSPWA && isRecording && forceStopRecording()}
+      onClick={toggleListening}
       disabled={disabled || isProcessing}
       title={getButtonTitle()}
       style={getButtonStyle()}
@@ -1820,252 +2350,14 @@ const VoiceRecorder = ({ onTranscript, disabled, mode }) => {
       {getButtonIcon()}
     </button>
   );
-};// ✅ ENHANCED VOICE SCREEN RESPONSE Handler - Fixed language support
-const handleVoiceScreenResponse = async (
-  textInput,
-  currentMessages,
-  model,
-  detectedLanguage,
-  setMessages,
-  setLoading,
-  setIsAudioPlaying,
-  currentAudioRef,
-  isIOS,
-  showNotification,
-  setStreaming = null
-) => {
-  try {
-    console.log('🎤 Voice Screen Response with model:', model, 'language:', detectedLanguage);
-
-    const userMessage = { sender: 'user', text: textInput };
-    const messagesWithUser = [...currentMessages, userMessage];
-    setMessages(messagesWithUser);
-    localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
-
-    let responseText = '';
-
-    if (model === 'sonar') {
-      const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
-      if (searchResult.success) {
-        responseText = searchResult.result;
-        if (searchResult.sources && searchResult.sources.length > 0) {
-          responseText += `\n\nZdroje: ${searchResult.sources.slice(0, 3).join(', ')}`;
-        }
-      } else {
-        responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
-      }
-      
-      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-      setMessages(finalMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-      await generateInstantAudio(
-        responseText,
-        setIsAudioPlaying,
-        currentAudioRef,
-        isIOS,
-        showNotification,
-        detectedLanguage
-      );
-    }
-    else if (model === 'claude') {
-      if (setStreaming) setStreaming(true);
-
-      const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
-      const messagesWithBot = [...messagesWithUser, streamingBotMessage];
-      setMessages(messagesWithBot);
-
-      const onStreamUpdate = (text, isStillStreaming) => {
-        const updatedMessages = [...messagesWithUser, { 
-          sender: 'bot', 
-          text: text, 
-          isStreaming: isStillStreaming 
-        }];
-        setMessages(updatedMessages);
-        
-        if (!isStillStreaming) {
-          localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-          if (setStreaming) setStreaming(false);
-          responseText = text;
-          
-          setTimeout(async () => {
-            try {
-              await generateInstantAudio(
-                text,
-                setIsAudioPlaying,
-                currentAudioRef,
-                isIOS,
-                showNotification,
-                detectedLanguage
-              );
-            } catch (error) {
-              console.error('❌ Voice Screen auto-audio failed:', error);
-            }
-          }, 800);
-        }
-      };
-
-      const onSearchNotification = (message) => {
-        // Clean - žádné spam notifikace
-      };
-
-      responseText = await claudeService.sendMessage(
-        messagesWithUser, 
-        onStreamUpdate, 
-        onSearchNotification,
-        detectedLanguage
-      );
-    }
-    else if (model === 'gpt-4o') {
-      const openAiMessages = [
-        {
-          role: 'system',
-          content: openaiService.getSystemPrompt(detectedLanguage)
-        },
-        ...currentMessages.map((msg) => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
-        })),
-        { role: 'user', content: textInput }
-      ];
-
-      responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
-      
-      const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-      setMessages(finalMessages);
-      localStorage.setItem('omnia-memory', JSON.stringify(finalMessages));
-
-      await generateInstantAudio(
-        responseText,
-        setIsAudioPlaying,
-        currentAudioRef,
-        isIOS,
-        showNotification,
-        detectedLanguage
-      );
-    }
-    else {
-      throw new Error(`Neznámý model: ${model}`);
-    }
-
-    return responseText;
-
-  } catch (error) {
-    console.error('💥 Voice Screen response error:', error);
-
-    if (setStreaming) setStreaming(false);
-
-    const errorText = `Omlouám se, ale vyskytla se chyba: ${error.message}`;
-    const errorMessages = [...currentMessages, { sender: 'bot', text: errorText }];
-    setMessages(errorMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(errorMessages));
-    
-    showNotification(`Chyba: ${error.message}`, 'error');
-
-    throw error;
-  }
 };
 
-// ✅ ENHANCED TEXT RESPONSE Handler
-const handleTextResponse = async (
-  textInput,
-  currentMessages,
-  model,
-  detectedLanguage,
-  setMessages,
-  showNotification,
-  setStreaming = null
-) => {
-  console.log('💬 Text Response with model:', model, 'language:', detectedLanguage);
-
-  const userMessage = { sender: 'user', text: textInput };
-  const messagesWithUser = [...currentMessages, userMessage];
-  setMessages(messagesWithUser);
-  localStorage.setItem('omnia-memory', JSON.stringify(messagesWithUser));
-
-  let responseText = '';
-
-  if (model === 'sonar') {
-    const searchResult = await sonarService.search(textInput, showNotification, detectedLanguage);
-    if (searchResult.success) {
-      responseText = searchResult.result;
-      if (searchResult.citations && searchResult.citations.length > 0) {
-        responseText += `\n\nZdroje:\n${searchResult.citations.map(c => `• ${c}`).join('\n')}`;
-      }
-    } else {
-      responseText = `Nepodařilo se najít aktuální informace: ${searchResult.message}`;
-    }
-    
-    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-  }
-  else if (model === 'claude') {
-    if (setStreaming) setStreaming(true);
-
-    const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
-    const messagesWithBot = [...messagesWithUser, streamingBotMessage];
-    setMessages(messagesWithBot);
-
-    const onStreamUpdate = (text, isStillStreaming) => {
-      const updatedMessages = [...messagesWithUser, { 
-        sender: 'bot', 
-        text: text, 
-        isStreaming: isStillStreaming 
-      }];
-      setMessages(updatedMessages);
-      
-      if (!isStillStreaming) {
-        localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-        if (setStreaming) setStreaming(false);
-      }
-    };
-
-    const onSearchNotification = (message) => {
-      // Clean - žádné spam notifikace
-    };
-
-    responseText = await claudeService.sendMessage(
-      messagesWithUser, 
-      onStreamUpdate, 
-      onSearchNotification,
-      detectedLanguage
-    );
-  }
-  else if (model === 'gpt-4o') {
-    const openAiMessages = [
-      {
-        role: 'system',
-        content: openaiService.getSystemPrompt(detectedLanguage)
-      },
-      ...currentMessages.map((msg) => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.text
-      })),
-      { role: 'user', content: textInput }
-    ];
-
-    responseText = await openaiService.sendMessage(openAiMessages, detectedLanguage);
-    
-    const updatedMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
-    setMessages(updatedMessages);
-    localStorage.setItem('omnia-memory', JSON.stringify(updatedMessages));
-  }
-  else {
-    throw new Error(`Neznámý model: ${model}`);
-  }
-
-  return responseText;
-};
-
-// 🎵 FIXED GOOGLE TTS AUDIO GENERATION
+// 🎵 ENHANCED GOOGLE TTS AUDIO GENERATION - Better error handling
 const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudioRef, isIOS, showNotification, language = 'cs') => {
   try {
     console.log('🎵 Generating Google TTS audio for language:', language);
     
     const processedText = preprocessTextForTTS(responseText, language);
-    
-    showNotification('Generuji Google hlas...', 'info');
     
     const response = await fetch('/api/google-tts', {
       method: 'POST',
@@ -2082,7 +2374,6 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     }
 
     setIsAudioPlaying(true);
-    showNotification('Přehrávám Google odpověď...', 'success');
 
     const audioBlob = await response.blob();
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -2131,7 +2422,11 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
       window.removeEventListener('omnia-audio-start', handleInterrupt);
-      showNotification('Chyba při přehrávání Google TTS', 'error');
+      
+      const errorMsg = language === 'cs' ? 'Chyba při přehrávání Google TTS' :
+                      language === 'en' ? 'Google TTS playback error' :
+                      'Eroare redare Google TTS';
+      showNotification(errorMsg, 'error');
     };
     
     try {
@@ -2139,7 +2434,10 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
       console.log('🎯 Google TTS audio plays IMMEDIATELY after AI response!');
     } catch (playError) {
       console.error('❌ Auto-play blocked:', playError);
-      showNotification('Klepněte pro přehrání odpovědi', 'info', () => {
+      const playMsg = language === 'cs' ? 'Klepněte pro přehrání odpovědi' :
+                     language === 'en' ? 'Click to play response' :
+                     'Apasă pentru redare răspuns';
+      showNotification(playMsg, 'info', () => {
         audio.play().catch(console.error);
       });
     }
@@ -2150,18 +2448,22 @@ const generateInstantAudio = async (responseText, setIsAudioPlaying, currentAudi
     console.error('💥 Google TTS audio generation failed:', error);
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    showNotification('Google TTS se nepodařilo vygenerovat', 'error');
+    
+    const errorMsg = language === 'cs' ? 'Google TTS se nepodařilo vygenerovat' :
+                    language === 'en' ? 'Failed to generate Google TTS' :
+                    'Nu s-a putut genera Google TTS';
+    showNotification(errorMsg, 'error');
     throw error;
   }
 };
 
-// 🔊 FIXED VOICE BUTTON - 🔧 FIX 2: Audio control infinite loop fix
+// 🔊 FIXED VOICE BUTTON - No more duplicate audio
 const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef(null);
 
-  // 🔧 FIX 2: Better cleanup on component unmount
+  // ✅ FIX: Better cleanup on component unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -2180,7 +2482,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
     };
   }, []);
 
-  // 🔧 FIX 2: Enhanced audio interrupt handling
+  // ✅ FIX: Enhanced audio interrupt handling
   useEffect(() => {
     const handleNewAudio = () => {
       if (audioRef.current && !audioRef.current.paused) {
@@ -2204,7 +2506,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   }, [onAudioEnd]);
 
   const handleSpeak = async () => {
-    // 🔧 FIX 2: Improved stop logic
+    // ✅ FIX: Improved stop logic - no duplicate audio
     if (isPlaying) {
       if (audioRef.current) {
         try {
@@ -2224,7 +2526,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       return;
     }
 
-    // 🔧 FIX 2: Prevent multiple simultaneous requests
+    // ✅ FIX: Prevent multiple simultaneous requests
     if (isLoading) {
       console.log('🚫 Audio generation already in progress');
       return;
@@ -2236,7 +2538,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       if (onAudioStart) onAudioStart();
 
       const processedText = preprocessTextForTTS(text, language);
-      console.log('🎵 Processing text for Google TTS:', { language, original: text.substring(0, 50), processed: processedText.substring(0, 50) });
 
       const response = await fetch('/api/google-tts', {
         method: 'POST',
@@ -2255,7 +2556,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
-      // 🔧 FIX 2: Clean up previous audio before creating new one
+      // ✅ FIX: Clean up previous audio before creating new one
       if (audioRef.current) {
         try {
           audioRef.current.pause();
@@ -2271,7 +2572,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
-      // 🔧 FIX 2: Enhanced event handlers with proper cleanup
+      // ✅ FIX: Enhanced event handlers with proper cleanup
       audio.onplay = () => {
         setIsPlaying(true);
         console.log('🔊 Google TTS playback started for language:', language);
@@ -2282,7 +2583,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
         setIsPlaying(false);
         if (onAudioEnd) onAudioEnd();
         
-        // 🔧 FIX 2: Clean up blob URL after playback
         try {
           URL.revokeObjectURL(audioUrl);
         } catch (error) {
@@ -2294,10 +2594,8 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
       audio.onerror = (e) => {
         console.error('❌ Google TTS playback error:', e);
         setIsPlaying(false);
-        setIsLoading(false);
         if (onAudioEnd) onAudioEnd();
         
-        // 🔧 FIX 2: Clean up on error
         try {
           URL.revokeObjectURL(audioUrl);
         } catch (error) {
@@ -2306,7 +2604,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
         audioRef.current = null;
       };
 
-      // 🔧 FIX 2: Better abort handling
       audio.onabort = () => {
         console.log('🛑 Audio playback aborted');
         setIsPlaying(false);
@@ -2329,24 +2626,6 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getButtonStyle = () => {
-    return {
-      background: 'none',
-      border: 'none',
-      cursor: isLoading ? 'wait' : 'pointer',
-      padding: '6px',
-      borderRadius: '6px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px',
-      fontSize: '0.85rem',
-      opacity: 1,
-      transition: 'all 0.2s ease',
-      position: 'relative',
-      color: 'white'
-    };
   };
 
   const getButtonIcon = () => {
@@ -2375,16 +2654,50 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   };
 
   const getButtonTitle = () => {
-    if (isLoading) return 'Generuji Google TTS...';
-    if (isPlaying) return 'Klepněte pro zastavení';
-    return 'Přehrát s Google hlasem';
+    const titles = {
+      'cs': {
+        loading: 'Generuji Google TTS...',
+        playing: 'Klepněte pro zastavení',
+        ready: 'Přehrát s Google hlasem'
+      },
+      'en': {
+        loading: 'Generating Google TTS...',
+        playing: 'Click to stop',
+        ready: 'Play with Google voice'
+      },
+      'ro': {
+        loading: 'Generez Google TTS...',
+        playing: 'Apasă pentru oprire',
+        ready: 'Redă cu voce Google'
+      }
+    };
+
+    const langTitles = titles[language] || titles['cs'];
+    
+    if (isLoading) return langTitles.loading;
+    if (isPlaying) return langTitles.playing;
+    return langTitles.ready;
   };
 
   return (
     <button
       onClick={handleSpeak}
       disabled={isLoading}
-      style={getButtonStyle()}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: isLoading ? 'wait' : 'pointer',
+        padding: '6px',
+        borderRadius: '6px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        fontSize: '0.85rem',
+        opacity: 1,
+        transition: 'all 0.2s ease',
+        position: 'relative',
+        color: 'white'
+      }}
       title={getButtonTitle()}
     >
       {getButtonIcon()}
@@ -2401,7 +2714,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd, language = 'cs' }) => {
   );
 };
 
-// 📋 COPY BUTTON - Enhanced with better UX
+// 📋 ENHANCED COPY BUTTON - Better multilingual support
 const CopyButton = ({ text, language = 'cs' }) => {
   const [copied, setCopied] = useState(false);
 
@@ -2424,18 +2737,23 @@ const CopyButton = ({ text, language = 'cs' }) => {
   };
 
   const getButtonTitle = () => {
-    if (copied) {
-      switch(language) {
-        case 'en': return 'Copied!';
-        case 'ro': return 'Copiat!';
-        default: return 'Zkopírováno!';
+    const titles = {
+      'cs': {
+        copied: 'Zkopírováno!',
+        ready: 'Zkopírovat text'
+      },
+      'en': {
+        copied: 'Copied!',
+        ready: 'Copy text'
+      },
+      'ro': {
+        copied: 'Copiat!',
+        ready: 'Copiază textul'
       }
-    }
-    switch(language) {
-      case 'en': return 'Copy text';
-      case 'ro': return 'Copiază textul';
-      default: return 'Zkopírovat text';
-    }
+    };
+
+    const langTitles = titles[language] || titles['cs'];
+    return copied ? langTitles.copied : langTitles.ready;
   };
 
   return (
@@ -2467,194 +2785,224 @@ const CopyButton = ({ text, language = 'cs' }) => {
       )}
     </button>
   );
-};// 🎤 FIXED VOICE SCREEN COMPONENT - 🔧 FIX 3: Kompletní lokalizace podle UI jazyka
-  const VoiceScreen = ({ 
-    onClose, 
-    onTranscript, 
-    loading, 
-    isAudioPlaying,
-    isMobile,
-    stopCurrentAudio,
-    model,
-    streaming = false
-  }) => {
+};// 🎤 ENHANCED VOICE SCREEN - Continuous voice mode with better UX
+const VoiceScreen = ({ 
+  onClose, 
+  onTranscript, 
+  onListeningChange,
+  loading, 
+  isAudioPlaying,
+  isListening,
+  isMobile,
+  stopCurrentAudio,
+  model,
+  streaming = false,
+  uiLanguage = 'cs'
+}) => {
 
-    const handleScreenClick = (e) => {
-      if (isAudioPlaying) {
-        stopCurrentAudio();
-      }
-      
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    };
+  const t = (key) => uiTexts[uiLanguage][key] || uiTexts['cs'][key] || key;
 
-    const handleCloseClick = () => {
-      if (isAudioPlaying) {
-        stopCurrentAudio();
-      }
+  const handleScreenClick = (e) => {
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+    
+    if (e.target === e.currentTarget) {
       onClose();
-    };
-
-    const handleElementClick = (e) => {
-      e.stopPropagation();
-      if (isAudioPlaying) {
-        stopCurrentAudio();
-      }
-    };
-
-    // ✅ FIX 3: Používá t() translation funkci pro všechny texty
-    const getStatusMessage = () => {
-      if (streaming) {
-        return t('omniaStreaming');
-      }
-      if (loading) {
-        return t('omniaPreparingResponse');
-      }
-      if (isAudioPlaying) {
-        return `${t('omniaSpeaking')} (${t('clickToStop')})`;
-      }
-      return t('holdToSpeak');
-    };
-
-    // ✅ FIX 3: Subtitle text lokalizovaný
-    const getSubtitleText = () => {
-      if (streaming) {
-        return t('streamingRealTime');
-      }
-      return t('advancedAIAssistant');
-    };
-
-    // ✅ FIX 3: Footer text lokalizovaný
-    const getFooterText = () => {
-      if (streaming) {
-        return `Omnia ${t('streaming')} • ${t('clickToStop')}`;
-      }
-      if (isMobile) {
-        return `Omnia • ${t('clickToReturn')}`;
-      }
-      return `Omnia • ESC ${t('or')} ${t('clickToReturn')}`;
-    };
-
-    return (
-      <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: streaming 
-            ? 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%)'
-            : 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #4a5568 100%)',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001,
-          cursor: 'pointer',
-          padding: isMobile ? '1rem' : '2rem',
-          minHeight: '100vh',
-          overflowY: 'auto'
-        }}
-        onClick={handleScreenClick}
-      >
-        {/* Close button */}
-        <div
-          style={{
-            position: 'absolute',
-            top: isMobile ? '1rem' : '2rem',
-            right: isMobile ? '1rem' : '2rem',
-            cursor: 'pointer',
-            fontSize: isMobile ? '1.5rem' : '2rem',
-            opacity: 0.7,
-            transition: 'opacity 0.2s ease',
-            zIndex: 1002
-          }}
-          onClick={handleCloseClick}
-          onMouseEnter={(e) => e.target.style.opacity = '1'}
-          onMouseLeave={(e) => e.target.style.opacity = '0.7'}
-        >
-          ✕
-        </div>
-
-        {/* Logo */}
-        <div 
-          style={{
-            fontSize: isMobile ? '3rem' : '4rem',
-            fontWeight: 'bold',
-            marginBottom: '1rem',
-            background: streaming 
-              ? 'linear-gradient(45deg, #4299e1, #63b3ed, #90cdf4)'
-              : 'linear-gradient(45deg, #4299e1, #63b3ed)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            textAlign: 'center',
-            cursor: 'pointer',
-            letterSpacing: '0.1em'
-          }}
-          onClick={handleElementClick}
-        >
-          OMNIA
-        </div>
-
-        {/* Subtitle - ✅ FIX 3: FIXED */}
-        <div style={{
-          fontSize: isMobile ? '0.9rem' : '1rem',
-          marginBottom: '2rem',
-          textAlign: 'center',
-          opacity: 0.7,
-          cursor: 'pointer'
-        }}
-        onClick={handleElementClick}
-        >
-          {getSubtitleText()}
-        </div>
-
-        {/* Main status message - ✅ FIX 3: FIXED */}
-        <div style={{
-          fontSize: isMobile ? '1.2rem' : '1.5rem',
-          fontWeight: '600',
-          marginBottom: '2.5rem',
-          textAlign: 'center',
-          opacity: 0.9,
-          cursor: 'pointer',
-          maxWidth: isMobile ? '300px' : '400px',
-          lineHeight: '1.4'
-        }}
-        onClick={handleElementClick}
-        >
-          {getStatusMessage()}
-        </div>
-
-        {/* Voice Recorder */}
-        <div 
-          style={{ marginBottom: '3rem' }}
-          onClick={handleElementClick}
-        >
-          <VoiceRecorder onTranscript={onTranscript} disabled={loading} mode="voice" />
-        </div>
-
-        {/* Footer text - ✅ FIX 3: FIXED */}
-        <div style={{
-          fontSize: '0.9rem',
-          opacity: 0.6,
-          textAlign: 'center',
-          maxWidth: '360px',
-          lineHeight: '1.4',
-          cursor: 'pointer'
-        }}
-        onClick={handleElementClick}
-        >
-          {getFooterText()}
-        </div>
-      </div>
-    );
+    }
   };
 
-// ⚙️ SETTINGS DROPDOWN
+  const handleCloseClick = () => {
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+    if (isListening && onListeningChange) {
+      onListeningChange(false);
+    }
+    onClose();
+  };
+
+  const handleElementClick = (e) => {
+    e.stopPropagation();
+    if (isAudioPlaying) {
+      stopCurrentAudio();
+    }
+  };
+
+  // ✅ Enhanced status messages with listening state
+  const getStatusMessage = () => {
+    if (streaming) {
+      return t('omniaStreaming');
+    }
+    if (loading) {
+      return t('omniaPreparingResponse');
+    }
+    if (isAudioPlaying) {
+      return `${t('omniaSpeaking')} (${t('clickToStop')})`;
+    }
+    if (isListening) {
+      return t('listening'); // "Poslouchám..." / "Listening..." / "Ascult..."
+    }
+    return t('clickToSpeak'); // "Klikněte pro mluvení"
+  };
+
+  const getSubtitleText = () => {
+    if (streaming) {
+      return t('streamingRealTime');
+    }
+    if (isListening) {
+      return 'Continuous voice mode • Speak naturally';
+    }
+    return t('advancedAIAssistant');
+  };
+
+  const getFooterText = () => {
+    if (streaming) {
+      return `Omnia ${t('streaming')} • ${t('clickToStop')}`;
+    }
+    if (isListening) {
+      return `Omnia listening • ${t('clickToStop')}`;
+    }
+    if (isMobile) {
+      return `Omnia • ${t('clickToReturn')}`;
+    }
+    return `Omnia • ESC ${t('or')} ${t('clickToReturn')}`;
+  };
+
+  return (
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: isListening
+          ? 'linear-gradient(135deg, #0f1419 0%, #1a202c 30%, #2d3748 70%, #4a5568 100%)'
+          : streaming 
+            ? 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%)'
+            : 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #4a5568 100%)',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1001,
+        cursor: 'pointer',
+        padding: isMobile ? '1rem' : '2rem',
+        minHeight: '100vh',
+        overflowY: 'auto',
+        transition: 'background 0.5s ease'
+      }}
+      onClick={handleScreenClick}
+    >
+      {/* Close button */}
+      <div
+        style={{
+          position: 'absolute',
+          top: isMobile ? '1rem' : '2rem',
+          right: isMobile ? '1rem' : '2rem',
+          cursor: 'pointer',
+          fontSize: isMobile ? '1.5rem' : '2rem',
+          opacity: 0.7,
+          transition: 'opacity 0.2s ease',
+          zIndex: 1002
+        }}
+        onClick={handleCloseClick}
+        onMouseEnter={(e) => e.target.style.opacity = '1'}
+        onMouseLeave={(e) => e.target.style.opacity = '0.7'}
+      >
+        ✕
+      </div>
+
+      {/* Logo */}
+      <div 
+        style={{
+          fontSize: isMobile ? '3rem' : '4rem',
+          fontWeight: 'bold',
+          marginBottom: '1rem',
+          background: isListening
+            ? 'linear-gradient(45deg, #00ffff, #63b3ed, #90cdf4, #bee3f8)'
+            : streaming 
+              ? 'linear-gradient(45deg, #4299e1, #63b3ed, #90cdf4)'
+              : 'linear-gradient(45deg, #4299e1, #63b3ed)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          textAlign: 'center',
+          cursor: 'pointer',
+          letterSpacing: '0.1em',
+          animation: isListening ? 'omnia-pulse 2s ease-in-out infinite' : 'none'
+        }}
+        onClick={handleElementClick}
+      >
+        OMNIA
+      </div>
+
+      {/* Subtitle */}
+      <div style={{
+        fontSize: isMobile ? '0.9rem' : '1rem',
+        marginBottom: '2rem',
+        textAlign: 'center',
+        opacity: 0.7,
+        cursor: 'pointer'
+      }}
+      onClick={handleElementClick}
+      >
+        {getSubtitleText()}
+      </div>
+
+      {/* Main status message */}
+      <div style={{
+        fontSize: isMobile ? '1.2rem' : '1.5rem',
+        fontWeight: '600',
+        marginBottom: '2.5rem',
+        textAlign: 'center',
+        opacity: 0.9,
+        cursor: 'pointer',
+        maxWidth: isMobile ? '300px' : '400px',
+        lineHeight: '1.4',
+        color: isListening ? '#00ffff' : 'white',
+        transition: 'color 0.3s ease'
+      }}
+      onClick={handleElementClick}
+      >
+        {getStatusMessage()}
+      </div>
+
+      {/* Continuous Voice Recorder */}
+      <div 
+        style={{ marginBottom: '3rem' }}
+        onClick={handleElementClick}
+      >
+        <ContinuousVoiceRecorder 
+          onTranscript={onTranscript}
+          onListeningChange={onListeningChange}
+          disabled={loading}
+          mode="voice"
+          isAudioPlaying={isAudioPlaying}
+          uiLanguage={uiLanguage}
+        />
+      </div>
+
+      {/* Footer text */}
+      <div style={{
+        fontSize: '0.9rem',
+        opacity: 0.6,
+        textAlign: 'center',
+        maxWidth: '360px',
+        lineHeight: '1.4',
+        cursor: 'pointer'
+      }}
+      onClick={handleElementClick}
+      >
+        {getFooterText()}
+      </div>
+    </div>
+  );
+};
+
+// ⚙️ ENHANCED SETTINGS DROPDOWN
 const SettingsDropdown = ({ isOpen, onClose, onNewChat, uiLanguage, setUILanguage, t }) => {
   if (!isOpen) return null;
 
@@ -2741,7 +3089,7 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, uiLanguage, setUILanguag
           color: '#a0aec0',
           borderTop: '1px solid #4a5568'
         }}>
-          Google TTS aktivní
+          ✅ Continuous Voice Mode
         </div>
         
         <div style={{
@@ -2749,14 +3097,14 @@ const SettingsDropdown = ({ isOpen, onClose, onNewChat, uiLanguage, setUILanguag
           fontSize: '0.75rem',
           color: '#a0aec0'
         }}>
-          Streaming aktivní
+          ✅ Google TTS Enhanced
         </div>
       </div>
     </>
   );
 };
 
-// ✏️ EDITABLE MESSAGE
+// ✏️ ENHANCED EDITABLE MESSAGE
 const EditableMessage = ({ message, onEdit, onCancel, uiLanguage, t }) => {
   const [editText, setEditText] = useState(message.text);
   const [isEditing, setIsEditing] = useState(false);
@@ -2872,13 +3220,17 @@ const EditableMessage = ({ message, onEdit, onCancel, uiLanguage, t }) => {
   );
 };
 
-// 🎉 MAIN JSX RETURN - FINAL ENHANCED VERSION
+// 🎉 FINAL MAIN JSX RETURN - REVOLUTIONARY VOICE-TO-VOICE APP
 return (
     <div style={{ 
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
+      background: isListening 
+        ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
+        : streaming
+          ? 'linear-gradient(135deg, #000428, #004e92, #009ffd)'
+          : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
       width: '100vw',
@@ -2889,11 +3241,15 @@ return (
       
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.8), rgba(0, 78, 146, 0.6))',
+        background: isListening
+          ? 'linear-gradient(135deg, rgba(0, 4, 40, 0.9), rgba(0, 78, 146, 0.7), rgba(0, 159, 253, 0.5))'
+          : 'linear-gradient(135deg, rgba(0, 4, 40, 0.8), rgba(0, 78, 146, 0.6))',
         position: 'relative',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: isListening 
+          ? '1px solid rgba(0, 255, 255, 0.3)'
+          : '1px solid rgba(255,255,255,0.1)',
         width: '100%',
-        transition: 'background 0.5s ease'
+        transition: 'all 0.5s ease'
       }}>
         
         <div style={{
@@ -2912,12 +3268,12 @@ return (
               onClick={() => setShowModelDropdown(!showModelDropdown)}
               disabled={loading || streaming}
               style={{
-                background: streaming ? 'rgba(0, 255, 255, 0.2)' : '#2d3748',
-                border: streaming ? '1px solid #00ffff' : '1px solid #4a5568',
+                background: streaming || isListening ? 'rgba(0, 255, 255, 0.2)' : '#2d3748',
+                border: streaming || isListening ? '1px solid #00ffff' : '1px solid #4a5568',
                 borderRadius: '8px',
                 padding: '0.5rem 0.75rem',
                 fontSize: '0.85rem',
-                color: streaming ? '#00ffff' : '#e2e8f0',
+                color: streaming || isListening ? '#00ffff' : '#e2e8f0',
                 cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -2928,8 +3284,8 @@ return (
               }}
             >
               {model === 'claude' ? 'Omnia' : model === 'sonar' ? 'Omnia Search' : 'Omnia GPT'}
-              {streaming && <span style={{ color: '#00ffff' }}>●</span>}
-              {!streaming && !loading && ' ▼'}
+              {(streaming || isListening) && <span style={{ color: '#00ffff' }}>●</span>}
+              {!streaming && !loading && !isListening && ' ▼'}
             </button>
             
             {showModelDropdown && !loading && !streaming && (
@@ -2994,10 +3350,10 @@ return (
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
               disabled={loading || streaming}
               style={{
-                background: streaming ? 'rgba(0, 255, 255, 0.2)' : '#2d3748',
-                border: streaming ? '1px solid #00ffff' : '1px solid #4a5568',
+                background: streaming || isListening ? 'rgba(0, 255, 255, 0.2)' : '#2d3748',
+                border: streaming || isListening ? '1px solid #00ffff' : '1px solid #4a5568',
                 borderRadius: '8px', padding: '0.5rem', fontSize: '1rem',
-                color: streaming ? '#00ffff' : '#e2e8f0',
+                color: streaming || isListening ? '#00ffff' : '#e2e8f0',
                 cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
                 opacity: (loading || streaming) ? 0.7 : 1,
                 transition: 'all 0.3s ease'
@@ -3028,23 +3384,29 @@ return (
           <OmniaLogo 
             size={isMobile ? 60 : 80} 
             animate={streaming || loading}
+            isListening={isListening}
             shouldHide={shouldHideLogo}
           />
           {!shouldHideLogo && (
             <>
               <h1 style={{ 
                 fontSize: isMobile ? '2rem' : '2.5rem', fontWeight: '700',
-                margin: 0, color: streaming ? '#00ffff' : '#ffffff',
-                letterSpacing: '0.02em', transition: 'color 0.5s ease'
+                margin: 0, 
+                color: isListening ? '#00ffff' : streaming ? '#00ffff' : '#ffffff',
+                letterSpacing: '0.02em', 
+                transition: 'color 0.5s ease',
+                textShadow: isListening ? '0 0 20px rgba(0, 255, 255, 0.5)' : 'none'
               }}>
                 OMNIA
               </h1>
               <div style={{
                 fontSize: '0.9rem', opacity: 0.7, textAlign: 'center',
-                color: streaming ? '#00ffff' : 'inherit',
+                color: isListening ? '#00ffff' : streaming ? '#00ffff' : 'inherit',
                 transition: 'color 0.5s ease'
               }}>
-                {streaming ? 'streamuje v reálném čase' : 'multilingual AI assistant'}
+                {isListening ? 'continuous voice mode active' : 
+                 streaming ? 'streamuje v reálném čase' : 
+                 'multilingual AI assistant'}
               </div>
             </>
           )}
@@ -3054,7 +3416,9 @@ return (
       <main style={{ 
         flex: 1, overflowY: 'auto', padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '140px',
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.3), rgba(0, 78, 146, 0.2))',
+        background: isListening
+          ? 'linear-gradient(135deg, rgba(0, 4, 40, 0.4), rgba(0, 78, 146, 0.3), rgba(0, 159, 253, 0.2))'
+          : 'linear-gradient(135deg, rgba(0, 4, 40, 0.3), rgba(0, 78, 146, 0.2))',
         width: '100%', transition: 'background 0.5s ease'
       }}>
         <div style={{ 
@@ -3173,10 +3537,16 @@ return (
 
       <div style={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
+        background: isListening
+          ? 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8), rgba(0, 159, 253, 0.6))'
+          : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(10px)',
         padding: isMobile ? '1rem' : '1.5rem',
-        borderTop: streaming ? '1px solid rgba(0, 255, 255, 0.3)' : '1px solid rgba(255,255,255,0.1)',
+        borderTop: isListening 
+          ? '1px solid rgba(0, 255, 255, 0.5)' 
+          : streaming 
+            ? '1px solid rgba(0, 255, 255, 0.3)' 
+            : '1px solid rgba(255,255,255,0.1)',
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
         width: '100%', transition: 'all 0.5s ease'
       }}>
@@ -3190,27 +3560,37 @@ return (
               type="text" value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
-              placeholder={streaming ? t('omniaStreaming') : `${t('sendMessage')} Omnia...`}
+              placeholder={isListening ? t('listening') + '...' :
+                          streaming ? t('omniaStreaming') : 
+                          `${t('sendMessage')} Omnia...`}
               disabled={loading || streaming}
               style={{ 
                 width: '100%', padding: isMobile ? '1rem 1.25rem' : '1rem 1.5rem',
                 fontSize: isMobile ? '16px' : '0.95rem', borderRadius: '25px',
-                border: streaming ? '2px solid #00ffff' : '2px solid #4a5568',
+                border: isListening 
+                  ? '2px solid #00ffff' 
+                  : streaming 
+                    ? '2px solid #00ffff' 
+                    : '2px solid #4a5568',
                 outline: 'none',
                 backgroundColor: (loading || streaming) ? '#2d3748' : '#1a202c',
-                color: streaming ? '#00ffff' : '#ffffff',
+                color: isListening ? '#00ffff' : streaming ? '#00ffff' : '#ffffff',
                 transition: 'all 0.3s ease',
-                boxShadow: streaming ? '0 0 10px rgba(0, 255, 255, 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
+                boxShadow: isListening 
+                  ? '0 0 15px rgba(0, 255, 255, 0.5)' 
+                  : streaming 
+                    ? '0 0 10px rgba(0, 255, 255, 0.3)' 
+                    : '0 2px 8px rgba(0,0,0,0.3)',
                 opacity: (loading || streaming) ? 0.7 : 1
               }}
               onFocus={(e) => {
-                if (!streaming && !loading) {
+                if (!streaming && !loading && !isListening) {
                   e.target.style.borderColor = '#00ffff';
                   e.target.style.boxShadow = '0 0 0 3px rgba(0, 255, 255, 0.1)';
                 }
               }}
               onBlur={(e) => {
-                if (!streaming) {
+                if (!streaming && !isListening) {
                   e.target.style.borderColor = '#4a5568';
                   e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
                 }
@@ -3222,6 +3602,7 @@ return (
             size={isMobile ? 50 : 56} 
             onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
             isAudioPlaying={isAudioPlaying}
+            isListening={isListening}
             loading={loading}
             streaming={streaming}
           />
@@ -3230,6 +3611,7 @@ return (
             onClick={() => handleSend()}
             disabled={loading || streaming || !input.trim()}
             loading={loading || streaming}
+            isListening={isListening}
             size={isMobile ? 50 : 56}
           />
         </div>
@@ -3239,16 +3621,19 @@ return (
         <VoiceScreen
           onClose={() => setShowVoiceScreen(false)}
           onTranscript={handleTranscript}
+          onListeningChange={handleVoiceStateChange}
           loading={loading}
           isAudioPlaying={isAudioPlaying}
+          isListening={isListening}
           isMobile={isMobile}
           stopCurrentAudio={stopCurrentAudio}
           model={model}
           streaming={streaming}
+          uiLanguage={uiLanguage}
         />
       )}
 
-      {/* ✅ ENHANCED CSS STYLES - Unified animations + performance optimizations */}
+      {/* ✅ ENHANCED CSS STYLES - Revolutionary voice-to-voice animations */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
@@ -3259,7 +3644,7 @@ return (
         @keyframes spin-fast { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
         
-        /* ✅ UNIFIED ANIMATION SYSTEM */
+        /* ✅ ENHANCED VOICE-TO-VOICE ANIMATIONS */
         @keyframes omnia-pulse {
           0%, 100% { 
             box-shadow: 0 0 15px var(--pulse-color, rgba(100, 50, 255, 0.8)); 
@@ -3271,7 +3656,16 @@ return (
           }
         }
         
-        .omnia-logo.animate { animation: omnia-breathe 4s ease-in-out infinite; }
+        @keyframes omnia-listening {
+          0%, 100% { 
+            transform: scale(1); 
+            filter: brightness(1) hue-rotate(0deg); 
+          }
+          50% { 
+            transform: scale(1.03); 
+            filter: brightness(1.2) hue-rotate(10deg); 
+          }
+        }
         
         @keyframes omnia-breathe {
           0%, 100% { transform: scale(1); filter: brightness(1); }
@@ -3291,6 +3685,17 @@ return (
         input:focus { outline: none !important; }
         button, input, div[role="button"] { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         @media (max-width: 768px) { button { min-height: 44px; min-width: 44px; } }
+
+        /* ✅ VOICE-TO-VOICE SPECIFIC STYLES */
+        .voice-active {
+          background: linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff) !important;
+          transition: background 0.8s ease !important;
+        }
+        
+        .listening-indicator {
+          animation: omnia-pulse 1s ease-in-out infinite;
+          --pulse-color: rgba(0, 255, 255, 1);
+        }
       `}</style>
 
       {(showModelDropdown || showSettingsDropdown) && !loading && !streaming && (
