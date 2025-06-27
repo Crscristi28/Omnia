@@ -1,4 +1,4 @@
-// 🌍 GLOBAL GOOGLE TTS - UNLIMITED LANGUAGES
+// 🌍 GLOBAL GOOGLE TTS - WAVENET HLASY PRO NEJLEPŠÍ KVALITU
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,12 +32,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🌍 GLOBAL LANGUAGE MAPPING - Auto-detects best voice
+    // 🎵 GLOBAL LANGUAGE MAPPING - WaveNet pro core jazyky, Neural2 pro ostatní
     const languageMapping = {
-      // European Languages
-      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Neural2-A', name: 'Czech' },
-      'en': { code: 'en-US', voice: 'en-US-Neural2-C', name: 'English (US)' },
-      'ro': { code: 'ro-RO', voice: 'ro-RO-Neural2-A', name: 'Romanian' },
+      // Core 3 jazyky s WaveNet hlasy (nejlepší kvalita)
+      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Wavenet-A', name: 'Czech (WaveNet)' },
+      'en': { code: 'en-US', voice: 'en-US-Wavenet-C', name: 'English (WaveNet)' },
+      'ro': { code: 'ro-RO', voice: 'ro-RO-Wavenet-A', name: 'Romanian (WaveNet)' },
+      
+      // European Languages (Neural2)
       'de': { code: 'de-DE', voice: 'de-DE-Neural2-A', name: 'German' },
       'es': { code: 'es-ES', voice: 'es-ES-Neural2-A', name: 'Spanish' },
       'fr': { code: 'fr-FR', voice: 'fr-FR-Neural2-A', name: 'French' },
@@ -98,7 +100,7 @@ export default async function handler(req, res) {
     
     // Allow voice customization
     if (voice && voice !== 'natural') {
-      // Custom voice format: "Neural2-A", "Neural2-B", "Wavenet-A", etc.
+      // Custom voice format: "Wavenet-A", "Wavenet-B", "Neural2-A", etc.
       const voicePrefix = langConfig.code;
       selectedVoice = `${voicePrefix}-${voice}`;
     }
@@ -131,10 +133,10 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error('Google TTS API error:', data);
       
-      // Try fallback with Standard voice if Neural2 fails
-      if (selectedVoice.includes('Neural2')) {
+      // Try fallback with Standard voice if WaveNet/Neural2 fails
+      if (selectedVoice.includes('Wavenet') || selectedVoice.includes('Neural2')) {
         console.log('🔄 Retrying with Standard voice...');
-        const fallbackVoice = selectedVoice.replace('Neural2', 'Standard');
+        const fallbackVoice = selectedVoice.replace('Wavenet', 'Standard').replace('Neural2', 'Standard');
         
         const fallbackResponse = await fetch(
           `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
@@ -150,7 +152,8 @@ export default async function handler(req, res) {
               audioConfig: { 
                 audioEncoding: 'MP3',
                 speakingRate: 1.0,
-                pitch: 0.0
+                pitch: 0.0,
+                volumeGainDb: 0.0
               }
             })
           }
@@ -201,7 +204,7 @@ export default async function handler(req, res) {
       success: false,
       error: error.message,
       language: language,
-      fallback: 'ElevenLabs API can be used as backup'
+      fallback: 'Standard voices available as backup'
     });
   }
 }
