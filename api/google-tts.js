@@ -1,4 +1,4 @@
-// 🌍 GLOBAL GOOGLE TTS - WAVENET HLASY PRO NEJLEPŠÍ KVALITU
+// 🌍 UPGRADED GOOGLE TTS - RYCHLEJŠÍ + PLNĚ MULTIJAZYČNÝ
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,18 +32,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🎵 GLOBAL LANGUAGE MAPPING - WaveNet pro core jazyky, Neural2 pro ostatní
+    // 🎵 UPGRADED LANGUAGE MAPPING - RYCHLEJŠÍ A ŽIVĚJŠÍ HLASY
     const languageMapping = {
-      // Core 3 jazyky s WaveNet hlasy (nejlepší kvalita)
-      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Wavenet-A', name: 'Czech (WaveNet)' },
-      'en': { code: 'en-US', voice: 'en-US-Wavenet-C', name: 'English (WaveNet)' },
-      'ro': { code: 'ro-RO', voice: 'ro-RO-Wavenet-A', name: 'Romanian (WaveNet)' },
+      // Core jazyky s nejlepšími WaveNet hlasy
+      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Wavenet-A', name: 'Czech (Fast & Clear)' },
+      'en': { code: 'en-US', voice: 'en-US-Wavenet-D', name: 'English (Energetic)' },
+      'ro': { code: 'ro-RO', voice: 'ro-RO-Wavenet-A', name: 'Romanian (Natural)' },
       
-      // European Languages (Neural2)
-      'de': { code: 'de-DE', voice: 'de-DE-Neural2-A', name: 'German' },
-      'es': { code: 'es-ES', voice: 'es-ES-Neural2-A', name: 'Spanish' },
-      'fr': { code: 'fr-FR', voice: 'fr-FR-Neural2-A', name: 'French' },
-      'it': { code: 'it-IT', voice: 'it-IT-Neural2-A', name: 'Italian' },
+      // European Languages s živějšími hlasy
+      'de': { code: 'de-DE', voice: 'de-DE-Neural2-C', name: 'German (Dynamic)' },
+      'es': { code: 'es-ES', voice: 'es-ES-Neural2-C', name: 'Spanish (Expressive)' },
+      'fr': { code: 'fr-FR', voice: 'fr-FR-Neural2-C', name: 'French (Energetic)' },
+      'it': { code: 'it-IT', voice: 'it-IT-Neural2-C', name: 'Italian (Vivid)' },
       'pl': { code: 'pl-PL', voice: 'pl-PL-Neural2-A', name: 'Polish' },
       'pt': { code: 'pt-PT', voice: 'pt-PT-Neural2-A', name: 'Portuguese' },
       'nl': { code: 'nl-NL', voice: 'nl-NL-Neural2-A', name: 'Dutch' },
@@ -73,23 +73,17 @@ export default async function handler(req, res) {
       'hr': { code: 'hr-HR', voice: 'hr-HR-Neural2-A', name: 'Croatian' },
       'sr': { code: 'sr-RS', voice: 'sr-RS-Neural2-A', name: 'Serbian' },
       
-      // Alternative English variants
-      'en-gb': { code: 'en-GB', voice: 'en-GB-Neural2-A', name: 'English (UK)' },
-      'en-au': { code: 'en-AU', voice: 'en-AU-Neural2-A', name: 'English (Australia)' },
-      'en-in': { code: 'en-IN', voice: 'en-IN-Neural2-A', name: 'English (India)' },
-      
-      // Alternative Spanish variants
+      // Alternative variants
+      'en-gb': { code: 'en-GB', voice: 'en-GB-Neural2-C', name: 'English (UK)' },
+      'en-au': { code: 'en-AU', voice: 'en-AU-Neural2-C', name: 'English (Australia)' },
       'es-mx': { code: 'es-MX', voice: 'es-MX-Neural2-A', name: 'Spanish (Mexico)' },
-      'es-ar': { code: 'es-AR', voice: 'es-AR-Neural2-A', name: 'Spanish (Argentina)' },
-      
-      // Portuguese variants
       'pt-br': { code: 'pt-BR', voice: 'pt-BR-Neural2-A', name: 'Portuguese (Brazil)' }
     };
 
-    // Get language config (fallback to Czech if not found)
-    const langConfig = languageMapping[language.toLowerCase()] || languageMapping['cs'];
+    // Get language config (fallback to detected language, NOT always Czech!)
+    const langConfig = languageMapping[language.toLowerCase()] || languageMapping['en'];
     
-    console.log('🎵 Google TTS request:', { 
+    console.log('🎵 FAST TTS request:', { 
       inputLanguage: language,
       detectedConfig: langConfig,
       textLength: text.length 
@@ -100,12 +94,20 @@ export default async function handler(req, res) {
     
     // Allow voice customization
     if (voice && voice !== 'natural') {
-      // Custom voice format: "Wavenet-A", "Wavenet-B", "Neural2-A", etc.
       const voicePrefix = langConfig.code;
       selectedVoice = `${voicePrefix}-${voice}`;
     }
 
-    // Google TTS API call with optimized settings
+    // 🚀 FAST & ENERGETIC AUDIO CONFIG
+    const audioConfig = {
+      audioEncoding: 'MP3',
+      speakingRate: 1.35,  // 35% rychleji než normálně!
+      pitch: 0.8,          // Vyšší, živější tón
+      volumeGainDb: 4.0,   // Výrazně hlasitější
+      effectsProfileId: ['telephony-class-application'] // Energičtější profil
+    };
+
+    // Google TTS API call
     const response = await fetch(
       `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
       {
@@ -117,13 +119,7 @@ export default async function handler(req, res) {
             languageCode: langConfig.code,
             name: selectedVoice
           },
-          audioConfig: { 
-            audioEncoding: 'MP3',
-            speakingRate: 1.0,  // Normal speed
-            pitch: 0.0,        // Normal pitch
-            volumeGainDb: 0.0,  // Normal volume
-            effectsProfileId: ['headphone-class-device'] // Optimized for headphones
-          }
+          audioConfig
         })
       }
     );
@@ -133,9 +129,9 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error('Google TTS API error:', data);
       
-      // Try fallback with Standard voice if WaveNet/Neural2 fails
+      // Fallback with Standard voice if premium fails
       if (selectedVoice.includes('Wavenet') || selectedVoice.includes('Neural2')) {
-        console.log('🔄 Retrying with Standard voice...');
+        console.log('🔄 Fallback to Standard voice...');
         const fallbackVoice = selectedVoice.replace('Wavenet', 'Standard').replace('Neural2', 'Standard');
         
         const fallbackResponse = await fetch(
@@ -149,12 +145,7 @@ export default async function handler(req, res) {
                 languageCode: langConfig.code,
                 name: fallbackVoice
               },
-              audioConfig: { 
-                audioEncoding: 'MP3',
-                speakingRate: 1.0,
-                pitch: 0.0,
-                volumeGainDb: 0.0
-              }
+              audioConfig
             })
           }
         );
@@ -167,9 +158,10 @@ export default async function handler(req, res) {
           res.setHeader('Content-Length', audioBuffer.length);
           res.status(200).send(audioBuffer);
           
-          console.log('✅ Google TTS fallback success:', { 
+          console.log('✅ Fast TTS fallback success:', { 
             language: langConfig.name, 
             voice: fallbackVoice,
+            speed: 'Fast (1.35x)',
             audioSize: audioBuffer.length 
           });
           return;
@@ -188,18 +180,21 @@ export default async function handler(req, res) {
     
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Content-Length', audioBuffer.length);
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+    res.setHeader('Cache-Control', 'public, max-age=1800'); // 30min cache
     res.status(200).send(audioBuffer);
 
-    console.log('✅ Google TTS success:', { 
+    console.log('✅ FAST TTS SUCCESS:', { 
       language: langConfig.name,
       voice: selectedVoice, 
+      speed: 'Fast (1.35x)',
+      pitch: 'High (+0.8)',
+      volume: 'Loud (+4.0dB)',
       audioSize: audioBuffer.length,
       duration: `${Math.round(audioBuffer.length / 1000)}KB`
     });
 
   } catch (error) {
-    console.error('💥 Google TTS error:', error);
+    console.error('💥 Fast TTS error:', error);
     res.status(500).json({ 
       success: false,
       error: error.message,
