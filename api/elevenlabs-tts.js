@@ -25,12 +25,12 @@ export default async function handler(req, res) {
     text, 
     voice_id = process.env.ELEVENLABS_VOICE_ID || 'MpbYQvoTmXjHkaxtLiSh',
     model_id = 'eleven_multilingual_v2',
-    // 🆕 OPTIMIZED VOICE SETTINGS - FIXED FOR NUMBERS!
+    // 🔧 BALANCED VOICE SETTINGS - REDUCED SPEED
     voice_settings = {
-      stability: 0.75,        // ↑ Vyšší pro konzistentní čísla (bylo 0.30)
-      similarity_boost: 0.90, // ↑ Vyšší pro přesnější výslovnost (bylo 0.25)
-      style: 0.15,           // ↓ Nižší pro neutrálnější čtení (bylo 0.30)
-      use_speaker_boost: true
+      stability: 0.50,        // Balanced pro čísla (původně 0.30)
+      similarity_boost: 0.75, // Mírně vyšší než original (původně 0.25)
+      style: 0.25,           // Téměř original (původně 0.30)
+      use_speaker_boost: false // Vypnuto - může zrychlovat
     }
   } = req.body;
 
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     const hasTemperature = /\d+\s*°[CF]/i.test(text);
     const hasCurrency = /\d+\s*[Kč€$]/i.test(text);
     
-    console.log('🎵 ElevenLabs TTS Request (FIXED):', {
+    console.log('🎵 ElevenLabs TTS Request (BALANCED):', {
       textLength: text.length,
       textPreview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
       hasNumbers,
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
     // Get audio data
     const audioBuffer = await response.arrayBuffer();
     
-    console.log('✅ ElevenLabs TTS SUCCESS (OPTIMIZED):', {
+    console.log('✅ ElevenLabs TTS SUCCESS (BALANCED):', {
       textContainedNumbers: hasNumbers,
       textContainedTemperature: hasTemperature,
       audioSize: audioBuffer.byteLength,
@@ -134,27 +134,27 @@ export default async function handler(req, res) {
 
 // 🎯 SETTINGS EXPLANATION:
 /*
-🔧 OPTIMIZED VOICE SETTINGS BREAKDOWN:
+🔧 BALANCED VOICE SETTINGS (po korekci):
 
-OLD (PROBLEMATIC):
-- stability: 0.30      → číslová výslovnost nestabilní ❌
-- similarity_boost: 0.25 → hlas se vzdaluje od originálu ❌  
-- style: 0.30          → přidává nechtěné efekty ❌
+PREVIOUS (TOO AGGRESSIVE):
+- stability: 0.75      → příliš rychlé čísla ❌
+- similarity_boost: 0.90 → příliš rychlé ❌  
+- style: 0.15          → nepřirozené ❌
 
-NEW (OPTIMIZED):
-- stability: 0.75      → konzistentní číslová výslovnost ✅
-- similarity_boost: 0.90 → hlas zůstává věrný originálu ✅
-- style: 0.15          → minimální efekty, čistá řeč ✅
+NEW (BALANCED):
+- stability: 0.50      → mírnější zlepšení ✅
+- similarity_boost: 0.75 → umírněné zlepšení ✅
+- style: 0.25          → téměř original ✅
+- use_speaker_boost: false → vypnuto - může zrychlovat ✅
 
 🧪 TEST CASES TO VERIFY:
-- "31°C" → should say "třicet jedna stupňů Celsia"
-- "45 tisíc dolarů" → should be clear
-- "75%" → should say "sedmdesát pět procent"
-- "API klíč" → should say "á pé í klíč"
+- "31°C" → should be slower and clearer
+- "45 tisíc dolarů" → natural speed
+- "75%" → not rushed
+- "API klíč" → normal pace
 
 🎯 EXPECTED RESULTS:
-- Numbers: Clear, consistent pronunciation ✅
-- Temperature: Natural reading of °C symbol ✅  
-- Currency: Proper handling of amounts ✅
-- Tech terms: Correct abbreviation reading ✅
+- Numbers: Clear but not rushed ✅
+- Temperature: Natural speed ✅  
+- No robotic fast speech ✅
 */
