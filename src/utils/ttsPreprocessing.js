@@ -1,13 +1,4 @@
-// 🔢 DECIMAL NUMBERS - CRITICAL FIX FOR CZECH COMMAS!
-  processedText = processedText.replace(/(\d+),(\d+)/g, '$1 celá $2');  // 29,4 → "29 celá 4"
-  
-  // 📊 PERCENTAGE AND FRACTIONS
-  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
-  processedText = processedText.replace(/(\d+)\/(\d+)/g, '$1 lomeno $2'); // Fractions: 3/4 → "3 lomeno 4"
-  
-  // 🌡️ TEMPERATURE AND UNITS (after decimal fix)
-  processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů Celsia');
-  processedText = processedText.replace(/(\d+)\s*°F/gi, '$1 stupňů Fahrenheita');// 📁 src/utils/ttsPreprocessing.js
+// 📁 src/utils/ttsPreprocessing.js
 // 🎯 TTS preprocessing functions - FIXED MATH SYMBOLS
 
 // Main preprocessing function
@@ -55,10 +46,11 @@ const preprocessCzechTextForTTS = (text) => {
   processedText = processedText.replace(/</g, ' menší než ');      // < less than
   processedText = processedText.replace(/>/g, ' větší než ');      // > greater than
   
-  // 🔢 DECIMAL NUMBERS - CRITICAL FIX FOR CZECH COMMAS!
-  processedText = processedText.replace(/(\d+),(\d+)/g, '$1 celá $2');  // 29,4 → "29 celá 4"
+  // 📊 PERCENTAGE AND FRACTIONS
+  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
+  processedText = processedText.replace(/(\d+)\/(\d+)/g, '$1 lomeno $2'); // Fractions: 3/4 → "3 lomeno 4"
   
-  // 🌡️ TEMPERATURE AND UNITS (after decimal fix)
+  // 🌡️ TEMPERATURE AND UNITS
   processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů Celsia');
   processedText = processedText.replace(/(\d+)\s*°F/gi, '$1 stupňů Fahrenheita');
   
@@ -110,16 +102,6 @@ const preprocessEnglishTextForTTS = (text) => {
   
   let processedText = text;
   
-  // 🧹 CLEANUP MARKDOWN FIRST
-  processedText = processedText.replace(/\*\*([^*]+)\*\*/g, '$1');
-  processedText = processedText.replace(/\*([^*]+)\*/g, '$1');
-  processedText = processedText.replace(/\*+/g, '');
-  processedText = processedText.replace(/#{1,6}/g, '');
-  processedText = processedText.replace(/```[\s\S]*?```/g, '');
-  
-  // 🔢 DECIMAL NUMBERS (English uses dot)
-  processedText = processedText.replace(/(\d+)\.(\d+)/g, '$1 point $2');  // 29.4 → "29 point 4"
-  
   // 🔢 MATHEMATICAL SYMBOLS
   processedText = processedText.replace(/÷/g, ' divided by ');
   processedText = processedText.replace(/×/g, ' times ');
@@ -127,6 +109,7 @@ const preprocessEnglishTextForTTS = (text) => {
   processedText = processedText.replace(/\+/g, ' plus ');
   processedText = processedText.replace(/=/g, ' equals ');
   processedText = processedText.replace(/\//g, ' divided by ');
+  processedText = processedText.replace(/\*/g, ' times ');
   processedText = processedText.replace(/≠/g, ' does not equal ');
   processedText = processedText.replace(/≤/g, ' less than or equal to ');
   processedText = processedText.replace(/≥/g, ' greater than or equal to ');
@@ -181,16 +164,6 @@ const preprocessRomanianTextForTTS = (text) => {
   
   let processedText = text;
   
-  // 🧹 CLEANUP MARKDOWN FIRST
-  processedText = processedText.replace(/\*\*([^*]+)\*\*/g, '$1');
-  processedText = processedText.replace(/\*([^*]+)\*/g, '$1');
-  processedText = processedText.replace(/\*+/g, '');
-  processedText = processedText.replace(/#{1,6}/g, '');
-  processedText = processedText.replace(/```[\s\S]*?```/g, '');
-  
-  // 🔢 DECIMAL NUMBERS (Romanian uses comma like Czech)
-  processedText = processedText.replace(/(\d+),(\d+)/g, '$1 întreg $2');  // 29,4 → "29 întreg 4"
-  
   // 🔢 MATHEMATICAL SYMBOLS
   processedText = processedText.replace(/÷/g, ' împărțit la ');
   processedText = processedText.replace(/×/g, ' înmulțit cu ');
@@ -198,6 +171,7 @@ const preprocessRomanianTextForTTS = (text) => {
   processedText = processedText.replace(/\+/g, ' plus ');
   processedText = processedText.replace(/=/g, ' egal cu ');
   processedText = processedText.replace(/\//g, ' împărțit la ');
+  processedText = processedText.replace(/\*/g, ' înmulțit cu ');
   processedText = processedText.replace(/≠/g, ' nu este egal cu ');
   processedText = processedText.replace(/≤/g, ' mai mic sau egal cu ');
   processedText = processedText.replace(/≥/g, ' mai mare sau egal cu ');
