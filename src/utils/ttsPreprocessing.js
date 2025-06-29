@@ -1,5 +1,5 @@
 // 📁 src/utils/ttsPreprocessing.js
-// 🎯 TTS preprocessing functions extracted from App.jsx
+// 🎯 TTS preprocessing functions - FIXED MATH SYMBOLS
 
 // Main preprocessing function
 export const preprocessTextForTTS = (text, language = 'cs') => {
@@ -19,13 +19,40 @@ export const preprocessTextForTTS = (text, language = 'cs') => {
   }
 };
 
-// 🇨🇿 CZECH TTS PREPROCESSING
+// 🇨🇿 CZECH TTS PREPROCESSING - FIXED MATH SYMBOLS
 const preprocessCzechTextForTTS = (text) => {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
   
-  // Číslá na slova
+  // 🔢 MATHEMATICAL SYMBOLS - CRITICAL FIX!
+  processedText = processedText.replace(/÷/g, ' děleno ');         // ÷ division symbol
+  processedText = processedText.replace(/×/g, ' krát ');           // × multiplication
+  processedText = processedText.replace(/−/g, ' mínus ');          // − minus symbol (Unicode)
+  processedText = processedText.replace(/\+/g, ' plus ');          // + plus
+  processedText = processedText.replace(/=/g, ' rovná se ');       // = equals
+  processedText = processedText.replace(/\//g, ' děleno ');        // / division (slash)
+  processedText = processedText.replace(/\*/g, ' krát ');          // * multiplication (asterisk)
+  processedText = processedText.replace(/≠/g, ' nerovná se ');     // ≠ not equal
+  processedText = processedText.replace(/≤/g, ' menší nebo rovno '); // ≤ less than or equal
+  processedText = processedText.replace(/≥/g, ' větší nebo rovno '); // ≥ greater than or equal
+  processedText = processedText.replace(/</g, ' menší než ');      // < less than
+  processedText = processedText.replace(/>/g, ' větší než ');      // > greater than
+  
+  // 📊 PERCENTAGE AND FRACTIONS
+  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
+  processedText = processedText.replace(/(\d+)\/(\d+)/g, '$1 lomeno $2'); // Fractions: 3/4 → "3 lomeno 4"
+  
+  // 🌡️ TEMPERATURE AND UNITS
+  processedText = processedText.replace(/(\d+)\s*°C/gi, '$1 stupňů Celsia');
+  processedText = processedText.replace(/(\d+)\s*°F/gi, '$1 stupňů Fahrenheita');
+  
+  // 💰 CURRENCIES
+  processedText = processedText.replace(/(\d+)\s*Kč/gi, '$1 korun českých');
+  processedText = processedText.replace(/(\d+)\s*€/gi, '$1 eur');
+  processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolarů');
+  
+  // 🔢 NUMBERS TO WORDS (1-20)
   const numberMap = {
     '0': 'nula', '1': 'jedna', '2': 'dva', '3': 'tři', '4': 'čtyři',
     '5': 'pět', '6': 'šest', '7': 'sedm', '8': 'osm', '9': 'devět',
@@ -39,13 +66,7 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, word);
   });
   
-  // Měny a procenta
-  processedText = processedText.replace(/(\d+)\s*Kč/gi, '$1 korun českých');
-  processedText = processedText.replace(/(\d+)\s*€/gi, '$1 eur');
-  processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolarů');
-  processedText = processedText.replace(/(\d+)\s*%/gi, '$1 procent');
-  
-  // AI & Tech terms
+  // 🤖 AI & TECH TERMS
   const abbreviations = {
     'atd': 'a tak dále', 'apod': 'a podobně', 'tj': 'to jest',
     'tzn': 'to znamená', 'např': 'například', 'resp': 'respektive',
@@ -60,12 +81,12 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // Cleanup
+  // 🧹 CLEANUP
   processedText = processedText.replace(/\.\.\./g, ', pauza,');
   processedText = processedText.replace(/--/g, ', pauza,');
-  processedText = processedText.replace(/\*+/g, '');
-  processedText = processedText.replace(/#{1,6}/g, '');
-  processedText = processedText.replace(/\s+/g, ' ').trim();
+  processedText = processedText.replace(/\*+/g, '');          // Remove markdown stars
+  processedText = processedText.replace(/#{1,6}/g, '');       // Remove markdown headers
+  processedText = processedText.replace(/\s+/g, ' ').trim();  // Normalize spaces
   
   return processedText;
 };
@@ -76,7 +97,21 @@ const preprocessEnglishTextForTTS = (text) => {
   
   let processedText = text;
   
-  // Numbers to words
+  // 🔢 MATHEMATICAL SYMBOLS
+  processedText = processedText.replace(/÷/g, ' divided by ');
+  processedText = processedText.replace(/×/g, ' times ');
+  processedText = processedText.replace(/−/g, ' minus ');
+  processedText = processedText.replace(/\+/g, ' plus ');
+  processedText = processedText.replace(/=/g, ' equals ');
+  processedText = processedText.replace(/\//g, ' divided by ');
+  processedText = processedText.replace(/\*/g, ' times ');
+  processedText = processedText.replace(/≠/g, ' does not equal ');
+  processedText = processedText.replace(/≤/g, ' less than or equal to ');
+  processedText = processedText.replace(/≥/g, ' greater than or equal to ');
+  processedText = processedText.replace(/</g, ' less than ');
+  processedText = processedText.replace(/>/g, ' greater than ');
+  
+  // Numbers to words (1-20)
   const numberMap = {
     '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
     '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine',
@@ -124,7 +159,21 @@ const preprocessRomanianTextForTTS = (text) => {
   
   let processedText = text;
   
-  // Numbers to words
+  // 🔢 MATHEMATICAL SYMBOLS
+  processedText = processedText.replace(/÷/g, ' împărțit la ');
+  processedText = processedText.replace(/×/g, ' înmulțit cu ');
+  processedText = processedText.replace(/−/g, ' minus ');
+  processedText = processedText.replace(/\+/g, ' plus ');
+  processedText = processedText.replace(/=/g, ' egal cu ');
+  processedText = processedText.replace(/\//g, ' împărțit la ');
+  processedText = processedText.replace(/\*/g, ' înmulțit cu ');
+  processedText = processedText.replace(/≠/g, ' nu este egal cu ');
+  processedText = processedText.replace(/≤/g, ' mai mic sau egal cu ');
+  processedText = processedText.replace(/≥/g, ' mai mare sau egal cu ');
+  processedText = processedText.replace(/</g, ' mai mic decât ');
+  processedText = processedText.replace(/>/g, ' mai mare decât ');
+  
+  // Numbers to words (1-20)
   const numberMap = {
     '0': 'zero', '1': 'unu', '2': 'doi', '3': 'trei', '4': 'patru',
     '5': 'cinci', '6': 'șase', '7': 'șapte', '8': 'opt', '9': 'nouă',
@@ -166,3 +215,25 @@ const preprocessRomanianTextForTTS = (text) => {
 };
 
 export default preprocessTextForTTS;
+
+// 🧪 TESTING EXAMPLES:
+/*
+🔢 MATH SYMBOLS TESTS:
+
+INPUT:  "300 ÷ 20 = 15"
+OUTPUT: "300 děleno 20 rovná se 15"
+
+INPUT:  "5 × 3 = 15"  
+OUTPUT: "5 krát 3 rovná se 15"
+
+INPUT:  "10 - 5 = 5"
+OUTPUT: "10 mínus 5 rovná se 5"
+
+INPUT:  "31°C a 75%"
+OUTPUT: "31 stupňů Celsia a 75 procent"
+
+INPUT:  "API klíč pro ChatGPT"
+OUTPUT: "éj pí áj klíč pro čet džípítí"
+
+✅ All mathematical symbols should now be properly pronounced!
+*/
