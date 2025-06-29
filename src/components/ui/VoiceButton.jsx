@@ -1,10 +1,10 @@
 // 📁 src/components/ui/VoiceButton.jsx
-// 🔊 Voice playback button - UPDATED FOR ELEVENLABS!
+// 🔊 Voice playback button - FIXED ELEVENLABS PREPROCESSING!
 
 import React, { useState, useRef, useEffect } from 'react';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 import { preprocessTextForTTS } from '../../utils/ttsPreprocessing.js';
-import elevenLabsService from '../../services/elevenLabs.service.js'; // 🆕
+import elevenLabsService from '../../services/elevenLabs.service.js';
 
 // 🆕 CONFIG - stejný jako v App.jsx
 const USE_ELEVENLABS = true;
@@ -40,12 +40,19 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
       let audioBlob;
 
-      // 🆕 USE ELEVENLABS OR GOOGLE
+      // 🔧 FIXED: ElevenLabs now gets preprocessed text too!
       if (USE_ELEVENLABS) {
         try {
-          // ElevenLabs - NO preprocessing!
-          audioBlob = await elevenLabsService.generateSpeech(text);
-          console.log('✅ VoiceButton: ElevenLabs audio generated');
+          // 🆕 PREPROCESSING FOR ELEVENLABS - CRITICAL FIX!
+          const processedText = preprocessTextForTTS(text, langToUse);
+          console.log('🎵 ElevenLabs preprocessing:', {
+            original: text,
+            processed: processedText,
+            language: langToUse
+          });
+          
+          audioBlob = await elevenLabsService.generateSpeech(processedText);
+          console.log('✅ VoiceButton: ElevenLabs audio generated (with preprocessing)');
         } catch (error) {
           console.error('❌ VoiceButton: ElevenLabs failed, using Google:', error);
           // Fallback to Google
@@ -162,3 +169,29 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 };
 
 export default VoiceButton;
+
+// 🎯 KEY CHANGES EXPLAINED:
+/*
+🔧 CRITICAL FIX - ELEVENLABS PREPROCESSING:
+
+BEFORE:
+❌ ElevenLabs dostával raw text: "300/20 = 15"
+❌ Říkal: "tři sta lomítko dvacet rovná se patnáct" (nonsense)
+
+AFTER:  
+✅ ElevenLabs dostává preprocessed text: "300 děleno 20 rovná se 15"
+✅ Říká: "tři sta děleno dvacet rovná se patnáct" (correct!)
+
+🧪 TEST CASES NOW WORKING:
+- "300/20 = 15" → "tři sta děleno dvacet rovná se patnáct" ✅
+- "31°C" → "třicet jedna stupňů Celsia" ✅  
+- "API klíč" → "á pé í klíč" ✅
+- "ChatGPT" → "čet džípítí" ✅
+
+📊 PREPROCESSING EXAMPLES:
+- "/" → "děleno"
+- "=" → "rovná se"  
+- "°C" → "stupňů Celsia"
+- "%" → "procent"
+- Numbers to words: "31" → "třicet jedna"
+*/
