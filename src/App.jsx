@@ -1,5 +1,6 @@
 // 🚀 OMNIA ENHANCED - ELEVENLABS INTEGRATION
 // ✅ Premium voice quality with ElevenLabs TTS
+// 🔧 FIXED: Full-screen background without white borders
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -8,7 +9,7 @@ import './App.css';
 import claudeService from './services/claude.service.js';
 import openaiService from './services/openai.service.js';
 import sonarService from './services/sonar.service.js';
-import elevenLabsService from './services/elevenLabs.service.js'; // 🆕 NOVÝ!
+import elevenLabsService from './services/elevenLabs.service.js';
 
 // 🔧 IMPORT UTILS  
 import { uiTexts, getTranslation } from './utils/translations.js';
@@ -28,8 +29,8 @@ import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
 // 🎤 TTS CONFIGURATION
-const USE_ELEVENLABS = true;  // true = ElevenLabs, false = Google TTS
-const FALLBACK_TO_GOOGLE = true; // Při chybě použít Google jako zálohu
+const USE_ELEVENLABS = true;
+const FALLBACK_TO_GOOGLE = true;
 
 // 🎵 ENHANCED AUDIO GENERATION WITH ELEVENLABS
 const generateInstantAudio = async (
@@ -53,7 +54,6 @@ const generateInstantAudio = async (
     
     if (USE_ELEVENLABS) {
       try {
-        // Try ElevenLabs first - NO preprocessing!
         audioBlob = await elevenLabsService.generateSpeech(responseText);
         console.log('✅ ElevenLabs audio generated successfully');
         
@@ -61,7 +61,6 @@ const generateInstantAudio = async (
         console.error('❌ ElevenLabs failed:', elevenError);
         
         if (FALLBACK_TO_GOOGLE) {
-          // Fallback to Google TTS
           console.log('🔄 Falling back to Google TTS...');
           audioService = 'Google (fallback)';
           
@@ -86,7 +85,6 @@ const generateInstantAudio = async (
         }
       }
     } else {
-      // Use Google TTS directly
       const processedText = preprocessTextForTTS(responseText, detectedLang);
       const response = await fetch('/api/google-tts', {
         method: 'POST',
@@ -166,11 +164,9 @@ function App() {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
-  // 🆕 VOICE STATES
   const [isListening, setIsListening] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   
-  // 🌍 LANGUAGE STATES
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   
@@ -242,7 +238,6 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 handleNewChat
   const handleNewChat = () => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
@@ -264,7 +259,6 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // 🔧 ENHANCED handleSend
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim()) return;
     if (loading || streaming) return;
@@ -276,7 +270,6 @@ function App() {
       setUserLanguage(detectedLang);
     }
 
-    // Stop current audio
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
@@ -399,7 +392,6 @@ function App() {
     }
   };
 
-  // 🎙️ VOICE HANDLERS
   const handleTranscript = (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence, voiceMode });
     
@@ -410,7 +402,6 @@ function App() {
     }
   };
 
-  // 🔧 INITIALIZATION
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -429,14 +420,12 @@ function App() {
       setVoiceMode(true);
     }
 
-    // Log TTS configuration on startup
     console.log('🎤 TTS Configuration:', {
       service: USE_ELEVENLABS ? 'ElevenLabs' : 'Google TTS',
       fallback: FALLBACK_TO_GOOGLE ? 'Enabled' : 'Disabled'
     });
   }, []);
 
-  // 🔄 AUTO-SCROLL
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (messages.length > 0 && endOfMessagesRef.current) {
@@ -448,10 +437,16 @@ function App() {
 
   const shouldHideLogo = messages.length > 0;
 
-  // 🎨 JSX RETURN
+  // 🎨 JSX RETURN - FIXED FULL SCREEN
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      position: 'fixed',  // 🆕 FIXED POSITION
+      top: 0,            // 🆕
+      left: 0,           // 🆕
+      right: 0,          // 🆕
+      bottom: 0,         // 🆕
+      width: '100vw',
+      height: '100vh',
       display: 'flex', 
       flexDirection: 'column',
       background: isListening 
@@ -459,9 +454,9 @@ function App() {
         : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-      width: '100vw',
       margin: 0,
       padding: 0,
+      overflow: 'hidden',  // 🆕 PREVENT SCROLLBARS
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       
@@ -470,7 +465,8 @@ function App() {
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.85), rgba(0, 78, 146, 0.6))',
         backdropFilter: 'blur(20px)',
-        zIndex: 10
+        zIndex: 10,
+        flexShrink: 0  // 🆕 Don't shrink
       }}>
         
         <div style={{
@@ -638,10 +634,11 @@ function App() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN CONTENT - FIXED OVERFLOW */}
       <main style={{ 
         flex: 1, 
-        overflowY: 'auto', 
+        overflowY: 'auto',  // 🆕 Allow scroll only here
+        overflowX: 'hidden', // 🆕 No horizontal scroll
         padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '160px',
         width: '100%'
@@ -692,7 +689,7 @@ function App() {
                   whiteSpace: 'pre-wrap',
                   color: '#ffffff',
                   background: 'rgba(255, 255, 255, 0.03)',
-                  borderLeft: `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
+                  borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                   borderRadius: '0 12px 12px 0',
                   paddingLeft: '1.8rem',
                   backdropFilter: 'blur(10px)'
@@ -748,7 +745,7 @@ function App() {
                 fontSize: isMobile ? '1rem' : '0.95rem',
                 color: '#ffffff',
                 background: 'rgba(255, 255, 255, 0.03)',
-                borderLeft: `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
+                borderLeft: isMobile ? 'none' : `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                 borderRadius: '0 12px 12px 0',
                 paddingLeft: '1.8rem',
                 backdropFilter: 'blur(10px)'
@@ -777,18 +774,15 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT AREA */}
+      {/* INPUT AREA - FIXED AT BOTTOM */}
       <div style={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        left: 0, 
-        right: 0,
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(20px)',
         padding: isMobile ? '1.2rem' : '1.6rem',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1.2rem)' : '1.6rem',
-        zIndex: 10
+        zIndex: 10,
+        flexShrink: 0  // 🆕 Don't shrink
       }}>
         <div style={{ 
           maxWidth: '1000px', 
@@ -862,8 +856,50 @@ function App() {
         currentResponse={streaming ? messages[messages.length - 1]?.text : null}
       />
 
-      {/* CSS STYLES */}
+      {/* CSS STYLES - FIXED FULL SCREEN */}
       <style>{`
+        /* FULL RESET - CRITICAL! */
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        html {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          overflow: hidden !important;
+        }
+        
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          overflow: hidden !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+        }
+        
+        #root {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+        }
+        
+        /* Remove any default margins/paddings */
+        body > * {
+          margin: 0 !important;
+        }
+        
+        /* Animations */
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
           100% { transform: translateX(200%) translateY(200%) rotate(45deg); }
@@ -873,10 +909,12 @@ function App() {
           0% { transform: rotate(0deg); } 
           100% { transform: rotate(360deg); } 
         }
+        
         @keyframes blink { 
           0%, 50% { opacity: 1; } 
           51%, 100% { opacity: 0; } 
         }
+        
         @keyframes pulse { 
           0%, 100% { opacity: 1; transform: scale(1); } 
           50% { opacity: 0.7; transform: scale(0.95); } 
@@ -925,18 +963,10 @@ function App() {
             transform: translateY(0) translateZ(0);
           }
         }
-
-        html, body { 
-          margin: 0; 
-          padding: 0; !important;
-          width: 100%; 
-          overflow-x: hidden; 
-          background: #000000;
-        }
         
+        /* Webkit specific */
         * { 
           -webkit-tap-highlight-color: transparent; 
-          box-sizing: border-box;
         }
         
         @media (max-width: 768px) { 
@@ -944,6 +974,7 @@ function App() {
           button { min-height: 44px; min-width: 44px; }
         }
         
+        /* Scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(26, 32, 44, 0.5); }
         ::-webkit-scrollbar-thumb { 
