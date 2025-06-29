@@ -1,9 +1,13 @@
 // 📁 src/components/ui/VoiceButton.jsx
-// 🔊 Voice playback button with auto language detection
+// 🔊 Voice playback button - UPDATED FOR ELEVENLABS!
 
 import React, { useState, useRef, useEffect } from 'react';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 import { preprocessTextForTTS } from '../../utils/ttsPreprocessing.js';
+import elevenLabsService from '../../services/elevenLabs.service.js'; // 🆕
+
+// 🆕 CONFIG - stejný jako v App.jsx
+const USE_ELEVENLABS = true;
 
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -34,27 +38,47 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
       
       if (onAudioStart) onAudioStart();
 
-      const processedText = preprocessTextForTTS(text, langToUse);
+      let audioBlob;
 
-      const response = await fetch('/api/google-tts', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json; charset=utf-8'
-        },
-        body: JSON.stringify({ 
-          text: processedText,
-          language: langToUse,
-          voice: 'natural'
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Google TTS API failed: HTTP ${response.status}`);
+      // 🆕 USE ELEVENLABS OR GOOGLE
+      if (USE_ELEVENLABS) {
+        try {
+          // ElevenLabs - NO preprocessing!
+          audioBlob = await elevenLabsService.generateSpeech(text);
+          console.log('✅ VoiceButton: ElevenLabs audio generated');
+        } catch (error) {
+          console.error('❌ VoiceButton: ElevenLabs failed, using Google:', error);
+          // Fallback to Google
+          const processedText = preprocessTextForTTS(text, langToUse);
+          const response = await fetch('/api/google-tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({ 
+              text: processedText,
+              language: langToUse,
+              voice: 'natural'
+            })
+          });
+          if (!response.ok) throw new Error(`Google TTS failed: ${response.status}`);
+          audioBlob = await response.blob();
+        }
+      } else {
+        // Google TTS
+        const processedText = preprocessTextForTTS(text, langToUse);
+        const response = await fetch('/api/google-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ 
+            text: processedText,
+            language: langToUse,
+            voice: 'natural'
+          })
+        });
+        if (!response.ok) throw new Error(`Google TTS failed: ${response.status}`);
+        audioBlob = await response.blob();
       }
 
-      const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
