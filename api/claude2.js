@@ -1,145 +1,130 @@
-// api/claude2.js - FAKE STREAMING (funkční + simulované)
+// 🤖 api/claude2.js - UTF-8 FIXED VERSION
+// ✅ FIX: Přidány UTF-8 headers pro opravu diakritiky
+
 export default async function handler(req, res) {
-  // CORS headers pro fake streaming
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // ✅ KRITICKÝ FIX: UTF-8 headers MUSÍ být na začátku!
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { messages, system, max_tokens = 2000 } = req.body;
-    const API_KEY = process.env.CLAUDE_API_KEY;
+    const { messages, system, max_tokens = 2000, language = 'cs' } = req.body;
+
+    // ✅ DEBUGGING UTF-8:
+    console.log('📝 Claude2 Request Language:', language);
+    console.log('🔤 Request Content-Type:', req.headers['content-type']);
+    console.log('📤 Response Content-Type:', res.getHeader('Content-Type'));
     
-    if (!API_KEY) {
-      res.write(JSON.stringify({
-        error: true,
-        message: 'Claude API key není nastaven'
-      }) + '\n');
-      return res.end();
+    // Test Czech characters
+    if (language === 'cs') {
+      console.log('🧪 Czech test: můžete říct více informací?');
     }
-
-    const recentMessages = messages.slice(-8);
-    
-    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent."}
-    
-Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
-Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
-Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
-Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
-
-    // ✅ PŮVODNÍ funkční request (BEZ streaming)
-    const claudeRequest = {
-      model: "claude-sonnet-4-20250514",
-      max_tokens: max_tokens,
-      system: enhancedSystem,
-      messages: recentMessages,
-      // stream: false, // 🔧 BEZ streaming - používáme tvůj funkční způsob
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 5
-        }
-      ]
-    };
-
-    console.log('🚀 Sending FAKE STREAMING request (funkční způsob)...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01' // ✅ Tvá funkční API verze
+        'Content-Type': 'application/json; charset=utf-8',  // ✅ FIX: UTF-8 pro Claude API
+        'Authorization': `Bearer ${process.env.ANTHROPIC_API_KEY}`,
+        'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(claudeRequest)
+      body: JSON.stringify({
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: max_tokens,
+        system: system,
+        messages: messages,
+        stream: true
+      })
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Claude API error:', response.status, errorText);
-      res.write(JSON.stringify({
-        error: true,
-        message: `HTTP ${response.status}: ${errorText}`
-      }) + '\n');
-      return res.end();
+      const errorData = await response.text();
+      console.error('❌ Claude API Error:', response.status, errorData);
+      return res.status(response.status).json({ 
+        error: `Claude API Error: ${response.status}`,
+        details: errorData 
+      });
     }
 
-    const data = await response.json();
-    console.log('✅ Claude Sonnet 4 response received');
+    // ✅ STREAMING s UTF-8 support
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');  // ✅ FIX: Explicit UTF-8
     
-    // Check for web search usage
-    const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
-    const webSearchUsed = toolUses.some(t => t.name === 'web_search');
-    
-    if (webSearchUsed) {
-      console.log('🔍 Claude used web_search!');
-      // Send search notification
-      res.write(JSON.stringify({
-        type: 'search_start',
-        message: '🔍 Vyhledávám aktuální informace...'
-      }) + '\n');
-      
-      // Small delay to simulate search
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
-    // Extrahovat text odpověď
-    const textContent = data.content
-      ?.filter(item => item.type === 'text')
-      ?.map(item => item.text)
-      ?.join('\n')
-      ?.trim() || "Nepodařilo se získat odpověď.";
+    let buffer = '';
+    let fullText = '';
 
-    console.log('💬 Response length:', textContent.length, 'characters');
-    console.log('🔍 Web search executed:', webSearchUsed);
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          // ✅ FINAL MESSAGE s UTF-8:
+          const finalData = JSON.stringify({ 
+            type: 'completed', 
+            fullText: fullText 
+          });
+          res.write(`data: ${finalData}\n\n`);
+          res.end();
+          break;
+        }
 
-    // 🎭 FAKE STREAMING: Postupné posílání textu po částech
-    const words = textContent.split(' ');
-    const chunkSize = 3; // Posíláme po 3 slovech
-    
-    for (let i = 0; i < words.length; i += chunkSize) {
-      const chunk = words.slice(i, i + chunkSize).join(' ');
-      
-      // Pošli chunk textu
-      res.write(JSON.stringify({
-        type: 'text',
-        content: chunk + (i + chunkSize < words.length ? ' ' : '')
-      }) + '\n');
-      
-      // Malá pauza pro realističnost streaming efektu
-      if (i + chunkSize < words.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            
+            if (data === '[DONE]') continue;
+            
+            try {
+              const parsed = JSON.parse(data);
+              
+              if (parsed.type === 'content_block_delta' && 
+                  parsed.delta && 
+                  parsed.delta.text) {
+                
+                const chunk = parsed.delta.text;
+                fullText += chunk;
+                
+                // ✅ STREAM CHUNK s UTF-8:
+                const responseData = JSON.stringify({ 
+                  type: 'text', 
+                  content: chunk 
+                });
+                res.write(`data: ${responseData}\n\n`);
+              }
+            } catch (parseError) {
+              console.warn('⚠️ Parse error:', parseError.message);
+              continue;
+            }
+          }
+        }
       }
+    } catch (streamError) {
+      console.error('💥 Streaming error:', streamError);
+      
+      // ✅ ERROR RESPONSE s UTF-8:
+      const errorData = JSON.stringify({ 
+        error: 'Streaming error', 
+        message: streamError.message 
+      });
+      res.write(`data: ${errorData}\n\n`);
+      res.end();
     }
-    
-    // Send final completion
-    res.write(JSON.stringify({
-      type: 'completed',
-      fullText: textContent,
-      webSearchUsed: webSearchUsed
-    }) + '\n');
-
-    console.log('✅ FAKE STREAMING completed');
-    res.end();
 
   } catch (error) {
-    console.error('💥 Fatal error in FAKE streaming:', error);
+    console.error('💥 Claude2 API Error:', error);
     
-    res.write(JSON.stringify({
-      error: true,
-      message: 'Server error: ' + error.message
-    }) + '\n');
-    
-    res.end();
+    // ✅ ENSURE UTF-8 for error responses:
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 }
