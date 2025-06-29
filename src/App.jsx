@@ -1,5 +1,5 @@
-// 🚀 OMNIA ENHANCED - VOICE SCREEN EXTRACTED VERSION
-// ✅ VoiceScreen je teď samostatný komponent!
+// 🚀 OMNIA ENHANCED - ELEVENLABS INTEGRATION
+// ✅ Premium voice quality with ElevenLabs TTS
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -8,6 +8,7 @@ import './App.css';
 import claudeService from './services/claude.service.js';
 import openaiService from './services/openai.service.js';
 import sonarService from './services/sonar.service.js';
+import elevenLabsService from './services/elevenLabs.service.js'; // 🆕 NOVÝ!
 
 // 🔧 IMPORT UTILS  
 import { uiTexts, getTranslation } from './utils/translations.js';
@@ -24,9 +25,13 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 
 // 🔧 IMPORT VOICE COMPONENTS
-import VoiceScreen from './components/voice/VoiceScreen.jsx'; // 🆕 EXTRACTED!
+import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🎵 GOOGLE TTS HELPER (jediná funkce co zůstala v App.jsx)
+// 🎤 TTS CONFIGURATION
+const USE_ELEVENLABS = true;  // true = ElevenLabs, false = Google TTS
+const FALLBACK_TO_GOOGLE = true; // Při chybě použít Google jako zálohu
+
+// 🎵 ENHANCED AUDIO GENERATION WITH ELEVENLABS
 const generateInstantAudio = async (
   responseText, 
   setIsAudioPlaying, 
@@ -37,43 +42,85 @@ const generateInstantAudio = async (
 ) => {
   try {
     const detectedLang = detectLanguage(responseText);
-    console.log('🎵 Generating Google TTS audio for detected language:', detectedLang);
-    
-    const processedText = preprocessTextForTTS(responseText, detectedLang);
-    
-    const response = await fetch('/api/google-tts', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json; charset=utf-8'
-      },
-      body: JSON.stringify({ 
-        text: processedText,
-        language: detectedLang,
-        voice: 'natural'
-      })
+    console.log('🎵 Generating audio:', { 
+      service: USE_ELEVENLABS ? 'ElevenLabs' : 'Google TTS',
+      language: detectedLang,
+      textLength: responseText.length
     });
-
-    if (!response.ok) {
-      throw new Error(`Google TTS API failed: ${response.status}`);
+    
+    let audioBlob;
+    let audioService = USE_ELEVENLABS ? 'ElevenLabs' : 'Google';
+    
+    if (USE_ELEVENLABS) {
+      try {
+        // Try ElevenLabs first - NO preprocessing!
+        audioBlob = await elevenLabsService.generateSpeech(responseText);
+        console.log('✅ ElevenLabs audio generated successfully');
+        
+      } catch (elevenError) {
+        console.error('❌ ElevenLabs failed:', elevenError);
+        
+        if (FALLBACK_TO_GOOGLE) {
+          // Fallback to Google TTS
+          console.log('🔄 Falling back to Google TTS...');
+          audioService = 'Google (fallback)';
+          
+          const processedText = preprocessTextForTTS(responseText, detectedLang);
+          const response = await fetch('/api/google-tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({ 
+              text: processedText,
+              language: detectedLang,
+              voice: 'natural'
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Google TTS also failed: ${response.status}`);
+          }
+          
+          audioBlob = await response.blob();
+        } else {
+          throw elevenError;
+        }
+      }
+    } else {
+      // Use Google TTS directly
+      const processedText = preprocessTextForTTS(responseText, detectedLang);
+      const response = await fetch('/api/google-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ 
+          text: processedText,
+          language: detectedLang,
+          voice: 'natural'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Google TTS failed: ${response.status}`);
+      }
+      
+      audioBlob = await response.blob();
     }
 
     setIsAudioPlaying(true);
 
-    const audioBlob = await response.blob();
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     
     currentAudioRef.current = audio;
     
     audio.onended = () => {
-      console.log('✅ Google TTS audio playback finished');
+      console.log(`✅ ${audioService} audio playback finished`);
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
     };
     
     audio.onerror = (e) => {
-      console.error('❌ Google TTS audio playback error:', e);
+      console.error(`❌ ${audioService} audio playback error:`, e);
       setIsAudioPlaying(false);
       currentAudioRef.current = null;
       URL.revokeObjectURL(audioUrl);
@@ -81,7 +128,7 @@ const generateInstantAudio = async (
     
     try {
       await audio.play();
-      console.log('🎯 Google TTS audio plays IMMEDIATELY after AI response!');
+      console.log(`🎯 ${audioService} audio plays IMMEDIATELY!`);
     } catch (playError) {
       console.error('❌ Auto-play blocked:', playError);
       const playMsg = detectedLang === 'cs' ? 'Klepněte pro přehrání odpovědi' :
@@ -95,13 +142,13 @@ const generateInstantAudio = async (
     return audio;
     
   } catch (error) {
-    console.error('💥 Google TTS audio generation failed:', error);
+    console.error('💥 Audio generation failed:', error);
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
     
-    const errorMsg = language === 'cs' ? 'Google TTS se nepodařilo vygenerovat' :
-                    language === 'en' ? 'Failed to generate Google TTS' :
-                    'Nu s-a putut genera Google TTS';
+    const errorMsg = language === 'cs' ? 'Nepodařilo se vygenerovat audio' :
+                    language === 'en' ? 'Failed to generate audio' :
+                    'Nu s-a putut genera audio';
     showNotification(errorMsg, 'error');
     throw error;
   }
@@ -381,6 +428,12 @@ function App() {
     if (savedVoiceMode) {
       setVoiceMode(true);
     }
+
+    // Log TTS configuration on startup
+    console.log('🎤 TTS Configuration:', {
+      service: USE_ELEVENLABS ? 'ElevenLabs' : 'Google TTS',
+      fallback: FALLBACK_TO_GOOGLE ? 'Enabled' : 'Disabled'
+    });
   }, []);
 
   // 🔄 AUTO-SCROLL
@@ -395,7 +448,7 @@ function App() {
 
   const shouldHideLogo = messages.length > 0;
 
-  // 🎨 JSX RETURN - CLEAN & SIMPLE!
+  // 🎨 JSX RETURN
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -574,6 +627,11 @@ function App() {
                 fontWeight: '500'
               }}>
                 🌍 multilingual AI assistant
+                {USE_ELEVENLABS && (
+                  <span style={{ marginLeft: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
+                    • 🎤 Premium Voice
+                  </span>
+                )}
               </div>
             </>
           )}
@@ -792,7 +850,7 @@ function App() {
         </div>
       </div>
 
-      {/* 🆕 VOICE SCREEN - EXTRACTED COMPONENT! */}
+      {/* VOICE SCREEN */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={() => setShowVoiceScreen(false)}
@@ -804,7 +862,7 @@ function App() {
         currentResponse={streaming ? messages[messages.length - 1]?.text : null}
       />
 
-      {/* ✅ CSS STYLES */}
+      {/* CSS STYLES */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
