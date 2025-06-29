@@ -267,4 +267,4 @@ STEP 2: "Bold text with 10 mínus 5 rovná se 5" (math symbols replaced)
 OUTPUT: "Bold text with deset mínus pět rovná se pět" ✅
 
 ✅ CRITICAL FIX: Markdown cleanup BEFORE math symbol replacement!
-*/ 
+*/
