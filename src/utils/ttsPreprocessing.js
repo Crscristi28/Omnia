@@ -25,14 +25,21 @@ const preprocessCzechTextForTTS = (text) => {
   
   let processedText = text;
   
-  // 🔢 MATHEMATICAL SYMBOLS - CRITICAL FIX!
+  // 🧹 CLEANUP MARKDOWN FIRST (CRITICAL ORDER!)
+  processedText = processedText.replace(/\*\*([^*]+)\*\*/g, '$1'); // Remove **bold** markdown
+  processedText = processedText.replace(/\*([^*]+)\*/g, '$1');     // Remove *italic* markdown
+  processedText = processedText.replace(/\*+/g, '');               // Remove any remaining stars
+  processedText = processedText.replace(/#{1,6}/g, '');            // Remove markdown headers
+  processedText = processedText.replace(/```[\s\S]*?```/g, '');    // Remove code blocks
+  
+  // 🔢 MATHEMATICAL SYMBOLS - AFTER MARKDOWN CLEANUP!
   processedText = processedText.replace(/÷/g, ' děleno ');         // ÷ division symbol
   processedText = processedText.replace(/×/g, ' krát ');           // × multiplication
   processedText = processedText.replace(/−/g, ' mínus ');          // − minus symbol (Unicode)
   processedText = processedText.replace(/\+/g, ' plus ');          // + plus
   processedText = processedText.replace(/=/g, ' rovná se ');       // = equals
   processedText = processedText.replace(/\//g, ' děleno ');        // / division (slash)
-  processedText = processedText.replace(/\*/g, ' krát ');          // * multiplication (asterisk)
+  // Note: * multiplication removed - handled in markdown cleanup
   processedText = processedText.replace(/≠/g, ' nerovná se ');     // ≠ not equal
   processedText = processedText.replace(/≤/g, ' menší nebo rovno '); // ≤ less than or equal
   processedText = processedText.replace(/≥/g, ' větší nebo rovno '); // ≥ greater than or equal
@@ -81,11 +88,9 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, expansion);
   });
   
-  // 🧹 CLEANUP
+  // 🧹 FINAL CLEANUP
   processedText = processedText.replace(/\.\.\./g, ', pauza,');
   processedText = processedText.replace(/--/g, ', pauza,');
-  processedText = processedText.replace(/\*+/g, '');          // Remove markdown stars
-  processedText = processedText.replace(/#{1,6}/g, '');       // Remove markdown headers
   processedText = processedText.replace(/\s+/g, ' ').trim();  // Normalize spaces
   
   return processedText;
@@ -218,22 +223,22 @@ export default preprocessTextForTTS;
 
 // 🧪 TESTING EXAMPLES:
 /*
-🔢 MATH SYMBOLS TESTS:
+🔢 MATH SYMBOLS TESTS (FIXED ORDER):
 
-INPUT:  "300 ÷ 20 = 15"
-OUTPUT: "300 děleno 20 rovná se 15"
+INPUT:  "300 děleno 20 je **15**"
+STEP 1: "300 děleno 20 je 15" (markdown removed)
+STEP 2: "300 děleno 20 je 15" (no math symbols to replace)
+OUTPUT: "tři sta děleno dvacet je patnáct" ✅
 
-INPUT:  "5 × 3 = 15"  
-OUTPUT: "5 krát 3 rovná se 15"
+INPUT:  "5 × 3 = **15**"  
+STEP 1: "5 × 3 = 15" (markdown removed)
+STEP 2: "5 krát 3 rovná se 15" (math symbols replaced)
+OUTPUT: "pět krát tři rovná se patnáct" ✅
 
-INPUT:  "10 - 5 = 5"
-OUTPUT: "10 mínus 5 rovná se 5"
+INPUT:  "**Bold text** with 10 - 5 = 5"
+STEP 1: "Bold text with 10 - 5 = 5" (markdown removed)
+STEP 2: "Bold text with 10 mínus 5 rovná se 5" (math symbols replaced)
+OUTPUT: "Bold text with deset mínus pět rovná se pět" ✅
 
-INPUT:  "31°C a 75%"
-OUTPUT: "31 stupňů Celsia a 75 procent"
-
-INPUT:  "API klíč pro ChatGPT"
-OUTPUT: "éj pí áj klíč pro čet džípítí"
-
-✅ All mathematical symbols should now be properly pronounced!
+✅ CRITICAL FIX: Markdown cleanup BEFORE math symbol replacement!
 */
