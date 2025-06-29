@@ -1,6 +1,5 @@
-// 🚀 OMNIA ENHANCED - CLEAN MODULAR VERSION - ČÁST 1/3
-// ✅ Z ~1000 řádků na ~400 řádků!
-// 🎯 Všechny komponenty jsou v samostatných souborech
+// 🚀 OMNIA ENHANCED - VOICE SCREEN EXTRACTED VERSION
+// ✅ VoiceScreen je teď samostatný komponent!
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -25,8 +24,7 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 
 // 🔧 IMPORT VOICE COMPONENTS
-import SimpleVoiceRecorder from './components/voice/SimpleVoiceRecorder.jsx';// 🚀 OMNIA ENHANCED - CLEAN MODULAR VERSION - ČÁST 2/3
-// Pokračování z části 1/3...
+import VoiceScreen from './components/voice/VoiceScreen.jsx'; // 🆕 EXTRACTED!
 
 // 🎵 GOOGLE TTS HELPER (jediná funkce co zůstala v App.jsx)
 const generateInstantAudio = async (
@@ -365,11 +363,6 @@ function App() {
     }
   };
 
-  const handleVoiceStateChange = (listening) => {
-    console.log('🎙️ Voice state change:', listening);
-    setIsListening(listening);
-  };
-
   // 🔧 INITIALIZATION
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
@@ -401,9 +394,6 @@ function App() {
   }, [messages]);
 
   const shouldHideLogo = messages.length > 0;
-
-// POKRAČOVÁNÍ V ČÁSTI 3/3...// 🚀 OMNIA ENHANCED - CLEAN MODULAR VERSION - ČÁST 3/3
-// Pokračování z části 2/3...
 
   // 🎨 JSX RETURN - CLEAN & SIMPLE!
   return (
@@ -511,7 +501,7 @@ function App() {
             )}
           </div>
 
-          {/* SETTINGS BUTTON - ✅ FIXED WITH onClick! */}
+          {/* SETTINGS BUTTON */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
@@ -802,62 +792,17 @@ function App() {
         </div>
       </div>
 
-      {/* VOICE SCREEN MODAL */}
-      {showVoiceScreen && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #4a5568 100%)',
-            color: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1001,
-            cursor: 'pointer',
-            padding: isMobile ? '1rem' : '2rem',
-            minHeight: '100vh',
-            overflowY: 'auto',
-            backdropFilter: 'blur(10px)'
-          }}
-          onClick={() => setShowVoiceScreen(false)}
-        >
-          <div 
-            style={{
-              fontSize: isMobile ? '3.5rem' : '4.5rem',
-              fontWeight: 'bold',
-              marginBottom: '2rem',
-              background: 'linear-gradient(45deg, #4299e1, #63b3ed)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textAlign: 'center'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            OMNIA
-          </div>
-          
-          <div 
-            style={{ 
-              marginBottom: '3rem',
-              position: 'relative'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SimpleVoiceRecorder 
-              onTranscript={handleTranscript}
-              onListeningChange={handleVoiceStateChange}
-              disabled={loading}
-              isAudioPlaying={isAudioPlaying}
-              uiLanguage={uiLanguage}
-            />
-          </div>
-        </div>
-      )}
+      {/* 🆕 VOICE SCREEN - EXTRACTED COMPONENT! */}
+      <VoiceScreen 
+        isOpen={showVoiceScreen}
+        onClose={() => setShowVoiceScreen(false)}
+        onTranscript={handleTranscript}
+        isLoading={loading}
+        isAudioPlaying={isAudioPlaying}
+        uiLanguage={uiLanguage}
+        messages={messages}
+        currentResponse={streaming ? messages[messages.length - 1]?.text : null}
+      />
 
       {/* ✅ CSS STYLES */}
       <style>{`
