@@ -1,9 +1,10 @@
 // 🚀 OMNIA - FINAL APP.JSX (ČÁST 1/2)
-// ✅ Audio-first: Věta po větě streaming
+// ✅ Audio-first: FIXED - čeká na kompletní věty
 // ✅ Mobile auto-play fixed with MobileAudioManager
 // ✅ ElevenLabs STT integration
 // ✅ Stop audio on Voice Screen close
 // 🔧 FIXED: Set.clear() replaced with new Set()
+// 🔧 FIXED: Audio plays only complete sentences
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -111,8 +112,8 @@ class MobileAudioManager {
       const audioBlob = this.audioQueue.shift();
       try {
         await this.playAudio(audioBlob);
-        // Small gap between sentences (natural pause)
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // 🔧 INCREASED GAP between sentences for natural speech
+        await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
@@ -180,6 +181,11 @@ function splitIntoSentences(text) {
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
+// 🆕 CHECK IF SENTENCE IS COMPLETE
+function isCompleteSentence(sentence) {
+  return sentence.endsWith('.') || sentence.endsWith('!') || sentence.endsWith('?');
+}
+
 // 🚀 MAIN APP COMPONENT
 function App() {
   // 📊 BASIC STATE
@@ -201,6 +207,7 @@ function App() {
   // 🆕 VOICE MODE TRACKING
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
+  const [pendingSentences, setPendingSentences] = useState([]); // 🆕 Buffer for incomplete sentences
   
   // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
@@ -498,6 +505,7 @@ function App() {
     currentAudioRef.current = null;
     // 🔧 FIX: Replace clear() with new Set()
     processedSentencesRef.current = new Set();
+    setPendingSentences([]); // 🆕 Clear pending sentences
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
@@ -512,7 +520,7 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // 🤖 AI CONVERSATION with AUDIO-FIRST STREAMING
+  // 🤖 AI CONVERSATION with FIXED AUDIO-FIRST STREAMING
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -526,6 +534,7 @@ function App() {
     currentAudioRef.current = null;
     // 🔧 FIX: Replace clear() with new Set()
     processedSentencesRef.current = new Set();
+    setPendingSentences([]); // 🆕 Clear pending sentences
 
     if (!fromVoice) setInput('');
     setLoading(true);
@@ -550,7 +559,7 @@ function App() {
         const onStreamUpdate = async (text, isStillStreaming) => {
           fullResponse = text;
           
-          // 🆕 AUDIO-FIRST: Process sentences for voice mode
+          // 🆕 FIXED AUDIO-FIRST: Process only complete sentences
           if (fromVoice && showVoiceScreen) {
             const sentences = splitIntoSentences(text);
             
@@ -558,20 +567,23 @@ function App() {
               // Skip if already processed
               if (processedSentencesRef.current.has(sentence)) continue;
               
-              processedSentencesRef.current.add(sentence);
-              console.log('🎯 New sentence detected:', sentence);
-              
-              // Generate and queue audio immediately
-              try {
-                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-                await mobileAudioManager.queueAudio(audioBlob);
-                console.log('✅ Audio queued for sentence');
-              } catch (error) {
-                console.error('❌ Failed to generate audio for sentence:', error);
+              // 🔧 Check if sentence is complete
+              if (isCompleteSentence(sentence)) {
+                processedSentencesRef.current.add(sentence);
+                console.log('🎯 Complete sentence detected:', sentence);
+                
+                // Generate and queue audio for complete sentence
+                try {
+                  const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+                  await mobileAudioManager.queueAudio(audioBlob);
+                  console.log('✅ Audio queued for complete sentence');
+                } catch (error) {
+                  console.error('❌ Failed to generate audio for sentence:', error);
+                }
               }
             }
             
-            // Update buffer for Voice Screen display (optional)
+            // Update buffer for Voice Screen display
             setVoiceResponseBuffer(text);
           }
           
@@ -587,6 +599,24 @@ function App() {
             sessionManager.saveMessages(updatedMessages);
             setStreaming(false);
             responseText = text;
+            
+            // 🆕 Process any remaining incomplete sentences at the end
+            if (fromVoice && showVoiceScreen) {
+              const finalSentences = splitIntoSentences(text);
+              for (const sentence of finalSentences) {
+                if (!processedSentencesRef.current.has(sentence) && sentence.trim().length > 0) {
+                  processedSentencesRef.current.add(sentence);
+                  console.log('🎯 Processing final sentence:', sentence);
+                  
+                  try {
+                    const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+                    await mobileAudioManager.queueAudio(audioBlob);
+                  } catch (error) {
+                    console.error('❌ Failed to generate audio for final sentence:', error);
+                  }
+                }
+              }
+            }
           }
         };
 
@@ -600,15 +630,18 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 AUDIO-FIRST for GPT
+        // 🆕 AUDIO-FIRST for GPT - process all sentences at once
         if (fromVoice && showVoiceScreen && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
-            try {
-              const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-              await mobileAudioManager.queueAudio(audioBlob);
-            } catch (error) {
-              console.error('❌ Failed to generate audio:', error);
+            if (sentence.trim().length > 0) {
+              try {
+                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+                await mobileAudioManager.queueAudio(audioBlob);
+                console.log('✅ Audio queued for GPT sentence');
+              } catch (error) {
+                console.error('❌ Failed to generate audio:', error);
+              }
             }
           }
         }
@@ -620,15 +653,18 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 AUDIO-FIRST for Sonar
+        // 🆕 AUDIO-FIRST for Sonar - process all sentences at once
         if (fromVoice && showVoiceScreen && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
-            try {
-              const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-              await mobileAudioManager.queueAudio(audioBlob);
-            } catch (error) {
-              console.error('❌ Failed to generate audio:', error);
+            if (sentence.trim().length > 0) {
+              try {
+                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+                await mobileAudioManager.queueAudio(audioBlob);
+                console.log('✅ Audio queued for Sonar sentence');
+              } catch (error) {
+                console.error('❌ Failed to generate audio:', error);
+              }
             }
           }
         }
