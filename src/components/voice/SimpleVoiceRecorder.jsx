@@ -1,5 +1,5 @@
-// 🎙️ SIMPLE VOICE RECORDER - ElevenLabs STT Edition
-// ✅ ZMĚNA: používá /api/elevenlabs-stt místo /api/whisper
+// 🎙️ ENHANCED SIMPLE VOICE RECORDER - ElevenLabs STT Edition
+// ✅ NOVÉ: Cancel button, Audio level meter, Recording timer, Haptic feedback
 
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -13,17 +13,88 @@ const SimpleVoiceRecorder = ({
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioLevel, setAudioLevel] = useState(0);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
   const recordingStartTimeRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animationFrameRef = useRef(null);
   
   // ✅ FIXED VALUES - No aggressive detection
   const MIN_RECORDING_TIME = 2000;    // 2 seconds minimum  
   const MAX_RECORDING_TIME = 30000;   // 30 seconds maximum
   
   const isIOSPWA = window.navigator.standalone;
+
+  // 🎵 AUDIO LEVEL MONITORING
+  const startAudioLevelMonitoring = (stream) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioContextRef.current = new AudioContext();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+      
+      analyserRef.current.fftSize = 256;
+      const bufferLength = analyserRef.current.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      const checkAudioLevel = () => {
+        if (!analyserRef.current) return;
+        
+        analyserRef.current.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+        const normalizedLevel = Math.min(100, (average / 128) * 100);
+        
+        setAudioLevel(normalizedLevel);
+        
+        animationFrameRef.current = requestAnimationFrame(checkAudioLevel);
+      };
+      
+      checkAudioLevel();
+    } catch (error) {
+      console.warn('⚠️ Audio level monitoring not available:', error);
+    }
+  };
+
+  const stopAudioLevelMonitoring = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    
+    setAudioLevel(0);
+  };
+
+  // 📱 HAPTIC FEEDBACK
+  const triggerHapticFeedback = (type = 'light') => {
+    if ('vibrate' in navigator) {
+      switch (type) {
+        case 'start':
+          navigator.vibrate([50, 30, 50]); // Double tap
+          break;
+        case 'stop':
+          navigator.vibrate(100); // Single long
+          break;
+        case 'error':
+          navigator.vibrate([30, 10, 30, 10, 30]); // Triple short
+          break;
+        default:
+          navigator.vibrate(50);
+      }
+    }
+  };
 
   const requestMicrophonePermission = async () => {
     try {
@@ -57,6 +128,7 @@ const SimpleVoiceRecorder = ({
       }[uiLanguage] || 'Microphone access denied';
       
       onTranscript(`[${errorMessage}]`);
+      triggerHapticFeedback('error');
       return false;
     }
   };
@@ -83,6 +155,9 @@ const SimpleVoiceRecorder = ({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
+      // Start audio level monitoring
+      startAudioLevelMonitoring(stream);
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: isIOSPWA ? 'audio/mp4' : 'audio/webm;codecs=opus'
       });
@@ -90,6 +165,12 @@ const SimpleVoiceRecorder = ({
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
       recordingStartTimeRef.current = Date.now();
+
+      // Start recording timer
+      timerIntervalRef.current = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTimeRef.current;
+        setRecordingTime(Math.floor(elapsed / 1000));
+      }, 100);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -100,6 +181,16 @@ const SimpleVoiceRecorder = ({
       mediaRecorder.onstop = async () => {
         console.log('🛑 Recording stopped, processing with ElevenLabs...');
         setIsProcessing(true);
+        
+        // Clear timer
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+        setRecordingTime(0);
+        
+        // Stop audio monitoring
+        stopAudioLevelMonitoring();
         
         const recordingDuration = Date.now() - recordingStartTimeRef.current;
         
@@ -119,6 +210,7 @@ const SimpleVoiceRecorder = ({
             
             onTranscript(`[${shortMessage}]`);
             setIsProcessing(false);
+            triggerHapticFeedback('error');
             return;
           }
 
@@ -136,13 +228,14 @@ const SimpleVoiceRecorder = ({
             
             onTranscript(`[${silenceMessage}]`);
             setIsProcessing(false);
+            triggerHapticFeedback('error');
             return;
           }
 
           const arrayBuffer = await audioBlob.arrayBuffer();
           console.log('📤 Sending to ElevenLabs STT API...');
           
-          // 🔧 CRITICAL CHANGE: ElevenLabs STT místo Whisper
+          // 🔧 CRITICAL: ElevenLabs STT
           const response = await fetch('/api/elevenlabs-stt', {
             method: 'POST',
             headers: {
@@ -166,6 +259,7 @@ const SimpleVoiceRecorder = ({
             console.log('📝 Transcribed text:', transcribedText);
             
             onTranscript(transcribedText, data.confidence || 1.0);
+            triggerHapticFeedback('stop');
           } else {
             console.warn('⚠️ Empty or failed transcription');
             const failMessage = {
@@ -175,6 +269,7 @@ const SimpleVoiceRecorder = ({
             }[uiLanguage] || 'Speech recognition failed';
             
             onTranscript(`[${failMessage}]`);
+            triggerHapticFeedback('error');
           }
 
         } catch (error) {
@@ -186,6 +281,7 @@ const SimpleVoiceRecorder = ({
           }[uiLanguage] || 'Speech recognition error';
           
           onTranscript(`[${errorMessage}]`);
+          triggerHapticFeedback('error');
         } finally {
           setIsProcessing(false);
         }
@@ -194,6 +290,7 @@ const SimpleVoiceRecorder = ({
       mediaRecorder.start();
       setIsListening(true);
       if (onListeningChange) onListeningChange(true);
+      triggerHapticFeedback('start');
       
       console.log('🎯 ElevenLabs recording started');
 
@@ -224,11 +321,22 @@ const SimpleVoiceRecorder = ({
       }[uiLanguage] || 'Recording failed';
       
       onTranscript(`[${errorMessage}]`);
+      triggerHapticFeedback('error');
     }
   };
 
   const stopListening = () => {
     console.log('🛑 Stopping ElevenLabs recording...');
+
+    // Clear timer
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setRecordingTime(0);
+    
+    // Stop audio monitoring
+    stopAudioLevelMonitoring();
 
     if (mediaRecorderRef.current) {
       try {
@@ -252,6 +360,27 @@ const SimpleVoiceRecorder = ({
     
     setIsListening(false);
     if (onListeningChange) onListeningChange(false);
+    triggerHapticFeedback('stop');
+  };
+
+  // 🆕 CANCEL RECORDING (no processing)
+  const cancelRecording = () => {
+    console.log('❌ Cancelling recording...');
+    
+    // Clear audio chunks so onstop won't process
+    audioChunksRef.current = [];
+    
+    // Stop everything
+    stopListening();
+    
+    // Notify user
+    const cancelMessage = {
+      'cs': 'Nahrávání zrušeno',
+      'en': 'Recording cancelled',
+      'ro': 'Înregistrare anulată'
+    }[uiLanguage] || 'Recording cancelled';
+    
+    onTranscript(`[${cancelMessage}]`);
   };
 
   // ✅ SIMPLE TOGGLE - Manual control only
@@ -268,6 +397,7 @@ const SimpleVoiceRecorder = ({
   useEffect(() => {
     return () => {
       stopListening();
+      stopAudioLevelMonitoring();
     };
   }, []);
 
@@ -277,6 +407,12 @@ const SimpleVoiceRecorder = ({
       stopListening();
     }
   }, [isAudioPlaying]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const getButtonStyle = () => {
     const baseStyle = {
@@ -297,7 +433,8 @@ const SimpleVoiceRecorder = ({
       WebkitTapHighlightColor: 'transparent',
       touchAction: 'none',
       transform: 'translateZ(0)',
-      willChange: 'transform, box-shadow'
+      willChange: 'transform, box-shadow',
+      position: 'relative'
     };
 
     if (isProcessing) return { 
@@ -384,15 +521,99 @@ const SimpleVoiceRecorder = ({
   };
 
   return (
-    <button
-      onClick={toggleListening}
-      disabled={disabled || isProcessing}
-      title={getButtonTitle()}
-      style={getButtonStyle()}
-    >
-      {getButtonIcon()}
-    </button>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      gap: '1rem' 
+    }}>
+      {/* 🎤 MAIN BUTTON */}
+      <button
+        onClick={toggleListening}
+        disabled={disabled || isProcessing}
+        title={getButtonTitle()}
+        style={getButtonStyle()}
+      >
+        {getButtonIcon()}
+        
+        {/* 🆕 AUDIO LEVEL INDICATOR */}
+        {isListening && audioLevel > 5 && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: `${100 + audioLevel * 0.5}px`,
+            height: `${100 + audioLevel * 0.5}px`,
+            borderRadius: '50%',
+            border: `2px solid rgba(255, 255, 255, ${audioLevel / 100})`,
+            pointerEvents: 'none',
+            animation: 'none'
+          }} />
+        )}
+      </button>
+
+      {/* 🆕 RECORDING TIMER */}
+      {isListening && (
+        <div style={{
+          fontSize: '1.2rem',
+          fontWeight: '600',
+          color: '#dc3545',
+          fontFamily: 'monospace'
+        }}>
+          {formatTime(recordingTime)}
+        </div>
+      )}
+
+      {/* 🆕 CANCEL BUTTON */}
+      {isListening && (
+        <button
+          onClick={cancelRecording}
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '20px',
+            padding: '8px 20px',
+            color: 'white',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            backdropFilter: 'blur(10px)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.target.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.target.style.transform = 'scale(1)';
+          }}
+        >
+          {uiLanguage === 'cs' ? 'Zrušit' : 
+           uiLanguage === 'en' ? 'Cancel' : 
+           'Anulează'}
+        </button>
+      )}
+
+      {/* 🆕 AUDIO LEVEL BAR (optional visual) */}
+      {isListening && (
+        <div style={{
+          width: '200px',
+          height: '4px',
+          background: 'rgba(255, 255, 255, 0.2)',
+          borderRadius: '2px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            width: `${audioLevel}%`,
+            height: '100%',
+            background: audioLevel > 70 ? '#ff4444' : audioLevel > 30 ? '#ffc107' : '#28a745',
+            transition: 'width 0.1s ease'
+          }} />
+        </div>
+      )}
+    </div>
   );
 };
 
-export default SimpleVoiceRecorder; 
+export default SimpleVoiceRecorder;

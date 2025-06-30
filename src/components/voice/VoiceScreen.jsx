@@ -1,5 +1,5 @@
 // 📁 src/components/voice/VoiceScreen.jsx
-// 🎙️ Enhanced Voice Screen Modal - Standalone Component
+// 🎙️ Enhanced Voice Screen Modal - FIXED: Stop audio on close
 
 import React, { useState, useRef, useEffect } from 'react';
 import SimpleVoiceRecorder from './SimpleVoiceRecorder.jsx';
@@ -14,16 +14,40 @@ const VoiceScreen = ({
   isAudioPlaying,
   uiLanguage,
   messages = [],
-  currentResponse = null
+  currentResponse = null,
+  audioManager = null // 🆕 Pass audio manager from App.jsx
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [lastTranscript, setLastTranscript] = useState('');
   const [voiceHistory, setVoiceHistory] = useState([]);
   const [showVisualizer, setShowVisualizer] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   
   const isMobile = window.innerWidth <= 768;
 
   if (!isOpen) return null;
+
+  // 🆕 ENHANCED CLOSE HANDLER - Stop audio when closing
+  const handleClose = () => {
+    console.log('🛑 Closing Voice Screen - stopping audio');
+    
+    // Stop any playing audio
+    if (audioManager && audioManager.stop) {
+      audioManager.stop();
+    }
+    
+    // Stop recording if active
+    if (isListening) {
+      setIsListening(false);
+    }
+    
+    // Reset states
+    setIsWaitingForResponse(false);
+    setShowVisualizer(false);
+    
+    // Call original onClose
+    onClose();
+  };
 
   const handleTranscript = (text, confidence) => {
     console.log('🎙️ Voice transcript in VoiceScreen:', text);
@@ -34,15 +58,32 @@ const VoiceScreen = ({
       timestamp: Date.now(),
       language: detectLanguage(text)
     }]);
+    
+    // Set waiting state
+    setIsWaitingForResponse(true);
+    
+    // Send transcript
     onTranscript(text, confidence);
   };
 
   const handleVoiceStateChange = (listening) => {
     setIsListening(listening);
     setShowVisualizer(listening);
+    
+    if (!listening && lastTranscript) {
+      // Recording stopped, waiting for response
+      setIsWaitingForResponse(true);
+    }
   };
 
-  // 🎨 ENHANCED UI s vizualizací
+  // Reset waiting state when response starts
+  useEffect(() => {
+    if (currentResponse || isAudioPlaying) {
+      setIsWaitingForResponse(false);
+    }
+  }, [currentResponse, isAudioPlaying]);
+
+  // 🎨 ENHANCED UI with better states
   const getBackgroundStyle = () => {
     if (isListening) {
       return {
@@ -63,6 +104,18 @@ const VoiceScreen = ({
           radial-gradient(circle at 50% 50%, 
             rgba(100, 50, 255, 0.1) 0%,
             rgba(75, 0, 130, 0.05) 50%,
+            rgba(15, 20, 25, 0.95) 100%
+          )
+        `
+      };
+    }
+
+    if (isWaitingForResponse) {
+      return {
+        background: `
+          radial-gradient(circle at 50% 50%, 
+            rgba(255, 215, 0, 0.05) 0%,
+            rgba(255, 140, 0, 0.03) 50%,
             rgba(15, 20, 25, 0.95) 100%
           )
         `
@@ -97,7 +150,7 @@ const VoiceScreen = ({
         backdropFilter: 'blur(10px)',
         transition: 'background 0.5s ease'
       }}
-      onClick={onClose}
+      onClick={handleClose} // 🆕 Use enhanced close handler
     >
       {/* 🎯 HEADER SECTION */}
       <div 
@@ -107,6 +160,8 @@ const VoiceScreen = ({
           marginBottom: '2rem',
           background: isListening 
             ? 'linear-gradient(45deg, #00ffff, #0099ff)'
+            : isAudioPlaying
+            ? 'linear-gradient(45deg, #9932cc, #6432ff)'
             : 'linear-gradient(45deg, #4299e1, #63b3ed)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -129,7 +184,7 @@ const VoiceScreen = ({
         <SimpleVoiceRecorder 
           onTranscript={handleTranscript}
           onListeningChange={handleVoiceStateChange}
-          disabled={isLoading}
+          disabled={isLoading || isWaitingForResponse}
           isAudioPlaying={isAudioPlaying}
           uiLanguage={uiLanguage}
         />
@@ -181,6 +236,65 @@ const VoiceScreen = ({
         </div>
       )}
 
+      {/* 🔄 WAITING FOR RESPONSE */}
+      {isWaitingForResponse && !isAudioPlaying && !currentResponse && (
+        <div 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.8rem',
+            marginBottom: '2rem',
+            animation: 'fadeIn 0.3s ease-out'
+          }}
+        >
+          <div style={{ 
+            width: '20px', 
+            height: '20px', 
+            border: '2px solid rgba(255,215,0,0.3)', 
+            borderTop: '2px solid #ffd700',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <span style={{ opacity: 0.8 }}>
+            {uiLanguage === 'cs' ? 'Omnia přemýšlí...' : 
+             uiLanguage === 'en' ? 'Omnia thinking...' : 'Omnia gândește...'}
+          </span>
+        </div>
+      )}
+
+      {/* 🔊 STREAMING RESPONSE */}
+      {currentResponse && (
+        <div 
+          style={{
+            maxWidth: '600px',
+            marginBottom: '2rem',
+            padding: '1rem',
+            background: 'rgba(100, 50, 255, 0.05)',
+            borderRadius: '12px',
+            border: '1px solid rgba(100, 50, 255, 0.2)',
+            textAlign: 'left',
+            animation: 'fadeInUp 0.4s ease-out'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ 
+            fontSize: '0.8rem', 
+            opacity: 0.6, 
+            marginBottom: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <MiniOmniaLogo size={16} isAudioPlaying={true} />
+            {uiLanguage === 'cs' ? 'Omnia odpovídá:' : 
+             uiLanguage === 'en' ? 'Omnia responding:' : 'Omnia răspunde:'}
+          </div>
+          <div style={{ fontSize: '1rem', lineHeight: '1.6' }}>
+            {currentResponse}
+          </div>
+        </div>
+      )}
+
       {/* 🎵 AUDIO PLAYING INDICATOR */}
       {isAudioPlaying && (
         <div 
@@ -201,7 +315,7 @@ const VoiceScreen = ({
       )}
 
       {/* 🔄 LOADING STATE */}
-      {isLoading && (
+      {isLoading && !isWaitingForResponse && (
         <div 
           style={{
             display: 'flex',
@@ -267,6 +381,10 @@ const VoiceScreen = ({
           (uiLanguage === 'cs' ? 'Klepněte na mikrofon pro ukončení' : 
            uiLanguage === 'en' ? 'Tap microphone to stop' : 
            'Apasă microfonul pentru a opri') :
+          isWaitingForResponse ?
+          (uiLanguage === 'cs' ? 'Čekám na odpověď...' : 
+           uiLanguage === 'en' ? 'Waiting for response...' : 
+           'Aștept răspunsul...') :
           (uiLanguage === 'cs' ? 'Klepněte kamkoliv pro návrat' : 
            uiLanguage === 'en' ? 'Tap anywhere to return' : 
            'Apasă oriunde pentru a reveni')
@@ -310,6 +428,11 @@ const VoiceScreen = ({
         @keyframes fadeIn {
           0% { opacity: 0; }
           100% { opacity: 1; }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
     </div>

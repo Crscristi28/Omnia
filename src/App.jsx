@@ -1,6 +1,8 @@
-// 🚀 OMNIA - APP.JSX s MOBILE AUTO-PLAY FIX (ČÁST 1/2)
-// ✅ ElevenLabs pipeline: STT → Claude → TTS
-// ✅ Mobile auto-play fixed with user interaction tracking
+// 🚀 OMNIA - FINAL APP.JSX (ČÁST 1/2)
+// ✅ Audio-first: Věta po větě streaming
+// ✅ Mobile auto-play fixed with MobileAudioManager
+// ✅ ElevenLabs STT integration
+// ✅ Stop audio on Voice Screen close
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -25,21 +27,21 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🆕 ENHANCED MOBILE AUDIO MANAGER
+// 🆕 ENHANCED MOBILE AUDIO MANAGER with Queue
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
     this.isUnlocked = false;
     this.audioContext = null;
-    this.pendingAudioQueue = [];
+    this.audioQueue = [];
+    this.isPlaying = false;
   }
   
   async initialize() {
-    // Try to create AudioContext early
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       this.audioContext = new AudioContext();
-      console.log('📱 AudioContext created:', this.audioContext.state);
+      console.log('📱 AudioContext initialized:', this.audioContext.state);
     } catch (e) {
       console.warn('⚠️ Could not create AudioContext early:', e);
     }
@@ -49,13 +51,11 @@ class MobileAudioManager {
     if (this.isUnlocked) return true;
     
     try {
-      // Ensure AudioContext exists
       if (!this.audioContext) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         this.audioContext = new AudioContext();
       }
       
-      // Resume if suspended
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume();
       }
@@ -63,13 +63,13 @@ class MobileAudioManager {
       // Create oscillator for iOS unlock
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
-      gainNode.gain.value = 0.001; // Nearly silent
+      gainNode.gain.value = 0.001;
       oscillator.connect(gainNode);
       gainNode.connect(this.audioContext.destination);
       oscillator.start();
       oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      // Also try HTML5 Audio
+      // Silent MP3 for compatibility
       const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMDAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xP4AAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
       silentAudio.volume = 0.01;
       
@@ -83,8 +83,8 @@ class MobileAudioManager {
       this.isUnlocked = true;
       console.log('🔓 Mobile audio unlocked!');
       
-      // Process any pending audio
-      this.processPendingAudio();
+      // Process any queued audio
+      this.processQueue();
       
       return true;
     } catch (error) {
@@ -93,59 +93,74 @@ class MobileAudioManager {
     }
   }
   
-  async play(audioBlob) {
-    // Always stop current audio first
+  // 🆕 QUEUE MANAGEMENT for sentence-by-sentence
+  async queueAudio(audioBlob) {
+    this.audioQueue.push(audioBlob);
+    if (!this.isPlaying) {
+      this.processQueue();
+    }
+  }
+  
+  async processQueue() {
+    if (this.audioQueue.length === 0 || this.isPlaying) return;
+    
+    this.isPlaying = true;
+    
+    while (this.audioQueue.length > 0) {
+      const audioBlob = this.audioQueue.shift();
+      try {
+        await this.playAudio(audioBlob);
+        // Small gap between sentences (natural pause)
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (error) {
+        console.error('❌ Error playing queued audio:', error);
+      }
+    }
+    
+    this.isPlaying = false;
+  }
+  
+  async playAudio(audioBlob) {
+    // Stop any current audio
     this.stop();
     
     // Try to unlock on every play attempt
     if (!this.isUnlocked) {
       const unlocked = await this.unlockAudioContext();
       if (!unlocked) {
-        // Queue the audio for later
-        this.pendingAudioQueue.push(audioBlob);
-        console.log('📦 Audio queued for later playback');
-        throw new Error('Audio context locked - user interaction required');
+        throw new Error('Audio context locked');
       }
     }
     
-    const audioUrl = URL.createObjectURL(audioBlob);
-    this.currentAudio = new Audio(audioUrl);
-    
-    this.currentAudio.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      this.currentAudio = null;
-    };
-    
-    this.currentAudio.onerror = (e) => {
-      console.error('❌ Audio playback error:', e);
-      URL.revokeObjectURL(audioUrl);
-      this.currentAudio = null;
-    };
-    
-    // For mobile, we need to handle play promise
-    const playPromise = this.currentAudio.play();
-    
-    if (playPromise !== undefined) {
-      return playPromise.catch(error => {
-        console.error('❌ Play promise rejected:', error);
-        // Store for retry
-        this.pendingAudioQueue.push(audioBlob);
-        throw error;
-      });
-    }
-  }
-  
-  processPendingAudio() {
-    if (this.pendingAudioQueue.length > 0 && this.isUnlocked) {
-      const audioBlob = this.pendingAudioQueue.shift();
-      console.log('▶️ Playing queued audio');
-      this.play(audioBlob).catch(e => {
-        console.error('❌ Failed to play queued audio:', e);
-      });
-    }
+    return new Promise((resolve, reject) => {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      this.currentAudio = new Audio(audioUrl);
+      
+      this.currentAudio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        this.currentAudio = null;
+        resolve();
+      };
+      
+      this.currentAudio.onerror = (e) => {
+        console.error('❌ Audio playback error:', e);
+        URL.revokeObjectURL(audioUrl);
+        this.currentAudio = null;
+        reject(e);
+      };
+      
+      this.currentAudio.play()
+        .then(() => console.log('▶️ Audio playing'))
+        .catch(reject);
+    });
   }
   
   stop() {
+    // Clear queue
+    this.audioQueue = [];
+    this.isPlaying = false;
+    
+    // Stop current audio
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
@@ -156,6 +171,13 @@ class MobileAudioManager {
 
 // Create global instance
 const mobileAudioManager = new MobileAudioManager();
+
+// 🆕 SENTENCE SPLITTER for audio-first approach
+function splitIntoSentences(text) {
+  // Split by sentence endings but keep the punctuation
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+}
 
 // 🚀 MAIN APP COMPONENT
 function App() {
@@ -175,6 +197,10 @@ function App() {
   // 🆕 STT STATE
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
+  // 🆕 VOICE MODE TRACKING
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
+  
   // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
@@ -185,6 +211,7 @@ function App() {
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
+  const processedSentencesRef = useRef(new Set());
   
   const isMobile = window.innerWidth <= 768;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -274,83 +301,61 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s MOBILE AUTO-PLAY FIX (ČÁST 2/2)
-// POKRAČOVÁNÍ Z ČÁSTI 1...
-
-  // 🆕 ENHANCED DIRECT AUTO-PLAY (MOBILE FIXED)
-  const directAutoPlay = async (text, language) => {
+  // 🆕 AUDIO-FIRST TTS GENERATION
+  const generateAudioForSentence = async (sentence, language) => {
     try {
-      console.log('🔊 Direct auto-play starting...', { 
-        mobile: isMobile, 
-        unlocked: mobileAudioManager.isUnlocked,
-        userInteracted: userHasInteracted 
+      console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
+      
+      // Use streaming endpoint for better performance
+      const response = await fetch('/api/elevenlabs-tts-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ 
+          text: sentence,
+          language: language,
+          voice_id: process.env.ELEVENLABS_VOICE_ID || 'MpbYQvoTmXjHkaxtLiSh',
+          model_id: 'eleven_multilingual_v2',
+          output_format: 'mp3_44100_128',
+          voice_settings: {
+            stability: 0.30,
+            similarity_boost: 0.25,
+            style: 0.30,
+            use_speaker_boost: true,
+            speed: 1.0
+          }
+        })
       });
       
-      setIsAudioPlaying(true);
-      
-      let audioBlob;
-      
-      try {
-        // Try ElevenLabs first
-        audioBlob = await elevenLabsService.generateSpeech(text);
-        console.log('✅ ElevenLabs audio generated');
-      } catch (error) {
-        console.warn('⚠️ ElevenLabs failed, using Google TTS:', error);
-        
+      if (!response.ok) {
+        console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
         // Fallback to Google TTS
-        const response = await fetch('/api/google-tts', {
+        const googleResponse = await fetch('/api/google-tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ 
-            text: text,
+            text: sentence,
             language: language,
             voice: 'natural'
           })
         });
         
-        if (!response.ok) {
-          throw new Error(`Google TTS failed: ${response.status}`);
+        if (!googleResponse.ok) {
+          throw new Error(`TTS failed: ${googleResponse.status}`);
         }
         
-        audioBlob = await response.blob();
-        console.log('✅ Google TTS fallback generated');
+        return await googleResponse.blob();
       }
       
-      // 🔊 ENHANCED MOBILE PLAY
-      try {
-        await mobileAudioManager.play(audioBlob);
-        console.log('✅ Auto-play successful!');
-      } catch (playError) {
-        console.warn('⚠️ Auto-play failed:', playError);
-        
-        // On mobile, show notification to click
-        if (isMobile && !mobileAudioManager.isUnlocked) {
-          showNotification(
-            'Klepněte zde pro přehrání odpovědi 🔊', 
-            'info',
-            async () => {
-              // This click will unlock audio
-              await mobileAudioManager.unlockAudioContext();
-              // Try to play again
-              try {
-                await mobileAudioManager.play(audioBlob);
-              } catch (e) {
-                console.error('❌ Still cannot play:', e);
-              }
-            }
-          );
-        } else {
-          showNotification('Auto-play selhalo - zkuste tlačítko 🔊', 'error');
-        }
-      }
+      return await response.blob();
       
     } catch (error) {
-      console.error('💥 Direct auto-play failed:', error);
-      showNotification('Chyba při generování zvuku', 'error');
-    } finally {
-      setIsAudioPlaying(false);
+      console.error('💥 TTS generation failed:', error);
+      throw error;
     }
   };
+
+  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - FINAL APP.JSX (ČÁST 2/2)
+// POKRAČOVÁNÍ Z ČÁSTI 1...
 
   // 🆕 SPEECH-TO-TEXT FUNCTIONS (ElevenLabs)
   const startSTTRecording = async () => {
@@ -485,11 +490,12 @@ function App() {
     }
   };
 
-  // 🔧 CLASSIC FUNCTIONS (preserved from original)
+  // 🔧 CLASSIC FUNCTIONS
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
+    processedSentencesRef.current.clear();
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
@@ -498,11 +504,13 @@ function App() {
     sessionManager.clearSession();
     setMessages([]);
     setUserLanguage('cs');
+    setVoiceResponseBuffer('');
+    setIsVoiceMode(false);
     
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // 🤖 AI CONVERSATION with ENHANCED AUTO-PLAY
+  // 🤖 AI CONVERSATION with AUDIO-FIRST STREAMING
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -514,9 +522,12 @@ function App() {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
+    processedSentencesRef.current.clear();
 
     if (!fromVoice) setInput('');
     setLoading(true);
+    setIsVoiceMode(fromVoice);
+    setVoiceResponseBuffer('');
 
     try {
       const userMessage = { sender: 'user', text: textInput };
@@ -525,6 +536,7 @@ function App() {
       sessionManager.saveMessages(messagesWithUser);
 
       let responseText = '';
+      let fullResponse = '';
 
       if (model === 'claude') {
         setStreaming(true);
@@ -532,7 +544,35 @@ function App() {
         const messagesWithBot = [...messagesWithUser, streamingBotMessage];
         setMessages(messagesWithBot);
 
-        const onStreamUpdate = (text, isStillStreaming) => {
+        const onStreamUpdate = async (text, isStillStreaming) => {
+          fullResponse = text;
+          
+          // 🆕 AUDIO-FIRST: Process sentences for voice mode
+          if (fromVoice && showVoiceScreen) {
+            const sentences = splitIntoSentences(text);
+            
+            for (const sentence of sentences) {
+              // Skip if already processed
+              if (processedSentencesRef.current.has(sentence)) continue;
+              
+              processedSentencesRef.current.add(sentence);
+              console.log('🎯 New sentence detected:', sentence);
+              
+              // Generate and queue audio immediately
+              try {
+                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+                await mobileAudioManager.queueAudio(audioBlob);
+                console.log('✅ Audio queued for sentence');
+              } catch (error) {
+                console.error('❌ Failed to generate audio for sentence:', error);
+              }
+            }
+            
+            // Update buffer for Voice Screen display (optional)
+            setVoiceResponseBuffer(text);
+          }
+          
+          // Update messages for regular display
           const updatedMessages = [...messagesWithUser, { 
             sender: 'bot', 
             text: text, 
@@ -544,13 +584,6 @@ function App() {
             sessionManager.saveMessages(updatedMessages);
             setStreaming(false);
             responseText = text;
-            
-            // 🔊 ENHANCED AUTO-PLAY for voice mode
-            if (fromVoice && showVoiceScreen && text && text.trim()) {
-              setTimeout(async () => {
-                await directAutoPlay(text, detectedLang);
-              }, 500); // Shorter delay for better UX
-            }
           }
         };
 
@@ -564,11 +597,17 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🔊 AUTO-PLAY for GPT
-        if (fromVoice && showVoiceScreen && responseText && responseText.trim()) {
-          setTimeout(async () => {
-            await directAutoPlay(responseText, detectedLang);
-          }, 500);
+        // 🆕 AUDIO-FIRST for GPT
+        if (fromVoice && showVoiceScreen && responseText) {
+          const sentences = splitIntoSentences(responseText);
+          for (const sentence of sentences) {
+            try {
+              const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+              await mobileAudioManager.queueAudio(audioBlob);
+            } catch (error) {
+              console.error('❌ Failed to generate audio:', error);
+            }
+          }
         }
       }
       else if (model === 'sonar') {
@@ -578,11 +617,17 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🔊 AUTO-PLAY for Sonar
-        if (fromVoice && showVoiceScreen && responseText && responseText.trim()) {
-          setTimeout(async () => {
-            await directAutoPlay(responseText, detectedLang);
-          }, 500);
+        // 🆕 AUDIO-FIRST for Sonar
+        if (fromVoice && showVoiceScreen && responseText) {
+          const sentences = splitIntoSentences(responseText);
+          for (const sentence of sentences) {
+            try {
+              const audioBlob = await generateAudioForSentence(sentence, detectedLang);
+              await mobileAudioManager.queueAudio(audioBlob);
+            } catch (error) {
+              console.error('❌ Failed to generate audio:', error);
+            }
+          }
         }
       }
 
@@ -592,6 +637,7 @@ function App() {
     } finally {
       setLoading(false);
       setStreaming(false);
+      setIsVoiceMode(false);
     }
   };
 
@@ -600,7 +646,7 @@ function App() {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
     if (showVoiceScreen) {
-      // 🔊 Send with fromVoice=true for auto-play
+      // 🔊 Send with fromVoice=true for audio-first processing
       await handleSend(text, true);
     } else {
       setInput(text);
@@ -790,7 +836,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🌍 multilingual AI • 🎤 ElevenLabs STT • 🔊 Enhanced Mobile Play
+                🌍 multilingual AI • 🎵 audio-first voice • ⚡ sentence streaming
               </div>
             </>
           )}
@@ -858,7 +904,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • ElevenLabs voice'}
+                      Omnia {msg.isStreaming ? ' • streaming' : ' • audio-first'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -904,6 +950,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
+                    {isVoiceMode && ' • audio-first mode'}
                   </span>
                 </div>
               </div>
@@ -1002,16 +1049,22 @@ function App() {
         </div>
       </div>
 
-      {/* VOICE SCREEN with ENHANCED AUTO-PLAY */}
+      {/* VOICE SCREEN with AUDIO MANAGER */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
-        onClose={() => setShowVoiceScreen(false)}
+        onClose={() => {
+          setShowVoiceScreen(false);
+          // Clear voice mode state
+          setIsVoiceMode(false);
+          setVoiceResponseBuffer('');
+        }}
         onTranscript={handleTranscript}
         isLoading={loading}
-        isAudioPlaying={isAudioPlaying}
+        isAudioPlaying={isAudioPlaying || mobileAudioManager.isPlaying}
         uiLanguage={uiLanguage}
         messages={messages}
-        currentResponse={streaming ? messages[messages.length - 1]?.text : null}
+        currentResponse={voiceResponseBuffer || (streaming ? messages[messages.length - 1]?.text : null)}
+        audioManager={mobileAudioManager} // 🆕 Pass audio manager
       />
 
       {/* CSS STYLES */}
@@ -1025,6 +1078,7 @@ function App() {
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px) translateZ(0); } 100% { opacity: 1; transform: translateY(0) translateZ(0); } }
         @keyframes omnia-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1) translateZ(0); } 50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); transform: scale(1.05) translateZ(0); } }
+        @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
         
         * { -webkit-tap-highlight-color: transparent; }
         @media (max-width: 768px) { input { font-size: 16px !important; } button { min-height: 44px; min-width: 44px; } }
