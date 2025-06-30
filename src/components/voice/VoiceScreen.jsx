@@ -1,7 +1,7 @@
 // 📁 src/components/voice/VoiceScreen.jsx
-// 🎙️ Enhanced Voice Screen Modal - FIXED: MiniOmniaLogo errors
+// 🎙️ Voice Screen Modal - SIMPLIFIED & WORKING VERSION
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import SimpleVoiceRecorder from './SimpleVoiceRecorder.jsx';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 
@@ -9,159 +9,113 @@ const VoiceScreen = ({
   isOpen,
   onClose,
   onTranscript,
-  isLoading,
-  isAudioPlaying,
-  uiLanguage,
+  isLoading = false,
+  isAudioPlaying = false,
+  uiLanguage = 'cs',
   messages = [],
   currentResponse = null,
   audioManager = null
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [lastTranscript, setLastTranscript] = useState('');
-  const [voiceHistory, setVoiceHistory] = useState([]);
-  const [showVisualizer, setShowVisualizer] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   
   const isMobile = window.innerWidth <= 768;
 
+  // Early return if not open
   if (!isOpen) return null;
 
-  // 🆕 ENHANCED CLOSE HANDLER - Stop audio when closing
+  // Enhanced close handler
   const handleClose = () => {
-    console.log('🛑 Closing Voice Screen - stopping audio');
+    console.log('🛑 Closing Voice Screen');
     
-    // Stop any playing audio
-    if (audioManager && audioManager.stop) {
+    // Stop audio if audioManager exists
+    if (audioManager && typeof audioManager.stop === 'function') {
       audioManager.stop();
     }
     
-    // Stop recording if active
-    if (isListening) {
-      setIsListening(false);
-    }
-    
     // Reset states
+    setIsListening(false);
     setIsWaitingForResponse(false);
-    setShowVisualizer(false);
+    setLastTranscript('');
     
-    // Call original onClose
-    onClose();
+    // Call parent onClose
+    if (onClose) {
+      onClose();
+    }
   };
 
+  // Handle transcript from voice recorder
   const handleTranscript = (text, confidence) => {
-    console.log('🎙️ Voice transcript in VoiceScreen:', text);
-    setLastTranscript(text);
-    setVoiceHistory(prev => [...prev, {
-      text,
-      confidence,
-      timestamp: Date.now(),
-      language: detectLanguage(text)
-    }]);
+    console.log('🎙️ Voice transcript received:', text);
     
-    // Set waiting state
+    if (!text || text.trim() === '') return;
+    
+    setLastTranscript(text);
     setIsWaitingForResponse(true);
     
-    // Send transcript
-    onTranscript(text, confidence);
+    // Send to parent
+    if (onTranscript) {
+      onTranscript(text, confidence);
+    }
   };
 
+  // Handle voice state changes
   const handleVoiceStateChange = (listening) => {
     setIsListening(listening);
-    setShowVisualizer(listening);
     
     if (!listening && lastTranscript) {
-      // Recording stopped, waiting for response
       setIsWaitingForResponse(true);
     }
   };
 
-  // Reset waiting state when response starts
+  // Reset waiting state when response arrives
   useEffect(() => {
     if (currentResponse || isAudioPlaying) {
       setIsWaitingForResponse(false);
     }
   }, [currentResponse, isAudioPlaying]);
 
-  // 🎨 ENHANCED UI with better states
+  // Background style based on state
   const getBackgroundStyle = () => {
     if (isListening) {
-      return {
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            rgba(0, 255, 255, 0.1) 0%,
-            rgba(0, 150, 255, 0.05) 50%,
-            rgba(15, 20, 25, 0.95) 100%
-          )
-        `,
-        animation: 'pulse-bg 2s ease-in-out infinite'
-      };
+      return 'radial-gradient(circle at 50% 50%, rgba(0, 255, 255, 0.1) 0%, rgba(15, 20, 25, 0.95) 100%)';
     }
-    
     if (isAudioPlaying) {
-      return {
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            rgba(100, 50, 255, 0.1) 0%,
-            rgba(75, 0, 130, 0.05) 50%,
-            rgba(15, 20, 25, 0.95) 100%
-          )
-        `
-      };
+      return 'radial-gradient(circle at 50% 50%, rgba(100, 50, 255, 0.1) 0%, rgba(15, 20, 25, 0.95) 100%)';
     }
-
     if (isWaitingForResponse) {
-      return {
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            rgba(255, 215, 0, 0.05) 0%,
-            rgba(255, 140, 0, 0.03) 50%,
-            rgba(15, 20, 25, 0.95) 100%
-          )
-        `
-      };
+      return 'radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, rgba(15, 20, 25, 0.95) 100%)';
     }
-
-    return {
-      background: 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #4a5568 100%)'
-    };
+    return 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%)';
   };
 
-  // 🎯 SIMPLE MINI LOGO COMPONENT (místo importu)
-  const SimpleMiniLogo = ({ size = 16 }) => (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        background: `
-          radial-gradient(circle at 30% 40%, 
-            #00ffff 0%,
-            #0096ff 30%,
-            #6432ff 60%,
-            #9932cc 80%,
-            #4b0082 100%
-          )
-        `,
-        boxShadow: `0 0 ${size * 0.6}px rgba(100, 50, 255, 0.6)`,
-        display: 'inline-block',
-        marginRight: '6px',
-        flexShrink: 0,
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        animation: isAudioPlaying ? 'omnia-pulse 1s ease-in-out infinite' : 'none'
-      }}
-    />
-  );
+  // Get instruction text
+  const getInstructionText = () => {
+    if (isListening) {
+      return uiLanguage === 'cs' ? 'Klepněte na mikrofon pro ukončení' : 
+             uiLanguage === 'en' ? 'Tap microphone to stop' : 
+             'Apasă microfonul pentru a opri';
+    }
+    if (isWaitingForResponse) {
+      return uiLanguage === 'cs' ? 'Čekám na odpověď...' : 
+             uiLanguage === 'en' ? 'Waiting for response...' : 
+             'Aștept răspunsul...';
+    }
+    return uiLanguage === 'cs' ? 'Klepněte kamkoliv pro návrat' : 
+           uiLanguage === 'en' ? 'Tap anywhere to return' : 
+           'Apasă oriunde pentru a reveni';
+  };
 
   return (
     <div 
-      className="voice-screen-overlay"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        ...getBackgroundStyle(),
+        background: getBackgroundStyle(),
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
@@ -171,16 +125,15 @@ const VoiceScreen = ({
         cursor: 'pointer',
         padding: isMobile ? '1rem' : '2rem',
         minHeight: '100vh',
-        overflowY: 'auto',
         backdropFilter: 'blur(10px)',
         transition: 'background 0.5s ease'
       }}
       onClick={handleClose}
     >
-      {/* 🎯 HEADER SECTION */}
+      {/* HEADER */}
       <div 
         style={{
-          fontSize: isMobile ? '3.5rem' : '4.5rem',
+          fontSize: isMobile ? '3rem' : '4rem',
           fontWeight: 'bold',
           marginBottom: '2rem',
           background: isListening 
@@ -190,15 +143,14 @@ const VoiceScreen = ({
             : 'linear-gradient(45deg, #4299e1, #63b3ed)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          textAlign: 'center',
-          animation: isListening ? 'glow 2s ease-in-out infinite' : 'none'
+          textAlign: 'center'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         OMNIA
       </div>
 
-      {/* 🎤 VOICE RECORDER */}
+      {/* VOICE RECORDER */}
       <div 
         style={{ 
           marginBottom: '3rem',
@@ -213,28 +165,9 @@ const VoiceScreen = ({
           isAudioPlaying={isAudioPlaying}
           uiLanguage={uiLanguage}
         />
-        
-        {/* 🌊 VOICE VISUALIZER */}
-        {showVisualizer && (
-          <div 
-            className="voice-visualizer"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '150px',
-              height: '150px',
-              borderRadius: '50%',
-              border: '2px solid rgba(0, 255, 255, 0.3)',
-              animation: 'pulse-ring 1.5s ease-out infinite',
-              pointerEvents: 'none'
-            }}
-          />
-        )}
       </div>
 
-      {/* 📝 TRANSCRIPT DISPLAY */}
+      {/* TRANSCRIPT DISPLAY */}
       {lastTranscript && (
         <div 
           style={{
@@ -244,8 +177,7 @@ const VoiceScreen = ({
             background: 'rgba(255, 255, 255, 0.05)',
             borderRadius: '12px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            textAlign: 'center',
-            animation: 'fadeInUp 0.4s ease-out'
+            textAlign: 'center'
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -261,15 +193,14 @@ const VoiceScreen = ({
         </div>
       )}
 
-      {/* 🔄 WAITING FOR RESPONSE */}
+      {/* WAITING INDICATOR */}
       {isWaitingForResponse && !isAudioPlaying && !currentResponse && (
         <div 
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.8rem',
-            marginBottom: '2rem',
-            animation: 'fadeIn 0.3s ease-out'
+            marginBottom: '2rem'
           }}
         >
           <div style={{ 
@@ -287,7 +218,7 @@ const VoiceScreen = ({
         </div>
       )}
 
-      {/* 🔊 STREAMING RESPONSE */}
+      {/* RESPONSE DISPLAY */}
       {currentResponse && (
         <div 
           style={{
@@ -297,20 +228,15 @@ const VoiceScreen = ({
             background: 'rgba(100, 50, 255, 0.05)',
             borderRadius: '12px',
             border: '1px solid rgba(100, 50, 255, 0.2)',
-            textAlign: 'left',
-            animation: 'fadeInUp 0.4s ease-out'
+            textAlign: 'left'
           }}
           onClick={(e) => e.stopPropagation()}
         >
           <div style={{ 
             fontSize: '0.8rem', 
             opacity: 0.6, 
-            marginBottom: '0.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+            marginBottom: '0.5rem'
           }}>
-            <SimpleMiniLogo size={16} />
             {uiLanguage === 'cs' ? 'Omnia odpovídá:' : 
              uiLanguage === 'en' ? 'Omnia responding:' : 'Omnia răspunde:'}
           </div>
@@ -320,18 +246,23 @@ const VoiceScreen = ({
         </div>
       )}
 
-      {/* 🎵 AUDIO PLAYING INDICATOR */}
+      {/* AUDIO PLAYING INDICATOR */}
       {isAudioPlaying && (
         <div 
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            marginBottom: '2rem',
-            animation: 'fadeIn 0.3s ease-out'
+            marginBottom: '2rem'
           }}
         >
-          <SimpleMiniLogo size={24} />
+          <div style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            background: 'linear-gradient(45deg, #9932cc, #6432ff)',
+            animation: 'pulse 1s ease-in-out infinite'
+          }} />
           <span style={{ opacity: 0.8 }}>
             {uiLanguage === 'cs' ? 'Omnia mluví...' : 
              uiLanguage === 'en' ? 'Omnia speaking...' : 'Omnia vorbește...'}
@@ -339,7 +270,7 @@ const VoiceScreen = ({
         </div>
       )}
 
-      {/* 🔄 LOADING STATE */}
+      {/* LOADING STATE */}
       {isLoading && !isWaitingForResponse && (
         <div 
           style={{
@@ -364,35 +295,7 @@ const VoiceScreen = ({
         </div>
       )}
 
-      {/* 📊 VOICE HISTORY (Enhancement) */}
-      {voiceHistory.length > 0 && (
-        <div 
-          style={{
-            position: 'absolute',
-            bottom: '2rem',
-            left: '2rem',
-            maxWidth: '300px',
-            fontSize: '0.8rem',
-            opacity: 0.6
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div style={{ marginBottom: '0.5rem' }}>
-            {uiLanguage === 'cs' ? 'Historie:' : 
-             uiLanguage === 'en' ? 'History:' : 'Istoric:'}
-          </div>
-          {voiceHistory.slice(-3).map((item, idx) => (
-            <div key={idx} style={{ 
-              marginBottom: '0.3rem',
-              opacity: 0.5 + (idx * 0.15)
-            }}>
-              • {item.text.substring(0, 30)}...
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ℹ️ INSTRUCTIONS */}
+      {/* INSTRUCTIONS */}
       <div 
         style={{
           position: 'absolute',
@@ -402,73 +305,19 @@ const VoiceScreen = ({
           textAlign: 'center'
         }}
       >
-        {isListening ? 
-          (uiLanguage === 'cs' ? 'Klepněte na mikrofon pro ukončení' : 
-           uiLanguage === 'en' ? 'Tap microphone to stop' : 
-           'Apasă microfonul pentru a opri') :
-          isWaitingForResponse ?
-          (uiLanguage === 'cs' ? 'Čekám na odpověď...' : 
-           uiLanguage === 'en' ? 'Waiting for response...' : 
-           'Aștept răspunsul...') :
-          (uiLanguage === 'cs' ? 'Klepněte kamkoliv pro návrat' : 
-           uiLanguage === 'en' ? 'Tap anywhere to return' : 
-           'Apasă oriunde pentru a reveni')
-        }
+        {getInstructionText()}
       </div>
 
-      {/* 🎨 ANIMATIONS */}
+      {/* INLINE STYLES */}
       <style>{`
-        @keyframes pulse-bg {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        
-        @keyframes pulse-ring {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.5);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes glow {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-        
-        @keyframes fadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
         
-        @keyframes omnia-pulse {
-          0%, 100% { 
-            box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); 
-            transform: scale(1);
-          }
-          50% { 
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); 
-            transform: scale(1.05);
-          }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.1); }
         }
       `}</style>
     </div>
