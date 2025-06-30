@@ -1,6 +1,7 @@
 // 🎙️ SIMPLE VOICE RECORDER - Manual Control Only
 // ✅ FIXES: No infinite loops, no auto-silence detection
 // 🔧 MANUAL: Click to start, click to stop
+// 🆕 FIXED: Uses ElevenLabs STT instead of Whisper
 
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -141,9 +142,10 @@ const SimpleVoiceRecorder = ({
           }
 
           const arrayBuffer = await audioBlob.arrayBuffer();
-          console.log('📤 Sending to Whisper API...');
+          console.log('📤 Sending to ElevenLabs STT API...');
           
-          const response = await fetch('/api/whisper', {
+          // 🆕 FIXED: Use ElevenLabs STT instead of Whisper!
+          const response = await fetch('/api/elevenlabs-stt', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/octet-stream',
@@ -152,22 +154,22 @@ const SimpleVoiceRecorder = ({
           });
 
           if (!response.ok) {
-            throw new Error(`Whisper API failed: HTTP ${response.status}`);
+            throw new Error(`ElevenLabs STT failed: HTTP ${response.status}`);
           }
 
           const data = await response.json();
-          console.log('✅ Whisper response:', data);
+          console.log('✅ ElevenLabs STT response:', data);
           
           if (data.success && data.text && data.text.trim()) {
             const transcribedText = data.text.trim();
             const detectedLanguage = data.language || 'unknown';
             
-            console.log('🌍 Detected language:', detectedLanguage);
-            console.log('📝 Transcribed text:', transcribedText);
+            console.log('🌍 ElevenLabs detected language:', detectedLanguage);
+            console.log('📝 ElevenLabs transcribed text:', transcribedText);
             
             onTranscript(transcribedText, data.confidence || 1.0);
           } else {
-            console.warn('⚠️ Empty or failed transcription');
+            console.warn('⚠️ Empty or failed ElevenLabs transcription');
             const failMessage = {
               'cs': 'Nepodařilo se rozpoznat řeč - zkuste znovu',
               'en': 'Could not recognize speech - try again',
@@ -178,7 +180,7 @@ const SimpleVoiceRecorder = ({
           }
 
         } catch (error) {
-          console.error('💥 Whisper error:', error);
+          console.error('💥 ElevenLabs STT error:', error);
           const errorMessage = {
             'cs': 'Chyba při rozpoznávání řeči - zkuste to znovu',
             'en': 'Speech recognition error - try again',
@@ -195,7 +197,7 @@ const SimpleVoiceRecorder = ({
       setIsListening(true);
       if (onListeningChange) onListeningChange(true);
       
-      console.log('🎯 Manual recording started');
+      console.log('🎯 Manual recording started (ElevenLabs STT)');
 
       // ✅ FIXED: Only MAX timeout, no silence detection
       setTimeout(() => {
@@ -360,17 +362,17 @@ const SimpleVoiceRecorder = ({
   const getButtonTitle = () => {
     const titles = {
       'cs': {
-        processing: 'Zpracovávám nahrávku...',
+        processing: 'Zpracovávám nahrávku pomocí ElevenLabs...',
         listening: 'Klikněte pro zastavení nahrávání',
         ready: 'Klikněte pro začátek nahrávání'
       },
       'en': {
-        processing: 'Processing recording...',
+        processing: 'Processing recording with ElevenLabs...',
         listening: 'Click to stop recording',
         ready: 'Click to start recording'
       },
       'ro': {
-        processing: 'Procesez înregistrarea...',
+        processing: 'Procesez înregistrarea cu ElevenLabs...',
         listening: 'Apasă pentru a opri înregistrarea',
         ready: 'Apasă pentru a începe înregistrarea'
       }

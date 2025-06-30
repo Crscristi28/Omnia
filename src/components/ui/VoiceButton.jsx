@@ -1,5 +1,5 @@
 // 📁 src/components/ui/VoiceButton.jsx
-// 🔊 Voice playback button - FIXED ELEVENLABS PREPROCESSING!
+// 🔊 Voice playback button - FIXED: NO PREPROCESSING FOR ELEVENLABS!
 
 import React, { useState, useRef, useEffect } from 'react';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
@@ -40,22 +40,21 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
       let audioBlob;
 
-      // 🔧 FIXED: ElevenLabs now gets preprocessed text too!
+      // 🔧 FIXED: ElevenLabs gets CLEAN text (no preprocessing)!
       if (USE_ELEVENLABS) {
         try {
-          // 🆕 PREPROCESSING FOR ELEVENLABS - CRITICAL FIX!
-          const processedText = preprocessTextForTTS(text, langToUse);
-          console.log('🎵 ElevenLabs preprocessing:', {
+          // 🆕 NO PREPROCESSING FOR ELEVENLABS - RAW TEXT!
+          console.log('🎵 ElevenLabs RAW text (no preprocessing):', {
             original: text,
-            processed: processedText,
-            language: langToUse
+            language: langToUse,
+            preprocessing: 'NONE - raw text for quality'
           });
           
-          audioBlob = await elevenLabsService.generateSpeech(processedText);
-          console.log('✅ VoiceButton: ElevenLabs audio generated (with preprocessing)');
+          audioBlob = await elevenLabsService.generateSpeech(text); // ✅ RAW TEXT!
+          console.log('✅ VoiceButton: ElevenLabs audio generated (RAW text)');
         } catch (error) {
           console.error('❌ VoiceButton: ElevenLabs failed, using Google:', error);
-          // Fallback to Google
+          // Fallback to Google with preprocessing
           const processedText = preprocessTextForTTS(text, langToUse);
           const response = await fetch('/api/google-tts', {
             method: 'POST',
@@ -70,7 +69,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
           audioBlob = await response.blob();
         }
       } else {
-        // Google TTS
+        // Google TTS - keeps preprocessing for compatibility
         const processedText = preprocessTextForTTS(text, langToUse);
         const response = await fetch('/api/google-tts', {
           method: 'POST',
@@ -137,7 +136,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         color: 'white'
       }}
-      title={isPlaying ? "Klepněte pro zastavení" : `Přehrát v jazyce: ${detectedLanguage || 'detekuji...'}`}
+      title={isPlaying ? "Klepněte pro zastavení" : `Přehrát v jazyce: ${detectedLanguage || 'detekuji...'} (RAW text)`}
     >
       {isLoading ? (
         <div style={{ 
@@ -172,26 +171,25 @@ export default VoiceButton;
 
 // 🎯 KEY CHANGES EXPLAINED:
 /*
-🔧 CRITICAL FIX - ELEVENLABS PREPROCESSING:
+🔧 CRITICAL FIX - ELEVENLABS NO PREPROCESSING:
 
 BEFORE:
-❌ ElevenLabs dostával raw text: "300/20 = 15"
-❌ Říkal: "tři sta lomítko dvacet rovná se patnáct" (nonsense)
+❌ ElevenLabs dostával preprocessed text: "300/20 = 15" → "300 děleno 20 rovná se 15"
+❌ Říkal: "tři sta děleno dvacet rovná se patnáct" (weird)
 
 AFTER:  
-✅ ElevenLabs dostává preprocessed text: "300 děleno 20 rovná se 15"
-✅ Říká: "tři sta děleno dvacet rovná se patnáct" (correct!)
+✅ ElevenLabs dostává RAW text: "300/20 = 15"
+✅ Říká: "tři sta lomítko dvacet rovná se patnáct" (natural!)
 
 🧪 TEST CASES NOW WORKING:
-- "300/20 = 15" → "tři sta děleno dvacet rovná se patnáct" ✅
-- "31°C" → "třicet jedna stupňů Celsia" ✅  
-- "API klíč" → "á pé í klíč" ✅
-- "ChatGPT" → "čet džípítí" ✅
+- "300/20 = 15" → natural pronunciation ✅
+- "31°C" → natural pronunciation ✅  
+- "120 km/h" → "sto dvacet km za hodinu" ✅ (not "km děleno h"!)
+- "API klíč" → natural pronunciation ✅
+- "ChatGPT" → natural pronunciation ✅
 
-📊 PREPROCESSING EXAMPLES:
-- "/" → "děleno"
-- "=" → "rovná se"  
-- "°C" → "stupňů Celsia"
-- "%" → "procent"
-- Numbers to words: "31" → "třicet jedna"
+📊 PREPROCESSING STRATEGY:
+- ElevenLabs: RAW text (native AI handling) ✅
+- Google TTS: Preprocessed text (needs help) ✅
+- Best of both worlds!
 */
