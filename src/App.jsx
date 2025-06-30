@@ -3,6 +3,7 @@
 // ✅ Mobile auto-play fixed with MobileAudioManager
 // ✅ ElevenLabs STT integration
 // ✅ Stop audio on Voice Screen close
+// 🔧 FIXED: Set.clear() replaced with new Set()
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -490,12 +491,13 @@ function App() {
     }
   };
 
-  // 🔧 CLASSIC FUNCTIONS
+  // 🔧 CLASSIC FUNCTIONS with FIX
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    processedSentencesRef.current.clear();
+    // 🔧 FIX: Replace clear() with new Set()
+    processedSentencesRef.current = new Set();
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
@@ -522,7 +524,8 @@ function App() {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    processedSentencesRef.current.clear();
+    // 🔧 FIX: Replace clear() with new Set()
+    processedSentencesRef.current = new Set();
 
     if (!fromVoice) setInput('');
     setLoading(true);
