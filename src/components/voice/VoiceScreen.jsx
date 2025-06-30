@@ -1,9 +1,8 @@
 // 📁 src/components/voice/VoiceScreen.jsx
-// 🎙️ Enhanced Voice Screen Modal - FIXED: Stop audio on close
+// 🎙️ Enhanced Voice Screen Modal - FIXED: MiniOmniaLogo errors
 
 import React, { useState, useRef, useEffect } from 'react';
 import SimpleVoiceRecorder from './SimpleVoiceRecorder.jsx';
-import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 
 const VoiceScreen = ({ 
@@ -15,7 +14,7 @@ const VoiceScreen = ({
   uiLanguage,
   messages = [],
   currentResponse = null,
-  audioManager = null // 🆕 Pass audio manager from App.jsx
+  audioManager = null
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [lastTranscript, setLastTranscript] = useState('');
@@ -127,6 +126,32 @@ const VoiceScreen = ({
     };
   };
 
+  // 🎯 SIMPLE MINI LOGO COMPONENT (místo importu)
+  const SimpleMiniLogo = ({ size = 16 }) => (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: `
+          radial-gradient(circle at 30% 40%, 
+            #00ffff 0%,
+            #0096ff 30%,
+            #6432ff 60%,
+            #9932cc 80%,
+            #4b0082 100%
+          )
+        `,
+        boxShadow: `0 0 ${size * 0.6}px rgba(100, 50, 255, 0.6)`,
+        display: 'inline-block',
+        marginRight: '6px',
+        flexShrink: 0,
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        animation: isAudioPlaying ? 'omnia-pulse 1s ease-in-out infinite' : 'none'
+      }}
+    />
+  );
+
   return (
     <div 
       className="voice-screen-overlay"
@@ -150,7 +175,7 @@ const VoiceScreen = ({
         backdropFilter: 'blur(10px)',
         transition: 'background 0.5s ease'
       }}
-      onClick={handleClose} // 🆕 Use enhanced close handler
+      onClick={handleClose}
     >
       {/* 🎯 HEADER SECTION */}
       <div 
@@ -285,7 +310,7 @@ const VoiceScreen = ({
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            <MiniOmniaLogo size={16} isAudioPlaying={true} />
+            <SimpleMiniLogo size={16} />
             {uiLanguage === 'cs' ? 'Omnia odpovídá:' : 
              uiLanguage === 'en' ? 'Omnia responding:' : 'Omnia răspunde:'}
           </div>
@@ -306,7 +331,7 @@ const VoiceScreen = ({
             animation: 'fadeIn 0.3s ease-out'
           }}
         >
-          <MiniOmniaLogo size={24} isAudioPlaying={true} />
+          <SimpleMiniLogo size={24} />
           <span style={{ opacity: 0.8 }}>
             {uiLanguage === 'cs' ? 'Omnia mluví...' : 
              uiLanguage === 'en' ? 'Omnia speaking...' : 'Omnia vorbește...'}
@@ -433,6 +458,17 @@ const VoiceScreen = ({
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes omnia-pulse {
+          0%, 100% { 
+            box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); 
+            transform: scale(1);
+          }
+          50% { 
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); 
+            transform: scale(1.05);
+          }
         }
       `}</style>
     </div>
