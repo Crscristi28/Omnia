@@ -1,7 +1,6 @@
-// 🚀 OMNIA ENHANCED - ELEVENLABS NATIVE INTEGRATION
-// ✅ ElevenLabs STT + Streaming TTS + Voice Pipeline
-// 🎵 3x faster, 75% cost reduction, premium quality
-// 📦 ČÁST 1: CORE FUNCTIONS & SERVICES
+// 🚀 OMNIA ENHANCED - ELEVENLABS INTEGRATION
+// ✅ Premium voice quality with ElevenLabs TTS
+// 🔧 FIXED: Full-screen background without white borders
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -10,11 +9,13 @@ import './App.css';
 import claudeService from './services/claude.service.js';
 import openaiService from './services/openai.service.js';
 import sonarService from './services/sonar.service.js';
+import elevenLabsService from './services/elevenLabs.service.js';
 
 // 🔧 IMPORT UTILS  
 import { uiTexts, getTranslation } from './utils/translations.js';
 import sessionManager from './utils/sessionManager.js';
 import detectLanguage from './utils/smartLanguageDetection.js';
+import { preprocessTextForTTS } from './utils/ttsPreprocessing.js';
 
 // 🔧 IMPORT UI COMPONENTS
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
@@ -27,12 +28,15 @@ import CopyButton from './components/ui/CopyButton.jsx';
 // 🔧 IMPORT VOICE COMPONENTS
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🎤 ELEVENLABS CONFIGURATION
-const USE_ELEVENLABS_NATIVE = true;
-const FALLBACK_TO_WHISPER = true;
-const ENABLE_VOICE_PIPELINE = true; // Complete voice-to-voice
+// 🎤 TTS CONFIGURATION
+const USE_ELEVENLABS = true;
+const FALLBACK_TO_GOOGLE = true;
 
-// 🌍 GLOBAL AUDIO MANAGER - Mobile optimization
+// 🆕 ELEVENLABS CONFIGURATION
+const USE_ELEVENLABS_NATIVE = true;
+const ENABLE_VOICE_PIPELINE = true;
+
+// 🆕 GLOBAL AUDIO MANAGER - Mobile optimization
 class GlobalAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -43,7 +47,6 @@ class GlobalAudioManager {
     if (this.isUnlocked) return true;
     
     try {
-      // Create silent audio to unlock mobile audio context
       const silentAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Dt1z4L');
       await silentAudio.play();
       silentAudio.pause();
@@ -57,7 +60,7 @@ class GlobalAudioManager {
   }
   
   async play(audioBlob) {
-    this.stop(); // Stop any current audio
+    this.stop();
     
     if (!this.isUnlocked) {
       await this.unlockAudioContext();
@@ -91,7 +94,7 @@ class GlobalAudioManager {
 
 const globalAudioManager = new GlobalAudioManager();
 
-// 🎵 ELEVENLABS SPEECH-TO-TEXT
+// 🆕 ELEVENLABS STT
 const elevenLabsSTT = async (audioBlob, showNotification) => {
   try {
     console.log('🎤 ElevenLabs STT processing...');
@@ -124,41 +127,11 @@ const elevenLabsSTT = async (audioBlob, showNotification) => {
     }
   } catch (error) {
     console.error('❌ ElevenLabs STT error:', error);
-    
-    if (FALLBACK_TO_WHISPER) {
-      console.log('🔄 Falling back to Whisper...');
-      return await whisperSTT(audioBlob, showNotification);
-    }
-    
     throw error;
   }
 };
 
-// 🎤 WHISPER FALLBACK
-const whisperSTT = async (audioBlob, showNotification) => {
-  const arrayBuffer = await audioBlob.arrayBuffer();
-  
-  const response = await fetch('/api/whisper', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/octet-stream',
-    },
-    body: arrayBuffer
-  });
-
-  if (!response.ok) {
-    throw new Error(`Whisper failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return {
-    text: data.text?.trim() || '',
-    language: data.language || 'cs',
-    confidence: data.confidence || 0.9
-  };
-};
-
-// 🔊 ELEVENLABS STREAMING TTS
+// 🆕 ELEVENLABS STREAMING TTS
 const elevenLabsStreamingTTS = async (text, language = 'cs') => {
   try {
     console.log('🔊 ElevenLabs Streaming TTS...');
@@ -172,7 +145,7 @@ const elevenLabsStreamingTTS = async (text, language = 'cs') => {
         text: text,
         voice_id: process.env.ELEVENLABS_VOICE_ID || 'MpbYQvoTmXjHkaxtLiSh',
         model_id: 'eleven_multilingual_v2',
-        language_code: language === 'cs' ? null : language, // Auto-detect for Czech
+        language_code: language === 'cs' ? null : language,
         stream_chunks: true,
         voice_settings: {
           stability: 0.30,
@@ -195,49 +168,7 @@ const elevenLabsStreamingTTS = async (text, language = 'cs') => {
   }
 };
 
-// 🎵 COMPLETE VOICE PIPELINE - Voice to Voice
-const elevenLabsVoicePipeline = async (audioBlob, conversationHistory = []) => {
-  try {
-    console.log('🎙️ ElevenLabs Voice Pipeline starting...');
-    
-    // Convert audio to base64
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    
-    const response = await fetch('/api/elevenlabs-voice-pipeline', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-      },
-      body: JSON.stringify({
-        audio_data: base64Audio,
-        conversation_history: conversationHistory,
-        streaming: true
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Voice pipeline failed: ${response.status}`);
-    }
-
-    // Extract metadata from headers
-    const userText = decodeURIComponent(response.headers.get('X-User-Text') || '');
-    const aiResponse = decodeURIComponent(response.headers.get('X-AI-Response') || '');
-    const language = response.headers.get('X-Language') || 'cs';
-
-    return {
-      audioBlob: await response.blob(),
-      userText,
-      aiResponse,
-      language
-    };
-  } catch (error) {
-    console.error('❌ Voice Pipeline error:', error);
-    throw error;
-  }
-};
-
-// 🎵 ENHANCED AUDIO GENERATION WITH ELEVENLABS
+// 🎵 ENHANCED AUDIO GENERATION WITH ELEVENLABS (UPDATED!)
 const generateInstantAudio = async (
   responseText, 
   setIsAudioPlaying, 
@@ -249,35 +180,79 @@ const generateInstantAudio = async (
   try {
     const detectedLang = detectLanguage(responseText);
     console.log('🎵 Generating audio:', { 
-      service: 'ElevenLabs',
+      service: USE_ELEVENLABS ? 'ElevenLabs' : 'Google TTS',
       language: detectedLang,
       textLength: responseText.length
     });
     
-    setIsAudioPlaying(true);
-    
     let audioBlob;
+    let audioService = USE_ELEVENLABS ? 'ElevenLabs' : 'Google';
     
-    if (USE_ELEVENLABS_NATIVE) {
+    if (USE_ELEVENLABS && USE_ELEVENLABS_NATIVE) {
       try {
+        // 🆕 Use ElevenLabs Streaming TTS
         audioBlob = await elevenLabsStreamingTTS(responseText, detectedLang);
         console.log('✅ ElevenLabs audio generated successfully');
         
       } catch (elevenError) {
         console.error('❌ ElevenLabs failed:', elevenError);
-        throw elevenError;
+        
+        if (FALLBACK_TO_GOOGLE) {
+          console.log('🔄 Falling back to Google TTS...');
+          audioService = 'Google (fallback)';
+          
+          const processedText = preprocessTextForTTS(responseText, detectedLang);
+          const response = await fetch('/api/google-tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({ 
+              text: processedText,
+              language: detectedLang,
+              voice: 'natural'
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Google TTS also failed: ${response.status}`);
+          }
+          
+          audioBlob = await response.blob();
+        } else {
+          throw elevenError;
+        }
       }
+    } else if (USE_ELEVENLABS) {
+      // Original ElevenLabs service
+      audioBlob = await elevenLabsService.generateSpeech(responseText);
+    } else {
+      // Google TTS fallback
+      const processedText = preprocessTextForTTS(responseText, detectedLang);
+      const response = await fetch('/api/google-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ 
+          text: processedText,
+          language: detectedLang,
+          voice: 'natural'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Google TTS failed: ${response.status}`);
+      }
+      
+      audioBlob = await response.blob();
     }
 
-    // Use Global Audio Manager for better mobile support
+    setIsAudioPlaying(true);
+
+    // 🆕 Use Global Audio Manager
     try {
       await globalAudioManager.play(audioBlob);
-      console.log('🎯 Audio plays via Global Audio Manager!');
+      console.log(`🎯 ${audioService} audio plays via Global Audio Manager!`);
       
-      // Update ref for external control
       currentAudioRef.current = globalAudioManager.currentAudio;
       
-      // Set up proper cleanup
       if (globalAudioManager.currentAudio) {
         globalAudioManager.currentAudio.onended = () => {
           setIsAudioPlaying(false);
@@ -315,72 +290,6 @@ const generateInstantAudio = async (
   }
 };
 
-// 🎵 VOICE-TO-VOICE HANDLER - Complete pipeline
-const handleVoiceToVoice = async (audioBlob, messages, setMessages, setIsAudioPlaying, currentAudioRef, showNotification) => {
-  try {
-    console.log('🎙️ Voice-to-Voice pipeline starting...');
-    
-    if (ENABLE_VOICE_PIPELINE) {
-      // Use complete ElevenLabs voice pipeline
-      const result = await elevenLabsVoicePipeline(audioBlob, messages);
-      
-      // Update conversation with both user and AI messages
-      const updatedMessages = [
-        ...messages,
-        { sender: 'user', text: result.userText },
-        { sender: 'bot', text: result.aiResponse }
-      ];
-      setMessages(updatedMessages);
-      sessionManager.saveMessages(updatedMessages);
-      
-      // Play AI response audio
-      await globalAudioManager.play(result.audioBlob);
-      setIsAudioPlaying(true);
-      currentAudioRef.current = globalAudioManager.currentAudio;
-      
-      if (globalAudioManager.currentAudio) {
-        globalAudioManager.currentAudio.onended = () => {
-          setIsAudioPlaying(false);
-          currentAudioRef.current = null;
-        };
-      }
-      
-      return result.userText;
-      
-    } else {
-      // Fallback: STT only, then regular text processing
-      const sttResult = await elevenLabsSTT(audioBlob, showNotification);
-      return sttResult.text;
-    }
-    
-  } catch (error) {
-    console.error('💥 Voice-to-Voice error:', error);
-    showNotification('Chyba při zpracování hlasu', 'error');
-    throw error;
-  }
-};
-
-// Export core functions for use in main component
-export {
-  generateInstantAudio,
-  handleVoiceToVoice,
-  elevenLabsSTT,
-  elevenLabsStreamingTTS,
-  globalAudioManager,
-  USE_ELEVENLABS_NATIVE,
-  ENABLE_VOICE_PIPELINE
-};// 📦 ČÁST 2: MAIN APP COMPONENT + JSX
-// 🚀 Import všech funkcí z ČÁSTI 1
-import {
-  generateInstantAudio,
-  handleVoiceToVoice,
-  elevenLabsSTT,
-  elevenLabsStreamingTTS,
-  globalAudioManager,
-  USE_ELEVENLABS_NATIVE,
-  ENABLE_VOICE_PIPELINE
-} from './App_Part1.js'; // Import z části 1
-
 // 🚀 MAIN APP COMPONENT
 function App() {
   const [input, setInput] = useState('');
@@ -395,7 +304,6 @@ function App() {
   
   const [isListening, setIsListening] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
-  const [voicePipelineActive, setVoicePipelineActive] = useState(false);
   
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
@@ -408,7 +316,7 @@ function App() {
 
   const t = getTranslation(uiLanguage);
 
-  // 🔧 ENHANCED NOTIFICATION SYSTEM
+  // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -449,9 +357,7 @@ function App() {
     if (onClick) {
       notification.addEventListener('click', () => {
         onClick();
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
+        document.body.removeChild(notification);
       });
     }
     
@@ -471,7 +377,7 @@ function App() {
   };
 
   const handleNewChat = () => {
-    // Stop any current audio
+    // 🆕 Use Global Audio Manager
     globalAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
@@ -501,7 +407,7 @@ function App() {
       setUserLanguage(detectedLang);
     }
 
-    // Stop any current audio
+    // 🆕 Use Global Audio Manager
     globalAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
@@ -622,51 +528,20 @@ function App() {
     }
   };
 
-  // 🎤 ENHANCED VOICE TRANSCRIPT HANDLER
+  // 🆕 ENHANCED TRANSCRIPT HANDLER
   const handleTranscript = async (text, confidence = 1.0) => {
-    console.log('🎙️ Voice transcript received:', { text, confidence, voiceMode, ENABLE_VOICE_PIPELINE });
+    console.log('🎙️ Voice transcript received:', { text, confidence, voiceMode, USE_ELEVENLABS_NATIVE });
     
-    if ((showVoiceScreen || voiceMode) && ENABLE_VOICE_PIPELINE) {
-      // Use voice-to-voice pipeline if enabled
-      try {
-        setVoicePipelineActive(true);
-        // Note: handleVoiceToVoice is called from SimpleVoiceRecorder
-        // This is just for text input from voice
-        await handleSend(text, true);
-      } catch (error) {
-        console.error('❌ Voice pipeline failed:', error);
-        setInput(text); // Fallback to text input
-      } finally {
-        setVoicePipelineActive(false);
-      }
-    } else {
-      // Standard voice-to-text
-      if (showVoiceScreen || voiceMode) {
+    if (showVoiceScreen || voiceMode) {
+      if (USE_ELEVENLABS_NATIVE) {
+        // Enhanced voice processing
         handleSend(text, true);
       } else {
-        setInput(text);
+        // Standard voice processing
+        handleSend(text, true);
       }
-    }
-  };
-
-  // 🎤 ENHANCED VOICE-TO-VOICE TRANSCRIPT FOR SIMPLE RECORDER
-  const handleVoiceToVoiceTranscript = async (audioBlob) => {
-    if (ENABLE_VOICE_PIPELINE) {
-      try {
-        setVoicePipelineActive(true);
-        await handleVoiceToVoice(audioBlob, messages, setMessages, setIsAudioPlaying, currentAudioRef, showNotification);
-      } catch (error) {
-        console.error('❌ Voice-to-Voice failed:', error);
-        // Fallback to regular STT
-        try {
-          const sttResult = await elevenLabsSTT(audioBlob, showNotification);
-          handleTranscript(sttResult.text, sttResult.confidence);
-        } catch (sttError) {
-          showNotification('Chyba při rozpoznávání řeči', 'error');
-        }
-      } finally {
-        setVoicePipelineActive(false);
-      }
+    } else {
+      setInput(text);
     }
   };
 
@@ -688,10 +563,10 @@ function App() {
       setVoiceMode(true);
     }
 
-    console.log('🎤 ElevenLabs Configuration:', {
-      native_stt: USE_ELEVENLABS_NATIVE,
-      voice_pipeline: ENABLE_VOICE_PIPELINE,
-      fallback: 'Whisper available'
+    console.log('🎤 TTS Configuration:', {
+      service: USE_ELEVENLABS ? 'ElevenLabs' : 'Google TTS',
+      native: USE_ELEVENLABS_NATIVE,
+      fallback: FALLBACK_TO_GOOGLE ? 'Enabled' : 'Disabled'
     });
   }, []);
 
@@ -706,28 +581,26 @@ function App() {
 
   const shouldHideLogo = messages.length > 0;
 
-  // 🎨 JSX RETURN
+  // 🎨 JSX RETURN - FIXED FULL SCREEN
   return (
     <div style={{ 
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      position: 'fixed',  // 🆕 FIXED POSITION
+      top: 0,            // 🆕
+      left: 0,           // 🆕
+      right: 0,          // 🆕
+      bottom: 0,         // 🆕
       width: '100vw',
       height: '100vh',
       display: 'flex', 
       flexDirection: 'column',
       background: isListening 
         ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
-        : voicePipelineActive
-        ? 'linear-gradient(135deg, #4b0082, #6432ff, #0099ff, #00d4ff)'
         : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
       margin: 0,
       padding: 0,
-      overflow: 'hidden',
+      overflow: 'hidden',  // 🆕 PREVENT SCROLLBARS
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       
@@ -737,7 +610,7 @@ function App() {
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.85), rgba(0, 78, 146, 0.6))',
         backdropFilter: 'blur(20px)',
         zIndex: 10,
-        flexShrink: 0
+        flexShrink: 0  // 🆕 Don't shrink
       }}>
         
         <div style={{
@@ -754,7 +627,7 @@ function App() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
-              disabled={loading || streaming || voicePipelineActive}
+              disabled={loading || streaming}
               style={{
                 background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
                 border: '1px solid rgba(74, 85, 104, 0.6)',
@@ -762,23 +635,21 @@ function App() {
                 padding: '0.6rem 0.9rem',
                 fontSize: '0.85rem',
                 color: '#e2e8f0',
-                cursor: (loading || streaming || voicePipelineActive) ? 'not-allowed' : 'pointer',
+                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
                 fontWeight: '500',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                backdropFilter: 'blur(10px)',
-                opacity: voicePipelineActive ? 0.7 : 1
+                backdropFilter: 'blur(10px)'
               }}
             >
               {model === 'claude' ? '🧠 Omnia' : model === 'sonar' ? '🔍 Omnia Search' : '⚡ Omnia GPT'}
-              {!streaming && !loading && !isListening && !voicePipelineActive && ' ▼'}
-              {voicePipelineActive && ' 🎵'}
+              {!streaming && !loading && !isListening && ' ▼'}
             </button>
             
             {/* MODEL DROPDOWN */}
-            {showModelDropdown && !loading && !streaming && !voicePipelineActive && (
+            {showModelDropdown && !loading && !streaming && (
               <div style={{
                 position: 'absolute',
                 top: '100%',
@@ -827,7 +698,7 @@ function App() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
-              disabled={loading || streaming || voicePipelineActive}
+              disabled={loading || streaming}
               style={{
                 background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
                 border: '1px solid rgba(74, 85, 104, 0.6)',
@@ -835,10 +706,9 @@ function App() {
                 padding: '0.6rem', 
                 fontSize: '1rem',
                 color: '#e2e8f0',
-                cursor: (loading || streaming || voicePipelineActive) ? 'not-allowed' : 'pointer',
+                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                backdropFilter: 'blur(10px)',
-                opacity: voicePipelineActive ? 0.7 : 1
+                backdropFilter: 'blur(10px)'
               }}
               title={t('settings')}
             >
@@ -848,7 +718,7 @@ function App() {
             </button>
             
             <SettingsDropdown 
-              isOpen={showSettingsDropdown && !loading && !streaming && !voicePipelineActive}
+              isOpen={showSettingsDropdown && !loading && !streaming}
               onClose={() => setShowSettingsDropdown(false)}
               onNewChat={handleNewChat}
               uiLanguage={uiLanguage}
@@ -870,7 +740,7 @@ function App() {
         }}>
           <OmniaLogo 
             size={isMobile ? 70 : 90} 
-            animate={streaming || loading || voicePipelineActive}
+            animate={streaming || loading}
             isListening={isListening}
             shouldHide={shouldHideLogo}
           />
@@ -897,14 +767,9 @@ function App() {
                 fontWeight: '500'
               }}>
                 🌍 multilingual AI assistant
-                {USE_ELEVENLABS_NATIVE && (
+                {USE_ELEVENLABS && (
                   <span style={{ marginLeft: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
-                    • 🎤 ElevenLabs Native
-                  </span>
-                )}
-                {ENABLE_VOICE_PIPELINE && (
-                  <span style={{ marginLeft: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
-                    • 🎵 Voice-to-Voice
+                    • 🎤 {USE_ELEVENLABS_NATIVE ? 'ElevenLabs Native' : 'Premium Voice'}
                   </span>
                 )}
               </div>
@@ -913,11 +778,11 @@ function App() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN CONTENT - FIXED OVERFLOW */}
       <main style={{ 
         flex: 1, 
-        overflowY: 'auto',
-        overflowX: 'hidden',
+        overflowY: 'auto',  // 🆕 Allow scroll only here
+        overflowX: 'hidden', // 🆕 No horizontal scroll
         padding: isMobile ? '1rem' : '2rem',
         paddingBottom: '160px',
         width: '100%'
@@ -933,39 +798,6 @@ function App() {
           
           {messages.length === 0 && !shouldHideLogo && (
             <div style={{ height: '40vh' }}></div>
-          )}
-
-          {/* VOICE PIPELINE STATUS */}
-          {voicePipelineActive && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginBottom: '2rem',
-              animation: 'fadeInUp 0.4s ease-out'
-            }}>
-              <div style={{
-                padding: '1rem 1.5rem',
-                background: 'rgba(75, 0, 130, 0.8)',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.8rem',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <div style={{ 
-                  width: '18px', 
-                  height: '18px', 
-                  border: '2px solid rgba(255,255,255,0.3)', 
-                  borderTop: '2px solid #00ffff',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }}></div>
-                <span style={{ color: '#00ffff', fontWeight: '500' }}>
-                  🎵 Voice-to-Voice aktivní...
-                </span>
-              </div>
-            </div>
           )}
 
           {/* MESSAGES */}
@@ -1077,7 +909,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {USE_ELEVENLABS_NATIVE && streaming && ' (ElevenLabs)'}
+                    {USE_ELEVENLABS_NATIVE && ' (ElevenLabs)'}
                   </span>
                 </div>
               </div>
@@ -1088,7 +920,7 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT AREA */}
+      {/* INPUT AREA - FIXED AT BOTTOM */}
       <div style={{ 
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(20px)',
@@ -1096,7 +928,7 @@ function App() {
         borderTop: '1px solid rgba(255,255,255,0.1)',
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1.2rem)' : '1.6rem',
         zIndex: 10,
-        flexShrink: 0
+        flexShrink: 0  // 🆕 Don't shrink
       }}>
         <div style={{ 
           maxWidth: '1000px', 
@@ -1112,12 +944,11 @@ function App() {
               type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && !voicePipelineActive && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
               placeholder={isListening ? t('listening') + '...' :
                           streaming ? t('omniaStreaming') : 
-                          voicePipelineActive ? 'Voice-to-Voice aktivní...' :
                           `${t('sendMessage')} Omnia...`}
-              disabled={loading || streaming || voicePipelineActive}
+              disabled={loading || streaming}
               style={{ 
                 width: '100%', 
                 padding: isMobile ? '1.1rem 1.4rem' : '1.2rem 1.6rem',
@@ -1125,13 +956,13 @@ function App() {
                 borderRadius: '30px',
                 border: '2px solid rgba(74, 85, 104, 0.6)',
                 outline: 'none',
-                backgroundColor: (loading || streaming || voicePipelineActive) 
+                backgroundColor: (loading || streaming) 
                   ? 'rgba(45, 55, 72, 0.6)' 
                   : 'rgba(26, 32, 44, 0.8)',
                 color: '#ffffff',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                opacity: (loading || streaming || voicePipelineActive) ? 0.7 : 1,
+                opacity: (loading || streaming) ? 0.7 : 1,
                 backdropFilter: 'blur(10px)',
                 fontWeight: '400'
               }}
@@ -1141,18 +972,18 @@ function App() {
           {/* VOICE SCREEN BUTTON */}
           <MiniOmniaLogo 
             size={isMobile ? 54 : 60} 
-            onClick={() => !loading && !streaming && !voicePipelineActive && setShowVoiceScreen(true)}
+            onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
             isAudioPlaying={isAudioPlaying}
             isListening={isListening}
-            loading={loading || voicePipelineActive}
+            loading={loading}
             streaming={streaming}
           />
 
           {/* SEND BUTTON */}
           <OmniaArrowButton
             onClick={() => handleSend()}
-            disabled={loading || streaming || voicePipelineActive || !input.trim()}
-            loading={loading || streaming || voicePipelineActive}
+            disabled={loading || streaming || !input.trim()}
+            loading={loading || streaming}
             isListening={isListening}
             size={isMobile ? 54 : 60}
           />
@@ -1164,17 +995,16 @@ function App() {
         isOpen={showVoiceScreen}
         onClose={() => setShowVoiceScreen(false)}
         onTranscript={handleTranscript}
-        onVoiceToVoice={handleVoiceToVoiceTranscript}
-        isLoading={loading || voicePipelineActive}
+        isLoading={loading}
         isAudioPlaying={isAudioPlaying}
         uiLanguage={uiLanguage}
         messages={messages}
         currentResponse={streaming ? messages[messages.length - 1]?.text : null}
-        enableVoicePipeline={ENABLE_VOICE_PIPELINE}
       />
 
-      {/* CSS STYLES */}
+      {/* CSS STYLES - FIXED FULL SCREEN */}
       <style>{`
+        /* FULL RESET - CRITICAL! */
         * {
           margin: 0;
           padding: 0;
@@ -1210,6 +1040,12 @@ function App() {
           left: 0 !important;
         }
         
+        /* Remove any default margins/paddings */
+        body > * {
+          margin: 0 !important;
+        }
+        
+        /* Animations */
         @keyframes shimmer {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
           100% { transform: translateX(200%) translateY(200%) rotate(45deg); }
@@ -1274,6 +1110,7 @@ function App() {
           }
         }
         
+        /* Webkit specific */
         * { 
           -webkit-tap-highlight-color: transparent; 
         }
@@ -1283,6 +1120,7 @@ function App() {
           button { min-height: 44px; min-width: 44px; }
         }
         
+        /* Scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(26, 32, 44, 0.5); }
         ::-webkit-scrollbar-thumb { 
