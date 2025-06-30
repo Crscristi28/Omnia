@@ -113,7 +113,7 @@ class MobileAudioManager {
       try {
         await this.playAudio(audioBlob);
         // 🔧 INCREASED GAP between sentences for natural speech
-        await new Promise(resolve => setTimeout(resolve, 600));
+        await new Promise(resolve => setTimeout(resolve, 800));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
