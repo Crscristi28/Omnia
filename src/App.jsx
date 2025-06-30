@@ -558,35 +558,13 @@ function App() {
 
         const onStreamUpdate = async (text, isStillStreaming) => {
           fullResponse = text;
-          
-          // 🆕 FIXED AUDIO-FIRST: Process only complete sentences
+
+          // 🆕 FIXED AUDIO-FIRST: Collect text during streaming, process at the end
           if (fromVoice && showVoiceScreen) {
-            const sentences = splitIntoSentences(text);
-            
-            for (const sentence of sentences) {
-              // Skip if already processed
-              if (processedSentencesRef.current.has(sentence)) continue;
-              
-              // 🔧 Check if sentence is complete
-              if (isCompleteSentence(sentence)) {
-                processedSentencesRef.current.add(sentence);
-                console.log('🎯 Complete sentence detected:', sentence);
-                
-                // Generate and queue audio for complete sentence
-                try {
-                  const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-                  await mobileAudioManager.queueAudio(audioBlob);
-                  console.log('✅ Audio queued for complete sentence');
-                } catch (error) {
-                  console.error('❌ Failed to generate audio for sentence:', error);
-                }
-              }
-            }
-            
-            // Update buffer for Voice Screen display
+            // Just update the buffer during streaming
             setVoiceResponseBuffer(text);
           }
-          
+
           // Update messages for regular display
           const updatedMessages = [...messagesWithUser, { 
             sender: 'bot', 
@@ -594,25 +572,25 @@ function App() {
             isStreaming: isStillStreaming 
           }];
           setMessages(updatedMessages);
-          
+
           if (!isStillStreaming) {
             sessionManager.saveMessages(updatedMessages);
             setStreaming(false);
             responseText = text;
             
-            // 🆕 Process any remaining incomplete sentences at the end
-            if (fromVoice && showVoiceScreen) {
-              const finalSentences = splitIntoSentences(text);
-              for (const sentence of finalSentences) {
-                if (!processedSentencesRef.current.has(sentence) && sentence.trim().length > 0) {
-                  processedSentencesRef.current.add(sentence);
-                  console.log('🎯 Processing final sentence:', sentence);
-                  
+            // 🆕 PROCESS ALL SENTENCES AFTER STREAMING COMPLETES
+            if (fromVoice && showVoiceScreen && text) {
+              console.log('🎯 Streaming complete, processing all sentences...');
+              const allSentences = splitIntoSentences(text);
+              
+              for (const sentence of allSentences) {
+                if (sentence.trim().length > 0) {
+                  console.log('🎵 Generating audio for:', sentence);
                   try {
                     const audioBlob = await generateAudioForSentence(sentence, detectedLang);
                     await mobileAudioManager.queueAudio(audioBlob);
                   } catch (error) {
-                    console.error('❌ Failed to generate audio for final sentence:', error);
+                    console.error('❌ Failed to generate audio:', error);
                   }
                 }
               }
