@@ -1,7 +1,5 @@
-// 🎙️ SIMPLE VOICE RECORDER - Manual Control Only
-// ✅ FIXES: No infinite loops, no auto-silence detection
-// 🔧 MANUAL: Click to start, click to stop
-// 🆕 FIXED: Uses ElevenLabs STT instead of Whisper
+// 🎙️ SIMPLE VOICE RECORDER - ElevenLabs STT Edition
+// ✅ ZMĚNA: používá /api/elevenlabs-stt místo /api/whisper
 
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -65,7 +63,7 @@ const SimpleVoiceRecorder = ({
 
   const startListening = async () => {
     try {
-      console.log('🎙️ Starting manual voice recording...');
+      console.log('🎙️ Starting ElevenLabs voice recording...');
 
       if (!permissionGranted) {
         const hasPermission = await requestMicrophonePermission();
@@ -100,7 +98,7 @@ const SimpleVoiceRecorder = ({
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('🛑 Recording stopped, processing...');
+        console.log('🛑 Recording stopped, processing with ElevenLabs...');
         setIsProcessing(true);
         
         const recordingDuration = Date.now() - recordingStartTimeRef.current;
@@ -144,7 +142,7 @@ const SimpleVoiceRecorder = ({
           const arrayBuffer = await audioBlob.arrayBuffer();
           console.log('📤 Sending to ElevenLabs STT API...');
           
-          // 🆕 FIXED: Use ElevenLabs STT instead of Whisper!
+          // 🔧 CRITICAL CHANGE: ElevenLabs STT místo Whisper
           const response = await fetch('/api/elevenlabs-stt', {
             method: 'POST',
             headers: {
@@ -164,12 +162,12 @@ const SimpleVoiceRecorder = ({
             const transcribedText = data.text.trim();
             const detectedLanguage = data.language || 'unknown';
             
-            console.log('🌍 ElevenLabs detected language:', detectedLanguage);
-            console.log('📝 ElevenLabs transcribed text:', transcribedText);
+            console.log('🌍 Detected language:', detectedLanguage);
+            console.log('📝 Transcribed text:', transcribedText);
             
             onTranscript(transcribedText, data.confidence || 1.0);
           } else {
-            console.warn('⚠️ Empty or failed ElevenLabs transcription');
+            console.warn('⚠️ Empty or failed transcription');
             const failMessage = {
               'cs': 'Nepodařilo se rozpoznat řeč - zkuste znovu',
               'en': 'Could not recognize speech - try again',
@@ -197,7 +195,7 @@ const SimpleVoiceRecorder = ({
       setIsListening(true);
       if (onListeningChange) onListeningChange(true);
       
-      console.log('🎯 Manual recording started (ElevenLabs STT)');
+      console.log('🎯 ElevenLabs recording started');
 
       // ✅ FIXED: Only MAX timeout, no silence detection
       setTimeout(() => {
@@ -230,7 +228,7 @@ const SimpleVoiceRecorder = ({
   };
 
   const stopListening = () => {
-    console.log('🛑 Stopping manual recording...');
+    console.log('🛑 Stopping ElevenLabs recording...');
 
     if (mediaRecorderRef.current) {
       try {
@@ -362,17 +360,17 @@ const SimpleVoiceRecorder = ({
   const getButtonTitle = () => {
     const titles = {
       'cs': {
-        processing: 'Zpracovávám nahrávku pomocí ElevenLabs...',
+        processing: 'Zpracovávám s ElevenLabs...',
         listening: 'Klikněte pro zastavení nahrávání',
         ready: 'Klikněte pro začátek nahrávání'
       },
       'en': {
-        processing: 'Processing recording with ElevenLabs...',
+        processing: 'Processing with ElevenLabs...',
         listening: 'Click to stop recording',
         ready: 'Click to start recording'
       },
       'ro': {
-        processing: 'Procesez înregistrarea cu ElevenLabs...',
+        processing: 'Procesez cu ElevenLabs...',
         listening: 'Apasă pentru a opri înregistrarea',
         ready: 'Apasă pentru a începe înregistrarea'
       }
@@ -397,4 +395,4 @@ const SimpleVoiceRecorder = ({
   );
 };
 
-export default SimpleVoiceRecorder;
+export default SimpleVoiceRecorder; 
