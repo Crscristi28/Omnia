@@ -1,5 +1,6 @@
-// 🚀 OMNIA - APP.JSX s DIRECT AUDIO AUTO-PLAY (ČÁST 1/2)
-// ✅ Direct TTS call místo button simulation - funguje ve všech browserech
+// 🚀 OMNIA - APP.JSX s MOBILE AUTO-PLAY FIX (ČÁST 1/2)
+// ✅ ElevenLabs pipeline: STT → Claude → TTS
+// ✅ Mobile auto-play fixed with user interaction tracking
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -24,34 +25,87 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🆕 GLOBAL AUDIO MANAGER - Mobile optimization
-class GlobalAudioManager {
+// 🆕 ENHANCED MOBILE AUDIO MANAGER
+class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
     this.isUnlocked = false;
+    this.audioContext = null;
+    this.pendingAudioQueue = [];
+  }
+  
+  async initialize() {
+    // Try to create AudioContext early
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      this.audioContext = new AudioContext();
+      console.log('📱 AudioContext created:', this.audioContext.state);
+    } catch (e) {
+      console.warn('⚠️ Could not create AudioContext early:', e);
+    }
   }
   
   async unlockAudioContext() {
     if (this.isUnlocked) return true;
     
     try {
-      const silentAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Dt1z4L');
-      await silentAudio.play();
-      silentAudio.pause();
+      // Ensure AudioContext exists
+      if (!this.audioContext) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.audioContext = new AudioContext();
+      }
+      
+      // Resume if suspended
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+      
+      // Create oscillator for iOS unlock
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 0.001; // Nearly silent
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      oscillator.start();
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+      
+      // Also try HTML5 Audio
+      const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMDAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xP4AAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+      silentAudio.volume = 0.01;
+      
+      try {
+        await silentAudio.play();
+        silentAudio.pause();
+      } catch (e) {
+        console.warn('⚠️ Silent audio play failed:', e);
+      }
+      
       this.isUnlocked = true;
-      console.log('🔓 Mobile audio context unlocked');
+      console.log('🔓 Mobile audio unlocked!');
+      
+      // Process any pending audio
+      this.processPendingAudio();
+      
       return true;
     } catch (error) {
-      console.warn('⚠️ Failed to unlock audio context:', error);
+      console.error('❌ Failed to unlock audio:', error);
       return false;
     }
   }
   
   async play(audioBlob) {
+    // Always stop current audio first
     this.stop();
     
+    // Try to unlock on every play attempt
     if (!this.isUnlocked) {
-      await this.unlockAudioContext();
+      const unlocked = await this.unlockAudioContext();
+      if (!unlocked) {
+        // Queue the audio for later
+        this.pendingAudioQueue.push(audioBlob);
+        console.log('📦 Audio queued for later playback');
+        throw new Error('Audio context locked - user interaction required');
+      }
     }
     
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -68,7 +122,27 @@ class GlobalAudioManager {
       this.currentAudio = null;
     };
     
-    return await this.currentAudio.play();
+    // For mobile, we need to handle play promise
+    const playPromise = this.currentAudio.play();
+    
+    if (playPromise !== undefined) {
+      return playPromise.catch(error => {
+        console.error('❌ Play promise rejected:', error);
+        // Store for retry
+        this.pendingAudioQueue.push(audioBlob);
+        throw error;
+      });
+    }
+  }
+  
+  processPendingAudio() {
+    if (this.pendingAudioQueue.length > 0 && this.isUnlocked) {
+      const audioBlob = this.pendingAudioQueue.shift();
+      console.log('▶️ Playing queued audio');
+      this.play(audioBlob).catch(e => {
+        console.error('❌ Failed to play queued audio:', e);
+      });
+    }
   }
   
   stop() {
@@ -80,7 +154,8 @@ class GlobalAudioManager {
   }
 }
 
-const globalAudioManager = new GlobalAudioManager();
+// Create global instance
+const mobileAudioManager = new MobileAudioManager();
 
 // 🚀 MAIN APP COMPONENT
 function App() {
@@ -95,8 +170,9 @@ function App() {
   // 🎤 VOICE STATE
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
   
-  // 🆕 STT STATE (místo VTV)
+  // 🆕 STT STATE
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
   // 🌍 LANGUAGE & UI STATE
@@ -113,6 +189,30 @@ function App() {
   const isMobile = window.innerWidth <= 768;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const t = getTranslation(uiLanguage);
+
+  // 🆕 MOBILE AUDIO INITIALIZATION
+  useEffect(() => {
+    mobileAudioManager.initialize();
+    
+    // Track ANY user interaction
+    const handleUserInteraction = () => {
+      if (!userHasInteracted) {
+        setUserHasInteracted(true);
+        console.log('👆 First user interaction detected');
+        // Try to unlock audio immediately
+        mobileAudioManager.unlockAudioContext();
+      }
+    };
+    
+    // Listen for various user interactions
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+    
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+  }, []);
 
   // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
@@ -174,10 +274,88 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 SPEECH-TO-TEXT FUNCTIONS (místo VTV)
+  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s MOBILE AUTO-PLAY FIX (ČÁST 2/2)
+// POKRAČOVÁNÍ Z ČÁSTI 1...
+
+  // 🆕 ENHANCED DIRECT AUTO-PLAY (MOBILE FIXED)
+  const directAutoPlay = async (text, language) => {
+    try {
+      console.log('🔊 Direct auto-play starting...', { 
+        mobile: isMobile, 
+        unlocked: mobileAudioManager.isUnlocked,
+        userInteracted: userHasInteracted 
+      });
+      
+      setIsAudioPlaying(true);
+      
+      let audioBlob;
+      
+      try {
+        // Try ElevenLabs first
+        audioBlob = await elevenLabsService.generateSpeech(text);
+        console.log('✅ ElevenLabs audio generated');
+      } catch (error) {
+        console.warn('⚠️ ElevenLabs failed, using Google TTS:', error);
+        
+        // Fallback to Google TTS
+        const response = await fetch('/api/google-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ 
+            text: text,
+            language: language,
+            voice: 'natural'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Google TTS failed: ${response.status}`);
+        }
+        
+        audioBlob = await response.blob();
+        console.log('✅ Google TTS fallback generated');
+      }
+      
+      // 🔊 ENHANCED MOBILE PLAY
+      try {
+        await mobileAudioManager.play(audioBlob);
+        console.log('✅ Auto-play successful!');
+      } catch (playError) {
+        console.warn('⚠️ Auto-play failed:', playError);
+        
+        // On mobile, show notification to click
+        if (isMobile && !mobileAudioManager.isUnlocked) {
+          showNotification(
+            'Klepněte zde pro přehrání odpovědi 🔊', 
+            'info',
+            async () => {
+              // This click will unlock audio
+              await mobileAudioManager.unlockAudioContext();
+              // Try to play again
+              try {
+                await mobileAudioManager.play(audioBlob);
+              } catch (e) {
+                console.error('❌ Still cannot play:', e);
+              }
+            }
+          );
+        } else {
+          showNotification('Auto-play selhalo - zkuste tlačítko 🔊', 'error');
+        }
+      }
+      
+    } catch (error) {
+      console.error('💥 Direct auto-play failed:', error);
+      showNotification('Chyba při generování zvuku', 'error');
+    } finally {
+      setIsAudioPlaying(false);
+    }
+  };
+
+  // 🆕 SPEECH-TO-TEXT FUNCTIONS (ElevenLabs)
   const startSTTRecording = async () => {
     try {
-      console.log('🎤 Starting Speech-to-Text recording...');
+      console.log('🎤 Starting ElevenLabs STT recording...');
       setIsRecordingSTT(true);
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -259,12 +437,13 @@ function App() {
 
   const processSTTAudio = async (audioBlob) => {
     try {
-      console.log('📤 Sending audio to Whisper STT...');
+      console.log('📤 Sending audio to ElevenLabs STT...');
       showNotification('Převádím řeč na text...', 'info');
       
       const arrayBuffer = await audioBlob.arrayBuffer();
       
-      const response = await fetch('/api/whisper', {
+      // 🆕 USING ELEVENLABS STT
+      const response = await fetch('/api/elevenlabs-stt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -274,7 +453,7 @@ function App() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Whisper STT error:', response.status, errorText);
+        console.error('❌ ElevenLabs STT error:', response.status, errorText);
         throw new Error(`Speech-to-Text failed: HTTP ${response.status}`);
       }
 
@@ -308,7 +487,7 @@ function App() {
 
   // 🔧 CLASSIC FUNCTIONS (preserved from original)
   const handleNewChat = () => {
-    globalAudioManager.stop();
+    mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
     
@@ -323,56 +502,7 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s DIRECT AUDIO AUTO-PLAY (ČÁST 2/2)
-// POKRAČOVÁNÍ Z ČÁSTI 1...
-
-  // 🆕 DIRECT AUTO-PLAY function (přehraje audio přímo, ne přes button click)
-  const directAutoPlay = async (text, language) => {
-    try {
-      console.log('🔊 Direct auto-play executing:', text.substring(0, 30) + '...');
-      setIsAudioPlaying(true);
-      
-      let audioBlob;
-      
-      try {
-        // Try ElevenLabs first
-        audioBlob = await elevenLabsService.generateSpeech(text);
-        console.log('✅ ElevenLabs direct auto-play generated');
-      } catch (error) {
-        console.warn('⚠️ ElevenLabs failed, using Google TTS:', error);
-        
-        // Fallback to Google TTS
-        const response = await fetch('/api/google-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
-          body: JSON.stringify({ 
-            text: text,
-            language: language,
-            voice: 'natural'
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Google TTS failed: ${response.status}`);
-        }
-        
-        audioBlob = await response.blob();
-        console.log('✅ Google TTS direct auto-play generated');
-      }
-      
-      // 🔊 DIRECT PLAY using GlobalAudioManager
-      await globalAudioManager.play(audioBlob);
-      console.log('✅ Direct auto-play completed');
-      
-    } catch (error) {
-      console.error('💥 Direct auto-play failed:', error);
-      showNotification('Auto-play selhalo - klikněte na 🔊', 'error');
-    } finally {
-      setIsAudioPlaying(false);
-    }
-  };
-
-  // 🤖 AI CONVERSATION s DIRECT AUTO-PLAY (UPDATED)
+  // 🤖 AI CONVERSATION with ENHANCED AUTO-PLAY
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -381,7 +511,7 @@ function App() {
       setUserLanguage(detectedLang);
     }
 
-    globalAudioManager.stop();
+    mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
 
@@ -415,11 +545,11 @@ function App() {
             setStreaming(false);
             responseText = text;
             
-            // 🔊 DIRECT AUTO-PLAY: Použije actual response text místo DOM
+            // 🔊 ENHANCED AUTO-PLAY for voice mode
             if (fromVoice && showVoiceScreen && text && text.trim()) {
               setTimeout(async () => {
                 await directAutoPlay(text, detectedLang);
-              }, 1000); // 1 sekunda po dokončení streaming
+              }, 500); // Shorter delay for better UX
             }
           }
         };
@@ -434,7 +564,7 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🔊 DIRECT AUTO-PLAY: Pro GPT také
+        // 🔊 AUTO-PLAY for GPT
         if (fromVoice && showVoiceScreen && responseText && responseText.trim()) {
           setTimeout(async () => {
             await directAutoPlay(responseText, detectedLang);
@@ -448,7 +578,7 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🔊 DIRECT AUTO-PLAY: Pro Sonar také
+        // 🔊 AUTO-PLAY for Sonar
         if (fromVoice && showVoiceScreen && responseText && responseText.trim()) {
           setTimeout(async () => {
             await directAutoPlay(responseText, detectedLang);
@@ -465,12 +595,12 @@ function App() {
     }
   };
 
-  // 🎤 VOICE TRANSCRIPT HANDLER (beze změn)
+  // 🎤 VOICE TRANSCRIPT HANDLER
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
     if (showVoiceScreen) {
-      // 🔊 Pošle zprávu s fromVoice=true pro direct auto-play
+      // 🔊 Send with fromVoice=true for auto-play
       await handleSend(text, true);
     } else {
       setInput(text);
@@ -660,14 +790,14 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🌍 multilingual AI assistant • 🎤 STT • 🔊 Direct Auto-play
+                🌍 multilingual AI • 🎤 ElevenLabs STT • 🔊 Enhanced Mobile Play
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT - Messages area (beze změn) */}
+      {/* MAIN CONTENT - Messages area */}
       <main style={{ 
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
@@ -728,7 +858,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • direct auto-play'}
+                      Omnia {msg.isStreaming ? ' • streaming' : ' • ElevenLabs voice'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -803,7 +933,7 @@ function App() {
               type="text" value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
-              placeholder={isListening || isRecordingSTT ? (isRecordingSTT ? 'Nahrávám pro STT...' : t('listening') + '...') :
+              placeholder={isListening || isRecordingSTT ? (isRecordingSTT ? 'Nahrávám ElevenLabs STT...' : t('listening') + '...') :
                           streaming ? t('omniaStreaming') : 
                           `${t('sendMessage')} Omnia...`}
               disabled={loading || streaming}
@@ -847,7 +977,7 @@ function App() {
                 : '0 4px 12px rgba(0, 255, 136, 0.4)',
               transform: 'translateZ(0)'
             }}
-            title={isRecordingSTT ? 'Zastavit STT nahrávání' : 'Speech-to-Text'}
+            title={isRecordingSTT ? 'Zastavit STT nahrávání' : 'ElevenLabs Speech-to-Text'}
           >
             {isRecordingSTT ? '⏹️' : '🎤'}
           </button>
@@ -872,7 +1002,7 @@ function App() {
         </div>
       </div>
 
-      {/* VOICE SCREEN s DIRECT AUTO-PLAY */}
+      {/* VOICE SCREEN with ENHANCED AUTO-PLAY */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={() => setShowVoiceScreen(false)}
