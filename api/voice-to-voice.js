@@ -1,17 +1,5 @@
-// api/voice-to-voice.js - FIXED FOR NODE.JS RUNTIME
-// 🎵 Voice-to-Voice API route - NO EDGE RUNTIME ISSUES!
-
-import formidable from 'formidable';
-import fs from 'fs';
-
-// 🔧 REMOVED: export const config = { runtime: 'edge' }
-// Using Node.js runtime instead!
-
-export const config = {
-  api: {
-    bodyParser: false, // Disable built-in bodyParser for file uploads
-  },
-};
+// api/voice-to-voice.js - NO EXTERNAL DEPENDENCIES
+// 🎵 Voice-to-Voice API - Pure Node.js implementation
 
 export default async function handler(req, res) {
   // CORS headers
@@ -40,7 +28,7 @@ export default async function handler(req, res) {
   try {
     console.log('🎵 VOICE-TO-VOICE: Processing request...');
 
-    // 🔧 FIXED: Use raw buffer from request (Node.js style)
+    // 🔧 Get raw audio buffer from request
     const chunks = [];
     for await (const chunk of req) {
       chunks.push(chunk);
@@ -75,36 +63,15 @@ export default async function handler(req, res) {
 
     console.log('📤 Sending to ElevenLabs Voice Changer API...');
 
-    // 🔧 FIXED: Create proper FormData for Node.js
-    const FormData = require('form-data');
-    const formData = new FormData();
-    
-    // Add audio as stream
-    formData.append('audio', audioBuffer, {
-      filename: 'input.webm',
-      contentType: 'audio/webm'
-    });
-    
-    // Add model and settings
-    formData.append('model_id', 'eleven_multilingual_sts_v2');
-    formData.append('voice_settings', JSON.stringify({
-      stability: 0.5,
-      similarity_boost: 0.8,
-      style: 0.3,
-      use_speaker_boost: false
-    }));
-    formData.append('remove_background_noise', 'true');
-    formData.append('optimize_streaming_latency', '1');
-    formData.append('output_format', 'mp3_44100_128');
-
-    // Call ElevenLabs Voice Changer API
+    // 🆕 SIMPLE APPROACH: Send raw audio with proper headers
     const response = await fetch(`https://api.elevenlabs.io/v1/speech-to-speech/${ELEVENLABS_VOICE_ID}`, {
       method: 'POST',
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,
-        ...formData.getHeaders() // Important for multipart/form-data
+        'Content-Type': 'audio/webm', // Direct audio upload
+        'Content-Length': audioBuffer.length.toString()
       },
-      body: formData
+      body: audioBuffer
     });
 
     if (!response.ok) {
@@ -130,7 +97,8 @@ export default async function handler(req, res) {
       
       return res.status(response.status).json({ 
         error: `Voice-to-Voice API error: ${response.status}`,
-        details: errorText
+        details: errorText,
+        voiceId: ELEVENLABS_VOICE_ID
       });
     }
 
@@ -160,20 +128,23 @@ export default async function handler(req, res) {
     res.status(500).json({ 
       error: 'Voice transformation failed',
       message: error.message,
-      details: 'Check server logs for more information'
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
 
-// 🎯 KEY FIXES:
+// 🎯 SIMPLIFIED APPROACH:
 /*
-✅ REMOVED Edge Runtime - using Node.js runtime
-✅ FIXED req.arrayBuffer() - using Buffer.concat(chunks)
-✅ PROPER FormData - using form-data package for Node.js
-✅ BETTER ERROR HANDLING - detailed logs and responses
-✅ STREAM HANDLING - proper audio buffer processing
+✅ NO EXTERNAL DEPENDENCIES - pure Node.js
+✅ DIRECT AUDIO UPLOAD - Content-Type: audio/webm
+✅ NO FORMDATA COMPLEXITY - simple buffer transfer
+✅ BETTER ERROR HANDLING - detailed responses
+✅ VERCEL COMPATIBLE - no package.json dependencies
 
-🔧 DEPLOYMENT NOTE:
-This now uses Node.js runtime instead of Edge Runtime
-Should work correctly with Vercel's standard Node.js functions
+🔧 TESTING:
+If this still fails, we can try:
+1. Different Content-Type headers
+2. Multipart boundary manual creation
+3. Base64 encoding approach
+4. Edge runtime with different buffer handling
 */
