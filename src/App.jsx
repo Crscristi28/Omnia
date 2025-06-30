@@ -1,5 +1,5 @@
-// 🚀 OMNIA - APP.JSX s SPEECH-TO-TEXT BUTTON (ČÁST 1/2)
-// ✅ VoiceScreen zůstává beze změn, jen 🎵 button → STT
+// 🚀 OMNIA - APP.JSX s VOICESCREEN AUTO-PLAY (ČÁST 1/2)
+// ✅ Auto-play Omnia odpovědí ve VoiceScreen
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -108,7 +108,7 @@ function App() {
   // 📱 DEVICE STATE
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
-  const sttRecorderRef = useRef(null); // ← STT recorder reference
+  const sttRecorderRef = useRef(null);
   
   const isMobile = window.innerWidth <= 768;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -226,7 +226,6 @@ function App() {
           size: Math.round(audioBlob.size / 1024) + 'KB'
         });
         
-        // Process audio for STT
         await processSTTAudio(audioBlob);
       };
 
@@ -238,7 +237,6 @@ function App() {
 
       mediaRecorder.start();
       
-      // Auto-stop after 30 seconds
       setTimeout(() => {
         if (mediaRecorder.state === 'recording') {
           mediaRecorder.stop();
@@ -286,9 +284,7 @@ function App() {
         const transcribedText = data.text.trim();
         console.log('✅ STT Success:', transcribedText);
         
-        // 🎯 PUT TEXT INTO INPUT FIELD
         setInput(transcribedText);
-        
         showNotification('Text převeden! Zkontrolujte a odešlete.', 'success');
       } else {
         throw new Error('Nepodařilo se rozpoznat řeč');
@@ -310,9 +306,6 @@ function App() {
     }
   };
 
-  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s SPEECH-TO-TEXT BUTTON (ČÁST 2/2)
-// POKRAČOVÁNÍ Z ČÁSTI 1...
-
   // 🔧 CLASSIC FUNCTIONS (preserved from original)
   const handleNewChat = () => {
     globalAudioManager.stop();
@@ -321,7 +314,7 @@ function App() {
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
-    if (isRecordingSTT) stopSTTRecording(); // ← STT cleanup
+    if (isRecordingSTT) stopSTTRecording();
     
     sessionManager.clearSession();
     setMessages([]);
@@ -329,6 +322,9 @@ function App() {
     
     showNotification(t('newChatCreated'), 'success');
   };
+
+  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s VOICESCREEN AUTO-PLAY (ČÁST 2/2)
+// POKRAČOVÁNÍ Z ČÁSTI 1...
 
   // 🤖 AI CONVERSATION (simplified - kept essential parts)
   const handleSend = async (textInput = input, fromVoice = false) => {
@@ -372,6 +368,13 @@ function App() {
             sessionManager.saveMessages(updatedMessages);
             setStreaming(false);
             responseText = text;
+            
+            // 🔊 AUTO-PLAY: Pokud je z VoiceScreen, automaticky přehraj audio
+            if (fromVoice && showVoiceScreen) {
+              setTimeout(() => {
+                autoPlayLastResponse();
+              }, 1500); // 1.5 sekundy po dokončení streaming
+            }
           }
         };
 
@@ -384,15 +387,27 @@ function App() {
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
+        
+        // 🔊 AUTO-PLAY: Pro GPT také
+        if (fromVoice && showVoiceScreen) {
+          setTimeout(() => {
+            autoPlayLastResponse();
+          }, 1000);
+        }
       }
       else if (model === 'sonar') {
-        responseText = await sonarService.search(textInput, showNotification, detectedLang);
-        const finalMessages = [...messagesWithUser, { 
-          sender: 'bot', 
-          text: responseText.success ? responseText.result : responseText.message 
-        }];
+        const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
+        responseText = searchResult.success ? searchResult.result : searchResult.message;
+        const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
+        
+        // 🔊 AUTO-PLAY: Pro Sonar také
+        if (fromVoice && showVoiceScreen) {
+          setTimeout(() => {
+            autoPlayLastResponse();
+          }, 1000);
+        }
       }
 
     } catch (err) {
@@ -404,12 +419,39 @@ function App() {
     }
   };
 
-  // 🎤 VOICE TRANSCRIPT HANDLER (pro VoiceScreen - beze změn)
+  // 🔊 AUTO-PLAY funkce pro VoiceScreen
+  const autoPlayLastResponse = () => {
+    try {
+      console.log('🔊 Auto-playing last Omnia response...');
+      
+      // Najít všechny VoiceButton tlačítka
+      const voiceButtons = document.querySelectorAll('button[title*="Přehrát"], button[title*="klepněte pro zastavení"]');
+      
+      if (voiceButtons.length > 0) {
+        // Vzít poslední VoiceButton (nejnovější odpověď)
+        const lastVoiceButton = voiceButtons[voiceButtons.length - 1];
+        
+        console.log('🎯 Clicking last VoiceButton for auto-play');
+        lastVoiceButton.click();
+        
+        showNotification('🔊 Automaticky přehrávám odpověď...', 'info');
+      } else {
+        console.warn('⚠️ No VoiceButton found for auto-play');
+        showNotification('Nepodařilo se najít audio tlačítko', 'error');
+      }
+    } catch (error) {
+      console.error('💥 Auto-play error:', error);
+      showNotification('Chyba při automatickém přehrání', 'error');
+    }
+  };
+
+  // 🎤 VOICE TRANSCRIPT HANDLER s AUTO-PLAY (FIXED!)
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
     if (showVoiceScreen) {
-      handleSend(text, true);
+      // 🔊 Pošle zprávu s fromVoice=true pro auto-play
+      await handleSend(text, true);
     } else {
       setInput(text);
     }
@@ -578,7 +620,7 @@ function App() {
           <OmniaLogo 
             size={isMobile ? 70 : 90} 
             animate={streaming || loading}
-            isListening={isListening || isRecordingSTT} // ← Updated for STT
+            isListening={isListening || isRecordingSTT}
             shouldHide={shouldHideLogo}
           />
           {!shouldHideLogo && (
@@ -598,14 +640,14 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🌍 multilingual AI assistant • 🎤 Speech-to-Text Ready
+                🌍 multilingual AI assistant • 🎤 Speech-to-Text • 🔊 Auto-play Voice
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT - Messages area zůstává stejné */}
+      {/* MAIN CONTENT - Messages area */}
       <main style={{ 
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
@@ -666,7 +708,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ''}
+                      Omnia {msg.isStreaming ? ' • streaming' : ' • auto-play ready'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -722,7 +764,7 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT AREA s novým STT tlačítkem */}
+      {/* INPUT AREA s STT tlačítkem */}
       <div style={{ 
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(20px)', padding: isMobile ? '1.2rem' : '1.6rem',
@@ -763,7 +805,7 @@ function App() {
             />
           </div>
           
-          {/* 🎤 STT BUTTON (místo VTV) */}
+          {/* 🎤 STT BUTTON */}
           <button
             onClick={toggleSTT}
             disabled={loading || streaming || isAudioPlaying}
@@ -790,7 +832,7 @@ function App() {
             {isRecordingSTT ? '⏹️' : '🎤'}
           </button>
 
-          {/* VOICE SCREEN BUTTON (beze změn) */}
+          {/* VOICE SCREEN BUTTON */}
           <MiniOmniaLogo 
             size={isMobile ? 54 : 60} 
             onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
@@ -804,13 +846,13 @@ function App() {
             onClick={() => handleSend()}
             disabled={loading || streaming || !input.trim()}
             loading={loading || streaming}
-            isListening={isListening || isRecordingSTT} // ← Updated
+            isListening={isListening || isRecordingSTT}
             size={isMobile ? 54 : 60}
           />
         </div>
       </div>
 
-      {/* VOICE SCREEN (beze změn) */}
+      {/* VOICE SCREEN s AUTO-PLAY */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={() => setShowVoiceScreen(false)}
