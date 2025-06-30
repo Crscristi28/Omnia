@@ -1,5 +1,5 @@
-// 🚀 OMNIA - APP.JSX s VOICESCREEN AUTO-PLAY (ČÁST 1/2)
-// ✅ Auto-play Omnia odpovědí ve VoiceScreen
+// 🚀 OMNIA - APP.JSX s DIRECT AUDIO AUTO-PLAY (ČÁST 1/2)
+// ✅ Direct TTS call místo button simulation - funguje ve všech browserech
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -323,10 +323,56 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s VOICESCREEN AUTO-PLAY (ČÁST 2/2)
+  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s DIRECT AUDIO AUTO-PLAY (ČÁST 2/2)
 // POKRAČOVÁNÍ Z ČÁSTI 1...
 
-  // 🤖 AI CONVERSATION (simplified - kept essential parts)
+  // 🆕 DIRECT AUTO-PLAY function (přehraje audio přímo, ne přes button click)
+  const directAutoPlay = async (text, language) => {
+    try {
+      console.log('🔊 Direct auto-play executing:', text.substring(0, 30) + '...');
+      setIsAudioPlaying(true);
+      
+      let audioBlob;
+      
+      try {
+        // Try ElevenLabs first
+        audioBlob = await elevenLabsService.generateSpeech(text);
+        console.log('✅ ElevenLabs direct auto-play generated');
+      } catch (error) {
+        console.warn('⚠️ ElevenLabs failed, using Google TTS:', error);
+        
+        // Fallback to Google TTS
+        const response = await fetch('/api/google-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ 
+            text: text,
+            language: language,
+            voice: 'natural'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Google TTS failed: ${response.status}`);
+        }
+        
+        audioBlob = await response.blob();
+        console.log('✅ Google TTS direct auto-play generated');
+      }
+      
+      // 🔊 DIRECT PLAY using GlobalAudioManager
+      await globalAudioManager.play(audioBlob);
+      console.log('✅ Direct auto-play completed');
+      
+    } catch (error) {
+      console.error('💥 Direct auto-play failed:', error);
+      showNotification('Auto-play selhalo - klikněte na 🔊', 'error');
+    } finally {
+      setIsAudioPlaying(false);
+    }
+  };
+
+  // 🤖 AI CONVERSATION s DIRECT AUTO-PLAY (UPDATED)
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -369,11 +415,11 @@ function App() {
             setStreaming(false);
             responseText = text;
             
-            // 🔊 AUTO-PLAY: Pokud je z VoiceScreen, automaticky přehraj audio
-            if (fromVoice && showVoiceScreen) {
-              setTimeout(() => {
-                autoPlayLastResponse();
-              }, 1500); // 1.5 sekundy po dokončení streaming
+            // 🔊 DIRECT AUTO-PLAY: Použije actual response text místo DOM
+            if (fromVoice && showVoiceScreen && text && text.trim()) {
+              setTimeout(async () => {
+                await directAutoPlay(text, detectedLang);
+              }, 1000); // 1 sekunda po dokončení streaming
             }
           }
         };
@@ -388,11 +434,11 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🔊 AUTO-PLAY: Pro GPT také
-        if (fromVoice && showVoiceScreen) {
-          setTimeout(() => {
-            autoPlayLastResponse();
-          }, 1000);
+        // 🔊 DIRECT AUTO-PLAY: Pro GPT také
+        if (fromVoice && showVoiceScreen && responseText && responseText.trim()) {
+          setTimeout(async () => {
+            await directAutoPlay(responseText, detectedLang);
+          }, 500);
         }
       }
       else if (model === 'sonar') {
@@ -402,11 +448,11 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🔊 AUTO-PLAY: Pro Sonar také
-        if (fromVoice && showVoiceScreen) {
-          setTimeout(() => {
-            autoPlayLastResponse();
-          }, 1000);
+        // 🔊 DIRECT AUTO-PLAY: Pro Sonar také
+        if (fromVoice && showVoiceScreen && responseText && responseText.trim()) {
+          setTimeout(async () => {
+            await directAutoPlay(responseText, detectedLang);
+          }, 500);
         }
       }
 
@@ -419,38 +465,12 @@ function App() {
     }
   };
 
-  // 🔊 AUTO-PLAY funkce pro VoiceScreen
-  const autoPlayLastResponse = () => {
-    try {
-      console.log('🔊 Auto-playing last Omnia response...');
-      
-      // Najít všechny VoiceButton tlačítka
-      const voiceButtons = document.querySelectorAll('button[title*="Přehrát"], button[title*="klepněte pro zastavení"]');
-      
-      if (voiceButtons.length > 0) {
-        // Vzít poslední VoiceButton (nejnovější odpověď)
-        const lastVoiceButton = voiceButtons[voiceButtons.length - 1];
-        
-        console.log('🎯 Clicking last VoiceButton for auto-play');
-        lastVoiceButton.click();
-        
-        showNotification('🔊 Automaticky přehrávám odpověď...', 'info');
-      } else {
-        console.warn('⚠️ No VoiceButton found for auto-play');
-        showNotification('Nepodařilo se najít audio tlačítko', 'error');
-      }
-    } catch (error) {
-      console.error('💥 Auto-play error:', error);
-      showNotification('Chyba při automatickém přehrání', 'error');
-    }
-  };
-
-  // 🎤 VOICE TRANSCRIPT HANDLER s AUTO-PLAY (FIXED!)
+  // 🎤 VOICE TRANSCRIPT HANDLER (beze změn)
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
     if (showVoiceScreen) {
-      // 🔊 Pošle zprávu s fromVoice=true pro auto-play
+      // 🔊 Pošle zprávu s fromVoice=true pro direct auto-play
       await handleSend(text, true);
     } else {
       setInput(text);
@@ -640,14 +660,14 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🌍 multilingual AI assistant • 🎤 Speech-to-Text • 🔊 Auto-play Voice
+                🌍 multilingual AI assistant • 🎤 STT • 🔊 Direct Auto-play
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT - Messages area */}
+      {/* MAIN CONTENT - Messages area (beze změn) */}
       <main style={{ 
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
@@ -708,7 +728,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • auto-play ready'}
+                      Omnia {msg.isStreaming ? ' • streaming' : ' • direct auto-play'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -852,7 +872,7 @@ function App() {
         </div>
       </div>
 
-      {/* VOICE SCREEN s AUTO-PLAY */}
+      {/* VOICE SCREEN s DIRECT AUTO-PLAY */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={() => setShowVoiceScreen(false)}
