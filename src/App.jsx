@@ -1,6 +1,5 @@
-// 🚀 OMNIA - NOVÝ APP.JSX s VTV SUPPORT (ČÁST 1/2)
-// ✅ Clean architecture + Voice-to-Voice integration
-// 🎵 ElevenLabs native VTV + fallback system
+// 🚀 OMNIA - APP.JSX s SPEECH-TO-TEXT BUTTON (ČÁST 1/2)
+// ✅ VoiceScreen zůstává beze změn, jen 🎵 button → STT
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -24,11 +23,6 @@ import TypewriterText from './components/ui/TypewriterText.jsx';
 import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
-
-// 🎵 VTV CONFIGURATION
-const USE_VOICE_TO_VOICE = true;      // Enable VTV feature
-const USE_ELEVENLABS_FALLBACK = true; // Fallback to STT+TTS if VTV fails
-const VTV_MAX_DURATION = 10000;       // 10 seconds max recording
 
 // 🆕 GLOBAL AUDIO MANAGER - Mobile optimization
 class GlobalAudioManager {
@@ -101,8 +95,9 @@ function App() {
   // 🎤 VOICE STATE
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isVTVMode, setIsVTVMode] = useState(false);
-  const [vtvRecording, setVtvRecording] = useState(false);
+  
+  // 🆕 STT STATE (místo VTV)
+  const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
   // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
@@ -113,7 +108,7 @@ function App() {
   // 📱 DEVICE STATE
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
-  const vtvRecorderRef = useRef(null);
+  const sttRecorderRef = useRef(null); // ← STT recorder reference
   
   const isMobile = window.innerWidth <= 768;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -179,95 +174,11 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 VTV CORE FUNCTIONS
-  const checkVTVAvailability = () => {
-    const isAvailable = USE_VOICE_TO_VOICE && 
-                       navigator.mediaDevices && 
-                       navigator.mediaDevices.getUserMedia;
-    
-    console.log('🎵 VTV Availability:', {
-      enabled: USE_VOICE_TO_VOICE,
-      mediaDevices: !!navigator.mediaDevices,
-      getUserMedia: !!navigator?.mediaDevices?.getUserMedia,
-      overall: isAvailable
-    });
-    
-    return isAvailable;
-  };
-
-  const handleVoiceToVoice = async (audioBlob) => {
+  // 🆕 SPEECH-TO-TEXT FUNCTIONS (místo VTV)
+  const startSTTRecording = async () => {
     try {
-      console.log('🎵 Starting Voice-to-Voice transformation...');
-      setIsAudioPlaying(true);
-      
-      const vtv_message = {
-        'cs': 'Transformuji váš hlas...',
-        'en': 'Transforming your voice...',
-        'ro': 'Transform vocea...'
-      }[uiLanguage] || 'Transforming voice...';
-      
-      showNotification(vtv_message, 'info');
-
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      
-      console.log('📤 Sending audio to VTV API...');
-      
-      const response = await fetch('/api/voice-to-voice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/octet-stream',
-        },
-        body: arrayBuffer
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ VTV API error:', response.status, errorText);
-        throw new Error(`Voice-to-Voice failed: HTTP ${response.status}`);
-      }
-
-      const transformedAudioBlob = await response.blob();
-      
-      console.log('✅ Voice-to-Voice transformation complete:', {
-        originalSize: Math.round(arrayBuffer.byteLength / 1024) + 'KB',
-        transformedSize: Math.round(transformedAudioBlob.size / 1024) + 'KB'
-      });
-      
-      await globalAudioManager.play(transformedAudioBlob);
-      
-      const success_message = {
-        'cs': 'Hlas úspěšně transformován!',
-        'en': 'Voice successfully transformed!',
-        'ro': 'Voce transformată cu succes!'
-      }[uiLanguage] || 'Voice transformed!';
-      
-      showNotification(success_message, 'success');
-
-      return transformedAudioBlob;
-
-    } catch (error) {
-      console.error('💥 Voice-to-Voice error:', error);
-      
-      const error_message = {
-        'cs': 'Chyba při transformaci hlasu - zkuste to znovu',
-        'en': 'Voice transformation error - try again',
-        'ro': 'Eroare transformare voce - încearcă din nou'
-      }[uiLanguage] || 'Voice transformation failed';
-      
-      showNotification(error_message, 'error');
-      throw error;
-    } finally {
-      setIsAudioPlaying(false);
-    }
-  };
-
-// POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - NOVÝ APP.JSX s VTV SUPPORT (ČÁST 2/2)
-// POKRAČOVÁNÍ Z ČÁSTI 1...
-
-  const recordForVTV = async () => {
-    try {
-      console.log('🎤 Starting VTV recording...');
-      setVtvRecording(true);
+      console.log('🎤 Starting Speech-to-Text recording...');
+      setIsRecordingSTT(true);
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -279,106 +190,128 @@ function App() {
         }
       });
 
-      return new Promise((resolve, reject) => {
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm;codecs=opus'
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      sttRecorderRef.current = mediaRecorder;
+      const audioChunks = [];
+      const startTime = Date.now();
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const recordingDuration = Date.now() - startTime;
+        stream.getTracks().forEach(track => track.stop());
+        setIsRecordingSTT(false);
+        
+        if (recordingDuration < 1000) {
+          showNotification('Nahrávka příliš krátká - mluvte déle', 'error');
+          return;
+        }
+
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        
+        if (audioBlob.size < 1000) {
+          showNotification('Žádný zvuk nezaznamenán', 'error');
+          return;
+        }
+        
+        console.log('🎯 STT Recording complete:', {
+          duration: recordingDuration + 'ms',
+          size: Math.round(audioBlob.size / 1024) + 'KB'
         });
         
-        vtvRecorderRef.current = mediaRecorder;
-        const audioChunks = [];
-        const startTime = Date.now();
-        
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
+        // Process audio for STT
+        await processSTTAudio(audioBlob);
+      };
 
-        mediaRecorder.onstop = async () => {
-          const recordingDuration = Date.now() - startTime;
-          stream.getTracks().forEach(track => track.stop());
-          setVtvRecording(false);
-          
-          if (recordingDuration < 1000) {
-            reject(new Error('Recording too short'));
-            return;
-          }
+      mediaRecorder.onerror = (error) => {
+        stream.getTracks().forEach(track => track.stop());
+        setIsRecordingSTT(false);
+        showNotification('Chyba při nahrávání', 'error');
+      };
 
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          
-          if (audioBlob.size < 1000) {
-            reject(new Error('Recording too small - likely silence'));
-            return;
-          }
-          
-          console.log('🎯 VTV Recording complete:', {
-            duration: recordingDuration + 'ms',
-            size: Math.round(audioBlob.size / 1024) + 'KB'
-          });
-          
-          resolve(audioBlob);
-        };
+      mediaRecorder.start();
+      
+      // Auto-stop after 30 seconds
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+      }, 30000);
 
-        mediaRecorder.onerror = (error) => {
-          stream.getTracks().forEach(track => track.stop());
-          setVtvRecording(false);
-          reject(error);
-        };
+    } catch (error) {
+      console.error('❌ STT Recording setup error:', error);
+      setIsRecordingSTT(false);
+      showNotification('Nepodařilo se získat přístup k mikrofonu', 'error');
+    }
+  };
 
-        mediaRecorder.start();
-        
-        // Auto-stop after max duration
-        setTimeout(() => {
-          if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-          }
-        }, VTV_MAX_DURATION);
+  const stopSTTRecording = () => {
+    if (sttRecorderRef.current && sttRecorderRef.current.state === 'recording') {
+      sttRecorderRef.current.stop();
+      console.log('🛑 STT Recording stopped manually');
+    }
+  };
+
+  const processSTTAudio = async (audioBlob) => {
+    try {
+      console.log('📤 Sending audio to Whisper STT...');
+      showNotification('Převádím řeč na text...', 'info');
+      
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      
+      const response = await fetch('/api/whisper', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        body: arrayBuffer
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Whisper STT error:', response.status, errorText);
+        throw new Error(`Speech-to-Text failed: HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.text && data.text.trim()) {
+        const transcribedText = data.text.trim();
+        console.log('✅ STT Success:', transcribedText);
+        
+        // 🎯 PUT TEXT INTO INPUT FIELD
+        setInput(transcribedText);
+        
+        showNotification('Text převeden! Zkontrolujte a odešlete.', 'success');
+      } else {
+        throw new Error('Nepodařilo se rozpoznat řeč');
+      }
+
     } catch (error) {
-      console.error('❌ VTV Recording setup error:', error);
-      setVtvRecording(false);
-      
-      const error_message = {
-        'cs': 'Nepodařilo se získat přístup k mikrofonu',
-        'en': 'Could not access microphone',
-        'ro': 'Nu s-a putut accesa microfonul'
-      }[uiLanguage] || 'Microphone access denied';
-      
-      showNotification(error_message, 'error');
-      throw error;
+      console.error('💥 STT processing error:', error);
+      showNotification(`Chyba při převodu: ${error.message}`, 'error');
     }
   };
 
-  const performVoiceToVoice = async () => {
-    try {
-      console.log('🚀 Starting complete VTV workflow...');
-      
-      const audioBlob = await recordForVTV();
-      const transformedAudio = await handleVoiceToVoice(audioBlob);
-      
-      console.log('✅ Complete VTV workflow finished');
-      return transformedAudio;
-      
-    } catch (error) {
-      console.error('💥 VTV workflow error:', error);
-      
-      const workflow_error = {
-        'cs': 'VTV proces selhal - zkuste to znovu',
-        'en': 'VTV process failed - try again',
-        'ro': 'Procesul VTV a eșuat - încearcă din nou'
-      }[uiLanguage] || 'VTV workflow failed';
-      
-      showNotification(workflow_error, 'error');
+  const toggleSTT = () => {
+    if (loading || streaming) return;
+    
+    if (isRecordingSTT) {
+      stopSTTRecording();
+    } else {
+      startSTTRecording();
     }
   };
 
-  const stopVTVRecording = () => {
-    if (vtvRecorderRef.current && vtvRecorderRef.current.state === 'recording') {
-      vtvRecorderRef.current.stop();
-      console.log('🛑 VTV Recording stopped manually');
-    }
-  };
+  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - APP.JSX s SPEECH-TO-TEXT BUTTON (ČÁST 2/2)
+// POKRAČOVÁNÍ Z ČÁSTI 1...
 
   // 🔧 CLASSIC FUNCTIONS (preserved from original)
   const handleNewChat = () => {
@@ -388,7 +321,7 @@ function App() {
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
-    if (vtvRecording) stopVTVRecording();
+    if (isRecordingSTT) stopSTTRecording(); // ← STT cleanup
     
     sessionManager.clearSession();
     setMessages([]);
@@ -446,7 +379,21 @@ function App() {
           messagesWithUser, onStreamUpdate, null, detectedLang
         );
       }
-      // Add other models (GPT, Sonar) as needed...
+      else if (model === 'gpt-4o') {
+        responseText = await openaiService.sendMessage(messagesWithUser, detectedLang);
+        const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+        setMessages(finalMessages);
+        sessionManager.saveMessages(finalMessages);
+      }
+      else if (model === 'sonar') {
+        responseText = await sonarService.search(textInput, showNotification, detectedLang);
+        const finalMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: responseText.success ? responseText.result : responseText.message 
+        }];
+        setMessages(finalMessages);
+        sessionManager.saveMessages(finalMessages);
+      }
 
     } catch (err) {
       console.error('💥 API call error:', err);
@@ -457,7 +404,7 @@ function App() {
     }
   };
 
-  // 🎤 VOICE TRANSCRIPT HANDLER
+  // 🎤 VOICE TRANSCRIPT HANDLER (pro VoiceScreen - beze změn)
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
@@ -480,12 +427,6 @@ function App() {
     if (savedUILanguage && uiTexts[savedUILanguage]) {
       setUILanguage(savedUILanguage);
     }
-
-    console.log('🎵 VTV Status:', {
-      available: checkVTVAvailability(),
-      enabled: USE_VOICE_TO_VOICE,
-      fallback: USE_ELEVENLABS_FALLBACK
-    });
   }, []);
 
   useEffect(() => {
@@ -637,7 +578,7 @@ function App() {
           <OmniaLogo 
             size={isMobile ? 70 : 90} 
             animate={streaming || loading}
-            isListening={isListening || vtvRecording}
+            isListening={isListening || isRecordingSTT} // ← Updated for STT
             shouldHide={shouldHideLogo}
           />
           {!shouldHideLogo && (
@@ -657,19 +598,14 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🌍 multilingual AI assistant
-                {USE_VOICE_TO_VOICE && (
-                  <span style={{ marginLeft: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
-                    • 🎵 Voice-to-Voice Ready
-                  </span>
-                )}
+                🌍 multilingual AI assistant • 🎤 Speech-to-Text Ready
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN CONTENT - Messages area zůstává stejné */}
       <main style={{ 
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
@@ -731,7 +667,6 @@ function App() {
                     }}>
                       <ChatOmniaLogo size={18} />
                       Omnia {msg.isStreaming ? ' • streaming' : ''}
-                      {USE_VOICE_TO_VOICE ? ' • VTV Ready' : ''}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -787,7 +722,7 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT AREA */}
+      {/* INPUT AREA s novým STT tlačítkem */}
       <div style={{ 
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(20px)', padding: isMobile ? '1.2rem' : '1.6rem',
@@ -806,7 +741,7 @@ function App() {
               type="text" value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
-              placeholder={isListening || vtvRecording ? t('listening') + '...' :
+              placeholder={isListening || isRecordingSTT ? (isRecordingSTT ? 'Nahrávám pro STT...' : t('listening') + '...') :
                           streaming ? t('omniaStreaming') : 
                           `${t('sendMessage')} Omnia...`}
               disabled={loading || streaming}
@@ -828,36 +763,34 @@ function App() {
             />
           </div>
           
-          {/* VTV BUTTON */}
-          {checkVTVAvailability() && (
-            <button
-              onClick={vtvRecording ? stopVTVRecording : performVoiceToVoice}
-              disabled={loading || streaming || isAudioPlaying}
-              style={{
-                width: isMobile ? 54 : 60,
-                height: isMobile ? 54 : 60,
-                borderRadius: '50%', border: 'none',
-                background: vtvRecording 
-                  ? 'linear-gradient(45deg, #ff4444, #cc0000)' 
-                  : 'linear-gradient(45deg, #00ffff, #0099ff)',
-                color: 'white',
-                cursor: (loading || streaming || isAudioPlaying) ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.2rem', fontWeight: 'bold',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                opacity: (loading || streaming || isAudioPlaying) ? 0.5 : 1,
-                boxShadow: vtvRecording 
-                  ? '0 0 20px rgba(255, 68, 68, 0.6)' 
-                  : '0 4px 12px rgba(0, 255, 255, 0.4)',
-                transform: 'translateZ(0)'
-              }}
-              title={vtvRecording ? 'Zastavit VTV nahrávání' : 'Voice-to-Voice transformace'}
-            >
-              {vtvRecording ? '⏹️' : '🎵'}
-            </button>
-          )}
+          {/* 🎤 STT BUTTON (místo VTV) */}
+          <button
+            onClick={toggleSTT}
+            disabled={loading || streaming || isAudioPlaying}
+            style={{
+              width: isMobile ? 54 : 60,
+              height: isMobile ? 54 : 60,
+              borderRadius: '50%', border: 'none',
+              background: isRecordingSTT 
+                ? 'linear-gradient(45deg, #ff4444, #cc0000)' 
+                : 'linear-gradient(45deg, #00ff88, #00cc66)',
+              color: 'white',
+              cursor: (loading || streaming || isAudioPlaying) ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.2rem', fontWeight: 'bold',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              opacity: (loading || streaming || isAudioPlaying) ? 0.5 : 1,
+              boxShadow: isRecordingSTT 
+                ? '0 0 20px rgba(255, 68, 68, 0.6)' 
+                : '0 4px 12px rgba(0, 255, 136, 0.4)',
+              transform: 'translateZ(0)'
+            }}
+            title={isRecordingSTT ? 'Zastavit STT nahrávání' : 'Speech-to-Text'}
+          >
+            {isRecordingSTT ? '⏹️' : '🎤'}
+          </button>
 
-          {/* VOICE SCREEN BUTTON */}
+          {/* VOICE SCREEN BUTTON (beze změn) */}
           <MiniOmniaLogo 
             size={isMobile ? 54 : 60} 
             onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
@@ -871,13 +804,13 @@ function App() {
             onClick={() => handleSend()}
             disabled={loading || streaming || !input.trim()}
             loading={loading || streaming}
-            isListening={isListening || vtvRecording}
+            isListening={isListening || isRecordingSTT} // ← Updated
             size={isMobile ? 54 : 60}
           />
         </div>
       </div>
 
-      {/* VOICE SCREEN */}
+      {/* VOICE SCREEN (beze změn) */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={() => setShowVoiceScreen(false)}
