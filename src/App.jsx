@@ -415,7 +415,53 @@ function App() {
         }
       }
     }
-  };// 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
+  };// 🔧 CHATGPT'S SIMPLE AUDIO MANAGER FIX (replaces complex class)
+const mobileAudioManager = {
+  isUnlocked: false,
+  unlockAudioContext: async () => {
+    const audio = new Audio();
+    try {
+      await audio.play().catch(() => {}); // Dummy play
+      mobileAudioManager.isUnlocked = true;
+      console.log('🔓 AudioContext unlocked');
+    } catch (err) {
+      console.warn('🔒 Failed to unlock AudioContext:', err);
+    }
+  },
+  queueAudio: async (blob) => {
+    console.log('🎵 Queueing audio blob:', blob.size, 'bytes');
+    const audio = new Audio();
+    audio.src = URL.createObjectURL(blob);
+    return new Promise((resolve) => {
+      audio.onended = () => {
+        console.log('✅ Audio ended');
+        URL.revokeObjectURL(audio.src); // Cleanup
+        resolve();
+      };
+      audio.onerror = (e) => {
+        console.error('❌ Audio playback failed:', e);
+        URL.revokeObjectURL(audio.src); // Cleanup
+        resolve();
+      };
+      audio.play().catch((e) => {
+        console.error('❌ Playback rejected:', e);
+        URL.revokeObjectURL(audio.src); // Cleanup
+        resolve();
+      });
+    });
+  },
+  stop: () => {
+    console.log('🛑 Audio stopped (simple version)');
+    // Simple version doesn't need complex stop logic
+  }
+};
+
+// 🔧 CRITICAL: Make it globally accessible
+if (typeof window !== 'undefined') {
+  window.mobileAudioManager = mobileAudioManager;
+}
+
+  // 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
@@ -602,6 +648,11 @@ function App() {
     setIsVoiceMode(fromVoice); // ✅ Set voice mode early
     setVoiceResponseBuffer('');
 
+    // 🔧 SIMPLE AUDIO UNLOCK on user interaction
+    if (fromVoice && !mobileAudioManager.isUnlocked) {
+      await mobileAudioManager.unlockAudioContext();
+    }
+
     try {
       const userMessage = { sender: 'user', text: textInput };
       const messagesWithUser = [...messages, userMessage];
@@ -656,16 +707,16 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ FIXED: Voice response for GPT - REMOVED showVoiceScreen requirement!
+        // ✅ FIXED: Voice response for GPT - SIMPLE VERSION
         if (fromVoice && responseText) {
+          console.log('🎵 Generating voice for GPT response');
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
             if (sentence.trim().length > 0) {
-              console.log('🎵 Generating audio for:', sentence);
               try {
                 const audioBlob = await generateAudioForSentence(sentence, detectedLang);
                 await mobileAudioManager.queueAudio(audioBlob);
-                console.log('🔁 Audio sentence queued');
+                console.log('✅ Audio played for GPT sentence');
               } catch (error) {
                 console.error('❌ Failed to generate audio:', error);
               }
@@ -680,16 +731,16 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ FIXED: Voice response for Sonar - REMOVED showVoiceScreen requirement!
+        // ✅ FIXED: Voice response for Sonar - SIMPLE VERSION
         if (fromVoice && responseText) {
+          console.log('🎵 Generating voice for Sonar response');
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
             if (sentence.trim().length > 0) {
-              console.log('🎵 Generating audio for:', sentence);
               try {
                 const audioBlob = await generateAudioForSentence(sentence, detectedLang);
                 await mobileAudioManager.queueAudio(audioBlob);
-                console.log('🔁 Audio sentence queued');
+                console.log('✅ Audio played for Sonar sentence');
               } catch (error) {
                 console.error('❌ Failed to generate audio:', error);
               }
@@ -703,10 +754,9 @@ function App() {
       showNotification(err.message, 'error');
     } finally {
       setLoading(false);
-      // setStreaming(false); // moved below
+      setStreaming(false);
       // ✅ FIXED: Don't reset isVoiceMode here - let it persist for TTS completion
       // setIsVoiceMode(false); // REMOVED - causes premature TTS stop
-      setStreaming(false);
     }
   };
 
@@ -718,7 +768,7 @@ function App() {
     await handleSend(text, true); // fromVoice = true
   };
 
-  // ⚙️ INITIALIZATION + CRITICAL GLOBAL SCOPE FIX
+  // ⚙️ INITIALIZATION + SIMPLE AUDIO SETUP
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -732,15 +782,30 @@ function App() {
     }
   }, []);
 
-  // 🔧 CRITICAL FIX: Make mobileAudioManager globally accessible for debugging
+  // 🔧 SIMPLE AUDIO INITIALIZATION
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      if (!userHasInteracted) {
+        setUserHasInteracted(true);
+        console.log('👆 First user interaction detected');
+        mobileAudioManager.unlockAudioContext();
+      }
+    };
+    
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+    
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+  }, []);
+
+  // 🔧 GLOBAL SCOPE for debugging
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      window.mobileAudioManager = mobileAudioManager;
       window.isVoiceMode = isVoiceMode;
-      console.log('🔧 Global scope updated:', { 
-        audioManager: !!window.mobileAudioManager, 
-        voiceMode: window.isVoiceMode 
-      });
+      console.log('🔧 Voice mode updated:', isVoiceMode);
     }
   }, [isVoiceMode]);
 
@@ -826,8 +891,8 @@ function App() {
                 zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'VOICE FIXED! 🎵' },
-                  { key: 'claude', label: '🧠 Omnia', desc: 'TTS-aware + Progressive' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Simple Audio FIX! 🎵' },
+                  { key: 'claude', label: '🧠 Omnia', desc: 'Progressive + Fixed' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + Voice' }
                 ].map((item) => (
                   <button
@@ -909,7 +974,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Voice FULLY FIXED! • ✅ Global scope • ⚡ Mobile ready
+                🎵 ChatGPT Simple Audio Fix! • ✅ Should work now • ⚡ Mobile ready
               </div>
             </>
           )}
@@ -976,7 +1041,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • voice processing...' : ' • voice ready'}
+                      Omnia {msg.isStreaming ? ' • simple audio ready...' : ' • voice ready'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -1021,7 +1086,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {isVoiceMode && ' • voice audio ready for all models'}
+                    {isVoiceMode && ' • simple audio ready'}
                   </span>
                 </div>
               </div>
@@ -1124,11 +1189,11 @@ function App() {
           currentStreamTextRef.current = '';
           lastProcessedLengthRef.current = 0;
           
-          // ✅ FIXED: Reset voice mode after delay to allow TTS completion
+          // ✅ SIMPLE: Reset voice mode after delay
           setTimeout(() => {
             setIsVoiceMode(false);
-            console.log('🔧 Voice mode reset after TTS completion');
-          }, 3000); // Longer delay for safety
+            console.log('🔧 Voice mode reset after audio completion');
+          }, 2000);
         }}
         onTranscript={handleTranscript}
         isLoading={loading}
