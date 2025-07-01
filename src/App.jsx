@@ -1,8 +1,8 @@
-// 🚀 OMNIA - VOICE CHAT ENHANCED (ČÁST 1/3)
-// ✅ NEW: Konverzace přímo ve VoiceScreen
-// ✅ NEW: Glow efekt když Omnia mluví
-// ✅ FIXED: Audio odpovědi fungují
-// ✅ ENHANCED: Vizuální feedback pro všechny stavy
+// 🚀 OMNIA - FIXED APP.JSX (ČÁST 1/2) - VOICE RESPONSE OPRAVENO
+// ✅ FIXED: Voice response funguje ve VoiceScreen i mimo něj
+// ✅ FIXED: Audio unlock při voice interakci
+// ✅ FIXED: isVoiceMode persistence pro dokončení TTS
+// ✅ ENHANCED: Debug logging pro troubleshooting
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -25,399 +25,7 @@ import OmniaArrowButton from './components/ui/OmniaArrowButton.jsx';
 import TypewriterText from './components/ui/TypewriterText.jsx';
 import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
-
-// 🆕 ENHANCED VOICE SCREEN with chat history
-import React from 'react';
-import SimpleVoiceRecorder from '../voice/SimpleVoiceRecorder.jsx';
-import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
-
-const VoiceScreen = ({ 
-  isOpen,
-  onClose,
-  onTranscript,
-  isLoading,
-  isAudioPlaying,
-  uiLanguage,
-  voiceMessages = [],  // 🆕 Voice chat messages
-  currentResponse = null,
-  isOmniaSpeaking = false  // 🆕 For glow effect
-}) => {
-  const [isListening, setIsListening] = useState(false);
-  const messagesEndRef = useRef(null);
-  const isMobile = window.innerWidth <= 768;
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [voiceMessages, currentResponse]);
-
-  if (!isOpen) return null;
-
-  const handleTranscript = (text, confidence) => {
-    console.log('🎙️ Voice transcript in VoiceScreen:', text);
-    onTranscript(text, confidence);
-  };
-
-  // 🎨 GLOW EFFECT when Omnia speaks
-  const getBackgroundStyle = () => {
-    if (isOmniaSpeaking) {
-      return {
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            rgba(147, 51, 234, 0.3) 0%,
-            rgba(100, 50, 255, 0.15) 40%,
-            rgba(15, 20, 25, 0.95) 100%
-          )
-        `,
-        animation: 'omnia-speaking-glow 2s ease-in-out infinite'
-      };
-    }
-    
-    if (isListening) {
-      return {
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            rgba(0, 255, 255, 0.2) 0%,
-            rgba(0, 150, 255, 0.1) 50%,
-            rgba(15, 20, 25, 0.95) 100%
-          )
-        `,
-        animation: 'pulse-bg 2s ease-in-out infinite'
-      };
-    }
-
-    return {
-      background: 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%)'
-    };
-  };
-
-  return (
-    <div 
-      className="voice-screen-overlay"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        ...getBackgroundStyle(),
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        zIndex: 1001,
-        padding: isMobile ? '1rem' : '2rem',
-        minHeight: '100vh',
-        overflowY: 'auto',
-        backdropFilter: 'blur(10px)',
-        transition: 'background 0.5s ease'
-      }}
-    >
-      {/* 🎯 HEADER WITH CLOSE BUTTON */}
-      <div style={{
-        width: '100%',
-        maxWidth: '800px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
-        <div style={{
-          fontSize: isMobile ? '1.5rem' : '2rem',
-          fontWeight: 'bold',
-          background: isOmniaSpeaking
-            ? 'linear-gradient(45deg, #9333ea, #6432ff, #00ffff)'
-            : 'linear-gradient(45deg, #4299e1, #63b3ed)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          animation: isOmniaSpeaking ? 'glow-text 2s ease-in-out infinite' : 'none'
-        }}>
-          OMNIA Voice Chat
-        </div>
-        
-        <button
-          onClick={onClose}
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '50%',
-            width: '40px',
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            color: 'white'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.target.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-            e.target.style.transform = 'scale(1)';
-          }}
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* 🎤 CHAT MESSAGES AREA */}
-      <div style={{
-        flex: 1,
-        width: '100%',
-        maxWidth: '800px',
-        marginBottom: '2rem',
-        overflowY: 'auto',
-        maxHeight: '50vh',
-        padding: '1rem',
-        background: 'rgba(0, 0, 0, 0.2)',
-        borderRadius: '20px',
-        border: '1px solid rgba(255, 255, 255, 0.1)'
-      }}>
-        {voiceMessages.length === 0 && !currentResponse && (
-          <div style={{
-            textAlign: 'center',
-            opacity: 0.5,
-            padding: '3rem'
-          }}>
-            {uiLanguage === 'cs' ? 'Začněte mluvit...' : 
-             uiLanguage === 'en' ? 'Start speaking...' : 
-             'Începeți să vorbiți...'}
-          </div>
-        )}
-        
-        {/* Voice Messages */}
-        {voiceMessages.map((msg, idx) => (
-          <div key={idx} style={{
-            marginBottom: '1.5rem',
-            animation: 'fadeInUp 0.4s ease-out'
-          }}>
-            {/* User Message */}
-            {msg.type === 'user' && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                marginBottom: '0.5rem'
-              }}>
-                <div style={{
-                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                  padding: '0.8rem 1.2rem',
-                  borderRadius: '18px 18px 4px 18px',
-                  maxWidth: '70%',
-                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
-                }}>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '0.3rem' }}>
-                    🎙️ You
-                  </div>
-                  <div>{msg.text}</div>
-                </div>
-              </div>
-            )}
-            
-            {/* Omnia Message */}
-            {msg.type === 'assistant' && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                marginBottom: '0.5rem'
-              }}>
-                <div style={{
-                  background: msg.isPlaying 
-                    ? 'linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(100, 50, 255, 0.3))'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  padding: '0.8rem 1.2rem',
-                  borderRadius: '18px 18px 18px 4px',
-                  maxWidth: '70%',
-                  border: msg.isPlaying ? '2px solid rgba(147, 51, 234, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: msg.isPlaying ? '0 0 30px rgba(147, 51, 234, 0.5)' : 'none',
-                  animation: msg.isPlaying ? 'omnia-message-glow 2s ease-in-out infinite' : 'none'
-                }}>
-                  <div style={{ 
-                    fontSize: '0.7rem', 
-                    opacity: 0.8, 
-                    marginBottom: '0.3rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    <MiniOmniaLogo size={16} isAudioPlaying={msg.isPlaying} />
-                    Omnia {msg.isPlaying && '🔊'}
-                  </div>
-                  <div>{msg.text}</div>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-        
-        {/* Current Response (Streaming) */}
-        {currentResponse && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            marginBottom: '0.5rem',
-            animation: 'fadeInUp 0.4s ease-out'
-          }}>
-            <div style={{
-              background: isOmniaSpeaking 
-                ? 'linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(100, 50, 255, 0.3))'
-                : 'rgba(255, 255, 255, 0.05)',
-              padding: '0.8rem 1.2rem',
-              borderRadius: '18px 18px 18px 4px',
-              maxWidth: '70%',
-              border: isOmniaSpeaking ? '2px solid rgba(147, 51, 234, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: isOmniaSpeaking ? '0 0 30px rgba(147, 51, 234, 0.5)' : 'none',
-              animation: isOmniaSpeaking ? 'omnia-message-glow 2s ease-in-out infinite' : 'none'
-            }}>
-              <div style={{ 
-                fontSize: '0.7rem', 
-                opacity: 0.8, 
-                marginBottom: '0.3rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <MiniOmniaLogo size={16} isAudioPlaying={isOmniaSpeaking} />
-                Omnia {isOmniaSpeaking && '🔊 mluví...'}
-              </div>
-              <TypewriterText text={currentResponse} isStreaming={isLoading} />
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* 🎤 VOICE RECORDER */}
-      <div 
-        style={{ 
-          marginBottom: '2rem',
-          position: 'relative'
-        }}
-      >
-        <SimpleVoiceRecorder 
-          onTranscript={handleTranscript}
-          onListeningChange={setIsListening}
-          disabled={isLoading || isOmniaSpeaking}
-          isAudioPlaying={isAudioPlaying}
-          uiLanguage={uiLanguage}
-        />
-        
-        {/* 🌊 VOICE VISUALIZER */}
-        {(isListening || isOmniaSpeaking) && (
-          <div 
-            className="voice-visualizer"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '150px',
-              height: '150px',
-              borderRadius: '50%',
-              border: `2px solid ${isOmniaSpeaking ? 'rgba(147, 51, 234, 0.5)' : 'rgba(0, 255, 255, 0.3)'}`,
-              animation: isOmniaSpeaking 
-                ? 'omnia-pulse-ring 1.5s ease-out infinite' 
-                : 'pulse-ring 1.5s ease-out infinite',
-              pointerEvents: 'none'
-            }}
-          />
-        )}
-      </div>
-
-      {/* 🔄 LOADING STATE */}
-      {isLoading && !currentResponse && (
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.8rem',
-            marginBottom: '2rem'
-          }}
-        >
-          <div style={{ 
-            width: '20px', 
-            height: '20px', 
-            border: '2px solid rgba(255,255,255,0.3)', 
-            borderTop: '2px solid #9333ea',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <span>
-            {uiLanguage === 'cs' ? 'Omnia přemýšlí...' : 
-             uiLanguage === 'en' ? 'Omnia thinking...' : 'Omnia gândește...'}
-          </span>
-        </div>
-      )}
-
-      {/* 🎨 ANIMATIONS */}
-      <style>{`
-        @keyframes omnia-speaking-glow {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        
-        @keyframes omnia-message-glow {
-          0%, 100% { 
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
-            border-color: rgba(147, 51, 234, 0.5);
-          }
-          50% { 
-            box-shadow: 0 0 40px rgba(147, 51, 234, 0.8);
-            border-color: rgba(147, 51, 234, 0.8);
-          }
-        }
-        
-        @keyframes omnia-pulse-ring {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-            border-color: rgba(147, 51, 234, 0.5);
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.5);
-            opacity: 0;
-            border-color: rgba(147, 51, 234, 0);
-          }
-        }
-        
-        @keyframes glow-text {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        
-        @keyframes pulse-bg {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        
-        @keyframes pulse-ring {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.5);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes fadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </div>
-  );
-};
+import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
 // 🆕 SANITIZE TEXT FUNCTION (backup pro ElevenLabs)
 function sanitizeText(text) {
@@ -443,7 +51,7 @@ function sanitizeText(text) {
     .trim();
 }
 
-// 🆕 ENHANCED MOBILE AUDIO MANAGER
+// 🆕 ENHANCED MOBILE AUDIO MANAGER (ZACHOVÁVÁME TVOJI VERZI!)
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -451,11 +59,6 @@ class MobileAudioManager {
     this.audioContext = null;
     this.audioQueue = [];
     this.isPlaying = false;
-    this.onPlayingChange = null; // 🆕 Callback for playing state
-  }
-  
-  setPlayingCallback(callback) {
-    this.onPlayingChange = callback;
   }
   
   async initialize() {
@@ -534,7 +137,6 @@ class MobileAudioManager {
     }
     
     this.isPlaying = true;
-    if (this.onPlayingChange) this.onPlayingChange(true);
     
     while (this.audioQueue.length > 0) {
       const audioBlob = this.audioQueue.shift();
@@ -550,7 +152,6 @@ class MobileAudioManager {
     }
     
     this.isPlaying = false;
-    if (this.onPlayingChange) this.onPlayingChange(false);
     console.log('✅ Queue processing complete');
   }
   
@@ -593,7 +194,6 @@ class MobileAudioManager {
   stop() {
     this.audioQueue = [];
     this.isPlaying = false;
-    if (this.onPlayingChange) this.onPlayingChange(false);
     
     if (this.currentAudio) {
       this.currentAudio.pause();
@@ -620,7 +220,9 @@ function splitIntoSentences(text) {
 
 function isCompleteSentence(sentence) {
   return sentence.endsWith('.') || sentence.endsWith('!') || sentence.endsWith('?');
-}// 🚀 MAIN APP COMPONENT
+}
+
+// 🚀 MAIN APP COMPONENT
 function App() {
   // 📊 BASIC STATE
   const [input, setInput] = useState('');
@@ -635,14 +237,10 @@ function App() {
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   
-  // 🆕 VOICE CHAT STATE
-  const [voiceMessages, setVoiceMessages] = useState([]);
-  const [isOmniaSpeaking, setIsOmniaSpeaking] = useState(false);
-  
   // 🆕 STT STATE
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
-  // 🆕 VOICE MODE TRACKING
+  // 🆕 VOICE MODE TRACKING - ✅ FIXED: Persistent across VoiceScreen close
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
   const [pendingSentences, setPendingSentences] = useState([]);
@@ -669,15 +267,9 @@ function App() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const t = getTranslation(uiLanguage);
 
-  // 🆕 MOBILE AUDIO INITIALIZATION with callback
+  // 🆕 MOBILE AUDIO INITIALIZATION
   useEffect(() => {
     mobileAudioManager.initialize();
-    
-    // Set callback for audio playing state
-    mobileAudioManager.setPlayingCallback((isPlaying) => {
-      setIsOmniaSpeaking(isPlaying);
-      setIsAudioPlaying(isPlaying);
-    });
     
     const handleUserInteraction = () => {
       if (!userHasInteracted) {
@@ -756,7 +348,7 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 AUDIO-FIRST TTS GENERATION
+  // 🆕 AUDIO-FIRST TTS GENERATION - ✅ FIXED: Working with sanitizeText backup
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -820,7 +412,7 @@ function App() {
     }
   };
 
-  // ✅ FIXED: Progressive sentence processor
+  // ✅ FIXED: Progressive sentence processor - WORKS WITHOUT VoiceScreen requirement!
   const processNewSentences = async (fullText, language, isStreaming) => {
     console.log('🎵 processNewSentences called:', {
       isVoiceMode,
@@ -830,6 +422,7 @@ function App() {
       isStreaming
     });
     
+    // ✅ CRITICAL FIX: Only check isVoiceMode!
     if (!isVoiceMode) {
       console.warn('⚠️ Voice mode is false - skipping audio generation');
       return;
@@ -871,12 +464,12 @@ function App() {
       }
     }
     
-    // Handle final processing when streaming ends
+    // ✅ Handle final processing when streaming ends
     if (!isStreaming && allSentences.length === processedSentencesRef.current.size) {
       console.log('✅ All sentences processed, voice response complete');
       setVoiceResponseComplete(true);
       
-      // Reset voice mode after a delay
+      // Reset voice mode after a delay to ensure all audio plays
       if (voiceModeTimeoutRef.current) {
         clearTimeout(voiceModeTimeoutRef.current);
       }
@@ -887,16 +480,15 @@ function App() {
           setIsVoiceMode(false);
           setVoiceResponseComplete(false);
         }
-      }, 5000);
+      }, 5000); // 5 seconds after completion
     }
-  };
-
-  // 🆕 SPEECH-TO-TEXT FUNCTIONS
+  };// 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
       setIsRecordingSTT(true);
       
+      // ✅ UNLOCK AUDIO on STT start
       if (!mobileAudioManager.isUnlocked) {
         await mobileAudioManager.unlockAudioContext();
       }
@@ -975,6 +567,8 @@ function App() {
     if (sttRecorderRef.current && sttRecorderRef.current.state === 'recording') {
       sttRecorderRef.current.stop();
       console.log('🛑 STT Recording stopped manually');
+      
+      // ✅ UNLOCK AUDIO on stop interaction
       mobileAudioManager.unlockAudioContext();
     }
   };
@@ -1028,7 +622,7 @@ function App() {
     }
   };
 
-  // 🔧 CLASSIC FUNCTIONS
+  // 🔧 CLASSIC FUNCTIONS with FIX
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
@@ -1045,12 +639,10 @@ function App() {
     
     sessionManager.clearSession();
     setMessages([]);
-    setVoiceMessages([]); // 🆕 Clear voice messages
     setUserLanguage('cs');
     setVoiceResponseBuffer('');
     setIsVoiceMode(false);
     setVoiceResponseComplete(false);
-    setIsOmniaSpeaking(false);
     
     if (voiceModeTimeoutRef.current) {
       clearTimeout(voiceModeTimeoutRef.current);
@@ -1059,6 +651,7 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
+  // ✅ FIXED: Convert messages for OpenAI
   const convertMessagesForOpenAI = (messages) => {
     return messages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1066,30 +659,29 @@ function App() {
     }));
   };
 
-  // ✅ FIXED: Voice transcript handler - KEEPS VOICE SCREEN OPEN
+  // ✅ FIXED: Voice transcript handler
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
-    // 🆕 DON'T CLOSE VOICE SCREEN!
-    // Keep it open for continuous conversation
+    // Close voice screen if open
+    if (showVoiceScreen) {
+      setShowVoiceScreen(false);
+    }
     
-    // Add user message to voice chat
-    setVoiceMessages(prev => [...prev, { type: 'user', text }]);
-    
-    // Activate voice mode
+    // ✅ CRITICAL: Keep voice mode active for response!
     console.log('🎙️ VOICE MODE ACTIVATED via transcript');
     setIsVoiceMode(true);
     
-    // Force unlock audio
+    // ✅ Force unlock audio on voice interaction
     if (!mobileAudioManager.isUnlocked) {
       await mobileAudioManager.unlockAudioContext();
     }
     
-    // Send to AI
-    await handleSend(text, true);
+    // ✅ Always treat voice input as voice mode
+    await handleSend(text, true); // fromVoice = true
   };
 
-  // ✅ FIXED: AI CONVERSATION with voice response
+  // ✅ FIXED: AI CONVERSATION with voice response fixes
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -1116,10 +708,12 @@ function App() {
     if (!fromVoice) setInput('');
     setLoading(true);
     
+    // ✅ Set voice mode BEFORE sending
     if (fromVoice) {
       console.log('🎙️ VOICE MODE ACTIVATED in handleSend');
       setIsVoiceMode(true);
       
+      // Force unlock audio
       if (!mobileAudioManager.isUnlocked) {
         await mobileAudioManager.unlockAudioContext();
       }
@@ -1146,6 +740,7 @@ function App() {
         const onStreamUpdate = async (text, isStillStreaming) => {
           fullResponse = text;
 
+          // ✅ FIXED: Progressive voice works with fromVoice only
           if (fromVoice || isVoiceMode) {
             setVoiceResponseBuffer(text);
             await processNewSentences(text, detectedLang, isStillStreaming);
@@ -1162,11 +757,6 @@ function App() {
             sessionManager.saveMessages(updatedMessages);
             setStreaming(false);
             responseText = text;
-            
-            // 🆕 Add to voice messages
-            if (fromVoice) {
-              setVoiceMessages(prev => [...prev, { type: 'assistant', text, isPlaying: false }]);
-            }
           }
         };
 
@@ -1176,15 +766,17 @@ function App() {
       }
       else if (model === 'gpt-4o') {
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
+        console.log('🔧 GPT Fixed messages format:', {
+          original: messagesWithUser[messagesWithUser.length - 1],
+          converted: openAIMessages[openAIMessages.length - 1]
+        });
+
         responseText = await openaiService.sendMessage(openAIMessages, detectedLang);
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        if (fromVoice) {
-          setVoiceMessages(prev => [...prev, { type: 'assistant', text: responseText, isPlaying: false }]);
-        }
-        
+        // ✅ FIXED: Voice response for GPT
         if ((fromVoice || isVoiceMode) && responseText) {
           console.log('🎵 Generating voice for GPT response');
           const sentences = splitIntoSentences(responseText);
@@ -1209,10 +801,7 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        if (fromVoice) {
-          setVoiceMessages(prev => [...prev, { type: 'assistant', text: responseText, isPlaying: false }]);
-        }
-        
+        // ✅ FIXED: Voice response for Sonar
         if ((fromVoice || isVoiceMode) && responseText) {
           console.log('🎵 Generating voice for Sonar response');
           const sentences = splitIntoSentences(responseText);
@@ -1238,9 +827,11 @@ function App() {
       setLoading(false);
       setStreaming(false);
       
+      // ✅ Keep voice mode active until audio completes
       if (fromVoice || isVoiceMode) {
         console.log('🎵 Keeping voice mode active for audio completion');
         
+        // Set timeout to reset voice mode after audio plays
         if (voiceModeTimeoutRef.current) {
           clearTimeout(voiceModeTimeoutRef.current);
         }
@@ -1251,10 +842,12 @@ function App() {
             setIsVoiceMode(false);
             setVoiceResponseComplete(false);
           }
-        }, 10000);
+        }, 10000); // 10 seconds timeout
       }
     }
-  };// ⚙️ INITIALIZATION
+  };
+
+  // ⚙️ INITIALIZATION + SIMPLE AUDIO SETUP
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -1267,6 +860,28 @@ function App() {
       setUILanguage(savedUILanguage);
     }
   }, []);
+
+  // 🔧 AUDIO STATE MONITORING
+  useEffect(() => {
+    const checkAudioState = setInterval(() => {
+      const isPlaying = mobileAudioManager.isCurrentlyPlaying();
+      if (isAudioPlaying !== isPlaying) {
+        setIsAudioPlaying(isPlaying);
+        console.log('🔊 Audio playing state changed:', isPlaying);
+      }
+    }, 500);
+
+    return () => clearInterval(checkAudioState);
+  }, [isAudioPlaying]);
+
+  // 🔧 GLOBAL SCOPE for debugging
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.isVoiceMode = isVoiceMode;
+      window.mobileAudioManager = mobileAudioManager;
+      console.log('🔧 Voice mode updated:', isVoiceMode);
+    }
+  }, [isVoiceMode]);
 
   // 🔧 VOICE SCREEN UNLOCK
   useEffect(() => {
@@ -1285,9 +900,7 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;
-
-  // 🎨 JSX RENDER
+  const shouldHideLogo = messages.length > 0;// 🎨 JSX RENDER
   return (
     <div style={{ 
       position: 'fixed',
@@ -1358,7 +971,7 @@ function App() {
                 zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Voice Chat Ready! 🎵' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Voice Fixed! 🎵' },
                   { key: 'claude', label: '🧠 Omnia', desc: 'Progressive Voice ✅' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + Voice ✅' }
                 ].map((item) => (
@@ -1388,314 +1001,313 @@ function App() {
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
               disabled={loading || streaming}
               style={{
-                background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',border: '1px solid rgba(74, 85, 104, 0.6)',
-               borderRadius: '10px', padding: '0.6rem', fontSize: '1rem',
-               color: '#e2e8f0',
-               cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-               backdropFilter: 'blur(10px)'
-             }}
-             title={t('settings')}
-           >
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-               <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-             </svg>
-           </button>
-           
-           <SettingsDropdown 
-             isOpen={showSettingsDropdown && !loading && !streaming}
-             onClose={() => setShowSettingsDropdown(false)}
-             onNewChat={handleNewChat}
-             uiLanguage={uiLanguage}
-             setUILanguage={setUILanguage}
-             t={t}
-           />
-         </div>
-       </div>
+                background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
+                border: '1px solid rgba(74, 85, 104, 0.6)',
+                borderRadius: '10px', padding: '0.6rem', fontSize: '1rem',
+                color: '#e2e8f0',
+                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(10px)'
+              }}
+              title={t('settings')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+              </svg>
+            </button>
+            
+            <SettingsDropdown 
+              isOpen={showSettingsDropdown && !loading && !streaming}
+              onClose={() => setShowSettingsDropdown(false)}
+              onNewChat={handleNewChat}
+              uiLanguage={uiLanguage}
+              setUILanguage={setUILanguage}
+              t={t}
+            />
+          </div>
+        </div>
 
-       <div style={{ 
-         textAlign: 'center', display: 'flex', flexDirection: 'column',
-         alignItems: 'center', gap: '1rem', maxWidth: '1200px', margin: '0 auto'
-       }}>
-         <OmniaLogo 
-           size={isMobile ? 70 : 90} 
-           animate={streaming || loading}
-           isListening={isListening || isRecordingSTT}
-           shouldHide={shouldHideLogo}
-         />
-         {!shouldHideLogo && (
-           <>
-             <h1 style={{ 
-               fontSize: isMobile ? '2.2rem' : '2.8rem', 
-               fontWeight: '700', margin: 0, color: '#ffffff',
-               letterSpacing: '0.02em'
-             }}>
-               OMNIA
-             </h1>
-             <div style={{
-               fontSize: '0.95rem', opacity: 0.8, textAlign: 'center',
-               padding: '6px 12px', borderRadius: '15px',
-               background: 'rgba(255, 255, 255, 0.05)',
-               backdropFilter: 'blur(5px)',
-               border: '1px solid rgba(255, 255, 255, 0.1)',
-               fontWeight: '500'
-             }}>
-               🎵 Voice Chat Enhanced! • ✨ Glow when speaking • 🎤 Continuous conversation
-             </div>
-           </>
-         )}
-       </div>
-     </header>
+        <div style={{ 
+          textAlign: 'center', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', gap: '1rem', maxWidth: '1200px', margin: '0 auto'
+        }}>
+          <OmniaLogo 
+            size={isMobile ? 70 : 90} 
+            animate={streaming || loading}
+            isListening={isListening || isRecordingSTT}
+            shouldHide={shouldHideLogo}
+          />
+          {!shouldHideLogo && (
+            <>
+              <h1 style={{ 
+                fontSize: isMobile ? '2.2rem' : '2.8rem', 
+                fontWeight: '700', margin: 0, color: '#ffffff',
+                letterSpacing: '0.02em'
+              }}>
+                OMNIA
+              </h1>
+              <div style={{
+                fontSize: '0.95rem', opacity: 0.8, textAlign: 'center',
+                padding: '6px 12px', borderRadius: '15px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(5px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                fontWeight: '500'
+              }}>
+                🎵 Voice Response Fixed! • ✅ Works everywhere • ⚡ Mobile ready
+              </div>
+            </>
+          )}
+        </div>
+      </header>
 
-     {/* MAIN CONTENT */}
-     <main style={{ 
-       flex: 1, overflowY: 'auto', overflowX: 'hidden',
-       padding: isMobile ? '1rem' : '2rem',
-       paddingBottom: '160px', width: '100%'
-     }}>
-       <div style={{ 
-         maxWidth: '1000px', margin: '0 auto',
-         minHeight: messages.length === 0 ? '60vh' : 'auto',
-         display: 'flex', flexDirection: 'column',
-         justifyContent: messages.length === 0 ? 'center' : 'flex-start'
-       }}>
-         
-         {messages.length === 0 && !shouldHideLogo && (
-           <div style={{ height: '40vh' }}></div>
-         )}
+      {/* MAIN CONTENT */}
+      <main style={{ 
+        flex: 1, overflowY: 'auto', overflowX: 'hidden',
+        padding: isMobile ? '1rem' : '2rem',
+        paddingBottom: '160px', width: '100%'
+      }}>
+        <div style={{ 
+          maxWidth: '1000px', margin: '0 auto',
+          minHeight: messages.length === 0 ? '60vh' : 'auto',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: messages.length === 0 ? 'center' : 'flex-start'
+        }}>
+          
+          {messages.length === 0 && !shouldHideLogo && (
+            <div style={{ height: '40vh' }}></div>
+          )}
 
-         {messages.map((msg, idx) => (
-           <div key={idx} style={{
-             display: 'flex',
-             justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-             marginBottom: '2rem',
-             animation: 'fadeInUp 0.4s ease-out'
-           }}>
-             {msg.sender === 'user' ? (
-               <div style={{
-                 backgroundColor: 'rgba(45, 55, 72, 0.8)',
-                 color: '#ffd700',
-                 padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
-                 borderRadius: '25px 25px 8px 25px',
-                 maxWidth: isMobile ? '85%' : '75%',
-                 fontSize: isMobile ? '1rem' : '0.95rem',
-                 lineHeight: '1.6', whiteSpace: 'pre-wrap',
-                 boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
-                 border: '1px solid rgba(255, 215, 0, 0.3)',
-                 backdropFilter: 'blur(10px)'
-               }}>
-                 {msg.text}
-               </div>
-             ) : (
-               <div style={{
-                 maxWidth: isMobile ? '90%' : '85%',
-                 padding: isMobile ? '1.2rem' : '1.6rem',
-                 fontSize: isMobile ? '1rem' : '0.95rem',
-                 lineHeight: '1.6', whiteSpace: 'pre-wrap', color: '#ffffff',
-                 background: 'rgba(255, 255, 255, 0.03)',
-                 borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
-                 borderRadius: '0 12px 12px 0',
-                 paddingLeft: '1.8rem', backdropFilter: 'blur(10px)'
-               }}>
-                 <div style={{ 
-                   fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.8rem',
-                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                   paddingBottom: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)'
-                 }}>
-                   <span style={{ 
-                     fontWeight: '600', color: '#a0aec0', 
-                     display: 'flex', alignItems: 'center' 
-                   }}>
-                     <ChatOmniaLogo size={18} />
-                     Omnia {msg.isStreaming ? ' • streaming...' : ' • voice ready'}
-                   </span>
-                   {!msg.isStreaming && (
-                     <div style={{ display: 'flex', gap: '10px' }}>
-                       <VoiceButton 
-                         text={msg.text} 
-                         onAudioStart={() => setIsAudioPlaying(true)}
-                         onAudioEnd={() => setIsAudioPlaying(false)}
-                       />
-                       <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
-                     </div>
-                   )}
-                 </div>
-                 
-                 <TypewriterText text={msg.text} isStreaming={msg.isStreaming} />
-               </div>
-             )}
-           </div>
-         ))}
-         
-         {(loading || streaming) && (
-           <div style={{ 
-             display: 'flex', justifyContent: 'flex-start', 
-             marginBottom: '2rem', animation: 'fadeInUp 0.4s ease-out'
-           }}>
-             <div style={{
-               padding: isMobile ? '1.2rem' : '1.6rem',
-               fontSize: isMobile ? '1rem' : '0.95rem', color: '#ffffff',
-               background: 'rgba(255, 255, 255, 0.03)',
-               borderLeft: isMobile ? 'none' : `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
-               borderRadius: '0 12px 12px 0',
-               paddingLeft: '1.8rem', backdropFilter: 'blur(10px)'
-             }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                 <div style={{ 
-                   width: '18px', height: '18px', 
-                   border: '2px solid rgba(255,255,255,0.3)', 
-                   borderTop: '2px solid #00ffff',
-                   borderRadius: '50%', animation: 'spin 1s linear infinite'
-                 }}></div>
-                 <span style={{ 
-                   color: streaming ? '#00ffff' : '#a0aec0', 
-                   fontWeight: '500' 
-                 }}>
-                   {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                   {isVoiceMode && ' • 🎵 voice response active'}
-                 </span>
-               </div>
-             </div>
-           </div>
-         )}
-         
-         <div ref={endOfMessagesRef} />
-       </div>
-     </main>
+          {messages.map((msg, idx) => (
+            <div key={idx} style={{
+              display: 'flex',
+              justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+              marginBottom: '2rem',
+              animation: 'fadeInUp 0.4s ease-out'
+            }}>
+              {msg.sender === 'user' ? (
+                <div style={{
+                  backgroundColor: 'rgba(45, 55, 72, 0.8)',
+                  color: '#ffd700',
+                  padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
+                  borderRadius: '25px 25px 8px 25px',
+                  maxWidth: isMobile ? '85%' : '75%',
+                  fontSize: isMobile ? '1rem' : '0.95rem',
+                  lineHeight: '1.6', whiteSpace: 'pre-wrap',
+                  boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
+                  border: '1px solid rgba(255, 215, 0, 0.3)',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  {msg.text}
+                </div>
+              ) : (
+                <div style={{
+                  maxWidth: isMobile ? '90%' : '85%',
+                  padding: isMobile ? '1.2rem' : '1.6rem',
+                  fontSize: isMobile ? '1rem' : '0.95rem',
+                  lineHeight: '1.6', whiteSpace: 'pre-wrap', color: '#ffffff',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
+                  borderRadius: '0 12px 12px 0',
+                  paddingLeft: '1.8rem', backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.8rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    paddingBottom: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)'
+                  }}>
+                    <span style={{ 
+                      fontWeight: '600', color: '#a0aec0', 
+                      display: 'flex', alignItems: 'center' 
+                    }}>
+                      <ChatOmniaLogo size={18} />
+                      Omnia {msg.isStreaming ? ' • streaming...' : ' • voice ready'}
+                    </span>
+                    {!msg.isStreaming && (
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <VoiceButton 
+                          text={msg.text} 
+                          onAudioStart={() => setIsAudioPlaying(true)}
+                          onAudioEnd={() => setIsAudioPlaying(false)}
+                        />
+                        <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <TypewriterText text={msg.text} isStreaming={msg.isStreaming} />
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {(loading || streaming) && (
+            <div style={{ 
+              display: 'flex', justifyContent: 'flex-start', 
+              marginBottom: '2rem', animation: 'fadeInUp 0.4s ease-out'
+            }}>
+              <div style={{
+                padding: isMobile ? '1.2rem' : '1.6rem',
+                fontSize: isMobile ? '1rem' : '0.95rem', color: '#ffffff',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderLeft: isMobile ? 'none' : `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
+                borderRadius: '0 12px 12px 0',
+                paddingLeft: '1.8rem', backdropFilter: 'blur(10px)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ 
+                    width: '18px', height: '18px', 
+                    border: '2px solid rgba(255,255,255,0.3)', 
+                    borderTop: '2px solid #00ffff',
+                    borderRadius: '50%', animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <span style={{ 
+                    color: streaming ? '#00ffff' : '#a0aec0', 
+                    fontWeight: '500' 
+                  }}>
+                    {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
+                    {isVoiceMode && ' • 🎵 voice response active'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={endOfMessagesRef} />
+        </div>
+      </main>
 
-     {/* INPUT AREA */}
-     <div style={{ 
-       background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
-       backdropFilter: 'blur(20px)', padding: isMobile ? '1.2rem' : '1.6rem',
-       borderTop: '1px solid rgba(255,255,255,0.1)',
-       paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1.2rem)' : '1.6rem',
-       zIndex: 10, flexShrink: 0
-     }}>
-       <div style={{ 
-         maxWidth: '1000px', margin: '0 auto', 
-         display: 'flex', gap: '0.8rem', alignItems: 'center'
-       }}>
-         
-         <div style={{ flex: 1 }}>
-           <input
-             type="text" value={input}
-             onChange={(e) => setInput(e.target.value)}
-             onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
-             placeholder={isListening || isRecordingSTT ? (isRecordingSTT ? 'Nahrávám ElevenLabs STT...' : t('listening') + '...') :
-                         streaming ? t('omniaStreaming') : 
-                         `${t('sendMessage')} Omnia...`}
-             disabled={loading || streaming}
-             style={{ 
-               width: '100%', 
-               padding: isMobile ? '1.1rem 1.4rem' : '1.2rem 1.6rem',
-               fontSize: isMobile ? '16px' : '0.95rem', 
-               borderRadius: '30px',
-               border: '2px solid rgba(74, 85, 104, 0.6)', outline: 'none',
-               backgroundColor: (loading || streaming) 
-                 ? 'rgba(45, 55, 72, 0.6)' 
-                 : 'rgba(26, 32, 44, 0.8)',
-               color: '#ffffff',
-               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-               boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-               opacity: (loading || streaming) ? 0.7 : 1,
-               backdropFilter: 'blur(10px)', fontWeight: '400'
-             }}
-           />
-         </div>
-         
-         <button
-           onClick={toggleSTT}
-           disabled={loading || streaming || isAudioPlaying}
-           style={{
-             width: isMobile ? 54 : 60,
-             height: isMobile ? 54 : 60,
-             borderRadius: '50%', border: 'none',
-             background: isRecordingSTT 
-               ? 'linear-gradient(45deg, #ff4444, #cc0000)' 
-               : 'linear-gradient(45deg, #00ff88, #00cc66)',
-             color: 'white',
-             cursor: (loading || streaming || isAudioPlaying) ? 'not-allowed' : 'pointer',
-             display: 'flex', alignItems: 'center', justifyContent: 'center',
-             fontSize: '1.2rem', fontWeight: 'bold',
-             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-             opacity: (loading || streaming || isAudioPlaying) ? 0.5 : 1,
-             boxShadow: isRecordingSTT 
-               ? '0 0 20px rgba(255, 68, 68, 0.6)' 
-               : '0 4px 12px rgba(0, 255, 136, 0.4)',
-             transform: 'translateZ(0)'
-           }}
-           title={isRecordingSTT ? 'Zastavit STT nahrávání' : 'ElevenLabs Speech-to-Text'}
-         >
-           {isRecordingSTT ? '⏹️' : '🎤'}
-         </button>
+      {/* INPUT AREA */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
+        backdropFilter: 'blur(20px)', padding: isMobile ? '1.2rem' : '1.6rem',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1.2rem)' : '1.6rem',
+        zIndex: 10, flexShrink: 0
+      }}>
+        <div style={{ 
+          maxWidth: '1000px', margin: '0 auto', 
+          display: 'flex', gap: '0.8rem', alignItems: 'center'
+        }}>
+          
+          <div style={{ flex: 1 }}>
+            <input
+              type="text" value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
+              placeholder={isListening || isRecordingSTT ? (isRecordingSTT ? 'Nahrávám ElevenLabs STT...' : t('listening') + '...') :
+                          streaming ? t('omniaStreaming') : 
+                          `${t('sendMessage')} Omnia...`}
+              disabled={loading || streaming}
+              style={{ 
+                width: '100%', 
+                padding: isMobile ? '1.1rem 1.4rem' : '1.2rem 1.6rem',
+                fontSize: isMobile ? '16px' : '0.95rem', 
+                borderRadius: '30px',
+                border: '2px solid rgba(74, 85, 104, 0.6)', outline: 'none',
+                backgroundColor: (loading || streaming) 
+                  ? 'rgba(45, 55, 72, 0.6)' 
+                  : 'rgba(26, 32, 44, 0.8)',
+                color: '#ffffff',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                opacity: (loading || streaming) ? 0.7 : 1,
+                backdropFilter: 'blur(10px)', fontWeight: '400'
+              }}
+            />
+          </div>
+          
+          <button
+            onClick={toggleSTT}
+            disabled={loading || streaming || isAudioPlaying}
+            style={{
+              width: isMobile ? 54 : 60,
+              height: isMobile ? 54 : 60,
+              borderRadius: '50%', border: 'none',
+              background: isRecordingSTT 
+                ? 'linear-gradient(45deg, #ff4444, #cc0000)' 
+                : 'linear-gradient(45deg, #00ff88, #00cc66)',
+              color: 'white',
+              cursor: (loading || streaming || isAudioPlaying) ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.2rem', fontWeight: 'bold',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              opacity: (loading || streaming || isAudioPlaying) ? 0.5 : 1,
+              boxShadow: isRecordingSTT 
+                ? '0 0 20px rgba(255, 68, 68, 0.6)' 
+                : '0 4px 12px rgba(0, 255, 136, 0.4)',
+              transform: 'translateZ(0)'
+            }}
+            title={isRecordingSTT ? 'Zastavit STT nahrávání' : 'ElevenLabs Speech-to-Text'}
+          >
+            {isRecordingSTT ? '⏹️' : '🎤'}
+          </button>
 
-         <MiniOmniaLogo 
-           size={isMobile ? 54 : 60} 
-           onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
-           isAudioPlaying={isAudioPlaying}
-           isListening={isListening}
-           loading={loading} streaming={streaming}
-         />
+          <MiniOmniaLogo 
+            size={isMobile ? 54 : 60} 
+            onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
+            isAudioPlaying={isAudioPlaying}
+            isListening={isListening}
+            loading={loading} streaming={streaming}
+          />
 
-         <OmniaArrowButton
-           onClick={() => handleSend()}
-           disabled={loading || streaming || !input.trim()}
-           loading={loading || streaming}
-           isListening={isListening || isRecordingSTT}
-           size={isMobile ? 54 : 60}
-         />
-       </div>
-     </div>
+          <OmniaArrowButton
+            onClick={() => handleSend()}
+            disabled={loading || streaming || !input.trim()}
+            loading={loading || streaming}
+            isListening={isListening || isRecordingSTT}
+            size={isMobile ? 54 : 60}
+          />
+        </div>
+      </div>
 
-     {/* 🆕 ENHANCED VOICE SCREEN */}
-     <VoiceScreen 
-       isOpen={showVoiceScreen}
-       onClose={() => {
-         setShowVoiceScreen(false);
-         setVoiceResponseBuffer('');
-         currentStreamTextRef.current = '';
-         lastProcessedLengthRef.current = 0;
-         
-         // Reset after delay
-         setTimeout(() => {
-           if (!mobileAudioManager.isCurrentlyPlaying()) {
-             setIsVoiceMode(false);
-             console.log('🔧 Voice mode reset after VoiceScreen close');
-           }
-         }, 2000);
-       }}
-       onTranscript={handleTranscript}
-       isLoading={loading}
-       isAudioPlaying={isAudioPlaying || mobileAudioManager.isPlaying}
-       uiLanguage={uiLanguage}
-       voiceMessages={voiceMessages}
-       currentResponse={voiceResponseBuffer || (streaming ? messages[messages.length - 1]?.text : null)}
-       isOmniaSpeaking={isOmniaSpeaking}
-     />
+      <VoiceScreen 
+        isOpen={showVoiceScreen}
+        onClose={() => {
+          setShowVoiceScreen(false);
+          setVoiceResponseBuffer('');
+          currentStreamTextRef.current = '';
+          lastProcessedLengthRef.current = 0;
+          
+          // ✅ SIMPLE: Reset voice mode after delay
+          setTimeout(() => {
+            if (!mobileAudioManager.isCurrentlyPlaying()) {
+              setIsVoiceMode(false);
+              console.log('🔧 Voice mode reset after VoiceScreen close');
+            }
+          }, 2000);
+        }}
+        onTranscript={handleTranscript}
+        isLoading={loading}
+        isAudioPlaying={isAudioPlaying || mobileAudioManager.isPlaying}
+        uiLanguage={uiLanguage}
+        messages={messages}
+        currentResponse={voiceResponseBuffer || (streaming ? messages[messages.length - 1]?.text : null)}
+        audioManager={mobileAudioManager}
+      />
 
-     <style>{`
-       * { margin: 0; padding: 0; box-sizing: border-box; }
-       html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
-       body { margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden !important; position: fixed !important; top: 0 !important; left: 0 !important; }
-       #root { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; position: fixed !important; top: 0 !important; left: 0 !important; }
-       body > * { margin: 0 !important; }
-       
-       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-       @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px) translateZ(0); } 100% { opacity: 1; transform: translateY(0) translateZ(0); } }
-       @keyframes omnia-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1) translateZ(0); } 50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); transform: scale(1.05) translateZ(0); } }
-       @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
-       
-       * { -webkit-tap-highlight-color: transparent; }
-       @media (max-width: 768px) { input { font-size: 16px !important; } button { min-height: 44px; min-width: 44px; } }
-       ::-webkit-scrollbar { width: 8px; }
-       ::-webkit-scrollbar-track { background: rgba(26, 32, 44, 0.5); }
-       ::-webkit-scrollbar-thumb { background: rgba(74, 85, 104, 0.8); border-radius: 4px; }
-       button { -webkit-user-select: none; user-select: none; }
-       input:focus { outline: none !important; }
-     `}</style>
-   </div>
- );
+      <style>{`
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
+        body { margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden !important; position: fixed !important; top: 0 !important; left: 0 !important; }
+        #root { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; position: fixed !important; top: 0 !important; left: 0 !important; }
+        body > * { margin: 0 !important; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px) translateZ(0); } 100% { opacity: 1; transform: translateY(0) translateZ(0); } }
+        @keyframes omnia-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1) translateZ(0); } 50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); transform: scale(1.05) translateZ(0); } }
+        @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
+        
+        * { -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 768px) { input { font-size: 16px !important; } button { min-height: 44px; min-width: 44px; } }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(26, 32, 44, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(74, 85, 104, 0.8); border-radius: 4px; }
+        button { -webkit-user-select: none; user-select: none; }
+        input:focus { outline: none !important; }
+      `}</style>
+    </div>
+  );
 };
 
 export default App;
-                
