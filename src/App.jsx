@@ -1,8 +1,8 @@
-// 🚀 OMNIA - FINAL APP.JSX (ČÁST 1/2)
+// 🚀 OMNIA - FINAL APP.JSX (ČÁST 1/2) - UPDATED WITH VOICE QUALITY FIXES
 // ✅ Audio-first: FIXED - čeká na kompletní věty
 // ✅ Mobile auto-play fixed with MobileAudioManager
 // ✅ ElevenLabs STT integration
-// ✅ Stop audio on Voice Screen close
+// ✅ TTS-aware Claude prompts + sanitizeText backup
 // 🔧 FIXED: Set.clear() replaced with new Set()
 // 🔧 FIXED: Audio plays only complete sentences
 
@@ -28,6 +28,39 @@ import TypewriterText from './components/ui/TypewriterText.jsx';
 import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
+
+// 🆕 SANITIZE TEXT FUNCTION (backup pro když Claude prompt nestačí)
+function sanitizeText(text) {
+  if (!text || typeof text !== 'string') return '';
+  
+  return text
+    // Zkratky
+    .replace(/\bnapř\.\b/gi, 'například')
+    .replace(/\batd\.\b/gi, 'a tak dále')
+    // Procenta
+    .replace(/(\d+)\s*%/g, '$1 procent')
+    // Stupně
+    .replace(/(\d+)[\s]*°C/g, '$1 stupňů Celsia')
+    .replace(/(\d+)[\s]*°/g, '$1 stupňů')
+    // Čas
+    .replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut')
+    // Měny
+    .replace(/(\d+)\s*Kč/g, '$1 korun')
+    .replace(/(\d+)\s*\$/g, '$1 dolarů')
+    .replace(/(\d+)\s*€/g, '$1 eur')
+    // Desetinná čísla – čte jako „celá"
+    .replace(/(\d+)[.,](\d+)/g, '$1 celá $2')
+    // Jednotky
+    .replace(/(\d+)\s*km\/h/g, '$1 kilometrů za hodinu')
+    .replace(/(\d+)\s*kg/g, '$1 kilogramů')
+    .replace(/(\d+)\s*kWh/g, '$1 kilowatthodin')
+    // Zlomky
+    .replace(/\b1\/2\b/g, 'půl')
+    .replace(/\b1\/4\b/g, 'čtvrt')
+    // Nadbytečné mezery
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 // 🆕 ENHANCED MOBILE AUDIO MANAGER with Queue
 class MobileAudioManager {
@@ -207,7 +240,7 @@ function App() {
   // 🆕 VOICE MODE TRACKING
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
-  const [pendingSentences, setPendingSentences] = useState([]); // 🆕 Buffer for incomplete sentences
+  const [pendingSentences, setPendingSentences] = useState([]);
   
   // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
@@ -309,17 +342,32 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 AUDIO-FIRST TTS GENERATION
+  // 🆕 AUDIO-FIRST TTS GENERATION with DUAL APPROACH
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
+      
+      // 🎯 DUAL APPROACH: Claude prompt should already be TTS-aware, sanitizeText as backup
+      let textToSpeak = sentence;
+      
+      // Check if text looks like "computer text" (contains problematic patterns)
+      const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h/i.test(sentence);
+      
+      if (hasProblematicPatterns) {
+        textToSpeak = sanitizeText(sentence);
+        console.log('🔧 Applied sanitizeText backup:', {
+          original: sentence.substring(0, 50),
+          sanitized: textToSpeak.substring(0, 50),
+          reason: 'Contains problematic patterns'
+        });
+      }
       
       // Use streaming endpoint for better performance
       const response = await fetch('/api/elevenlabs-tts-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({ 
-          text: sentence,
+          text: textToSpeak,
           language: language,
           voice_id: process.env.ELEVENLABS_VOICE_ID || 'MpbYQvoTmXjHkaxtLiSh',
           model_id: 'eleven_multilingual_v2',
@@ -336,12 +384,12 @@ function App() {
       
       if (!response.ok) {
         console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
-        // Fallback to Google TTS
+        // Fallback to Google TTS (use original text, has own preprocessing)
         const googleResponse = await fetch('/api/google-tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ 
-            text: sentence,
+            text: sentence, // Original text for Google TTS
             language: language,
             voice: 'natural'
           })
@@ -360,9 +408,7 @@ function App() {
       console.error('💥 TTS generation failed:', error);
       throw error;
     }
-  };
-
-  // POKRAČOVÁNÍ V ČÁSTI 2...// 🚀 OMNIA - FINAL APP.JSX (ČÁST 2/2)
+  };// 🚀 OMNIA - FINAL APP.JSX (ČÁST 2/2) - COMPLETE
 // POKRAČOVÁNÍ Z ČÁSTI 1...
 
   // 🆕 SPEECH-TO-TEXT FUNCTIONS (ElevenLabs)
@@ -455,7 +501,6 @@ function App() {
       
       const arrayBuffer = await audioBlob.arrayBuffer();
       
-      // 🆕 USING ELEVENLABS STT
       const response = await fetch('/api/elevenlabs-stt', {
         method: 'POST',
         headers: {
@@ -503,9 +548,8 @@ function App() {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    // 🔧 FIX: Replace clear() with new Set()
     processedSentencesRef.current = new Set();
-    setPendingSentences([]); // 🆕 Clear pending sentences
+    setPendingSentences([]);
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
@@ -520,7 +564,7 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // 🤖 AI CONVERSATION with FIXED AUDIO-FIRST STREAMING
+  // 🤖 AI CONVERSATION with UPDATED TTS-AWARE APPROACH
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -532,9 +576,8 @@ function App() {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
-    // 🔧 FIX: Replace clear() with new Set()
     processedSentencesRef.current = new Set();
-    setPendingSentences([]); // 🆕 Clear pending sentences
+    setPendingSentences([]);
 
     if (!fromVoice) setInput('');
     setLoading(true);
@@ -559,13 +602,10 @@ function App() {
         const onStreamUpdate = async (text, isStillStreaming) => {
           fullResponse = text;
 
-          // 🆕 FIXED AUDIO-FIRST: Collect text during streaming, process at the end
           if (fromVoice && showVoiceScreen) {
-            // Just update the buffer during streaming
             setVoiceResponseBuffer(text);
           }
 
-          // Update messages for regular display
           const updatedMessages = [...messagesWithUser, { 
             sender: 'bot', 
             text: text, 
@@ -608,7 +648,6 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 AUDIO-FIRST for GPT - process all sentences at once
         if (fromVoice && showVoiceScreen && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
@@ -631,7 +670,6 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 AUDIO-FIRST for Sonar - process all sentences at once
         if (fromVoice && showVoiceScreen && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
@@ -663,7 +701,6 @@ function App() {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
     if (showVoiceScreen) {
-      // 🔊 Send with fromVoice=true for audio-first processing
       await handleSend(text, true);
     } else {
       setInput(text);
@@ -721,7 +758,6 @@ function App() {
         zIndex: 10,
         flexShrink: 0
       }}>
-        {/* MODEL SELECTOR & SETTINGS */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -732,7 +768,6 @@ function App() {
           marginBottom: isMobile ? '1.5rem' : '2rem'
         }}>
           
-          {/* MODEL DROPDOWN */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
@@ -769,7 +804,7 @@ function App() {
               }}>
                 {[
                   { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Konverzace' },
-                  { key: 'claude', label: '🧠 Omnia', desc: 'AI + Streaming' },
+                  { key: 'claude', label: '🧠 Omnia', desc: 'AI + TTS-aware' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time' }
                 ].map((item) => (
                   <button
@@ -793,7 +828,6 @@ function App() {
             )}
           </div>
 
-          {/* SETTINGS */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
@@ -825,7 +859,6 @@ function App() {
           </div>
         </div>
 
-        {/* LOGO SECTION */}
         <div style={{ 
           textAlign: 'center', display: 'flex', flexDirection: 'column',
           alignItems: 'center', gap: '1rem', maxWidth: '1200px', margin: '0 auto'
@@ -853,14 +886,14 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🌍 multilingual AI • 🎵 audio-first voice • ⚡ sentence streaming
+                🎵 TTS-aware Claude • 🔧 sanitizeText backup • ⚡ dual quality approach
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT - Messages area */}
+      {/* MAIN CONTENT */}
       <main style={{ 
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
@@ -877,7 +910,6 @@ function App() {
             <div style={{ height: '40vh' }}></div>
           )}
 
-          {/* MESSAGES */}
           {messages.map((msg, idx) => (
             <div key={idx} style={{
               display: 'flex',
@@ -921,7 +953,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • audio-first'}
+                      Omnia {msg.isStreaming ? ' • streaming' : ' • TTS-optimized'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -941,7 +973,6 @@ function App() {
             </div>
           ))}
           
-          {/* LOADING INDICATOR */}
           {(loading || streaming) && (
             <div style={{ 
               display: 'flex', justifyContent: 'flex-start', 
@@ -967,7 +998,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {isVoiceMode && ' • audio-first mode'}
+                    {isVoiceMode && ' • TTS-aware mode'}
                   </span>
                 </div>
               </div>
@@ -978,7 +1009,7 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT AREA s STT tlačítkem */}
+      {/* INPUT AREA */}
       <div style={{ 
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
         backdropFilter: 'blur(20px)', padding: isMobile ? '1.2rem' : '1.6rem',
@@ -991,7 +1022,6 @@ function App() {
           display: 'flex', gap: '0.8rem', alignItems: 'center'
         }}>
           
-          {/* INPUT FIELD */}
           <div style={{ flex: 1 }}>
             <input
               type="text" value={input}
@@ -1019,7 +1049,6 @@ function App() {
             />
           </div>
           
-          {/* 🎤 STT BUTTON */}
           <button
             onClick={toggleSTT}
             disabled={loading || streaming || isAudioPlaying}
@@ -1046,7 +1075,6 @@ function App() {
             {isRecordingSTT ? '⏹️' : '🎤'}
           </button>
 
-          {/* VOICE SCREEN BUTTON */}
           <MiniOmniaLogo 
             size={isMobile ? 54 : 60} 
             onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
@@ -1055,7 +1083,6 @@ function App() {
             loading={loading} streaming={streaming}
           />
 
-          {/* SEND BUTTON */}
           <OmniaArrowButton
             onClick={() => handleSend()}
             disabled={loading || streaming || !input.trim()}
@@ -1066,12 +1093,10 @@ function App() {
         </div>
       </div>
 
-      {/* VOICE SCREEN with AUDIO MANAGER */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={() => {
           setShowVoiceScreen(false);
-          // Clear voice mode state
           setIsVoiceMode(false);
           setVoiceResponseBuffer('');
         }}
@@ -1081,10 +1106,9 @@ function App() {
         uiLanguage={uiLanguage}
         messages={messages}
         currentResponse={voiceResponseBuffer || (streaming ? messages[messages.length - 1]?.text : null)}
-        audioManager={mobileAudioManager} // 🆕 Pass audio manager
+        audioManager={mobileAudioManager}
       />
 
-      {/* CSS STYLES */}
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
