@@ -661,10 +661,11 @@ function App() {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
             if (sentence.trim().length > 0) {
+              console.log('🎵 Generating audio for:', sentence);
               try {
                 const audioBlob = await generateAudioForSentence(sentence, detectedLang);
                 await mobileAudioManager.queueAudio(audioBlob);
-                console.log('✅ Audio queued for GPT sentence');
+                console.log('🔁 Audio sentence queued');
               } catch (error) {
                 console.error('❌ Failed to generate audio:', error);
               }
@@ -684,10 +685,11 @@ function App() {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
             if (sentence.trim().length > 0) {
+              console.log('🎵 Generating audio for:', sentence);
               try {
                 const audioBlob = await generateAudioForSentence(sentence, detectedLang);
                 await mobileAudioManager.queueAudio(audioBlob);
-                console.log('✅ Audio queued for Sonar sentence');
+                console.log('🔁 Audio sentence queued');
               } catch (error) {
                 console.error('❌ Failed to generate audio:', error);
               }
@@ -701,9 +703,10 @@ function App() {
       showNotification(err.message, 'error');
     } finally {
       setLoading(false);
-      setStreaming(false);
+      // setStreaming(false); // moved below
       // ✅ FIXED: Don't reset isVoiceMode here - let it persist for TTS completion
       // setIsVoiceMode(false); // REMOVED - causes premature TTS stop
+      setStreaming(false);
     }
   };
 
