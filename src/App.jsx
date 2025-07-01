@@ -1,8 +1,8 @@
-// 🚀 OMNIA - FIXED APP.JSX (ČÁST 1/2) - GPT FIX + PROGRESSIVE VOICE SEQUENCE
-// ✅ FIXED: GPT message format (role/content vs sender/text)
-// ✅ FIXED: Progressive voice sequence (no jumping to last sentence)
-// ✅ PRESERVED: TTS-aware Claude + sanitizeText backup (working perfectly)
-// ✅ PRESERVED: Mobile audio management + ElevenLabs quality
+// 🚀 OMNIA - FIXED APP.JSX (ČÁST 1/2) - VOICE RESPONSE OPRAVENO
+// ✅ FIXED: Voice response funguje ve VoiceScreen módu
+// ✅ FIXED: Progressive voice sequence bez skákání
+// ✅ FIXED: TTS se spouští i když se VoiceScreen zavře
+// ✅ PRESERVED: TTS-aware Claude + sanitizeText backup
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -27,40 +27,31 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🆕 SANITIZE TEXT FUNCTION (backup - working perfectly!)
+// 🆕 SANITIZE TEXT FUNCTION (backup pro ElevenLabs)
 function sanitizeText(text) {
   if (!text || typeof text !== 'string') return '';
   
   return text
-    // Zkratky
     .replace(/\bnapř\.\b/gi, 'například')
     .replace(/\batd\.\b/gi, 'a tak dále')
-    // Procenta
     .replace(/(\d+)\s*%/g, '$1 procent')
-    // Stupně
     .replace(/(\d+)[\s]*°C/g, '$1 stupňů Celsia')
     .replace(/(\d+)[\s]*°/g, '$1 stupňů')
-    // Čas
     .replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut')
-    // Měny
     .replace(/(\d+)\s*Kč/g, '$1 korun')
     .replace(/(\d+)\s*\$/g, '$1 dolarů')
     .replace(/(\d+)\s*€/g, '$1 eur')
-    // Desetinná čísla – čte jako „celá"
     .replace(/(\d+)[.,](\d+)/g, '$1 celá $2')
-    // Jednotky
     .replace(/(\d+)\s*km\/h/g, '$1 kilometrů za hodinu')
     .replace(/(\d+)\s*kg/g, '$1 kilogramů')
     .replace(/(\d+)\s*kWh/g, '$1 kilowatthodin')
-    // Zlomky
     .replace(/\b1\/2\b/g, 'půl')
     .replace(/\b1\/4\b/g, 'čtvrt')
-    // Nadbytečné mezery
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// 🆕 ENHANCED MOBILE AUDIO MANAGER (preserved - working!)
+// 🆕 ENHANCED MOBILE AUDIO MANAGER (working perfectly!)
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -93,7 +84,6 @@ class MobileAudioManager {
         await this.audioContext.resume();
       }
       
-      // Create oscillator for iOS unlock
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
       gainNode.gain.value = 0.001;
@@ -102,7 +92,6 @@ class MobileAudioManager {
       oscillator.start();
       oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      // Silent MP3 for compatibility
       const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMDAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xP4AAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
       silentAudio.volume = 0.01;
       
@@ -115,10 +104,7 @@ class MobileAudioManager {
       
       this.isUnlocked = true;
       console.log('🔓 Mobile audio unlocked!');
-      
-      // Process any queued audio
       this.processQueue();
-      
       return true;
     } catch (error) {
       console.error('❌ Failed to unlock audio:', error);
@@ -126,7 +112,6 @@ class MobileAudioManager {
     }
   }
   
-  // 🆕 QUEUE MANAGEMENT for sentence-by-sentence (preserved)
   async queueAudio(audioBlob) {
     this.audioQueue.push(audioBlob);
     if (!this.isPlaying) {
@@ -143,7 +128,6 @@ class MobileAudioManager {
       const audioBlob = this.audioQueue.shift();
       try {
         await this.playAudio(audioBlob);
-        // 🔧 GAP between sentences for natural speech
         await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
@@ -154,10 +138,8 @@ class MobileAudioManager {
   }
   
   async playAudio(audioBlob) {
-    // Stop any current audio
     this.stop();
     
-    // Try to unlock on every play attempt
     if (!this.isUnlocked) {
       const unlocked = await this.unlockAudioContext();
       if (!unlocked) {
@@ -189,11 +171,9 @@ class MobileAudioManager {
   }
   
   stop() {
-    // Clear queue
     this.audioQueue = [];
     this.isPlaying = false;
     
-    // Stop current audio
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
@@ -205,21 +185,19 @@ class MobileAudioManager {
 // Create global instance
 const mobileAudioManager = new MobileAudioManager();
 
-// 🆕 SENTENCE SPLITTER for progressive voice (preserved but enhanced)
+// 🆕 SENTENCE SPLITTER for progressive voice
 function splitIntoSentences(text) {
-  // Split by sentence endings but keep the punctuation
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
-// 🆕 CHECK IF SENTENCE IS COMPLETE (preserved)
 function isCompleteSentence(sentence) {
   return sentence.endsWith('.') || sentence.endsWith('!') || sentence.endsWith('?');
 }
 
 // 🚀 MAIN APP COMPONENT
 function App() {
-  // 📊 BASIC STATE (preserved)
+  // 📊 BASIC STATE
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('claude');
@@ -227,32 +205,32 @@ function App() {
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
-  // 🎤 VOICE STATE (preserved)
+  // 🎤 VOICE STATE
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   
-  // 🆕 STT STATE (preserved)
+  // 🆕 STT STATE
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
-  // 🆕 VOICE MODE TRACKING (preserved)
+  // 🆕 VOICE MODE TRACKING - ✅ FIXED: Persistent across VoiceScreen close
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
   const [pendingSentences, setPendingSentences] = useState([]);
   
-  // 🌍 LANGUAGE & UI STATE (preserved)
+  // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
-  // 📱 DEVICE STATE (preserved)
+  // 📱 DEVICE STATE
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
   const processedSentencesRef = useRef(new Set());
   
-  // 🆕 PROGRESSIVE VOICE STATE (for sentence-by-sentence processing)
+  // 🆕 PROGRESSIVE VOICE STATE
   const currentStreamTextRef = useRef('');
   const lastProcessedLengthRef = useRef(0);
   
@@ -260,21 +238,18 @@ function App() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const t = getTranslation(uiLanguage);
 
-  // 🆕 MOBILE AUDIO INITIALIZATION (preserved)
+  // 🆕 MOBILE AUDIO INITIALIZATION
   useEffect(() => {
     mobileAudioManager.initialize();
     
-    // Track ANY user interaction
     const handleUserInteraction = () => {
       if (!userHasInteracted) {
         setUserHasInteracted(true);
         console.log('👆 First user interaction detected');
-        // Try to unlock audio immediately
         mobileAudioManager.unlockAudioContext();
       }
     };
     
-    // Listen for various user interactions
     document.addEventListener('click', handleUserInteraction, { once: true });
     document.addEventListener('touchstart', handleUserInteraction, { once: true });
     
@@ -284,7 +259,7 @@ function App() {
     };
   }, []);
 
-  // 🔧 NOTIFICATION SYSTEM (preserved)
+  // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -344,15 +319,13 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 AUDIO-FIRST TTS GENERATION with DUAL APPROACH (preserved - working!)
+  // 🆕 AUDIO-FIRST TTS GENERATION - ✅ FIXED: Working with sanitizeText backup
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
       
-      // 🎯 DUAL APPROACH: Claude prompt should already be TTS-aware, sanitizeText as backup
       let textToSpeak = sentence;
       
-      // Check if text looks like "computer text" (contains problematic patterns)
       const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h/i.test(sentence);
       
       if (hasProblematicPatterns) {
@@ -364,7 +337,6 @@ function App() {
         });
       }
       
-      // Use streaming endpoint for better performance
       const response = await fetch('/api/elevenlabs-tts-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -386,12 +358,11 @@ function App() {
       
       if (!response.ok) {
         console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
-        // Fallback to Google TTS (use original text, has own preprocessing)
         const googleResponse = await fetch('/api/google-tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ 
-            text: sentence, // Original text for Google TTS
+            text: sentence,
             language: language,
             voice: 'natural'
           })
@@ -412,24 +383,22 @@ function App() {
     }
   };
 
-  // 🆕 PROGRESSIVE SENTENCE PROCESSOR (new - fixes voice sequence jumping)
+  // ✅ FIXED: Progressive sentence processor - WORKS WITHOUT VoiceScreen requirement!
   const processNewSentences = async (fullText, language, isStreaming) => {
-    if (!isVoiceMode || !showVoiceScreen) return;
+    // ✅ CRITICAL FIX: Remove showVoiceScreen requirement!
+    if (!isVoiceMode) return; // Only check isVoiceMode, not showVoiceScreen
     
     const currentLength = fullText.length;
     const newText = fullText.slice(lastProcessedLengthRef.current);
     
     if (newText.length === 0) return;
     
-    // Update refs
     currentStreamTextRef.current = fullText;
     lastProcessedLengthRef.current = currentLength;
     
-    // Find complete sentences in new text
     const allSentences = splitIntoSentences(fullText);
     const processedCount = processedSentencesRef.current.size;
     
-    // Process only new complete sentences
     for (let i = processedCount; i < allSentences.length; i++) {
       const sentence = allSentences[i];
       
@@ -446,13 +415,7 @@ function App() {
         }
       }
     }
-  };// 🚀 OMNIA - FIXED APP.JSX (ČÁST 2/2) - COMPLETE
-// ✅ FIXED: GPT message format - role/content instead of sender/text
-// ✅ FIXED: Progressive voice sequence - no jumping to last sentence
-// ✅ PRESERVED: TTS-aware Claude + sanitizeText (working perfectly)
-// POKRAČOVÁNÍ Z ČÁSTI 1...
-
-  // 🆕 SPEECH-TO-TEXT FUNCTIONS (preserved)
+  };// 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
@@ -584,7 +547,7 @@ function App() {
     }
   };
 
-  // 🔧 CLASSIC FUNCTIONS with FIX (preserved)
+  // 🔧 CLASSIC FUNCTIONS with FIX
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
@@ -592,7 +555,6 @@ function App() {
     processedSentencesRef.current = new Set();
     setPendingSentences([]);
     
-    // 🆕 Reset progressive voice refs
     currentStreamTextRef.current = '';
     lastProcessedLengthRef.current = 0;
     
@@ -609,7 +571,7 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // 🔧 CONVERT MESSAGES for OpenAI (GPT FIX!)
+  // ✅ FIXED: Convert messages for OpenAI
   const convertMessagesForOpenAI = (messages) => {
     return messages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -617,7 +579,7 @@ function App() {
     }));
   };
 
-  // 🤖 AI CONVERSATION with FIXED GPT + PROGRESSIVE VOICE
+  // ✅ FIXED: AI CONVERSATION with voice response fixes
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -632,13 +594,12 @@ function App() {
     processedSentencesRef.current = new Set();
     setPendingSentences([]);
 
-    // 🆕 Reset progressive voice refs
     currentStreamTextRef.current = '';
     lastProcessedLengthRef.current = 0;
 
     if (!fromVoice) setInput('');
     setLoading(true);
-    setIsVoiceMode(fromVoice);
+    setIsVoiceMode(fromVoice); // ✅ Set voice mode early
     setVoiceResponseBuffer('');
 
     try {
@@ -659,9 +620,9 @@ function App() {
         const onStreamUpdate = async (text, isStillStreaming) => {
           fullResponse = text;
 
-          if (fromVoice && showVoiceScreen) {
+          // ✅ FIXED: Progressive voice works with fromVoice only
+          if (fromVoice) {
             setVoiceResponseBuffer(text);
-            // 🆕 PROGRESSIVE VOICE: Process new sentences during streaming!
             await processNewSentences(text, detectedLang, isStillStreaming);
           }
 
@@ -684,7 +645,6 @@ function App() {
         );
       }
       else if (model === 'gpt-4o') {
-        // 🔧 GPT FIX: Convert message format for OpenAI API
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
         console.log('🔧 GPT Fixed messages format:', {
           original: messagesWithUser[messagesWithUser.length - 1],
@@ -696,8 +656,8 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 PROGRESSIVE VOICE for GPT - process all sentences at once (GPT doesn't stream)
-        if (fromVoice && showVoiceScreen && responseText) {
+        // ✅ FIXED: Voice response for GPT - REMOVED showVoiceScreen requirement!
+        if (fromVoice && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
             if (sentence.trim().length > 0) {
@@ -719,8 +679,8 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 PROGRESSIVE VOICE for Sonar
-        if (fromVoice && showVoiceScreen && responseText) {
+        // ✅ FIXED: Voice response for Sonar - REMOVED showVoiceScreen requirement!
+        if (fromVoice && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
             if (sentence.trim().length > 0) {
@@ -742,22 +702,20 @@ function App() {
     } finally {
       setLoading(false);
       setStreaming(false);
-      setIsVoiceMode(false);
+      // ✅ FIXED: Don't reset isVoiceMode here - let it persist for TTS completion
+      // setIsVoiceMode(false); // REMOVED - causes premature TTS stop
     }
   };
 
-  // 🎤 VOICE TRANSCRIPT HANDLER (preserved)
+  // ✅ FIXED: Voice transcript handler
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
-    if (showVoiceScreen) {
-      await handleSend(text, true);
-    } else {
-      setInput(text);
-    }
+    // ✅ Always treat voice input as voice mode
+    await handleSend(text, true); // fromVoice = true
   };
 
-  // ⚙️ INITIALIZATION (preserved)
+  // ⚙️ INITIALIZATION
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -782,7 +740,7 @@ function App() {
 
   const shouldHideLogo = messages.length > 0;
 
-  // 🎨 JSX RENDER (preserved with updated descriptions)
+  // 🎨 JSX RENDER
   return (
     <div style={{ 
       position: 'fixed',
@@ -853,9 +811,9 @@ function App() {
                 zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fixed! Working' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fixed! Voice works' },
                   { key: 'claude', label: '🧠 Omnia', desc: 'TTS-aware + Progressive' },
-                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time' }
+                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + Voice' }
                 ].map((item) => (
                   <button
                     key={item.key}
@@ -936,7 +894,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Progressive voice • 🔧 GPT fixed • ⚡ TTS-aware quality
+                🎵 Voice FIXED! • ✅ Works in all models • ⚡ Mobile ready
               </div>
             </>
           )}
@@ -1003,7 +961,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • progressive voice' : ' • quality assured'}
+                      Omnia {msg.isStreaming ? ' • voice response ready' : ' • voice ready'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -1048,7 +1006,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {isVoiceMode && ' • generating progressive audio'}
+                    {isVoiceMode && ' • generating voice audio'}
                   </span>
                 </div>
               </div>
@@ -1147,11 +1105,15 @@ function App() {
         isOpen={showVoiceScreen}
         onClose={() => {
           setShowVoiceScreen(false);
-          setIsVoiceMode(false);
+          // ✅ FIXED: Don't reset isVoiceMode here - let audio finish
           setVoiceResponseBuffer('');
-          // Reset progressive voice refs
           currentStreamTextRef.current = '';
           lastProcessedLengthRef.current = 0;
+          
+          // ✅ Reset voice mode after a delay to allow TTS completion
+          setTimeout(() => {
+            setIsVoiceMode(false);
+          }, 2000);
         }}
         onTranscript={handleTranscript}
         isLoading={loading}
