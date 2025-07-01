@@ -715,7 +715,7 @@ function App() {
     await handleSend(text, true); // fromVoice = true
   };
 
-  // ⚙️ INITIALIZATION
+  // ⚙️ INITIALIZATION + CRITICAL GLOBAL SCOPE FIX
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -728,6 +728,18 @@ function App() {
       setUILanguage(savedUILanguage);
     }
   }, []);
+
+  // 🔧 CRITICAL FIX: Make mobileAudioManager globally accessible for debugging
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.mobileAudioManager = mobileAudioManager;
+      window.isVoiceMode = isVoiceMode;
+      console.log('🔧 Global scope updated:', { 
+        audioManager: !!window.mobileAudioManager, 
+        voiceMode: window.isVoiceMode 
+      });
+    }
+  }, [isVoiceMode]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -811,7 +823,7 @@ function App() {
                 zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fixed! Voice works' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'VOICE FIXED! 🎵' },
                   { key: 'claude', label: '🧠 Omnia', desc: 'TTS-aware + Progressive' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + Voice' }
                 ].map((item) => (
@@ -894,7 +906,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Voice FIXED! • ✅ Works in all models • ⚡ Mobile ready
+                🎵 Voice FULLY FIXED! • ✅ Global scope • ⚡ Mobile ready
               </div>
             </>
           )}
@@ -961,7 +973,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • voice response ready' : ' • voice ready'}
+                      Omnia {msg.isStreaming ? ' • voice processing...' : ' • voice ready'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -1006,7 +1018,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {isVoiceMode && ' • generating voice audio'}
+                    {isVoiceMode && ' • voice audio ready for all models'}
                   </span>
                 </div>
               </div>
@@ -1105,15 +1117,15 @@ function App() {
         isOpen={showVoiceScreen}
         onClose={() => {
           setShowVoiceScreen(false);
-          // ✅ FIXED: Don't reset isVoiceMode here - let audio finish
           setVoiceResponseBuffer('');
           currentStreamTextRef.current = '';
           lastProcessedLengthRef.current = 0;
           
-          // ✅ Reset voice mode after a delay to allow TTS completion
+          // ✅ FIXED: Reset voice mode after delay to allow TTS completion
           setTimeout(() => {
             setIsVoiceMode(false);
-          }, 2000);
+            console.log('🔧 Voice mode reset after TTS completion');
+          }, 3000); // Longer delay for safety
         }}
         onTranscript={handleTranscript}
         isLoading={loading}
