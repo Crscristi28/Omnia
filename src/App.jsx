@@ -536,35 +536,17 @@ function App() {
       let responseText = '';
 
       if (model === 'claude') {
-        setStreaming(true);
-        const streamingBotMessage = { sender: 'bot', text: '', isStreaming: true };
-        const messagesWithBot = [...messagesWithUser, streamingBotMessage];
-        setMessages(messagesWithBot);
-
-        const onStreamUpdate = (text, isStillStreaming) => {
-          const updatedMessages = [...messagesWithUser, { 
-            sender: 'bot', 
-            text: text, 
-            isStreaming: isStillStreaming 
-          }];
-          setMessages(updatedMessages);
-
-          if (!isStillStreaming) {
-            sessionManager.saveMessages(updatedMessages);
-            setStreaming(false);
-            responseText = text;
-            
-            // ✅ FIXED: Stejná logika jako GPT - voice po dokončení!
-            if (fromVoice && showVoiceScreen && text) {
-              console.log('🎵 Claude response complete, processing voice...');
-              processVoiceResponse(text, detectedLang);
-            }
-          }
-        };
-
-        responseText = await claudeService.sendMessage(
-          messagesWithUser, onStreamUpdate, null, detectedLang
-        );
+        // ✅ CLAUDE = GPT (žádné streamování, instant voice!)
+        responseText = await claudeService.sendMessage(messagesWithUser, null, null, detectedLang);
+        const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+        setMessages(finalMessages);
+        sessionManager.saveMessages(finalMessages);
+        
+        // ✅ INSTANT VOICE - stejně jako GPT!
+        if (fromVoice && showVoiceScreen && responseText) {
+          console.log('🎵 Claude response complete, processing voice...');
+          processVoiceResponse(responseText, detectedLang);
+        }
       }
       else if (model === 'gpt-4o') {
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
@@ -689,7 +671,7 @@ function App() {
                 backdropFilter: 'blur(16px)', zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'claude', label: '🧠 Omnia', desc: 'Fixed! Voice working' },
+                  { key: 'claude', label: '🧠 Omnia', desc: 'No streaming = instant voice!' },
                   { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fixed! Voice working' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + voice' }
                 ].map((item) => (
@@ -769,7 +751,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Claude voice FIXED • ⚡ GPT voice working • 🔍 All models with voice
+                🎵 Claude instant voice • ⚡ GPT instant voice • 🔍 All models FAST
               </div>
             </>
           )}
