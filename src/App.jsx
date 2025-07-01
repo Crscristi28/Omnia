@@ -184,6 +184,7 @@ class MobileAudioManager {
 
 // Create global instance
 const mobileAudioManager = new MobileAudioManager();
+if (typeof window !== 'undefined') window.mobileAudioManager = mobileAudioManager;
 
 // 🆕 SENTENCE SPLITTER for progressive voice
 function splitIntoSentences(text) {
@@ -415,51 +416,7 @@ function App() {
         }
       }
     }
-  };// 🔧 CHATGPT'S SIMPLE AUDIO MANAGER FIX (replaces complex class)
-const mobileAudioManager = {
-  isUnlocked: false,
-  unlockAudioContext: async () => {
-    const audio = new Audio();
-    try {
-      await audio.play().catch(() => {}); // Dummy play
-      mobileAudioManager.isUnlocked = true;
-      console.log('🔓 AudioContext unlocked');
-    } catch (err) {
-      console.warn('🔒 Failed to unlock AudioContext:', err);
-    }
-  },
-  queueAudio: async (blob) => {
-    console.log('🎵 Queueing audio blob:', blob.size, 'bytes');
-    const audio = new Audio();
-    audio.src = URL.createObjectURL(blob);
-    return new Promise((resolve) => {
-      audio.onended = () => {
-        console.log('✅ Audio ended');
-        URL.revokeObjectURL(audio.src); // Cleanup
-        resolve();
-      };
-      audio.onerror = (e) => {
-        console.error('❌ Audio playback failed:', e);
-        URL.revokeObjectURL(audio.src); // Cleanup
-        resolve();
-      };
-      audio.play().catch((e) => {
-        console.error('❌ Playback rejected:', e);
-        URL.revokeObjectURL(audio.src); // Cleanup
-        resolve();
-      });
-    });
-  },
-  stop: () => {
-    console.log('🛑 Audio stopped (simple version)');
-    // Simple version doesn't need complex stop logic
-  }
-};
-
-// 🔧 CRITICAL: Make it globally accessible
-if (typeof window !== 'undefined') {
-  window.mobileAudioManager = mobileAudioManager;
-}
+  };
 
   // 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
   const startSTTRecording = async () => {
