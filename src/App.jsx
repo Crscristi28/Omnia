@@ -1,10 +1,8 @@
-// 🚀 OMNIA - FINAL APP.JSX (ČÁST 1/2) - UPDATED WITH VOICE QUALITY FIXES
-// ✅ Audio-first: FIXED - čeká na kompletní věty
-// ✅ Mobile auto-play fixed with MobileAudioManager
-// ✅ ElevenLabs STT integration
-// ✅ TTS-aware Claude prompts + sanitizeText backup
-// 🔧 FIXED: Set.clear() replaced with new Set()
-// 🔧 FIXED: Audio plays only complete sentences
+// 🚀 OMNIA - FIXED APP.JSX (ČÁST 1/2) - GPT FIX + PROGRESSIVE VOICE SEQUENCE
+// ✅ FIXED: GPT message format (role/content vs sender/text)
+// ✅ FIXED: Progressive voice sequence (no jumping to last sentence)
+// ✅ PRESERVED: TTS-aware Claude + sanitizeText backup (working perfectly)
+// ✅ PRESERVED: Mobile audio management + ElevenLabs quality
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -29,7 +27,7 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🆕 SANITIZE TEXT FUNCTION (backup pro když Claude prompt nestačí)
+// 🆕 SANITIZE TEXT FUNCTION (backup - working perfectly!)
 function sanitizeText(text) {
   if (!text || typeof text !== 'string') return '';
   
@@ -62,7 +60,7 @@ function sanitizeText(text) {
     .trim();
 }
 
-// 🆕 ENHANCED MOBILE AUDIO MANAGER with Queue
+// 🆕 ENHANCED MOBILE AUDIO MANAGER (preserved - working!)
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -128,7 +126,7 @@ class MobileAudioManager {
     }
   }
   
-  // 🆕 QUEUE MANAGEMENT for sentence-by-sentence
+  // 🆕 QUEUE MANAGEMENT for sentence-by-sentence (preserved)
   async queueAudio(audioBlob) {
     this.audioQueue.push(audioBlob);
     if (!this.isPlaying) {
@@ -145,7 +143,7 @@ class MobileAudioManager {
       const audioBlob = this.audioQueue.shift();
       try {
         await this.playAudio(audioBlob);
-        // 🔧 INCREASED GAP between sentences for natural speech
+        // 🔧 GAP between sentences for natural speech
         await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
@@ -207,21 +205,21 @@ class MobileAudioManager {
 // Create global instance
 const mobileAudioManager = new MobileAudioManager();
 
-// 🆕 SENTENCE SPLITTER for audio-first approach
+// 🆕 SENTENCE SPLITTER for progressive voice (preserved but enhanced)
 function splitIntoSentences(text) {
   // Split by sentence endings but keep the punctuation
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
-// 🆕 CHECK IF SENTENCE IS COMPLETE
+// 🆕 CHECK IF SENTENCE IS COMPLETE (preserved)
 function isCompleteSentence(sentence) {
   return sentence.endsWith('.') || sentence.endsWith('!') || sentence.endsWith('?');
 }
 
 // 🚀 MAIN APP COMPONENT
 function App() {
-  // 📊 BASIC STATE
+  // 📊 BASIC STATE (preserved)
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('claude');
@@ -229,36 +227,40 @@ function App() {
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
-  // 🎤 VOICE STATE
+  // 🎤 VOICE STATE (preserved)
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   
-  // 🆕 STT STATE
+  // 🆕 STT STATE (preserved)
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
-  // 🆕 VOICE MODE TRACKING
+  // 🆕 VOICE MODE TRACKING (preserved)
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
   const [pendingSentences, setPendingSentences] = useState([]);
   
-  // 🌍 LANGUAGE & UI STATE
+  // 🌍 LANGUAGE & UI STATE (preserved)
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
-  // 📱 DEVICE STATE
+  // 📱 DEVICE STATE (preserved)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
   const processedSentencesRef = useRef(new Set());
   
+  // 🆕 PROGRESSIVE VOICE STATE (for sentence-by-sentence processing)
+  const currentStreamTextRef = useRef('');
+  const lastProcessedLengthRef = useRef(0);
+  
   const isMobile = window.innerWidth <= 768;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const t = getTranslation(uiLanguage);
 
-  // 🆕 MOBILE AUDIO INITIALIZATION
+  // 🆕 MOBILE AUDIO INITIALIZATION (preserved)
   useEffect(() => {
     mobileAudioManager.initialize();
     
@@ -282,7 +284,7 @@ function App() {
     };
   }, []);
 
-  // 🔧 NOTIFICATION SYSTEM
+  // 🔧 NOTIFICATION SYSTEM (preserved)
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -342,7 +344,7 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 AUDIO-FIRST TTS GENERATION with DUAL APPROACH
+  // 🆕 AUDIO-FIRST TTS GENERATION with DUAL APPROACH (preserved - working!)
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -408,10 +410,49 @@ function App() {
       console.error('💥 TTS generation failed:', error);
       throw error;
     }
-  };// 🚀 OMNIA - FINAL APP.JSX (ČÁST 2/2) - COMPLETE
+  };
+
+  // 🆕 PROGRESSIVE SENTENCE PROCESSOR (new - fixes voice sequence jumping)
+  const processNewSentences = async (fullText, language, isStreaming) => {
+    if (!isVoiceMode || !showVoiceScreen) return;
+    
+    const currentLength = fullText.length;
+    const newText = fullText.slice(lastProcessedLengthRef.current);
+    
+    if (newText.length === 0) return;
+    
+    // Update refs
+    currentStreamTextRef.current = fullText;
+    lastProcessedLengthRef.current = currentLength;
+    
+    // Find complete sentences in new text
+    const allSentences = splitIntoSentences(fullText);
+    const processedCount = processedSentencesRef.current.size;
+    
+    // Process only new complete sentences
+    for (let i = processedCount; i < allSentences.length; i++) {
+      const sentence = allSentences[i];
+      
+      if (isCompleteSentence(sentence) && !processedSentencesRef.current.has(sentence)) {
+        console.log('🎵 Processing new complete sentence:', sentence.substring(0, 50) + '...');
+        processedSentencesRef.current.add(sentence);
+        
+        try {
+          const audioBlob = await generateAudioForSentence(sentence, language);
+          await mobileAudioManager.queueAudio(audioBlob);
+          console.log('✅ Audio queued for progressive sentence');
+        } catch (error) {
+          console.error('❌ Failed to generate progressive audio:', error);
+        }
+      }
+    }
+  };// 🚀 OMNIA - FIXED APP.JSX (ČÁST 2/2) - COMPLETE
+// ✅ FIXED: GPT message format - role/content instead of sender/text
+// ✅ FIXED: Progressive voice sequence - no jumping to last sentence
+// ✅ PRESERVED: TTS-aware Claude + sanitizeText (working perfectly)
 // POKRAČOVÁNÍ Z ČÁSTI 1...
 
-  // 🆕 SPEECH-TO-TEXT FUNCTIONS (ElevenLabs)
+  // 🆕 SPEECH-TO-TEXT FUNCTIONS (preserved)
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
@@ -543,13 +584,17 @@ function App() {
     }
   };
 
-  // 🔧 CLASSIC FUNCTIONS with FIX
+  // 🔧 CLASSIC FUNCTIONS with FIX (preserved)
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
     processedSentencesRef.current = new Set();
     setPendingSentences([]);
+    
+    // 🆕 Reset progressive voice refs
+    currentStreamTextRef.current = '';
+    lastProcessedLengthRef.current = 0;
     
     if (streaming) setStreaming(false);
     if (isListening) setIsListening(false);
@@ -564,7 +609,15 @@ function App() {
     showNotification(t('newChatCreated'), 'success');
   };
 
-  // 🤖 AI CONVERSATION with UPDATED TTS-AWARE APPROACH
+  // 🔧 CONVERT MESSAGES for OpenAI (GPT FIX!)
+  const convertMessagesForOpenAI = (messages) => {
+    return messages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text || ''
+    }));
+  };
+
+  // 🤖 AI CONVERSATION with FIXED GPT + PROGRESSIVE VOICE
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -578,6 +631,10 @@ function App() {
     currentAudioRef.current = null;
     processedSentencesRef.current = new Set();
     setPendingSentences([]);
+
+    // 🆕 Reset progressive voice refs
+    currentStreamTextRef.current = '';
+    lastProcessedLengthRef.current = 0;
 
     if (!fromVoice) setInput('');
     setLoading(true);
@@ -604,6 +661,8 @@ function App() {
 
           if (fromVoice && showVoiceScreen) {
             setVoiceResponseBuffer(text);
+            // 🆕 PROGRESSIVE VOICE: Process new sentences during streaming!
+            await processNewSentences(text, detectedLang, isStillStreaming);
           }
 
           const updatedMessages = [...messagesWithUser, { 
@@ -617,24 +676,6 @@ function App() {
             sessionManager.saveMessages(updatedMessages);
             setStreaming(false);
             responseText = text;
-            
-            // 🆕 PROCESS ALL SENTENCES AFTER STREAMING COMPLETES
-            if (fromVoice && showVoiceScreen && text) {
-              console.log('🎯 Streaming complete, processing all sentences...');
-              const allSentences = splitIntoSentences(text);
-              
-              for (const sentence of allSentences) {
-                if (sentence.trim().length > 0) {
-                  console.log('🎵 Generating audio for:', sentence);
-                  try {
-                    const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-                    await mobileAudioManager.queueAudio(audioBlob);
-                  } catch (error) {
-                    console.error('❌ Failed to generate audio:', error);
-                  }
-                }
-              }
-            }
           }
         };
 
@@ -643,11 +684,19 @@ function App() {
         );
       }
       else if (model === 'gpt-4o') {
-        responseText = await openaiService.sendMessage(messagesWithUser, detectedLang);
+        // 🔧 GPT FIX: Convert message format for OpenAI API
+        const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
+        console.log('🔧 GPT Fixed messages format:', {
+          original: messagesWithUser[messagesWithUser.length - 1],
+          converted: openAIMessages[openAIMessages.length - 1]
+        });
+
+        responseText = await openaiService.sendMessage(openAIMessages, detectedLang);
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
+        // 🆕 PROGRESSIVE VOICE for GPT - process all sentences at once (GPT doesn't stream)
         if (fromVoice && showVoiceScreen && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
@@ -670,6 +719,7 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
+        // 🆕 PROGRESSIVE VOICE for Sonar
         if (fromVoice && showVoiceScreen && responseText) {
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
@@ -696,7 +746,7 @@ function App() {
     }
   };
 
-  // 🎤 VOICE TRANSCRIPT HANDLER
+  // 🎤 VOICE TRANSCRIPT HANDLER (preserved)
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
@@ -707,7 +757,7 @@ function App() {
     }
   };
 
-  // ⚙️ INITIALIZATION
+  // ⚙️ INITIALIZATION (preserved)
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -732,7 +782,7 @@ function App() {
 
   const shouldHideLogo = messages.length > 0;
 
-  // 🎨 JSX RENDER
+  // 🎨 JSX RENDER (preserved with updated descriptions)
   return (
     <div style={{ 
       position: 'fixed',
@@ -803,8 +853,8 @@ function App() {
                 zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Konverzace' },
-                  { key: 'claude', label: '🧠 Omnia', desc: 'AI + TTS-aware' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fixed! Working' },
+                  { key: 'claude', label: '🧠 Omnia', desc: 'TTS-aware + Progressive' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time' }
                 ].map((item) => (
                   <button
@@ -886,7 +936,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 TTS-aware Claude • 🔧 sanitizeText backup • ⚡ dual quality approach
+                🎵 Progressive voice • 🔧 GPT fixed • ⚡ TTS-aware quality
               </div>
             </>
           )}
@@ -953,7 +1003,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • TTS-optimized'}
+                      Omnia {msg.isStreaming ? ' • progressive voice' : ' • quality assured'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -998,7 +1048,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {isVoiceMode && ' • TTS-aware mode'}
+                    {isVoiceMode && ' • generating progressive audio'}
                   </span>
                 </div>
               </div>
@@ -1099,6 +1149,9 @@ function App() {
           setShowVoiceScreen(false);
           setIsVoiceMode(false);
           setVoiceResponseBuffer('');
+          // Reset progressive voice refs
+          currentStreamTextRef.current = '';
+          lastProcessedLengthRef.current = 0;
         }}
         onTranscript={handleTranscript}
         isLoading={loading}
