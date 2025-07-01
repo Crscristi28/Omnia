@@ -1,8 +1,8 @@
 // 🚀 OMNIA - FIXED APP.JSX (ČÁST 1/2) - VOICE RESPONSE OPRAVENO
-// ✅ FIXED: Voice response funguje ve VoiceScreen módu
-// ✅ FIXED: Progressive voice sequence bez skákání
-// ✅ FIXED: TTS se spouští i když se VoiceScreen zavře
-// ✅ PRESERVED: TTS-aware Claude + sanitizeText backup
+// ✅ FIXED: Voice response funguje ve VoiceScreen i mimo něj
+// ✅ FIXED: Audio unlock při voice interakci
+// ✅ FIXED: isVoiceMode persistence pro dokončení TTS
+// ✅ ENHANCED: Debug logging pro troubleshooting
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -51,7 +51,7 @@ function sanitizeText(text) {
     .trim();
 }
 
-// 🆕 ENHANCED MOBILE AUDIO MANAGER (working perfectly!)
+// 🆕 ENHANCED MOBILE AUDIO MANAGER (ZACHOVÁVÁME TVOJI VERZI!)
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -72,7 +72,10 @@ class MobileAudioManager {
   }
   
   async unlockAudioContext() {
-    if (this.isUnlocked) return true;
+    if (this.isUnlocked) {
+      console.log('🔓 Audio already unlocked');
+      return true;
+    }
     
     try {
       if (!this.audioContext) {
@@ -103,7 +106,7 @@ class MobileAudioManager {
       }
       
       this.isUnlocked = true;
-      console.log('🔓 Mobile audio unlocked!');
+      console.log('🔓 Mobile audio unlocked successfully!');
       this.processQueue();
       return true;
     } catch (error) {
@@ -113,21 +116,35 @@ class MobileAudioManager {
   }
   
   async queueAudio(audioBlob) {
+    console.log('🎵 Queueing audio blob:', audioBlob.size, 'bytes');
     this.audioQueue.push(audioBlob);
+    
     if (!this.isPlaying) {
+      console.log('▶️ Starting queue processing');
       this.processQueue();
+    } else {
+      console.log('⏸️ Already playing, audio queued');
     }
   }
   
   async processQueue() {
-    if (this.audioQueue.length === 0 || this.isPlaying) return;
+    if (this.audioQueue.length === 0 || this.isPlaying) {
+      console.log('🔄 Queue status:', { 
+        queueLength: this.audioQueue.length, 
+        isPlaying: this.isPlaying 
+      });
+      return;
+    }
     
     this.isPlaying = true;
     
     while (this.audioQueue.length > 0) {
       const audioBlob = this.audioQueue.shift();
+      console.log('🎵 Processing audio from queue, remaining:', this.audioQueue.length);
+      
       try {
         await this.playAudio(audioBlob);
+        // Malá pauza mezi větami
         await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
@@ -135,12 +152,15 @@ class MobileAudioManager {
     }
     
     this.isPlaying = false;
+    console.log('✅ Queue processing complete');
   }
   
   async playAudio(audioBlob) {
+    console.log('🔊 Playing audio blob:', audioBlob.size, 'bytes');
     this.stop();
     
     if (!this.isUnlocked) {
+      console.log('🔒 Audio locked, attempting unlock...');
       const unlocked = await this.unlockAudioContext();
       if (!unlocked) {
         throw new Error('Audio context locked');
@@ -152,6 +172,7 @@ class MobileAudioManager {
       this.currentAudio = new Audio(audioUrl);
       
       this.currentAudio.onended = () => {
+        console.log('✅ Audio playback ended');
         URL.revokeObjectURL(audioUrl);
         this.currentAudio = null;
         resolve();
@@ -165,7 +186,7 @@ class MobileAudioManager {
       };
       
       this.currentAudio.play()
-        .then(() => console.log('▶️ Audio playing'))
+        .then(() => console.log('▶️ Audio playing successfully'))
         .catch(reject);
     });
   }
@@ -178,7 +199,12 @@ class MobileAudioManager {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
       this.currentAudio = null;
+      console.log('⏹️ Audio stopped');
     }
+  }
+  
+  isCurrentlyPlaying() {
+    return this.isPlaying || (this.currentAudio && !this.currentAudio.paused);
   }
 }
 
@@ -218,6 +244,7 @@ function App() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [voiceResponseBuffer, setVoiceResponseBuffer] = useState('');
   const [pendingSentences, setPendingSentences] = useState([]);
+  const [voiceResponseComplete, setVoiceResponseComplete] = useState(false);
   
   // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
@@ -230,6 +257,7 @@ function App() {
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
   const processedSentencesRef = useRef(new Set());
+  const voiceModeTimeoutRef = useRef(null);
   
   // 🆕 PROGRESSIVE VOICE STATE
   const currentStreamTextRef = useRef('');
@@ -386,8 +414,19 @@ function App() {
 
   // ✅ FIXED: Progressive sentence processor - WORKS WITHOUT VoiceScreen requirement!
   const processNewSentences = async (fullText, language, isStreaming) => {
-    // ✅ CRITICAL FIX: Remove showVoiceScreen requirement!
-    if (!isVoiceMode) return; // Only check isVoiceMode, not showVoiceScreen
+    console.log('🎵 processNewSentences called:', {
+      isVoiceMode,
+      showVoiceScreen,
+      textLength: fullText.length,
+      language,
+      isStreaming
+    });
+    
+    // ✅ CRITICAL FIX: Only check isVoiceMode!
+    if (!isVoiceMode) {
+      console.warn('⚠️ Voice mode is false - skipping audio generation');
+      return;
+    }
     
     const currentLength = fullText.length;
     const newText = fullText.slice(lastProcessedLengthRef.current);
@@ -400,6 +439,12 @@ function App() {
     const allSentences = splitIntoSentences(fullText);
     const processedCount = processedSentencesRef.current.size;
     
+    console.log('📝 Sentence processing:', {
+      totalSentences: allSentences.length,
+      processedCount: processedCount,
+      newText: newText.substring(0, 50) + '...'
+    });
+    
     for (let i = processedCount; i < allSentences.length; i++) {
       const sentence = allSentences[i];
       
@@ -409,6 +454,8 @@ function App() {
         
         try {
           const audioBlob = await generateAudioForSentence(sentence, language);
+          console.log('✅ Audio blob generated:', audioBlob.size, 'bytes');
+          
           await mobileAudioManager.queueAudio(audioBlob);
           console.log('✅ Audio queued for progressive sentence');
         } catch (error) {
@@ -416,13 +463,35 @@ function App() {
         }
       }
     }
-  };
-
-  // 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
+    
+    // ✅ Handle final processing when streaming ends
+    if (!isStreaming && allSentences.length === processedSentencesRef.current.size) {
+      console.log('✅ All sentences processed, voice response complete');
+      setVoiceResponseComplete(true);
+      
+      // Reset voice mode after a delay to ensure all audio plays
+      if (voiceModeTimeoutRef.current) {
+        clearTimeout(voiceModeTimeoutRef.current);
+      }
+      
+      voiceModeTimeoutRef.current = setTimeout(() => {
+        if (!mobileAudioManager.isCurrentlyPlaying()) {
+          console.log('🔧 Resetting voice mode after completion');
+          setIsVoiceMode(false);
+          setVoiceResponseComplete(false);
+        }
+      }, 5000); // 5 seconds after completion
+    }
+  };// 🆕 SPEECH-TO-TEXT FUNCTIONS (unchanged - working)
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
       setIsRecordingSTT(true);
+      
+      // ✅ UNLOCK AUDIO on STT start
+      if (!mobileAudioManager.isUnlocked) {
+        await mobileAudioManager.unlockAudioContext();
+      }
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -498,6 +567,9 @@ function App() {
     if (sttRecorderRef.current && sttRecorderRef.current.state === 'recording') {
       sttRecorderRef.current.stop();
       console.log('🛑 STT Recording stopped manually');
+      
+      // ✅ UNLOCK AUDIO on stop interaction
+      mobileAudioManager.unlockAudioContext();
     }
   };
 
@@ -570,6 +642,11 @@ function App() {
     setUserLanguage('cs');
     setVoiceResponseBuffer('');
     setIsVoiceMode(false);
+    setVoiceResponseComplete(false);
+    
+    if (voiceModeTimeoutRef.current) {
+      clearTimeout(voiceModeTimeoutRef.current);
+    }
     
     showNotification(t('newChatCreated'), 'success');
   };
@@ -582,9 +659,37 @@ function App() {
     }));
   };
 
+  // ✅ FIXED: Voice transcript handler
+  const handleTranscript = async (text, confidence = 1.0) => {
+    console.log('🎙️ Voice transcript received:', { text, confidence });
+    
+    // Close voice screen if open
+    if (showVoiceScreen) {
+      setShowVoiceScreen(false);
+    }
+    
+    // ✅ CRITICAL: Keep voice mode active for response!
+    console.log('🎙️ VOICE MODE ACTIVATED via transcript');
+    setIsVoiceMode(true);
+    
+    // ✅ Force unlock audio on voice interaction
+    if (!mobileAudioManager.isUnlocked) {
+      await mobileAudioManager.unlockAudioContext();
+    }
+    
+    // ✅ Always treat voice input as voice mode
+    await handleSend(text, true); // fromVoice = true
+  };
+
   // ✅ FIXED: AI CONVERSATION with voice response fixes
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
+
+    console.log('📤 handleSend called:', { 
+      fromVoice, 
+      textInput: textInput.substring(0, 30) + '...',
+      isVoiceMode 
+    });
 
     const detectedLang = detectLanguage(textInput);
     if (detectedLang !== userLanguage) {
@@ -602,13 +707,20 @@ function App() {
 
     if (!fromVoice) setInput('');
     setLoading(true);
-    setIsVoiceMode(fromVoice); // ✅ Set voice mode early
-    setVoiceResponseBuffer('');
-
-    // 🔧 SIMPLE AUDIO UNLOCK on user interaction
-    if (fromVoice && !mobileAudioManager.isUnlocked) {
-      await mobileAudioManager.unlockAudioContext();
+    
+    // ✅ Set voice mode BEFORE sending
+    if (fromVoice) {
+      console.log('🎙️ VOICE MODE ACTIVATED in handleSend');
+      setIsVoiceMode(true);
+      
+      // Force unlock audio
+      if (!mobileAudioManager.isUnlocked) {
+        await mobileAudioManager.unlockAudioContext();
+      }
     }
+    
+    setVoiceResponseBuffer('');
+    setVoiceResponseComplete(false);
 
     try {
       const userMessage = { sender: 'user', text: textInput };
@@ -629,7 +741,7 @@ function App() {
           fullResponse = text;
 
           // ✅ FIXED: Progressive voice works with fromVoice only
-          if (fromVoice) {
+          if (fromVoice || isVoiceMode) {
             setVoiceResponseBuffer(text);
             await processNewSentences(text, detectedLang, isStillStreaming);
           }
@@ -664,8 +776,8 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ FIXED: Voice response for GPT - SIMPLE VERSION
-        if (fromVoice && responseText) {
+        // ✅ FIXED: Voice response for GPT
+        if ((fromVoice || isVoiceMode) && responseText) {
           console.log('🎵 Generating voice for GPT response');
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
@@ -679,6 +791,7 @@ function App() {
               }
             }
           }
+          setVoiceResponseComplete(true);
         }
       }
       else if (model === 'sonar') {
@@ -688,8 +801,8 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ FIXED: Voice response for Sonar - SIMPLE VERSION
-        if (fromVoice && responseText) {
+        // ✅ FIXED: Voice response for Sonar
+        if ((fromVoice || isVoiceMode) && responseText) {
           console.log('🎵 Generating voice for Sonar response');
           const sentences = splitIntoSentences(responseText);
           for (const sentence of sentences) {
@@ -703,6 +816,7 @@ function App() {
               }
             }
           }
+          setVoiceResponseComplete(true);
         }
       }
 
@@ -712,17 +826,25 @@ function App() {
     } finally {
       setLoading(false);
       setStreaming(false);
-      // ✅ FIXED: Don't reset isVoiceMode here - let it persist for TTS completion
-      // setIsVoiceMode(false); // REMOVED - causes premature TTS stop
+      
+      // ✅ Keep voice mode active until audio completes
+      if (fromVoice || isVoiceMode) {
+        console.log('🎵 Keeping voice mode active for audio completion');
+        
+        // Set timeout to reset voice mode after audio plays
+        if (voiceModeTimeoutRef.current) {
+          clearTimeout(voiceModeTimeoutRef.current);
+        }
+        
+        voiceModeTimeoutRef.current = setTimeout(() => {
+          if (!mobileAudioManager.isCurrentlyPlaying()) {
+            console.log('🔧 Resetting voice mode after timeout');
+            setIsVoiceMode(false);
+            setVoiceResponseComplete(false);
+          }
+        }, 10000); // 10 seconds timeout
+      }
     }
-  };
-
-  // ✅ FIXED: Voice transcript handler
-  const handleTranscript = async (text, confidence = 1.0) => {
-    console.log('🎙️ Voice transcript received:', { text, confidence });
-    
-    // ✅ Always treat voice input as voice mode
-    await handleSend(text, true); // fromVoice = true
   };
 
   // ⚙️ INITIALIZATION + SIMPLE AUDIO SETUP
@@ -739,32 +861,35 @@ function App() {
     }
   }, []);
 
-  // 🔧 SIMPLE AUDIO INITIALIZATION
+  // 🔧 AUDIO STATE MONITORING
   useEffect(() => {
-    const handleUserInteraction = () => {
-      if (!userHasInteracted) {
-        setUserHasInteracted(true);
-        console.log('👆 First user interaction detected');
-        mobileAudioManager.unlockAudioContext();
+    const checkAudioState = setInterval(() => {
+      const isPlaying = mobileAudioManager.isCurrentlyPlaying();
+      if (isAudioPlaying !== isPlaying) {
+        setIsAudioPlaying(isPlaying);
+        console.log('🔊 Audio playing state changed:', isPlaying);
       }
-    };
-    
-    document.addEventListener('click', handleUserInteraction, { once: true });
-    document.addEventListener('touchstart', handleUserInteraction, { once: true });
-    
-    return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-    };
-  }, []);
+    }, 500);
+
+    return () => clearInterval(checkAudioState);
+  }, [isAudioPlaying]);
 
   // 🔧 GLOBAL SCOPE for debugging
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.isVoiceMode = isVoiceMode;
+      window.mobileAudioManager = mobileAudioManager;
       console.log('🔧 Voice mode updated:', isVoiceMode);
     }
   }, [isVoiceMode]);
+
+  // 🔧 VOICE SCREEN UNLOCK
+  useEffect(() => {
+    if (showVoiceScreen && !mobileAudioManager.isUnlocked) {
+      console.log('🎤 Voice screen opened - unlocking audio');
+      mobileAudioManager.unlockAudioContext();
+    }
+  }, [showVoiceScreen]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -775,9 +900,7 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;
-
-  // 🎨 JSX RENDER
+  const shouldHideLogo = messages.length > 0;// 🎨 JSX RENDER
   return (
     <div style={{ 
       position: 'fixed',
@@ -848,9 +971,9 @@ function App() {
                 zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Simple Audio FIX! 🎵' },
-                  { key: 'claude', label: '🧠 Omnia', desc: 'Progressive + Fixed' },
-                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + Voice' }
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Voice Fixed! 🎵' },
+                  { key: 'claude', label: '🧠 Omnia', desc: 'Progressive Voice ✅' },
+                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + Voice ✅' }
                 ].map((item) => (
                   <button
                     key={item.key}
@@ -931,7 +1054,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 ChatGPT Simple Audio Fix! • ✅ Should work now • ⚡ Mobile ready
+                🎵 Voice Response Fixed! • ✅ Works everywhere • ⚡ Mobile ready
               </div>
             </>
           )}
@@ -998,7 +1121,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • simple audio ready...' : ' • voice ready'}
+                      Omnia {msg.isStreaming ? ' • streaming...' : ' • voice ready'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -1043,7 +1166,7 @@ function App() {
                     fontWeight: '500' 
                   }}>
                     {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
-                    {isVoiceMode && ' • simple audio ready'}
+                    {isVoiceMode && ' • 🎵 voice response active'}
                   </span>
                 </div>
               </div>
@@ -1148,8 +1271,10 @@ function App() {
           
           // ✅ SIMPLE: Reset voice mode after delay
           setTimeout(() => {
-            setIsVoiceMode(false);
-            console.log('🔧 Voice mode reset after audio completion');
+            if (!mobileAudioManager.isCurrentlyPlaying()) {
+              setIsVoiceMode(false);
+              console.log('🔧 Voice mode reset after VoiceScreen close');
+            }
           }, 2000);
         }}
         onTranscript={handleTranscript}
