@@ -277,10 +277,7 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - COMPLETE FIXED APP.JSX - ČÁST 2/3
-// ✅ FUNCTIONS - Opravené audio processing
-
-  // 🔧 NOTIFICATION SYSTEM
+  const shouldHideLogo = messages.length > 0;// 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -656,10 +653,7 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🚀 OMNIA - COMPLETE FIXED APP.JSX - ČÁST 3/3
-// ✅ JSX RENDER - Opravené scrollování a InputBar
-
-  // 🎨 JSX RENDER
+  };// 🎨 JSX RENDER
   return (
     <div style={{ 
       position: 'fixed', 
@@ -985,11 +979,11 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT BAR */}
+      {/* ✅ OPRAVENO: INPUT BAR - předává handleSend správně */}
       <InputBar
         input={input}
         setInput={setInput}
-        onSend={handleSend}
+        onSend={() => handleSend()}  // ✅ OPRAVA: volá handleSend() který používá aktuální input
         onSTT={toggleSTT}
         onVoiceScreen={() => setShowVoiceScreen(true)}
         isLoading={loading || streaming}
