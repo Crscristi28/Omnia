@@ -1,19 +1,14 @@
-// 🚀 InputBar.jsx - FIXED UNIFIED GLASS DESIGN
-// ✅ JEDNA glass karta pro celý input area
-// ✅ Kruhové buttony (menší ale ne oválné!)
-// ✅ Clean design jako na fotce
+// 🚀 InputBar.jsx - NOVÝ FLOATING DESIGN
+// ✅ Bez tmavého pozadí - přímo floating na chat background
+// ✅ Nové uspořádání: Plus | Deep Search || Omnia Voice || STT | Arrow
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
 import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
 import OmniaArrowButton from '../ui/OmniaArrowButton.jsx';
 
-// 🆕 PLUS MENU COMPONENT
-const PlusMenu = ({ 
-  isOpen, 
-  onClose, 
-  uiLanguage = 'cs' 
-}) => {
+// 🆕 PLUS MENU (stejné jako předtím)
+const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
   const menuItems = [
@@ -33,7 +28,6 @@ const PlusMenu = ({
 
   return (
     <>
-      {/* Backdrop */}
       <div 
         style={{
           position: 'fixed',
@@ -48,12 +42,10 @@ const PlusMenu = ({
         onClick={onClose}
       />
       
-      {/* Menu */}
       <div style={{
         position: 'fixed',
-        bottom: '120px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        bottom: '140px',
+        left: '20px',
         background: 'linear-gradient(135deg, rgba(26, 32, 44, 0.95), rgba(45, 55, 72, 0.95))',
         borderRadius: '16px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
@@ -63,8 +55,6 @@ const PlusMenu = ({
         minWidth: '280px',
         overflow: 'hidden'
       }}>
-        
-        {/* Header */}
         <div style={{
           padding: '1rem',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
@@ -77,7 +67,6 @@ const PlusMenu = ({
                'Funcții multimodale'}
         </div>
 
-        {/* Menu Items */}
         {menuItems.map((item) => (
           <button
             key={item.key}
@@ -96,41 +85,18 @@ const PlusMenu = ({
               color: '#e2e8f0',
               fontSize: '0.9rem',
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              borderTop: 'none'
+              transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-            }}
+            onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+            onMouseLeave={(e) => e.target.style.background = 'transparent'}
           >
             <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
             <span>{getLabel(item)}</span>
-            <span style={{ 
-              marginLeft: 'auto', 
-              fontSize: '0.7rem', 
-              opacity: 0.5,
-              fontStyle: 'italic'
-            }}>
+            <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, fontStyle: 'italic' }}>
               Soon
             </span>
           </button>
         ))}
-
-        {/* Footer */}
-        <div style={{
-          padding: '0.8rem',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          textAlign: 'center',
-          fontSize: '0.75rem',
-          color: 'rgba(255, 255, 255, 0.6)'
-        }}>
-          {uiLanguage === 'cs' ? 'Funkce budou brzy dostupné' : 
-           uiLanguage === 'en' ? 'Features coming soon' : 
-           'Funcțiile vor fi disponibile în curând'}
-        </div>
       </div>
     </>
   );
@@ -162,35 +128,35 @@ const InputBar = ({
     console.log('🔍 Deep Search clicked - Coming Soon!');
   };
 
-  // 🔧 FIXED: Menší ale KRUHOVÉ buttony
-  const buttonSize = isMobile ? 42 : 48; // Menší než original 54/60
+  // 🔧 OPTIMALIZOVANÉ VELIKOSTI
+  const buttonSize = isMobile ? 40 : 44;
+  const iconSize = isMobile ? '16px' : '18px';
 
   return (
     <>
-      {/* 🆕 UNIFIED GLASS CONTAINER - JEDNA KARTA PRO VŠE */}
+      {/* 🎨 FLOATING INPUT CONTAINER - BEZ TMAVÉHO POZADÍ! */}
       <div style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
-        backdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        zIndex: 10,
         padding: isMobile ? '1rem' : '1.5rem',
-        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem'
+        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
+        zIndex: 10,
+        // ❌ ŽÁDNÉ POZADÍ - prostě průhledné!
       }}>
         
-        {/* GLASS CARD - vše uvnitř jedné karty */}
+        {/* FLOATING GLASS CARD */}
         <div style={{
-          maxWidth: '1000px',
+          maxWidth: '900px',
           margin: '0 auto',
-          background: 'rgba(255, 255, 255, 0.08)',
-          borderRadius: '24px',
-          padding: isMobile ? '1rem' : '1.2rem',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          backdropFilter: 'blur(16px)'
+          background: 'rgba(255, 255, 255, 0.06)',
+          borderRadius: '28px',
+          padding: isMobile ? '0.8rem' : '1rem',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
         }}>
           
           {/* TEXTAREA */}
@@ -200,15 +166,15 @@ const InputBar = ({
             onKeyDown={handleKeyDown}
             placeholder={isLoading ? t('omniaPreparingResponse') : `${t('sendMessage')} Omnia...`}
             disabled={isLoading}
-            rows={3}
+            rows={2}
             style={{
               width: '100%',
-              minHeight: '60px',
-              maxHeight: '120px',
-              padding: '12px 16px',
+              minHeight: '50px',
+              maxHeight: '100px',
+              padding: '10px 14px',
               fontSize: isMobile ? '16px' : '15px',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '18px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               outline: 'none',
               backgroundColor: 'rgba(0, 0, 0, 0.2)',
               color: '#ffffff',
@@ -216,116 +182,140 @@ const InputBar = ({
               resize: 'none',
               fontFamily: 'inherit',
               lineHeight: '1.4',
-              marginBottom: '12px'
+              marginBottom: '10px'
             }}
           />
 
-          {/* BUTTON ROW */}
+          {/* 🎯 NOVÉ USPOŘÁDÁNÍ TLAČÍTEK */}
           <div style={{
             display: 'flex',
-            justifyContent: 'center',
             alignItems: 'center',
-            gap: isMobile ? '8px' : '12px'
+            gap: isMobile ? '6px' : '8px',
+            position: 'relative'
           }}>
             
-            {/* PLUS BUTTON */}
-            <button
-              onClick={() => setShowPlusMenu(true)}
-              disabled={isLoading}
-              style={{
-                width: buttonSize,
-                height: buttonSize,
-                borderRadius: '50%', // ✅ KRUHOVÝ!
-                border: 'none',
-                background: 'linear-gradient(45deg, #6b73ff, #9b59b6)',
-                color: 'white',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                transition: 'all 0.3s ease',
-                opacity: isLoading ? 0.5 : 1,
-                boxShadow: '0 4px 12px rgba(107, 115, 255, 0.3)'
-              }}
-              title="Plus Menu"
-            >
-              +
-            </button>
+            {/* LEVÁ ČÁST: Plus + Deep Search */}
+            <div style={{
+              display: 'flex',
+              gap: isMobile ? '4px' : '6px',
+              marginRight: 'auto'
+            }}>
+              {/* PLUS BUTTON */}
+              <button
+                onClick={() => setShowPlusMenu(true)}
+                disabled={isLoading}
+                style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #6b73ff, #9b59b6)',
+                  color: 'white',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: iconSize,
+                  fontWeight: 'bold',
+                  transition: 'all 0.3s ease',
+                  opacity: isLoading ? 0.5 : 1,
+                  boxShadow: '0 4px 12px rgba(107, 115, 255, 0.3)'
+                }}
+                title="Plus Menu"
+              >
+                +
+              </button>
 
-            {/* DEEP SEARCH BUTTON */}
-            <button
-              onClick={handleDeepSearch}
-              disabled={isLoading}
-              style={{
-                width: buttonSize,
-                height: buttonSize,
-                borderRadius: '50%', // ✅ KRUHOVÝ!
-                border: 'none',
-                background: 'linear-gradient(45deg, #17a2b8, #20c997)',
-                color: 'white',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                transition: 'all 0.3s ease',
-                opacity: isLoading ? 0.5 : 1,
-                boxShadow: '0 4px 12px rgba(23, 162, 184, 0.3)'
-              }}
-              title="Deep Search"
-            >
-              🔍
-            </button>
+              {/* DEEP SEARCH */}
+              <button
+                onClick={handleDeepSearch}
+                disabled={isLoading}
+                style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #17a2b8, #20c997)',
+                  color: 'white',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: iconSize,
+                  transition: 'all 0.3s ease',
+                  opacity: isLoading ? 0.5 : 1,
+                  boxShadow: '0 4px 12px rgba(23, 162, 184, 0.3)'
+                }}
+                title="Deep Search"
+              >
+                🔍
+              </button>
+            </div>
 
-            {/* STT BUTTON */}
-            <button
-              onClick={onSTT}
-              disabled={isLoading || isAudioPlaying}
-              style={{
-                width: buttonSize,
-                height: buttonSize,
-                borderRadius: '50%', // ✅ KRUHOVÝ!
-                border: 'none',
-                background: isRecording 
-                  ? 'linear-gradient(45deg, #dc3545, #c82333)' 
-                  : 'linear-gradient(45deg, #28a745, #20c997)',
-                color: 'white',
-                cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                transition: 'all 0.3s ease',
-                opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
-                boxShadow: isRecording 
-                  ? '0 0 20px rgba(220, 53, 69, 0.5)' 
-                  : '0 4px 12px rgba(40, 167, 69, 0.3)'
-              }}
-              title={isRecording ? 'Zastavit nahrávání' : 'Speech-to-Text'}
-            >
-              {isRecording ? '⏹️' : '🎤'}
-            </button>
+            {/* STŘED: VOICE SCREEN (Omnia Logo) */}
+            <div style={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1
+            }}>
+              <MiniOmniaLogo 
+                size={buttonSize + 4} 
+                onClick={onVoiceScreen}
+                isAudioPlaying={isAudioPlaying}
+                isListening={false}
+                loading={isLoading} 
+                streaming={false}
+              />
+            </div>
 
-            {/* VOICE SCREEN LOGO */}
-            <MiniOmniaLogo 
-              size={buttonSize} 
-              onClick={onVoiceScreen}
-              isAudioPlaying={isAudioPlaying}
-              isListening={false}
-              loading={isLoading} 
-              streaming={false}
-            />
+            {/* SPACER pro centrování */}
+            <div style={{ width: buttonSize + 4 }} />
 
-            {/* SEND BUTTON */}
-            <OmniaArrowButton
-              onClick={onSend}
-              disabled={isLoading || !input.trim()}
-              loading={isLoading}
-              isListening={isRecording}
-              size={buttonSize}
-            />
+            {/* PRAVÁ ČÁST: STT + Arrow */}
+            <div style={{
+              display: 'flex',
+              gap: isMobile ? '4px' : '6px',
+              marginLeft: 'auto'
+            }}>
+              {/* STT BUTTON */}
+              <button
+                onClick={onSTT}
+                disabled={isLoading || isAudioPlaying}
+                style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: isRecording 
+                    ? 'linear-gradient(135deg, #dc3545, #c82333)' 
+                    : 'linear-gradient(135deg, #28a745, #20c997)',
+                  color: 'white',
+                  cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: iconSize,
+                  transition: 'all 0.3s ease',
+                  opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
+                  boxShadow: isRecording 
+                    ? '0 0 20px rgba(220, 53, 69, 0.5)' 
+                    : '0 4px 12px rgba(40, 167, 69, 0.3)'
+                }}
+                title={isRecording ? 'Zastavit nahrávání' : 'Speech-to-Text'}
+              >
+                {isRecording ? '⏹️' : '🎤'}
+              </button>
+
+              {/* SEND ARROW */}
+              <OmniaArrowButton
+                onClick={onSend}
+                disabled={isLoading || !input.trim()}
+                loading={isLoading}
+                isListening={isRecording}
+                size={buttonSize}
+              />
+            </div>
           </div>
         </div>
       </div>
