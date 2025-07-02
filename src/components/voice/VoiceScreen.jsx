@@ -563,7 +563,7 @@ const VoiceScreen = ({
           user-select: none;
         }
       `}</style>
-    </div>
+      </div>
   );
 };
 
