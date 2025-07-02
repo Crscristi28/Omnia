@@ -135,7 +135,7 @@ class MobileAudioManager {
       try {
         await this.playAudio(audioBlob);
         console.log('✅ Audio finished, continuing to next...');
-        await new Promise(resolve => setTimeout(resolve, 600));
+        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
