@@ -1,6 +1,7 @@
-// 🚀 InputBar.jsx - NOVÝ FLOATING DESIGN
-// ✅ Bez tmavého pozadí - přímo floating na chat background
-// ✅ Nové uspořádání: Plus | Deep Search || Omnia Voice || STT | Arrow
+// 🚀 InputBar.jsx - MOBILNÍ OPTIMALIZACE
+// ✅ Menší tlačítka na mobilu (36px)
+// ✅ Větší mezery mezi tlačítky
+// ✅ Lepší centrování
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
@@ -128,22 +129,22 @@ const InputBar = ({
     console.log('🔍 Deep Search clicked - Coming Soon!');
   };
 
-  // 🔧 OPTIMALIZOVANÉ VELIKOSTI
-  const buttonSize = isMobile ? 40 : 44;
-  const iconSize = isMobile ? '16px' : '18px';
+  // 🔧 MOBILNÍ OPTIMALIZACE - menší tlačítka, větší mezery
+  const buttonSize = isMobile ? 36 : 44;  // Zmenšeno z 40 na 36 pro mobil
+  const iconSize = isMobile ? '14px' : '18px';  // Menší ikony na mobilu
+  const buttonGap = isMobile ? '10px' : '8px';  // Větší mezery na mobilu
 
   return (
     <>
-      {/* 🎨 FLOATING INPUT CONTAINER - BEZ TMAVÉHO POZADÍ! */}
+      {/* 🎨 FLOATING INPUT CONTAINER */}
       <div style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        padding: isMobile ? '1rem' : '1.5rem',
-        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
+        padding: isMobile ? '0.8rem' : '1.5rem',  // Menší padding na mobilu
+        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 0.8rem) + 0.8rem)' : '1.5rem',
         zIndex: 10,
-        // ❌ ŽÁDNÉ POZADÍ - prostě průhledné!
       }}>
         
         {/* FLOATING GLASS CARD */}
@@ -151,8 +152,8 @@ const InputBar = ({
           maxWidth: '900px',
           margin: '0 auto',
           background: 'rgba(255, 255, 255, 0.06)',
-          borderRadius: '28px',
-          padding: isMobile ? '0.8rem' : '1rem',
+          borderRadius: isMobile ? '24px' : '28px',  // Menší radius na mobilu
+          padding: isMobile ? '0.7rem' : '1rem',  // Menší padding
           border: '1px solid rgba(255, 255, 255, 0.15)',
           boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
           backdropFilter: 'blur(20px)',
@@ -169,11 +170,11 @@ const InputBar = ({
             rows={2}
             style={{
               width: '100%',
-              minHeight: '50px',
-              maxHeight: '100px',
-              padding: '10px 14px',
+              minHeight: isMobile ? '45px' : '50px',  // Menší na mobilu
+              maxHeight: isMobile ? '80px' : '100px',
+              padding: isMobile ? '8px 12px' : '10px 14px',
               fontSize: isMobile ? '16px' : '15px',
-              borderRadius: '18px',
+              borderRadius: isMobile ? '16px' : '18px',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               outline: 'none',
               backgroundColor: 'rgba(0, 0, 0, 0.2)',
@@ -182,23 +183,24 @@ const InputBar = ({
               resize: 'none',
               fontFamily: 'inherit',
               lineHeight: '1.4',
-              marginBottom: '10px'
+              marginBottom: isMobile ? '8px' : '10px'
             }}
           />
 
-          {/* 🎯 NOVÉ USPOŘÁDÁNÍ TLAČÍTEK */}
+          {/* 🎯 TLAČÍTKA S MOBILNÍ OPTIMALIZACÍ */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: isMobile ? '6px' : '8px',
-            position: 'relative'
+            justifyContent: 'space-between',  // Lepší distribuce
+            gap: buttonGap,
+            padding: isMobile ? '0 4px' : '0',  // Extra padding na mobilu
           }}>
             
             {/* LEVÁ ČÁST: Plus + Deep Search */}
             <div style={{
               display: 'flex',
-              gap: isMobile ? '4px' : '6px',
-              marginRight: 'auto'
+              gap: buttonGap,
+              flex: '0 0 auto'
             }}>
               {/* PLUS BUTTON */}
               <button
@@ -219,7 +221,8 @@ const InputBar = ({
                   fontWeight: 'bold',
                   transition: 'all 0.3s ease',
                   opacity: isLoading ? 0.5 : 1,
-                  boxShadow: '0 4px 12px rgba(107, 115, 255, 0.3)'
+                  boxShadow: '0 3px 10px rgba(107, 115, 255, 0.3)',
+                  flexShrink: 0
                 }}
                 title="Plus Menu"
               >
@@ -244,7 +247,8 @@ const InputBar = ({
                   fontSize: iconSize,
                   transition: 'all 0.3s ease',
                   opacity: isLoading ? 0.5 : 1,
-                  boxShadow: '0 4px 12px rgba(23, 162, 184, 0.3)'
+                  boxShadow: '0 3px 10px rgba(23, 162, 184, 0.3)',
+                  flexShrink: 0
                 }}
                 title="Deep Search"
               >
@@ -254,13 +258,11 @@ const InputBar = ({
 
             {/* STŘED: VOICE SCREEN (Omnia Logo) */}
             <div style={{
-              position: 'absolute',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 1
+              flex: '0 0 auto',
+              margin: isMobile ? '0 auto' : '0 auto'
             }}>
               <MiniOmniaLogo 
-                size={buttonSize + 4} 
+                size={buttonSize + (isMobile ? 2 : 4)}  // Jen trochu větší než ostatní
                 onClick={onVoiceScreen}
                 isAudioPlaying={isAudioPlaying}
                 isListening={false}
@@ -269,14 +271,11 @@ const InputBar = ({
               />
             </div>
 
-            {/* SPACER pro centrování */}
-            <div style={{ width: buttonSize + 4 }} />
-
             {/* PRAVÁ ČÁST: STT + Arrow */}
             <div style={{
               display: 'flex',
-              gap: isMobile ? '4px' : '6px',
-              marginLeft: 'auto'
+              gap: buttonGap,
+              flex: '0 0 auto'
             }}>
               {/* STT BUTTON */}
               <button
@@ -299,8 +298,9 @@ const InputBar = ({
                   transition: 'all 0.3s ease',
                   opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
                   boxShadow: isRecording 
-                    ? '0 0 20px rgba(220, 53, 69, 0.5)' 
-                    : '0 4px 12px rgba(40, 167, 69, 0.3)'
+                    ? '0 0 16px rgba(220, 53, 69, 0.5)' 
+                    : '0 3px 10px rgba(40, 167, 69, 0.3)',
+                  flexShrink: 0
                 }}
                 title={isRecording ? 'Zastavit nahrávání' : 'Speech-to-Text'}
               >

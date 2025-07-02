@@ -135,7 +135,7 @@ class MobileAudioManager {
       try {
         await this.playAudio(audioBlob);
         console.log('✅ Audio finished, continuing to next...');
-        await new Promise(resolve => setTimeout(resolve, 100)); // ✅ Kratší pauza mezi větami
+        await new Promise(resolve => setTimeout(resolve, 0)); // ✅ Kratší pauza mezi větami
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
