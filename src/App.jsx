@@ -135,7 +135,7 @@ class MobileAudioManager {
       try {
         await this.playAudio(audioBlob);
         console.log('✅ Audio finished, continuing to next...');
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100)); // ✅ Kratší pauza mezi větami
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
@@ -584,11 +584,31 @@ function App() {
       if (model === 'claude') {
         // 🔧 FIXED: Správně zachytíme streamovaný text pro voice!
         let streamedText = '';
+        let lastProcessedIndex = 0;
         
         responseText = await claudeService.sendMessage(
           messagesWithUser,
           (text, isStreaming) => {
             streamedText = text; // ✅ Ukládáme streamovaný text
+            
+            // 🎵 VOICE PROCESSING BĚHEM STREAMOVÁNÍ!
+            if (fromVoice && showVoiceScreen && text.length > lastProcessedIndex) {
+              const newText = text.substring(lastProcessedIndex);
+              const sentences = newText.match(/[^.!?]+[.!?]+/g) || [];
+              
+              for (const sentence of sentences) {
+                if (sentence.trim().length > 5) {
+                  console.log('🎵 Processing sentence during stream:', sentence.substring(0, 30) + '...');
+                  // Okamžitě zpracovat větu
+                  generateAudioForSentence(sentence.trim(), detectedLang)
+                    .then(audioBlob => mobileAudioManager.queueAudio(audioBlob))
+                    .catch(err => console.error('Audio generation failed:', err));
+                  
+                  lastProcessedIndex = text.lastIndexOf(sentence) + sentence.length;
+                }
+              }
+            }
+            
             const streamingMessages = [
               ...messagesWithUser,
               { sender: 'bot', text: text, isStreaming: true }
@@ -600,17 +620,18 @@ function App() {
           detectedLang
         );
         
-        // ✅ FIXED: Použijeme streamedText nebo responseText
+        // ✅ Zpracovat zbývající text po dokončení
+        if (fromVoice && showVoiceScreen && streamedText.length > lastProcessedIndex) {
+          const remainingText = streamedText.substring(lastProcessedIndex);
+          if (remainingText.trim().length > 5) {
+            await processVoiceResponse(remainingText, detectedLang);
+          }
+        }
+        
         const finalText = streamedText || responseText;
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
-        
-        // ✅ FIXED: Voice processing s finálním textem
-        if (fromVoice && showVoiceScreen && finalText) {
-          console.log('🎵 Claude response complete, processing voice with text:', finalText.substring(0, 50) + '...');
-          await processVoiceResponse(finalText, detectedLang);
-        }
       }
       else if (model === 'gpt-4o') {
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
