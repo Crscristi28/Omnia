@@ -1,6 +1,7 @@
-// 🚀 OMNIA - FIXED APP.JSX (ČÁST 1/3) - SEQUENTIAL AUDIO FIX
-// ✅ FIXED: Sequential audio processing - no more skipping sentences
-// ✅ PRESERVED: TTS-aware Claude + sanitizeText backup + mobile audio
+// 🚀 OMNIA - NOVÝ APP.JSX - ČÁST 1/3
+// ✅ CLAUDE INSTANT RESPONSE (bez streaming, rychlé jako GPT)
+// ✅ MODULAR INPUT BAR (glass design s buttony)
+// ✅ CLEAN ARCHITECTURE (rozděleno na 3 části)
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -19,11 +20,13 @@ import detectLanguage from './utils/smartLanguageDetection.js';
 // 🔧 IMPORT UI COMPONENTS
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
 import { OmniaLogo, MiniOmniaLogo, ChatOmniaLogo } from './components/ui/OmniaLogos.jsx';
-import OmniaArrowButton from './components/ui/OmniaArrowButton.jsx';
 import TypewriterText from './components/ui/TypewriterText.jsx';
 import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
+
+// 🆕 IMPORT NOVÝ INPUT BAR
+import InputBar from './components/input/InputBar.jsx';
 
 // 🆕 SANITIZE TEXT FUNCTION (backup - working perfectly!)
 function sanitizeText(text) {
@@ -90,7 +93,7 @@ class MobileAudioManager {
       oscillator.start();
       oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xP4AAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+      const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
       silentAudio.volume = 0.01;
       
       try {
@@ -138,7 +141,7 @@ class MobileAudioManager {
         console.log('✅ Audio finished, continuing to next...');
         
         // 🔧 Short gap between sentences for natural speech
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
@@ -206,12 +209,11 @@ class MobileAudioManager {
 // Create global instance
 const mobileAudioManager = new MobileAudioManager();
 
-// 🆕 SIMPLE SENTENCE SPLITTER (stejný jako pro GPT)
+// 🆕 SIMPLE SENTENCE SPLITTER (pro voice processing)
 function splitIntoSentences(text) {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
-}// 🚀 OMNIA - FIXED APP.JSX (ČÁST 2/3) - MAIN COMPONENT + FUNCTIONS
-// ✅ FIXED: Claude voice = GPT voice (stejná jednoduchá logika)
+}
 
 function App() {
   // 📊 BASIC STATE
@@ -219,7 +221,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('claude');
   const [loading, setLoading] = useState(false);
-  const [streaming, setStreaming] = useState(false);
+  const [streaming, setStreaming] = useState(false); // 🔧 POZOR: Claude už nebude streamovat!
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
   // 🎤 VOICE STATE
@@ -262,6 +264,34 @@ function App() {
       document.removeEventListener('touchstart', handleUserInteraction);
     };
   }, []);
+
+  // ⚙️ INITIALIZATION
+  useEffect(() => {
+    const { isNewSession, messages: savedMessages } = sessionManager.initSession();
+    
+    if (!isNewSession && savedMessages.length > 0) {
+      setMessages(savedMessages);
+    }
+
+    const savedUILanguage = sessionManager.getUILanguage();
+    if (savedUILanguage && uiTexts[savedUILanguage]) {
+      setUILanguage(savedUILanguage);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (messages.length > 0 && endOfMessagesRef.current) {
+        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [messages]);
+
+  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - NOVÝ APP.JSX - ČÁST 2/3 - FUNCTIONS
+// ✅ CLAUDE INSTANT RESPONSE (bez streaming, rychlé jako GPT!)
+// ✅ VOICE FUNCTIONS (STT, TTS, Voice Screen)
+// ✅ NOTIFICATION SYSTEM + UTILITY FUNCTIONS
 
   // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
@@ -374,7 +404,7 @@ function App() {
     }
   };
 
-  // 🆕 SIMPLE VOICE PROCESSING (stejné pro Claude i GPT)
+  // 🆕 SIMPLE VOICE PROCESSING (pro všechny modely)
   const processVoiceResponse = async (responseText, language) => {
     console.log('🎵 Processing voice response:', {
       textLength: responseText.length,
@@ -466,6 +496,10 @@ function App() {
     if (sttRecorderRef.current && sttRecorderRef.current.state === 'recording') {
       sttRecorderRef.current.stop();
     }
+    
+    // 🔓 UNLOCK AUDIO CONTEXT on user interaction!
+    mobileAudioManager.unlockAudioContext();
+    console.log('🔓 Audio unlocked via stop interaction');
   };
 
   const processSTTAudio = async (audioBlob) => {
@@ -534,7 +568,9 @@ function App() {
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text || ''
     }));
-  };// 🤖 AI CONVERSATION - FIXED: Claude voice = GPT voice (stejná logika)
+  };
+
+  // 🚀 HLAVNÍ FUNKCE - INSTANT AI CONVERSATION (BEZ STREAMING!)
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading || streaming) return;
 
@@ -559,19 +595,21 @@ function App() {
       let responseText = '';
 
       if (model === 'claude') {
-        // ✅ CLAUDE = GPT (žádné streamování, instant voice!)
+        // ✅ CLAUDE INSTANT - BEZ STREAMING! (rychlé jako GPT)
+        console.log('🧠 Claude INSTANT mode - no streaming!');
         responseText = await claudeService.sendMessage(messagesWithUser, null, null, detectedLang);
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ INSTANT VOICE - stejně jako GPT!
+        // ✅ INSTANT VOICE - okamžité spuštění!
         if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎵 Claude response complete, processing voice...');
+          console.log('🎵 Claude instant response complete, processing voice...');
           processVoiceResponse(responseText, detectedLang);
         }
       }
       else if (model === 'gpt-4o') {
+        // ✅ GPT instant (unchanged)
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
         
         responseText = await openaiService.sendMessage(openAIMessages, detectedLang);
@@ -579,13 +617,14 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ GPT voice processing (unchanged)
+        // ✅ GPT voice processing
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
           processVoiceResponse(responseText, detectedLang);
         }
       }
       else if (model === 'sonar') {
+        // ✅ Sonar instant (unchanged)
         const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
         responseText = searchResult.success ? searchResult.result : searchResult.message;
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
@@ -599,12 +638,14 @@ function App() {
         }
       }
 
+      console.log('✅ INSTANT RESPONSE COMPLETE - no streaming delays!');
+
     } catch (err) {
       console.error('💥 API call error:', err);
       showNotification(err.message, 'error');
     } finally {
       setLoading(false);
-      setStreaming(false);
+      setStreaming(false); // Always false now - no streaming!
     }
   };
 
@@ -616,32 +657,9 @@ function App() {
     } else {
       setInput(text);
     }
-  };
-
-  // ⚙️ INITIALIZATION
-  useEffect(() => {
-    const { isNewSession, messages: savedMessages } = sessionManager.initSession();
-    
-    if (!isNewSession && savedMessages.length > 0) {
-      setMessages(savedMessages);
-    }
-
-    const savedUILanguage = sessionManager.getUILanguage();
-    if (savedUILanguage && uiTexts[savedUILanguage]) {
-      setUILanguage(savedUILanguage);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (messages.length > 0 && endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [messages]);
-
-  const shouldHideLogo = messages.length > 0;
+  };// 🚀 OMNIA - NOVÝ APP.JSX - ČÁST 3/3 - JSX RENDER
+// ✅ POUZE InputBar integration - žádné jiné změny!
+// ✅ Vše ostatní zůstává stejné jako v original App.jsx
 
   // 🎨 JSX RENDER
   return (
@@ -657,7 +675,7 @@ function App() {
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       
-      {/* HEADER */}
+      {/* HEADER - NEZMĚNĚNO */}
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.85), rgba(0, 78, 146, 0.6))',
@@ -694,9 +712,9 @@ function App() {
                 backdropFilter: 'blur(16px)', zIndex: 1000, minWidth: '220px', overflow: 'hidden'
               }}>
                 {[
-                  { key: 'claude', label: '🧠 Omnia', desc: 'No streaming = instant voice!' },
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fixed! Voice working' },
-                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time + voice' }
+                  { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + instant voice' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice' },
+                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time info + voice' }
                 ].map((item) => (
                   <button
                     key={item.key}
@@ -774,14 +792,14 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Claude instant voice • ⚡ GPT instant voice • 🔍 All models FAST
+                🎵 Glass Input Bar • ➕ Plus Menu • 🔍 Deep Search • 🎙️ Voice Chat
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN CONTENT - NEZMĚNĚNO */}
       <main style={{ 
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
@@ -840,7 +858,7 @@ function App() {
                       display: 'flex', alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • voice ready'}
+                      Omnia {msg.isStreaming ? ' • streaming' : ' • instant response'}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -895,88 +913,18 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT AREA */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
-        backdropFilter: 'blur(20px)', padding: isMobile ? '1.2rem' : '1.6rem',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1.2rem)' : '1.6rem',
-        zIndex: 10, flexShrink: 0
-      }}>
-        <div style={{ 
-          maxWidth: '1000px', margin: '0 auto', 
-          display: 'flex', gap: '0.8rem', alignItems: 'center'
-        }}>
-          
-          <div style={{ flex: 1 }}>
-            <input
-              type="text" value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && !streaming && handleSend()}
-              placeholder={isListening || isRecordingSTT ? (isRecordingSTT ? 'Nahrávám ElevenLabs STT...' : t('listening') + '...') :
-                          streaming ? t('omniaStreaming') : 
-                          `${t('sendMessage')} Omnia...`}
-              disabled={loading || streaming}
-              style={{ 
-                width: '100%', 
-                padding: isMobile ? '1.1rem 1.4rem' : '1.2rem 1.6rem',
-                fontSize: isMobile ? '16px' : '0.95rem', 
-                borderRadius: '30px',
-                border: '2px solid rgba(74, 85, 104, 0.6)', outline: 'none',
-                backgroundColor: (loading || streaming) 
-                  ? 'rgba(45, 55, 72, 0.6)' 
-                  : 'rgba(26, 32, 44, 0.8)',
-                color: '#ffffff',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                opacity: (loading || streaming) ? 0.7 : 1,
-                backdropFilter: 'blur(10px)', fontWeight: '400'
-              }}
-            />
-          </div>
-          
-          <button
-            onClick={toggleSTT}
-            disabled={loading || streaming || isAudioPlaying}
-            style={{
-              width: isMobile ? 54 : 60, height: isMobile ? 54 : 60,
-              borderRadius: '50%', border: 'none',
-              background: isRecordingSTT 
-                ? 'linear-gradient(45deg, #ff4444, #cc0000)' 
-                : 'linear-gradient(45deg, #00ff88, #00cc66)',
-              color: 'white',
-              cursor: (loading || streaming || isAudioPlaying) ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.2rem', fontWeight: 'bold',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              opacity: (loading || streaming || isAudioPlaying) ? 0.5 : 1,
-              boxShadow: isRecordingSTT 
-                ? '0 0 20px rgba(255, 68, 68, 0.6)' 
-                : '0 4px 12px rgba(0, 255, 136, 0.4)',
-              transform: 'translateZ(0)'
-            }}
-            title={isRecordingSTT ? 'Zastavit STT nahrávání' : 'ElevenLabs Speech-to-Text'}
-          >
-            {isRecordingSTT ? '⏹️' : '🎤'}
-          </button>
-
-          <MiniOmniaLogo 
-            size={isMobile ? 54 : 60} 
-            onClick={() => !loading && !streaming && setShowVoiceScreen(true)}
-            isAudioPlaying={isAudioPlaying}
-            isListening={isListening}
-            loading={loading} streaming={streaming}
-          />
-
-          <OmniaArrowButton
-            onClick={() => handleSend()}
-            disabled={loading || streaming || !input.trim()}
-            loading={loading || streaming}
-            isListening={isListening || isRecordingSTT}
-            size={isMobile ? 54 : 60}
-          />
-        </div>
-      </div>
+      {/* 🆕 NOVÝ INPUT BAR - NAHRAZUJE STARÝ INPUT AREA! */}
+      <InputBar
+        input={input}
+        setInput={setInput}
+        onSend={handleSend}
+        onSTT={toggleSTT}
+        onVoiceScreen={() => setShowVoiceScreen(true)}
+        isLoading={loading || streaming}
+        isRecording={isRecordingSTT}
+        isAudioPlaying={isAudioPlaying}
+        uiLanguage={uiLanguage}
+      />
 
       <VoiceScreen 
         isOpen={showVoiceScreen}
