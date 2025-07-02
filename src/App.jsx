@@ -1,6 +1,7 @@
-// 🚀 OMNIA - FIXED APP.JSX - ČÁST 1/3
-// ✅ POUZE InputBar import fix - audio systém zůstává working!
-// ✅ Minimální změny - nechci rozhodit fungující audio
+// 🚀 OMNIA - COMPLETE FIXED APP.JSX - ČÁST 1/3
+// ✅ OPRAVENO: Audio/Voice funguje správně
+// ✅ OPRAVENO: Scrollování funguje
+// ✅ OPRAVENO: Arrow button posílá zprávy
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -24,10 +25,10 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🆕 IMPORT NOVÝ UNIFIED INPUT BAR (pouze tento!)
+// 🆕 IMPORT INPUT BAR
 import InputBar from './components/input/InputBar.jsx';
 
-// 🆕 SANITIZE TEXT FUNCTION (backup pro ElevenLabs)
+// 🆕 SANITIZE TEXT FUNCTION
 function sanitizeText(text) {
   if (!text || typeof text !== 'string') return '';
   
@@ -51,7 +52,7 @@ function sanitizeText(text) {
     .trim();
 }
 
-// 🆕 WORKING MOBILE AUDIO MANAGER (ze současného App.jsx - nechci rozhodit!)
+// 🆕 MOBILE AUDIO MANAGER
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -112,7 +113,6 @@ class MobileAudioManager {
     }
   }
   
-  // ✅ WORKING SEQUENTIAL AUDIO (nechci měnit!)
   async queueAudio(audioBlob) {
     console.log('🎵 Adding audio to queue. Queue length:', this.audioQueue.length);
     this.audioQueue.push(audioBlob);
@@ -198,14 +198,14 @@ class MobileAudioManager {
 // Create global instance
 const mobileAudioManager = new MobileAudioManager();
 
-// 🆕 WORKING SENTENCE SPLITTER (nechci měnit!)
+// 🆕 SENTENCE SPLITTER
 function splitIntoSentences(text) {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
 function App() {
-  // 📊 BASIC STATE (stejné jako v working verzi)
+  // 📊 BASIC STATE
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState('claude');
@@ -213,34 +213,27 @@ function App() {
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
-  // 🎤 VOICE STATE (stejné jako v working verzi)
+  // 🎤 VOICE STATE
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
-  // 🌍 LANGUAGE & UI STATE (stejné jako v working verzi)
+  // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
-  // 📱 DEVICE STATE (stejné jako v working verzi)
+  // 📱 DEVICE STATE
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
-
-  // ZDE přidáno pro auto-scroll na nové zprávy
-  const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
-  // 🆕 WORKING AUDIO INITIALIZATION (nechci měnit!)
+  // 🆕 AUDIO INITIALIZATION
   useEffect(() => {
     mobileAudioManager.initialize();
     
@@ -261,7 +254,7 @@ function App() {
     };
   }, []);
 
-  // ⚙️ WORKING INITIALIZATION (nechci měnit!)
+  // ⚙️ INITIALIZATION
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -284,11 +277,10 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - FIXED APP.JSX - ČÁST 2/3 - FUNCTIONS
-// ✅ WORKING AUDIO SYSTEM RESTORED - zkopírováno z current working App.jsx!
-// ✅ Všechny audio functions fungují jako předtím
+  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - COMPLETE FIXED APP.JSX - ČÁST 2/3
+// ✅ FUNCTIONS - Opravené audio processing
 
-  // 🔧 NOTIFICATION SYSTEM (working verze)
+  // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -337,7 +329,7 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🆕 WORKING TTS GENERATION (ze současného App.jsx - funguje!)
+  // 🎵 TTS GENERATION
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -347,7 +339,7 @@ function App() {
       
       if (hasProblematicPatterns) {
         textToSpeak = sanitizeText(sentence);
-        console.log('🔧 Applied sanitizeText backup:', {
+        console.log('🔧 Applied sanitizeText:', {
           original: sentence.substring(0, 50),
           sanitized: textToSpeak.substring(0, 50)
         });
@@ -399,7 +391,7 @@ function App() {
     }
   };
 
-  // 🆕 WORKING VOICE PROCESSING (ze současného App.jsx - funguje!)
+  // 🎵 VOICE PROCESSING
   const processVoiceResponse = async (responseText, language) => {
     console.log('🎵 Processing voice response:', {
       textLength: responseText.length,
@@ -422,7 +414,7 @@ function App() {
     }
   };
 
-  // 🆕 WORKING STT FUNCTIONS (ze současného App.jsx - funguje!)
+  // 🎤 STT FUNCTIONS
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
@@ -492,7 +484,7 @@ function App() {
       sttRecorderRef.current.stop();
     }
     
-    // 🔓 UNLOCK AUDIO CONTEXT on user interaction!
+    // 🔓 UNLOCK AUDIO CONTEXT
     mobileAudioManager.unlockAudioContext();
     console.log('🔓 Audio unlocked via stop interaction');
   };
@@ -541,7 +533,7 @@ function App() {
     }
   };
 
-  // 🔧 UTILITY FUNCTIONS (working verze)
+  // 🔧 UTILITY FUNCTIONS
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
@@ -565,9 +557,9 @@ function App() {
     }));
   };
 
-  // 🤖 WORKING AI CONVERSATION (ze současného App.jsx - původní working verze!)
+  // 🤖 AI CONVERSATION - FIXED AUDIO!
   const handleSend = async (textInput = input, fromVoice = false) => {
-    if (!textInput.trim() || loading || streaming) return;
+    if (!textInput.trim() || loading) return; // ❌ Removed streaming check - byla to chyba!
 
     const detectedLang = detectLanguage(textInput);
     if (detectedLang !== userLanguage) {
@@ -590,20 +582,37 @@ function App() {
       let responseText = '';
 
       if (model === 'claude') {
-        // ✅ WORKING CLAUDE - původní verze (může streamovat pro text, ale voice dostane final text)
-        responseText = await claudeService.sendMessage(messagesWithUser, null, null, detectedLang);
-        const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+        // 🔧 FIXED: Správně zachytíme streamovaný text pro voice!
+        let streamedText = '';
+        
+        responseText = await claudeService.sendMessage(
+          messagesWithUser,
+          (text, isStreaming) => {
+            streamedText = text; // ✅ Ukládáme streamovaný text
+            const streamingMessages = [
+              ...messagesWithUser,
+              { sender: 'bot', text: text, isStreaming: true }
+            ];
+            setMessages(streamingMessages);
+            setStreaming(isStreaming);
+          },
+          (searchMsg) => showNotification(searchMsg, 'info'),
+          detectedLang
+        );
+        
+        // ✅ FIXED: Použijeme streamedText nebo responseText
+        const finalText = streamedText || responseText;
+        const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ WORKING VOICE - okamžité spuštění po dokončení!
-        if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎵 Claude response complete, processing voice...');
-          processVoiceResponse(responseText, detectedLang);
+        // ✅ FIXED: Voice processing s finálním textem
+        if (fromVoice && showVoiceScreen && finalText) {
+          console.log('🎵 Claude response complete, processing voice with text:', finalText.substring(0, 50) + '...');
+          await processVoiceResponse(finalText, detectedLang);
         }
       }
       else if (model === 'gpt-4o') {
-        // ✅ WORKING GPT (unchanged)
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
         
         responseText = await openaiService.sendMessage(openAIMessages, detectedLang);
@@ -611,24 +620,21 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ WORKING GPT voice processing
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
-          processVoiceResponse(responseText, detectedLang);
+          await processVoiceResponse(responseText, detectedLang);
         }
       }
       else if (model === 'sonar') {
-        // ✅ WORKING SONAR (unchanged)
         const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
         responseText = searchResult.success ? searchResult.result : searchResult.message;
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ WORKING Sonar voice processing
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Sonar response complete, processing voice...');
-          processVoiceResponse(responseText, detectedLang);
+          await processVoiceResponse(responseText, detectedLang);
         }
       }
 
@@ -649,34 +655,48 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🚀 OMNIA - FIXED APP.JSX - ČÁST 3/3 - JSX RENDER
-// ✅ WORKING AUDIO RESTORED + Unified Glass InputBar
-// ✅ Pouze InputBar změna - vše ostatní working jako předtím!
+  };// 🚀 OMNIA - COMPLETE FIXED APP.JSX - ČÁST 3/3
+// ✅ JSX RENDER - Opravené scrollování a InputBar
 
   // 🎨 JSX RENDER
   return (
     <div style={{ 
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column',
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0,
+      width: '100vw', 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
       background: isListening 
         ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
         : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       color: '#ffffff',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-      margin: 0, padding: 0, overflow: 'hidden',
+      margin: 0, 
+      padding: 0, 
+      overflow: 'hidden',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       
-      {/* HEADER - WORKING VERSION (nezměněno) */}
+      {/* HEADER */}
       <header style={{ 
         padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
         background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.85), rgba(0, 78, 146, 0.6))',
-        backdropFilter: 'blur(20px)', zIndex: 10, flexShrink: 0
+        backdropFilter: 'blur(20px)', 
+        zIndex: 10, 
+        flexShrink: 0
       }}>
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: isMobile ? '1.5rem' : '2rem', maxWidth: '1200px',
-          margin: '0 auto', marginBottom: isMobile ? '1.5rem' : '2rem'
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: isMobile ? '1.5rem' : '2rem', 
+          maxWidth: '1200px',
+          margin: '0 auto', 
+          marginBottom: isMobile ? '1.5rem' : '2rem'
         }}>
           
           <div style={{ position: 'relative' }}>
@@ -685,11 +705,18 @@ function App() {
               disabled={loading || streaming}
               style={{
                 background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
-                border: '1px solid rgba(74, 85, 104, 0.6)', borderRadius: '10px',
-                padding: '0.6rem 0.9rem', fontSize: '0.85rem', color: '#e2e8f0',
+                border: '1px solid rgba(74, 85, 104, 0.6)', 
+                borderRadius: '10px',
+                padding: '0.6rem 0.9rem', 
+                fontSize: '0.85rem', 
+                color: '#e2e8f0',
                 cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '500',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', backdropFilter: 'blur(10px)'
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                fontWeight: '500',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                backdropFilter: 'blur(10px)'
               }}
             >
               {model === 'claude' ? '🧠 Omnia' : model === 'sonar' ? '🔍 Omnia Search' : '⚡ Omnia GPT'}
@@ -698,23 +725,36 @@ function App() {
             
             {showModelDropdown && !loading && !streaming && (
               <div style={{
-                position: 'absolute', top: '100%', left: 0, marginTop: '6px',
-                background: 'rgba(45, 55, 72, 0.95)', border: '1px solid rgba(74, 85, 104, 0.6)',
-                borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(16px)', zIndex: 1000, minWidth: '220px', overflow: 'hidden'
+                position: 'absolute', 
+                top: '100%', 
+                left: 0, 
+                marginTop: '6px',
+                background: 'rgba(45, 55, 72, 0.95)', 
+                border: '1px solid rgba(74, 85, 104, 0.6)',
+                borderRadius: '12px', 
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(16px)', 
+                zIndex: 1000, 
+                minWidth: '220px', 
+                overflow: 'hidden'
               }}>
                 {[
-                  { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + working voice!' },
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + working voice!' },
-                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time info + working voice!' }
+                  { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + voice' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice' },
+                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time info + voice' }
                 ].map((item) => (
                   <button
                     key={item.key}
                     onClick={() => { setModel(item.key); setShowModelDropdown(false); }}
                     style={{
-                      display: 'block', width: '100%', padding: '0.8rem 1rem', border: 'none',
+                      display: 'block', 
+                      width: '100%', 
+                      padding: '0.8rem 1rem', 
+                      border: 'none',
                       background: model === item.key ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
-                      textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer',
+                      textAlign: 'left', 
+                      fontSize: '0.85rem', 
+                      cursor: 'pointer',
                       fontWeight: model === item.key ? '600' : '400',
                       color: model === item.key ? '#00ffff' : '#e2e8f0',
                       transition: 'all 0.2s ease'
@@ -734,10 +774,14 @@ function App() {
               disabled={loading || streaming}
               style={{
                 background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
-                border: '1px solid rgba(74, 85, 104, 0.6)', borderRadius: '10px',
-                padding: '0.6rem', fontSize: '1rem', color: '#e2e8f0',
+                border: '1px solid rgba(74, 85, 104, 0.6)', 
+                borderRadius: '10px',
+                padding: '0.6rem', 
+                fontSize: '1rem', 
+                color: '#e2e8f0',
                 cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', backdropFilter: 'blur(10px)'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                backdropFilter: 'blur(10px)'
               }}
               title={t('settings')}
             >
@@ -758,8 +802,13 @@ function App() {
         </div>
 
         <div style={{ 
-          textAlign: 'center', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: '1rem', maxWidth: '1200px', margin: '0 auto'
+          textAlign: 'center', 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          gap: '1rem', 
+          maxWidth: '1200px', 
+          margin: '0 auto'
         }}>
           <OmniaLogo 
             size={isMobile ? 70 : 90} 
@@ -771,44 +820,49 @@ function App() {
             <>
               <h1 style={{ 
                 fontSize: isMobile ? '2.2rem' : '2.8rem', 
-                fontWeight: '700', margin: 0, color: '#ffffff',
+                fontWeight: '700', 
+                margin: 0, 
+                color: '#ffffff',
                 letterSpacing: '0.02em'
               }}>
                 OMNIA
               </h1>
               <div style={{
-                fontSize: '0.95rem', opacity: 0.8, textAlign: 'center',
-                padding: '6px 12px', borderRadius: '15px',
+                fontSize: '0.95rem', 
+                opacity: 0.8, 
+                textAlign: 'center',
+                padding: '6px 12px', 
+                borderRadius: '15px',
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(5px)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Unified Glass Input • ➕ Plus Menu • 🔍 Deep Search • 🎙️ Working Voice
+                🎵 Voice Working • 🔧 Audio Fixed • 📱 Scrolling Fixed
               </div>
             </>
           )}
         </div>
       </header>
 
-      {/* MAIN CONTENT - WORKING VERSION (nezměněno) */}
+      {/* MAIN CONTENT - FIXED SCROLLING! */}
       <main style={{ 
         flex: 1, 
         overflowY: 'auto', 
         overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
-        paddingBottom: '160px', 
+        paddingBottom: '240px', // ✅ FIXED: Větší padding pro InputBar!
         width: '100%',
-        scrollBehavior: 'smooth',
-        height: '100dvh'
+        WebkitOverflowScrolling: 'touch', // Pro smooth scrolling na iOS
+        scrollBehavior: 'smooth'
       }}>
         <div style={{ 
-          maxWidth: '1000px', margin: '0 auto',
+          maxWidth: '1000px', 
+          margin: '0 auto',
           minHeight: messages.length === 0 ? '60vh' : 'auto',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: messages.length === 0 ? 'center' : 'flex-start',
-          overflowY: 'auto',
-          scrollBehavior: 'smooth',
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: messages.length === 0 ? 'center' : 'flex-start'
         }}>
           
           {messages.length === 0 && !shouldHideLogo && (
@@ -824,12 +878,14 @@ function App() {
             }}>
               {msg.sender === 'user' ? (
                 <div style={{
-                  backgroundColor: 'rgba(45, 55, 72, 0.8)', color: '#ffd700',
+                  backgroundColor: 'rgba(45, 55, 72, 0.8)', 
+                  color: '#ffd700',
                   padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
                   borderRadius: '25px 25px 8px 25px',
                   maxWidth: isMobile ? '85%' : '75%',
                   fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: '1.6', whiteSpace: 'pre-wrap',
+                  lineHeight: '1.6', 
+                  whiteSpace: 'pre-wrap',
                   boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
                   border: '1px solid rgba(255, 215, 0, 0.3)',
                   backdropFilter: 'blur(10px)'
@@ -841,23 +897,33 @@ function App() {
                   maxWidth: isMobile ? '90%' : '85%',
                   padding: isMobile ? '1.2rem' : '1.6rem',
                   fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: '1.6', whiteSpace: 'pre-wrap', color: '#ffffff',
+                  lineHeight: '1.6', 
+                  whiteSpace: 'pre-wrap', 
+                  color: '#ffffff',
                   background: 'rgba(255, 255, 255, 0.03)',
                   borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                   borderRadius: '0 12px 12px 0',
-                  paddingLeft: '1.8rem', backdropFilter: 'blur(10px)'
+                  paddingLeft: '1.8rem', 
+                  backdropFilter: 'blur(10px)'
                 }}>
                   <div style={{ 
-                    fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.8rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    paddingBottom: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)'
+                    fontSize: '0.75rem', 
+                    opacity: 0.7, 
+                    marginBottom: '0.8rem',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    paddingBottom: '0.6rem', 
+                    borderBottom: '1px solid rgba(255,255,255,0.1)'
                   }}>
                     <span style={{ 
-                      fontWeight: '600', color: '#a0aec0', 
-                      display: 'flex', alignItems: 'center' 
+                      fontWeight: '600', 
+                      color: '#a0aec0', 
+                      display: 'flex', 
+                      alignItems: 'center' 
                     }}>
                       <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ' • working audio'}
+                      Omnia {msg.isStreaming ? ' • streaming' : ''}
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
@@ -876,28 +942,32 @@ function App() {
               )}
             </div>
           ))}
-          {/* Auto-scroll anchor */}
-          <div ref={messagesEndRef} />
           
           {(loading || streaming) && (
             <div style={{ 
-              display: 'flex', justifyContent: 'flex-start', 
-              marginBottom: '2rem', animation: 'fadeInUp 0.4s ease-out'
+              display: 'flex', 
+              justifyContent: 'flex-start', 
+              marginBottom: '2rem', 
+              animation: 'fadeInUp 0.4s ease-out'
             }}>
               <div style={{
                 padding: isMobile ? '1.2rem' : '1.6rem',
-                fontSize: isMobile ? '1rem' : '0.95rem', color: '#ffffff',
+                fontSize: isMobile ? '1rem' : '0.95rem', 
+                color: '#ffffff',
                 background: 'rgba(255, 255, 255, 0.03)',
                 borderLeft: isMobile ? 'none' : `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                 borderRadius: '0 12px 12px 0',
-                paddingLeft: '1.8rem', backdropFilter: 'blur(10px)'
+                paddingLeft: '1.8rem', 
+                backdropFilter: 'blur(10px)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ 
-                    width: '18px', height: '18px', 
+                    width: '18px', 
+                    height: '18px', 
                     border: '2px solid rgba(255,255,255,0.3)', 
                     borderTop: '2px solid #00ffff',
-                    borderRadius: '50%', animation: 'spin 1s linear infinite'
+                    borderRadius: '50%', 
+                    animation: 'spin 1s linear infinite'
                   }}></div>
                   <span style={{ 
                     color: streaming ? '#00ffff' : '#a0aec0', 
@@ -914,7 +984,7 @@ function App() {
         </div>
       </main>
 
-      {/* 🆕 UNIFIED GLASS INPUT BAR - NAHRAZUJE STARÝ INPUT AREA! */}
+      {/* INPUT BAR */}
       <InputBar
         input={input}
         setInput={setInput}
