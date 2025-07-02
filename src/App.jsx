@@ -601,30 +601,17 @@ function App() {
         sessionManager.saveMessages(finalMessages);
         
         // ✅ INSTANT VOICE - celý text najednou po dokončení!
-        // --- BEGIN PATCHED BLOCK: optimized voice queue ---
         if (fromVoice && showVoiceScreen && finalText) {
-          console.log('🎯 Streaming complete, processing all sentences...');
-          const allSentences = splitIntoSentences(finalText);
-
-          const audioQueue = [];
-          for (const sentence of allSentences) {
-            if (sentence.trim().length > 0) {
-              console.log('🎵 Generating audio for:', sentence);
-              try {
-                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-                audioQueue.push(audioBlob);
-              } catch (error) {
-                console.error('❌ Failed to generate audio:', error);
-              }
-            }
-          }
-
-          // 📣 Přehrávej jednu po druhé
-          for (const blob of audioQueue) {
-            await window.mobileAudioManager.queueAudio(blob);
-          }
+          console.log('🎵 Claude complete, instant voice playback...');
+          console.log('📝 Final text length:', finalText.length);
+          console.log('📝 Text preview:', finalText.substring(0, 100) + '...');
+          
+          // Malé zpoždění pro jistotu že UI se updatne
+          setTimeout(async () => {
+            console.log('🎤 Starting voice processing...');
+            await processVoiceResponse(finalText, detectedLang);
+          }, 500);
         }
-        // --- END PATCHED BLOCK ---
       }
       else if (model === 'gpt-4o') {
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
@@ -634,30 +621,10 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // --- BEGIN PATCHED BLOCK: optimized voice queue for GPT ---
         if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎯 Streaming complete, processing all sentences...');
-          const allSentences = splitIntoSentences(responseText);
-
-          const audioQueue = [];
-          for (const sentence of allSentences) {
-            if (sentence.trim().length > 0) {
-              console.log('🎵 Generating audio for:', sentence);
-              try {
-                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-                audioQueue.push(audioBlob);
-              } catch (error) {
-                console.error('❌ Failed to generate audio:', error);
-              }
-            }
-          }
-
-          // 📣 Přehrávej jednu po druhé
-          for (const blob of audioQueue) {
-            await window.mobileAudioManager.queueAudio(blob);
-          }
+          console.log('🎵 GPT response complete, processing voice...');
+          await processVoiceResponse(responseText, detectedLang);
         }
-        // --- END PATCHED BLOCK ---
       }
       else if (model === 'sonar') {
         const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
@@ -666,30 +633,10 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // --- BEGIN PATCHED BLOCK: optimized voice queue for Sonar ---
         if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎯 Streaming complete, processing all sentences...');
-          const allSentences = splitIntoSentences(responseText);
-
-          const audioQueue = [];
-          for (const sentence of allSentences) {
-            if (sentence.trim().length > 0) {
-              console.log('🎵 Generating audio for:', sentence);
-              try {
-                const audioBlob = await generateAudioForSentence(sentence, detectedLang);
-                audioQueue.push(audioBlob);
-              } catch (error) {
-                console.error('❌ Failed to generate audio:', error);
-              }
-            }
-          }
-
-          // 📣 Přehrávej jednu po druhé
-          for (const blob of audioQueue) {
-            await window.mobileAudioManager.queueAudio(blob);
-          }
+          console.log('🎵 Sonar response complete, processing voice...');
+          await processVoiceResponse(responseText, detectedLang);
         }
-        // --- END PATCHED BLOCK ---
       }
 
     } catch (err) {
