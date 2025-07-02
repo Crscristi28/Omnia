@@ -138,7 +138,7 @@ class MobileAudioManager {
         console.log('✅ Audio finished, continuing to next...');
         
         // 🔧 Short gap between sentences for natural speech
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
