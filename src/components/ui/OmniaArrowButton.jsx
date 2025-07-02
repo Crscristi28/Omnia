@@ -1,9 +1,9 @@
 // 📁 src/components/ui/OmniaArrowButton.jsx
-// ➡️ Send message button with Omnia gradient
+// ➡️ Send message button with Omnia gradient - FIXED with style prop
 
 import React from 'react';
 
-const OmniaArrowButton = ({ onClick, disabled, loading, size = 50, isListening = false }) => {
+const OmniaArrowButton = ({ onClick, disabled, loading, size = 50, isListening = false, style = {} }) => {
   const getButtonStyle = () => {
     const baseStyle = {
       width: size,
@@ -49,7 +49,10 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50, isListening =
     <button
       onClick={onClick}
       disabled={disabled}
-      style={getButtonStyle()}
+      style={{
+        ...getButtonStyle(),
+        ...style  // ✅ PŘIDÁNO - custom styles support
+      }}
       title={isListening ? "Poslouchám..." : "Odeslat zprávu"}
       onMouseEnter={(e) => {
         if (!disabled && !isListening) {

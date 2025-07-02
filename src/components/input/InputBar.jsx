@@ -1,14 +1,12 @@
-// 🚀 InputBar.jsx - FINÁLNÍ VERZE S MOBILNÍ OPRAVOU
-// ✅ Všechna tlačítka viditelná
-// ✅ Správné rozložení na mobilu
-// ✅ Floating design bez tmavého pozadí
+// 🚀 InputBar.jsx - FIXED ARROW BUTTON
+// ✅ Arrow button nyní funguje správně
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
 import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
 import OmniaArrowButton from '../ui/OmniaArrowButton.jsx';
 
-// PLUS MENU COMPONENT
+// PLUS MENU COMPONENT (stejné jako předtím)
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
@@ -299,16 +297,15 @@ const InputBar = ({
               {isRecording ? '⏹️' : '🎤'}
             </button>
 
-            {/* SEND ARROW */}
-            <div style={{ justifySelf: isMobile ? 'center' : undefined }}>
-              <OmniaArrowButton
-                onClick={onSend}
-                disabled={isLoading || !input.trim()}
-                loading={isLoading}
-                isListening={isRecording}
-                size={buttonSize}
-              />
-            </div>
+            {/* ✅ SEND ARROW - OPRAVENO! */}
+            <OmniaArrowButton
+              onClick={onSend}
+              disabled={isLoading || !input.trim()}
+              loading={isLoading}
+              isListening={isRecording}
+              size={buttonSize}
+              style={{ justifySelf: isMobile ? 'center' : undefined }}
+            />
           </div>
         </div>
       </div>
