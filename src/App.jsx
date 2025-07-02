@@ -1,7 +1,6 @@
-// 🚀 OMNIA - COMPLETE FIXED APP.JSX - ČÁST 1/3
-// ✅ OPRAVENO: Audio/Voice funguje správně
-// ✅ OPRAVENO: Scrollování funguje
-// ✅ OPRAVENO: Arrow button posílá zprávy
+// 🚀 OMNIA - COMPLETE APP.JSX WITH GPT FORCE - ČÁST 1/3
+// ✅ NOVÉ: Force GPT ve voice módu pro rychlejší odpovědi
+// ✅ Auto-switch model logic implemented
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -135,7 +134,7 @@ class MobileAudioManager {
       try {
         await this.playAudio(audioBlob);
         console.log('✅ Audio finished, continuing to next...');
-        await new Promise(resolve => setTimeout(resolve, 0)); // ✅ Kratší pauza mezi větami
+        await new Promise(resolve => setTimeout(resolve, 0));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
       }
@@ -218,6 +217,9 @@ function App() {
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
+  
+  // 🆕 MODEL SWITCH STATE FOR VOICE
+  const [previousModel, setPreviousModel] = useState(null);
   
   // 🌍 LANGUAGE & UI STATE
   const [userLanguage, setUserLanguage] = useState('cs');
@@ -388,7 +390,7 @@ function App() {
     }
   };
 
-  // 🎵 VOICE PROCESSING - INSTANT LIKE IN CHAT!
+  // 🎵 VOICE PROCESSING
   const processVoiceResponse = async (responseText, language) => {
     console.log('🎵 Processing voice response - INSTANT MODE:', {
       textLength: responseText.length,
@@ -396,9 +398,8 @@ function App() {
     });
     
     try {
-      // ✅ CELÝ TEXT NAJEDNOU - jako v normálním chatu!
       const audioBlob = await generateAudioForSentence(responseText, language);
-      await mobileAudioManager.playAudio(audioBlob); // Přímo přehrát, ne do fronty
+      await mobileAudioManager.playAudio(audioBlob);
       console.log('✅ Audio playing instantly');
     } catch (error) {
       console.error('❌ Failed to generate audio:', error);
@@ -475,7 +476,6 @@ function App() {
       sttRecorderRef.current.stop();
     }
     
-    // 🔓 UNLOCK AUDIO CONTEXT
     mobileAudioManager.unlockAudioContext();
     console.log('🔓 Audio unlocked via stop interaction');
   };
@@ -548,9 +548,34 @@ function App() {
     }));
   };
 
-  // 🤖 AI CONVERSATION - FIXED AUDIO!
+  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE
+  const handleVoiceScreenOpen = () => {
+    setShowVoiceScreen(true);
+    
+    // 🚀 AUTO-SWITCH TO GPT FOR VOICE
+    if (model !== 'gpt-4o') {
+      console.log('🎤 Voice mode: Auto-switching to GPT for faster responses');
+      setPreviousModel(model);
+      setModel('gpt-4o');
+    }
+    
+    mobileAudioManager.unlockAudioContext();
+  };
+
+  const handleVoiceScreenClose = () => {
+    setShowVoiceScreen(false);
+    
+    // 🔄 RESTORE PREVIOUS MODEL
+    if (previousModel && previousModel !== 'gpt-4o') {
+      console.log('🔄 Voice closed: Restoring previous model:', previousModel);
+      setModel(previousModel);
+      setPreviousModel(null);
+    }
+  };
+
+  // 🤖 AI CONVERSATION
   const handleSend = async (textInput = input, fromVoice = false) => {
-    if (!textInput.trim() || loading) return; // ❌ Removed streaming check - byla to chyba!
+    if (!textInput.trim() || loading) return;
 
     const detectedLang = detectLanguage(textInput);
     if (detectedLang !== userLanguage) {
@@ -573,13 +598,12 @@ function App() {
       let responseText = '';
 
       if (model === 'claude') {
-        // 🔧 FIXED: Správně zachytíme streamovaný text pro voice!
         let streamedText = '';
         
         responseText = await claudeService.sendMessage(
           messagesWithUser,
           (text, isStreaming) => {
-            streamedText = text; // ✅ Ukládáme streamovaný text
+            streamedText = text;
             const streamingMessages = [
               ...messagesWithUser,
               { sender: 'bot', text: text, isStreaming: true }
@@ -591,19 +615,16 @@ function App() {
           detectedLang
         );
         
-        // ✅ FIXED: Použijeme streamedText nebo responseText
         const finalText = streamedText || responseText;
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // ✅ INSTANT VOICE - celý text najednou po dokončení!
         if (fromVoice && showVoiceScreen && finalText) {
           console.log('🎵 Claude complete, instant voice playback...');
           console.log('📝 Final text length:', finalText.length);
           console.log('📝 Text preview:', finalText.substring(0, 100) + '...');
           
-          // Malé zpoždění pro jistotu že UI se updatne
           setTimeout(async () => {
             console.log('🎤 Starting voice processing...');
             await processVoiceResponse(finalText, detectedLang);
@@ -697,7 +718,7 @@ function App() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
-              disabled={loading || streaming}
+              disabled={loading || streaming || showVoiceScreen}
               style={{
                 background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
                 border: '1px solid rgba(74, 85, 104, 0.6)', 
@@ -705,20 +726,21 @@ function App() {
                 padding: '0.6rem 0.9rem', 
                 fontSize: '0.85rem', 
                 color: '#e2e8f0',
-                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
+                cursor: (loading || streaming || showVoiceScreen) ? 'not-allowed' : 'pointer',
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0.5rem', 
                 fontWeight: '500',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                opacity: showVoiceScreen ? 0.5 : 1
               }}
             >
               {model === 'claude' ? '🧠 Omnia' : model === 'sonar' ? '🔍 Omnia Search' : '⚡ Omnia GPT'}
-              {!streaming && !loading && !isListening && ' ▼'}
+              {!streaming && !loading && !isListening && !showVoiceScreen && ' ▼'}
             </button>
             
-            {showModelDropdown && !loading && !streaming && (
+            {showModelDropdown && !loading && !streaming && !showVoiceScreen && (
               <div style={{
                 position: 'absolute', 
                 top: '100%', 
@@ -840,15 +862,15 @@ function App() {
         </div>
       </header>
 
-      {/* MAIN CONTENT - FIXED SCROLLING! */}
+      {/* MAIN CONTENT */}
       <main style={{ 
         flex: 1, 
         overflowY: 'auto', 
         overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
-        paddingBottom: '240px', // ✅ FIXED: Větší padding pro InputBar!
+        paddingBottom: '240px',
         width: '100%',
-        WebkitOverflowScrolling: 'touch', // Pro smooth scrolling na iOS
+        WebkitOverflowScrolling: 'touch',
         scrollBehavior: 'smooth'
       }}>
         <div style={{ 
@@ -979,22 +1001,23 @@ function App() {
         </div>
       </main>
 
-      {/* ✅ OPRAVENO: INPUT BAR - předává handleSend správně */}
+      {/* INPUT BAR */}
       <InputBar
         input={input}
         setInput={setInput}
-        onSend={() => handleSend()}  // ✅ OPRAVA: volá handleSend() který používá aktuální input
+        onSend={() => handleSend()}
         onSTT={toggleSTT}
-        onVoiceScreen={() => setShowVoiceScreen(true)}
+        onVoiceScreen={handleVoiceScreenOpen}
         isLoading={loading || streaming}
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}
         uiLanguage={uiLanguage}
       />
 
+      {/* VOICE SCREEN WITH CLOSE HANDLER */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
-        onClose={() => setShowVoiceScreen(false)}
+        onClose={handleVoiceScreenClose}
         onTranscript={handleTranscript}
         isLoading={loading}
         isAudioPlaying={isAudioPlaying || mobileAudioManager.isPlaying}
