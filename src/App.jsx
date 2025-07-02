@@ -391,26 +391,20 @@ function App() {
     }
   };
 
-  // 🎵 VOICE PROCESSING
+  // 🎵 VOICE PROCESSING - INSTANT LIKE IN CHAT!
   const processVoiceResponse = async (responseText, language) => {
-    console.log('🎵 Processing voice response:', {
+    console.log('🎵 Processing voice response - INSTANT MODE:', {
       textLength: responseText.length,
       language: language
     });
     
-    const sentences = splitIntoSentences(responseText);
-    console.log('📝 Found sentences:', sentences.length);
-    
-    for (const sentence of sentences) {
-      if (sentence.trim().length > 5) {
-        try {
-          const audioBlob = await generateAudioForSentence(sentence, language);
-          await mobileAudioManager.queueAudio(audioBlob);
-          console.log('✅ Audio queued for sentence');
-        } catch (error) {
-          console.error('❌ Failed to generate audio for sentence:', error);
-        }
-      }
+    try {
+      // ✅ CELÝ TEXT NAJEDNOU - jako v normálním chatu!
+      const audioBlob = await generateAudioForSentence(responseText, language);
+      await mobileAudioManager.playAudio(audioBlob); // Přímo přehrát, ne do fronty
+      console.log('✅ Audio playing instantly');
+    } catch (error) {
+      console.error('❌ Failed to generate audio:', error);
     }
   };
 
@@ -584,31 +578,11 @@ function App() {
       if (model === 'claude') {
         // 🔧 FIXED: Správně zachytíme streamovaný text pro voice!
         let streamedText = '';
-        let lastProcessedIndex = 0;
         
         responseText = await claudeService.sendMessage(
           messagesWithUser,
           (text, isStreaming) => {
             streamedText = text; // ✅ Ukládáme streamovaný text
-            
-            // 🎵 VOICE PROCESSING BĚHEM STREAMOVÁNÍ!
-            if (fromVoice && showVoiceScreen && text.length > lastProcessedIndex) {
-              const newText = text.substring(lastProcessedIndex);
-              const sentences = newText.match(/[^.!?]+[.!?]+/g) || [];
-              
-              for (const sentence of sentences) {
-                if (sentence.trim().length > 5) {
-                  console.log('🎵 Processing sentence during stream:', sentence.substring(0, 30) + '...');
-                  // Okamžitě zpracovat větu
-                  generateAudioForSentence(sentence.trim(), detectedLang)
-                    .then(audioBlob => mobileAudioManager.queueAudio(audioBlob))
-                    .catch(err => console.error('Audio generation failed:', err));
-                  
-                  lastProcessedIndex = text.lastIndexOf(sentence) + sentence.length;
-                }
-              }
-            }
-            
             const streamingMessages = [
               ...messagesWithUser,
               { sender: 'bot', text: text, isStreaming: true }
@@ -620,18 +594,17 @@ function App() {
           detectedLang
         );
         
-        // ✅ Zpracovat zbývající text po dokončení
-        if (fromVoice && showVoiceScreen && streamedText.length > lastProcessedIndex) {
-          const remainingText = streamedText.substring(lastProcessedIndex);
-          if (remainingText.trim().length > 5) {
-            await processVoiceResponse(remainingText, detectedLang);
-          }
-        }
-        
+        // ✅ FIXED: Použijeme streamedText nebo responseText
         const finalText = streamedText || responseText;
         const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
+        
+        // ✅ INSTANT VOICE - celý text najednou po dokončení!
+        if (fromVoice && showVoiceScreen && finalText) {
+          console.log('🎵 Claude complete, instant voice playback...');
+          await processVoiceResponse(finalText, detectedLang);
+        }
       }
       else if (model === 'gpt-4o') {
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
