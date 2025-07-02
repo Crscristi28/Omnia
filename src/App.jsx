@@ -229,6 +229,13 @@ function App() {
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
+
+  // ZDE přidáno pro auto-scroll na nové zprávy
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -786,15 +793,22 @@ function App() {
 
       {/* MAIN CONTENT - WORKING VERSION (nezměněno) */}
       <main style={{ 
-        flex: 1, overflowY: 'auto', overflowX: 'hidden',
+        flex: 1, 
+        overflowY: 'auto', 
+        overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
-        paddingBottom: '160px', width: '100%'
+        paddingBottom: '160px', 
+        width: '100%',
+        scrollBehavior: 'smooth',
+        height: '100dvh'
       }}>
         <div style={{ 
           maxWidth: '1000px', margin: '0 auto',
           minHeight: messages.length === 0 ? '60vh' : 'auto',
           display: 'flex', flexDirection: 'column',
-          justifyContent: messages.length === 0 ? 'center' : 'flex-start'
+          justifyContent: messages.length === 0 ? 'center' : 'flex-start',
+          overflowY: 'auto',
+          scrollBehavior: 'smooth',
         }}>
           
           {messages.length === 0 && !shouldHideLogo && (
@@ -862,6 +876,8 @@ function App() {
               )}
             </div>
           ))}
+          {/* Auto-scroll anchor */}
+          <div ref={messagesEndRef} />
           
           {(loading || streaming) && (
             <div style={{ 
