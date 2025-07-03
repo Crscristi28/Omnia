@@ -316,7 +316,7 @@ function splitIntoSentences(text) {
       
       if (hasProblematicPatterns) {
         // 🔧 FIXED: Přidat language parameter!
-        textToSpeak = sanitizeText(sentence, language);
+        textToSpeak = sanitizeText(sentence,);
         console.log('🔧 Applied multilingual sanitizeText:', {
           original: sentence.substring(0, 50),
           sanitized: textToSpeak.substring(0, 50),
