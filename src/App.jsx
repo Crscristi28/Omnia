@@ -1,6 +1,6 @@
-// 🚀 OMNIA - COMPLETE APP.JSX WITH GPT DEFAULT - ČÁST 1/3
-// ✅ ZMĚNY: Enhanced sanitizeText import + Default GPT model
-// ✅ NOVÉ: GPT voice pipeline + multilingual sanitization
+// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS
+// ✅ OPRAVA: Voice chat bude používat stejnou logiku jako VoiceButton
+// 🎯 FIX: generateAudioForSentence → elevenLabsService.generateSpeech
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -15,7 +15,7 @@ import elevenLabsService from './services/elevenLabs.service.js';
 import { uiTexts, getTranslation } from './utils/translations.js';
 import sessionManager from './utils/sessionManager.js';
 import detectLanguage from './utils/smartLanguageDetection.js';
-import sanitizeText from './utils/sanitizeText.js'; // 🆕 Enhanced multilingual version
+import sanitizeText from './utils/sanitizeText.js';
 
 // 🔧 IMPORT UI COMPONENTS
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
@@ -178,7 +178,9 @@ const mobileAudioManager = new MobileAudioManager();
 function splitIntoSentences(text) {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
-}function App() {
+}
+
+function App() {
   // 📊 BASIC STATE
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -254,9 +256,7 @@ function splitIntoSentences(text) {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;
-
-  // 🔧 NOTIFICATION SYSTEM
+  const shouldHideLogo = messages.length > 0;// 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -305,7 +305,7 @@ function splitIntoSentences(text) {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🎵 ENHANCED TTS GENERATION WITH MULTILINGUAL SANITIZE - FIXED!
+  // 🎵 FIXED TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON!
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -315,35 +315,26 @@ function splitIntoSentences(text) {
       const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h|AI|API|0W-30|1\.?\s*července|2\.?\s*července/i.test(sentence);
       
       if (hasProblematicPatterns) {
-        // 🔧 FIXED: Přidat language parameter!
-        textToSpeak = sanitizeText(sentence,);
-        console.log('🔧 Applied multilingual sanitizeText:', {
+        // 🔧 FIXED: Use same logic as VoiceButton - NO language parameter!
+        textToSpeak = sanitizeText(sentence);
+        console.log('🔧 Applied sanitizeText (same as VoiceButton):', {
           original: sentence.substring(0, 50),
-          sanitized: textToSpeak.substring(0, 50),
-          language: language
+          sanitized: textToSpeak.substring(0, 50)
         });
       }
       
-      const response = await fetch('/api/elevenlabs-tts-stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ 
-          text: textToSpeak,
-          language: language,
-          voice_id: process.env.ELEVENLABS_VOICE_ID || 'MpbYQvoTmXjHkaxtLiSh',
-          model_id: 'eleven_multilingual_v2',
-          output_format: 'mp3_44100_128',
-          voice_settings: {
-            stability: 0.30,
-            similarity_boost: 0.25,
-            style: 0.30,
-            use_speaker_boost: true,
-            speed: 1.0
-          }
-        })
-      });
+      // 🚀 CRITICAL FIX: Use same service as VoiceButton!
+      console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
+      const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
       
-      if (!response.ok) {
+      console.log('✅ TTS Success - same path as VoiceButton');
+      return audioBlob;
+      
+    } catch (error) {
+      console.error('💥 TTS generation failed:', error);
+      
+      // 🔄 FALLBACK: Try Google TTS if ElevenLabs fails
+      try {
         console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
         const googleResponse = await fetch('/api/google-tts', {
           method: 'POST',
@@ -356,17 +347,14 @@ function splitIntoSentences(text) {
         });
         
         if (!googleResponse.ok) {
-          throw new Error(`TTS failed: ${googleResponse.status}`);
+          throw new Error(`Google TTS failed: ${googleResponse.status}`);
         }
         
         return await googleResponse.blob();
+      } catch (fallbackError) {
+        console.error('💥 Both TTS services failed:', fallbackError);
+        throw error;
       }
-      
-      return await response.blob();
-      
-    } catch (error) {
-      console.error('💥 TTS generation failed:', error);
-      throw error;
     }
   };
 
@@ -526,7 +514,9 @@ function splitIntoSentences(text) {
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text || ''
     }));
-  };// 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE
+  };
+
+  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
@@ -549,9 +539,7 @@ function splitIntoSentences(text) {
       setModel(previousModel);
       setPreviousModel(null);
     }
-  };
-
-  // 🤖 AI CONVERSATION WITH GPT VOICE PIPELINE
+  };// 🤖 AI CONVERSATION WITH GPT VOICE PIPELINE - FIXED!
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
 
@@ -617,11 +605,12 @@ function splitIntoSentences(text) {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 GPT VOICE PIPELINE - PŘIDÁNO!
+        // 🆕 GPT VOICE PIPELINE - FIXED WITH SAME LOGIC AS VOICEBUTTON!
         if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎵 GPT response complete, processing voice...');
+          console.log('🎵 GPT response complete, processing voice with FIXED logic...');
           console.log('🌍 Language for GPT voice:', detectedLang);
           console.log('📝 GPT text preview:', responseText.substring(0, 100) + '...');
+          console.log('🔧 Using same TTS path as VoiceButton!');
           await processVoiceResponse(responseText, detectedLang);
         }
       }
@@ -649,6 +638,11 @@ function splitIntoSentences(text) {
 
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
+    
+    // 🔧 FIXED: Force language detection for voice consistency
+    const detectedLang = detectLanguage(text);
+    setUserLanguage(detectedLang);
+    console.log('🌍 Voice detected language:', detectedLang);
     
     if (showVoiceScreen) {
       await handleSend(text, true);
@@ -838,7 +832,7 @@ function splitIntoSentences(text) {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                ⚡ GPT Default • 🎵 Multilingual Voice • 🇨🇿🇷🇴🇺🇸 Enhanced
+                ⚡ GPT Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced
               </div>
             </>
           )}
