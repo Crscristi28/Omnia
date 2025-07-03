@@ -1,6 +1,6 @@
-// 🚀 OMNIA - COMPLETE APP.JSX WITH GPT FORCE - ČÁST 1/3
-// ✅ NOVÉ: Force GPT ve voice módu pro rychlejší odpovědi
-// ✅ Auto-switch model logic implemented
+// 🚀 OMNIA - COMPLETE APP.JSX WITH GPT DEFAULT - ČÁST 1/3
+// ✅ ZMĚNY: Enhanced sanitizeText import + Default GPT model
+// ✅ NOVÉ: GPT voice pipeline + multilingual sanitization
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -15,6 +15,7 @@ import elevenLabsService from './services/elevenLabs.service.js';
 import { uiTexts, getTranslation } from './utils/translations.js';
 import sessionManager from './utils/sessionManager.js';
 import detectLanguage from './utils/smartLanguageDetection.js';
+import sanitizeText from './utils/sanitizeText.js'; // 🆕 Enhanced multilingual version
 
 // 🔧 IMPORT UI COMPONENTS
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
@@ -26,30 +27,6 @@ import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
 // 🆕 IMPORT INPUT BAR
 import InputBar from './components/input/InputBar.jsx';
-
-// 🆕 SANITIZE TEXT FUNCTION
-function sanitizeText(text) {
-  if (!text || typeof text !== 'string') return '';
-  
-  return text
-    .replace(/\bnapř\.\b/gi, 'například')
-    .replace(/\batd\.\b/gi, 'a tak dále')
-    .replace(/(\d+)\s*%/g, '$1 procent')
-    .replace(/(\d+)[\s]*°C/g, '$1 stupňů Celsia')
-    .replace(/(\d+)[\s]*°/g, '$1 stupňů')
-    .replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut')
-    .replace(/(\d+)\s*Kč/g, '$1 korun')
-    .replace(/(\d+)\s*\$/g, '$1 dolarů')
-    .replace(/(\d+)\s*€/g, '$1 eur')
-    .replace(/(\d+)[.,](\d+)/g, '$1 celá $2')
-    .replace(/(\d+)\s*km\/h/g, '$1 kilometrů za hodinu')
-    .replace(/(\d+)\s*kg/g, '$1 kilogramů')
-    .replace(/(\d+)\s*kWh/g, '$1 kilowatthodin')
-    .replace(/\b1\/2\b/g, 'půl')
-    .replace(/\b1\/4\b/g, 'čtvrt')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 // 🆕 MOBILE AUDIO MANAGER
 class MobileAudioManager {
@@ -207,7 +184,7 @@ function App() {
   // 📊 BASIC STATE
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('claude');
+  const [model, setModel] = useState('gpt-4o'); // 🆕 ZMĚNA: Default GPT místo 'claude'
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -328,19 +305,22 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🎵 TTS GENERATION
+  // 🎵 ENHANCED TTS GENERATION WITH MULTILINGUAL SANITIZE
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
+      console.log('🌍 Target language:', language);
       
       let textToSpeak = sentence;
-      const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h/i.test(sentence);
+      const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h|AI|API|0W-30|1\.?\s*července|2\.?\s*července/i.test(sentence);
       
       if (hasProblematicPatterns) {
-        textToSpeak = sanitizeText(sentence);
-        console.log('🔧 Applied sanitizeText:', {
+        // 🆕 ENHANCED: Použít multilingual sanitizeText s language parametrem
+        textToSpeak = sanitizeText(sentence, language);
+        console.log('🔧 Applied multilingual sanitizeText:', {
           original: sentence.substring(0, 50),
-          sanitized: textToSpeak.substring(0, 50)
+          sanitized: textToSpeak.substring(0, 50),
+          language: language
         });
       }
       
@@ -369,7 +349,7 @@ function App() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ 
-            text: sentence,
+            text: sentence, // Google TTS má vlastní preprocessing
             language: language,
             voice: 'natural'
           })
@@ -552,7 +532,7 @@ function App() {
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
-    // 🚀 AUTO-SWITCH TO GPT FOR VOICE
+    // 🚀 AUTO-SWITCH TO GPT FOR VOICE (pokud už není GPT)
     if (model !== 'gpt-4o') {
       console.log('🎤 Voice mode: Auto-switching to GPT for faster responses');
       setPreviousModel(model);
@@ -571,9 +551,7 @@ function App() {
       setModel(previousModel);
       setPreviousModel(null);
     }
-  };
-
-  // 🤖 AI CONVERSATION
+  };// 🤖 AI CONVERSATION WITH GPT VOICE PIPELINE
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
 
@@ -639,8 +617,11 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
+        // 🆕 GPT VOICE PIPELINE - PŘIDÁNO!
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
+          console.log('🌍 Language for GPT voice:', detectedLang);
+          console.log('📝 GPT text preview:', responseText.substring(0, 100) + '...');
           await processVoiceResponse(responseText, detectedLang);
         }
       }
@@ -674,7 +655,9 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🎨 JSX RENDER
+  };
+
+  // 🎨 JSX RENDER
   return (
     <div style={{ 
       position: 'fixed', 
@@ -756,8 +739,8 @@ function App() {
                 overflow: 'hidden'
               }}>
                 {[
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice (DEFAULT)' },
                   { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + voice' },
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time info + voice' }
                 ].map((item) => (
                   <button
@@ -855,7 +838,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🎵 Voice Working • 🔧 Audio Fixed • 📱 Scrolling Fixed
+                ⚡ GPT Default • 🎵 Multilingual Voice • 🇨🇿🇷🇴🇺🇸 Enhanced
               </div>
             </>
           )}
