@@ -55,26 +55,7 @@ export default function sanitizeText(text, language = 'cs') {
         .replace(/5[Ww]-?40/g, 'cinci W patruzeci')
         .replace(/10[Ww]-?40/g, 'zece W patruzeci')
         
-        // === 🔧 FIXED: SMART AI vs AI DETECTION ===
-        // 🎯 TECH AI contexts → "a i"
-        .replace(/\bAI\s+(technology|tehnologie|assistant|asistent|model|sistem|system|intelligence|inteligență|tool|unealtă)/gi, 'a i $1')
-        .replace(/\b(asistent|tehnologie|model|sistem|intelligence|inteligență)\s+AI\b/gi, '$1 a i')
-        
-        // 🎯 AI standalone (tech context) → "a i"
-        .replace(/(?:^|\s)AI(?=\s*[.,!?]|$)/g, (match) => match.replace('AI', 'a i'))
-        .replace(/(?:^|\s)AI(?=\s+[A-Z])/g, (match) => match.replace('AI', 'a i'))
-        
-        // 🎯 CRITICAL FIX: Generický tech AI → "a i"
-        .replace(/\bAI\b/g, 'a i')
-        
-        // 🎯 SLOVESO "ai" PROTECTION - vraciame späť správne sloveso
-        .replace(/\ba i\s+(întrebări|timp|chef|știut|văzut|auzit|făcut|spus|venit|plecat|mâncat|băut)\b/gi, 'ai $1')
-        .replace(/\bce a i\b/gi, 'ce ai')
-        .replace(/\bnu a i\b/gi, 'nu ai')
-        .replace(/\bdacă a i\b/gi, 'dacă ai')
-        .replace(/\bcând a i\b/gi, 'când ai')
-        .replace(/\bunde a i\b/gi, 'unde ai')
-        .replace(/\bpentru că a i\b/gi, 'pentru că ai')
+        // === 🔧 REMOVED: AI replacements - AI is universal English everywhere ===
         
         // === OSTATNÍ TECH TERMÍNY ===
         .replace(/\bAPI\b/g, 'a pi i')
@@ -148,7 +129,6 @@ export default function sanitizeText(text, language = 'cs') {
         .replace(/10[Ww]-?40/g, 'ten W forty')
         
         .replace(/\bAPI\b/g, 'A P I')
-        .replace(/\bAI\b/g, 'A I')
         .replace(/\bURL\b/g, 'U R L')
         .replace(/\bHTTP\b/g, 'H T T P')
         .replace(/\bHTTPS\b/g, 'H T T P S')
@@ -218,7 +198,6 @@ export default function sanitizeText(text, language = 'cs') {
         .replace(/10[Ww]-?40/g, 'deset W čtyřicet')
         
         .replace(/\bAPI\b/g, 'éj pí áj')
-        .replace(/\bAI\b/g, 'éj áj')
         .replace(/\bURL\b/g, 'jů ár el')
         .replace(/\bHTTP\b/g, 'há té té pé')
         .replace(/\bHTTPS\b/g, 'há té té pé es')
