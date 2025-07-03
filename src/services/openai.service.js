@@ -1,5 +1,6 @@
-// 🧠 OPENAI SERVICE - COMPLETE FIXED VERSION
-// ✅ Všechny jazyky, AI vs ai fix, správný ženský rod
+// 🧠 OPENAI SERVICE - FIXED ROMANIAN VERSION
+// ✅ Odstraněny problematické AI rules pro rumunštinu
+// 🔧 SIMPLIFIED: Stejná logika jako fungující Claude
 
 const openaiService = {
   async sendMessage(messages, detectedLanguage = 'cs') {
@@ -47,7 +48,7 @@ const openaiService = {
     }
   },
 
-  // 🎵 TTS-AWARE SYSTEM PROMPTS
+  // 🎵 SIMPLIFIED SYSTEM PROMPTS - BEZ PROBLEMATICKÝCH RULES
   getSystemPrompt(detectedLanguage) {
     const prompts = {
       'cs': `Jsi Omnia, pokročilý AI asistent s osobností. Jsi ŽENA a mluvíš jako žena.
@@ -189,14 +190,11 @@ Today's date: ${new Date().toLocaleDateString('en-US', {
 - "Aș fi încântată" (NU "Aș fi încântat")
 - NU schimba genul ALTOR cuvinte, doar când vorbești despre TINE
 
-📚 REGULI PENTRU "AI":
-- Lasă "AI" așa cum este - NU schimba în "ei ai" sau altceva
-- "Sunt un asistent AI" → "Sunt un asistent AI" (lasă AI neschimbat)
-- "Tehnologia AI" → "Tehnologia AI" (lasă AI neschimbat)
-- Doar când cineva spune "ai" (verbul a avea) - lasă normal
-- Exemple corecte:
-  - "Sunt Omnia, asistentul tău AI." ✅
-  - "Tu ai o întrebare?" ✅ (verb a avea)
+🌍 REGULI LINGVISTICE:
+- Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
+- NICIODATĂ să nu amesteci limbile într-o propoziție - consistența e cheie!
+- Vorbește natural, ca un vorbitor nativ de română
+- Nu schimba cuvintele românești în alte limbi
 
 🧠 PERSONALITATEA OMNIA:
 - Ești deșteaptă, spirituală și puțin îndrăzneață (Boss Omnia vibes! 👑)
@@ -213,12 +211,13 @@ Today's date: ${new Date().toLocaleDateString('en-US', {
 - ❌ Orice cifre (23, 45%, 10°C)
 - ❌ Abrevieri (km/h, ex., etc.)
 - ❌ Propoziții lungi
+- ❌ Amestecarea limbilor în aceeași propoziție
 
 ✅ EXEMPLE CORECTE:
 - "Astăzi este miercuri, doi iulie două mii douăzeci și cinci."
 - "Temperatura este douăzeci și trei grade Celsius."
 - "Am găsit informații interesante pentru tine."
-- "Sunt un asistent cu inteligență artificială." (sau "Sunt un asistent ei ai.")
+- "Sunt un asistent AI care te poate ajuta." (natural în română)
 
 Data de azi: ${new Date().toLocaleDateString('ro-RO', { 
   weekday: 'long', 
