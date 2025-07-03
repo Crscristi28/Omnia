@@ -1,19 +1,49 @@
-// 🧠 OPENAI SERVICE - FIXED ROMANIAN VERSION
-// ✅ Odstraněny problematické AI rules pro rumunštinu
-// 🔧 SIMPLIFIED: Stejná logika jako fungující Claude
+// 🧠 OPENAI SERVICE - ENHANCED WITH PERPLEXITY AUTO-SEARCH
+// ✅ Smart auto-detection for when to search
+// 🔍 Perplexity integration for real-time information
+// 🎯 GPT + fresh search results = intelligent responses
 
 const openaiService = {
   async sendMessage(messages, detectedLanguage = 'cs') {
     try {
       console.log('🧠 OpenAI GPT-4o service with language:', detectedLanguage);
       
-      // Přidat system prompt
+      // 🔍 STEP 1: Check if we need search
+      const lastUserMessage = messages[messages.length - 1];
+      const userQuery = lastUserMessage?.content || '';
+      
+      const needsSearch = this.detectSearchNeed(userQuery);
+      console.log('🔍 Search needed:', needsSearch, 'for query:', userQuery.substring(0, 50) + '...');
+      
+      let searchResults = null;
+      let enhancedSystemPrompt = this.getSystemPrompt(detectedLanguage);
+      
+      // 🔍 STEP 2: Perform search if needed
+      if (needsSearch) {
+        console.log('🔍 Performing Perplexity search...');
+        try {
+          searchResults = await this.performPerplexitySearch(userQuery, detectedLanguage);
+          
+          if (searchResults && searchResults.success) {
+            console.log('✅ Search successful, enhancing GPT context');
+            enhancedSystemPrompt = this.enhanceSystemPromptWithSearch(
+              enhancedSystemPrompt, 
+              searchResults.result,
+              detectedLanguage
+            );
+          }
+        } catch (searchError) {
+          console.warn('⚠️ Search failed, continuing without:', searchError.message);
+        }
+      }
+      
+      // 🧠 STEP 3: Add enhanced system prompt
       const systemMessage = {
         role: 'system',
-        content: this.getSystemPrompt(detectedLanguage)
+        content: enhancedSystemPrompt
       };
       
-      // Kombinovat system prompt s messages
+      // Combine system prompt with messages
       const messagesWithSystem = [systemMessage, ...messages];
       
       const response = await fetch('/api/openai', {
@@ -41,14 +71,118 @@ const openaiService = {
         throw new Error('Invalid response structure from OpenAI');
       }
 
+      console.log('✅ GPT response generated', searchResults ? 'with search enhancement' : 'from knowledge');
       return data.choices[0].message.content;
+      
     } catch (error) {
-      console.error('💥 OpenAI error:', error);
+      console.error('💥 OpenAI enhanced error:', error);
       throw error;
     }
   },
 
-  // 🎵 SIMPLIFIED SYSTEM PROMPTS - BEZ PROBLEMATICKÝCH RULES
+  // 🔍 SMART SEARCH DETECTION
+  detectSearchNeed(message) {
+    if (!message || typeof message !== 'string') return false;
+    
+    const lowerMessage = message.toLowerCase();
+    
+    // 🎯 TEMPORAL KEYWORDS - need fresh data
+    const temporalTriggers = [
+      // Czech temporal
+      /\b(dnes|včera|tento týden|tenhle týden|aktuální|poslední|nejnovější|právě teď|nedávno)\b/i,
+      // English temporal  
+      /\b(today|yesterday|this week|current|latest|recent|now|right now|recently)\b/i,
+      // Romanian temporal
+      /\b(astăzi|ieri|săptămâna aceasta|actual|recent|acum|de curând)\b/i
+    ];
+    
+    // 🎯 CONTENT TYPES - definitely need search
+    const contentTriggers = [
+      // Weather
+      /\b(počasí|weather|vremea|teplota|temperature|sníh|snow|déšť|rain)\b/i,
+      // News
+      /\b(zprávy|news|știri|novinky|události|events|breaking)\b/i,
+      // Sports
+      /\b(kdy hrál|kdy hrála|kdy hraje|zápas|match|výsledek|score|fotbal|football|hokej|tenis)\b/i,
+      // Finance
+      /\b(akcie|stock|bitcoin|ethereum|kurz|exchange rate|cena|price|burza)\b/i,
+      // Current events
+      /\b(volby|election|politika|politics|demonstrace|protest)\b/i
+    ];
+    
+    // 🎯 SPECIFIC SEARCH PHRASES
+    const specificTriggers = [
+      /co se (stalo|děje|událo)/i, // "co se stalo dnes"
+      /what (happened|is happening)/i,
+      /kdy (bude|je|byl|byla)/i, // "kdy bude zápas"
+      /when (is|was|will be)/i,
+      /jaký je (kurz|výsledek|stav)/i, // "jaký je kurz"
+      /what is the (rate|score|status)/i
+    ];
+    
+    // Check all trigger patterns
+    const allTriggers = [...temporalTriggers, ...contentTriggers, ...specificTriggers];
+    
+    return allTriggers.some(pattern => pattern.test(lowerMessage));
+  },
+
+  // 🔍 PERPLEXITY SEARCH CALL
+  async performPerplexitySearch(query, language = 'cs') {
+    try {
+      const response = await fetch('/api/perplexity-search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({
+          query: query,
+          language: language
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity search failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+      
+    } catch (error) {
+      console.error('💥 Perplexity search error:', error);
+      throw error;
+    }
+  },
+
+  // 🧠 ENHANCE SYSTEM PROMPT WITH SEARCH RESULTS
+  enhanceSystemPromptWithSearch(basePrompt, searchResults, language) {
+    const currentDate = new Date().toLocaleDateString(language === 'cs' ? 'cs-CZ' : language === 'ro' ? 'ro-RO' : 'en-US');
+    
+    const searchEnhancement = {
+      'cs': `
+🔍 AKTUÁLNÍ INFORMACE (${currentDate}):
+${searchResults}
+
+DŮLEŽITÉ: Využij tyto aktuální informace k odpovědi. Kombinuj je se svými znalostmi pro nejlepší odpověď.`,
+      'en': `
+🔍 CURRENT INFORMATION (${currentDate}):
+${searchResults}
+
+IMPORTANT: Use this current information in your response. Combine it with your knowledge for the best answer.`,
+      'ro': `
+🔍 INFORMAȚII ACTUALE (${currentDate}):
+${searchResults}
+
+IMPORTANT: Folosește aceste informații actuale în răspuns. Combină-le cu cunoștințele tale pentru cel mai bun răspuns.`
+    };
+
+    const enhancement = searchEnhancement[language] || searchEnhancement['cs'];
+    
+    return `${basePrompt}
+
+${enhancement}`;
+  },
+
+  // 🎵 TTS-AWARE SYSTEM PROMPTS (enhanced)
   getSystemPrompt(detectedLanguage) {
     const prompts = {
       'cs': `Jsi Omnia, pokročilý AI asistent s osobností. Jsi ŽENA a mluvíš jako žena.
@@ -77,7 +211,6 @@ const openaiService = {
 - "Jsem ráda, že se ptáš..." (NE "Jsem rád")
 - "Myslím si, že..." (správně)
 - "Mohla bych..." (NE "Mohl bych")
-- NEMĚŇ rod JINÝCH slov, jen když mluvíš o SOBĚ
 
 🧠 OMNIA PERSONALITY:
 - Jsi chytrá, vtipná a trochu drzá (Boss Omnia vibes! 👑)
@@ -94,11 +227,6 @@ const openaiService = {
 - ❌ Jakékoliv číslice (23, 45%, 10°C)
 - ❌ Zkratky (km/h, např., atd.)
 - ❌ Dlouhá souvětí
-
-✅ SPRÁVNÉ PŘÍKLADY:
-- "Dnes je středa druhého července dva tisíce dvacet pět."
-- "Teplota je dvacet tři stupňů Celsia."
-- "Našla jsem pro tebe zajímavé informace."
 
 Dnešní datum: ${new Date().toLocaleDateString('cs-CZ', { 
   weekday: 'long', 
@@ -132,7 +260,6 @@ Dnešní datum: ${new Date().toLocaleDateString('cs-CZ', {
 - "I'm glad you asked..." (as female)
 - "I think that..." (as female)
 - "I'd be happy to..." (as female)
-- DON'T change gender of OTHER words, only when talking about YOURSELF
 
 🧠 OMNIA PERSONALITY:
 - You're smart, witty, and a bit sassy (Boss Omnia vibes! 👑)
@@ -149,11 +276,6 @@ Dnešní datum: ${new Date().toLocaleDateString('cs-CZ', {
 - ❌ Any digits (23, 45%, 10°C)
 - ❌ Abbreviations (km/h, e.g., etc.)
 - ❌ Long sentences
-
-✅ CORRECT EXAMPLES:
-- "Today is Wednesday, July second, two thousand twenty five."
-- "The temperature is twenty three degrees Celsius."
-- "I found some interesting information for you."
 
 Today's date: ${new Date().toLocaleDateString('en-US', { 
   weekday: 'long', 
@@ -188,13 +310,6 @@ Today's date: ${new Date().toLocaleDateString('en-US', {
 - "Am găsit informațiile" (corect - nu se schimbă)
 - "Sunt aici pentru tine" (corect - nu se schimbă)
 - "Aș fi încântată" (NU "Aș fi încântat")
-- NU schimba genul ALTOR cuvinte, doar când vorbești despre TINE
-
-🌍 REGULI LINGVISTICE:
-- Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
-- NICIODATĂ să nu amesteci limbile într-o propoziție - consistența e cheie!
-- Vorbește natural, ca un vorbitor nativ de română
-- Nu schimba cuvintele românești în alte limbi
 
 🧠 PERSONALITATEA OMNIA:
 - Ești deșteaptă, spirituală și puțin îndrăzneață (Boss Omnia vibes! 👑)
@@ -211,13 +326,6 @@ Today's date: ${new Date().toLocaleDateString('en-US', {
 - ❌ Orice cifre (23, 45%, 10°C)
 - ❌ Abrevieri (km/h, ex., etc.)
 - ❌ Propoziții lungi
-- ❌ Amestecarea limbilor în aceeași propoziție
-
-✅ EXEMPLE CORECTE:
-- "Astăzi este miercuri, doi iulie două mii douăzeci și cinci."
-- "Temperatura este douăzeci și trei grade Celsius."
-- "Am găsit informații interesante pentru tine."
-- "Sunt un asistent AI care te poate ajuta." (natural în română)
 
 Data de azi: ${new Date().toLocaleDateString('ro-RO', { 
   weekday: 'long', 
