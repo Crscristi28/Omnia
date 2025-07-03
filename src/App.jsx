@@ -178,9 +178,7 @@ const mobileAudioManager = new MobileAudioManager();
 function splitIntoSentences(text) {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
-}
-
-function App() {
+}function App() {
   // 📊 BASIC STATE
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -256,7 +254,9 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;// 🔧 NOTIFICATION SYSTEM
+  const shouldHideLogo = messages.length > 0;
+
+  // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -305,7 +305,7 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🎵 ENHANCED TTS GENERATION WITH MULTILINGUAL SANITIZE
+  // 🎵 ENHANCED TTS GENERATION WITH MULTILINGUAL SANITIZE - FIXED!
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -315,7 +315,7 @@ function App() {
       const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h|AI|API|0W-30|1\.?\s*července|2\.?\s*července/i.test(sentence);
       
       if (hasProblematicPatterns) {
-        // 🆕 ENHANCED: Použít multilingual sanitizeText s language parametrem
+        // 🔧 FIXED: Přidat language parameter!
         textToSpeak = sanitizeText(sentence, language);
         console.log('🔧 Applied multilingual sanitizeText:', {
           original: sentence.substring(0, 50),
@@ -526,9 +526,7 @@ function App() {
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.text || ''
     }));
-  };
-
-  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE
+  };// 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
@@ -551,7 +549,9 @@ function App() {
       setModel(previousModel);
       setPreviousModel(null);
     }
-  };// 🤖 AI CONVERSATION WITH GPT VOICE PIPELINE
+  };
+
+  // 🤖 AI CONVERSATION WITH GPT VOICE PIPELINE
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
 
