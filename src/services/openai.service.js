@@ -135,8 +135,7 @@ const openaiService = {
           'Content-Type': 'application/json; charset=utf-8'
         },
         body: JSON.stringify({
-          query: query,
-          language: language
+          query: query
         })
       });
 
