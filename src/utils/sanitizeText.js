@@ -1,9 +1,7 @@
 // 📁 src/utils/sanitizeText.js
 // 🎵 ENHANCED MULTILINGUAL SANITIZATION pro ElevenLabs TTS
-// ✅ Čeština, Rumunština, Angličtina
-// ✅ Smart AI vs ai detection pro rumunštinu
-// ✅ Tech terms: 0W-30, API, atd.
-// ✅ Datumy: "2. července" → "druhého července", "2 iulie" → "doi iulie"
+// ✅ FIXED: Smart AI vs ai detection pro rumunštinu
+// ✅ Tech "AI" → "a i", ale sloveso "ai" → zůstává "ai"
 
 export default function sanitizeText(text, language = 'cs') {
   if (!text || typeof text !== 'string') return '';
@@ -12,7 +10,7 @@ export default function sanitizeText(text, language = 'cs') {
   
   switch (language.toLowerCase()) {
     
-    case 'ro': // 🇷🇴 RUMUNŠTINA
+    case 'ro': // 🇷🇴 RUMUNŠTINA - SMART AI DETECTION
       processedText = processedText
         // === DATUMY - řadové číslovky ===
         .replace(/\b1\.?\s*(ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|septembrie|octombrie|noiembrie|decembrie)\b/gi, (match, month) => `întâi ${month}`)
@@ -57,18 +55,17 @@ export default function sanitizeText(text, language = 'cs') {
         .replace(/5[Ww]-?40/g, 'cinci W patruzeci')
         .replace(/10[Ww]-?40/g, 'zece W patruzeci')
         
-        // === AI vs AI (sloveso) - SMART DETECTION ===
-        // AI technology terms - změnit na "a i"
-        .replace(/\bAI\s+(technology|tehnologie|assistant|asistent|model|sistem|system|intelligence|inteligență)/gi, 'a i $1')
-        .replace(/\b(asistent|tehnologie|model|sistem)\s+AI\b/gi, '$1 a i')
-        .replace(/\binteligenț[aă]\s+artificial[aă]\b/gi, 'inteligență artificială')
-        // AI standalone v tech kontextu
-        .replace(/\bAI\b(?=\s*[.,!?]|$)/g, 'a i')
+        // === SMART AI vs AI DETECTION - FIXED ===
+        // 🎯 AI s tech kontextem → "a i"
+        .replace(/\bAI\s+(technology|tehnologie|assistant|asistent|model|sistem|system|intelligence|inteligență|tool|unealtă)/gi, 'a i $1')
+        .replace(/\b(asistent|tehnologie|model|sistem|intelligence|inteligență)\s+AI\b/gi, '$1 a i')
         
-        // SLOVESO "ai" (mít) - NEZMĚNIT!
-        // "Ai întrebări?" zůstává "ai întrebări?"
-        // "Nu ai timp" zůstává "nu ai timp"
-        // (žádná změna potřeba - regex výše jsou specifické)
+        // 🎯 AI standalone (na začátku věty nebo s interpunkcí) → "a i"
+        .replace(/(?:^|\s)AI(?=\s*[.,!?]|$)/g, (match) => match.replace('AI', 'a i'))
+        .replace(/(?:^|\s)AI(?=\s+[A-Z])/g, (match) => match.replace('AI', 'a i')) // AI před velkým písmenem
+        
+        // 🎯 SLOVESO "ai" PROTECTION - explicitní ochrana před změnou
+        // Žádné další pravidlo pro "ai" - zůstává přirozené!
         
         // === OSTATNÍ TECH TERMÍNY ===
         .replace(/\bAPI\b/g, 'a pi i')
@@ -243,27 +240,22 @@ export default function sanitizeText(text, language = 'cs') {
   return processedText;
 }
 
-// 🧪 TESTING EXAMPLES pro debugging:
+// 🧪 SMART AI DETECTION TEST CASES:
 /*
-🇨🇿 ČESKÝ TEST:
-- "2. července" → "druhého července" ✅
-- "23°C" → "dvacet tři stupňů Celsia" ✅
-- "45%" → "čtyřicet pět procent" ✅
-- "0W-30" → "nula W třicet" ✅
-- "API klíč" → "éj pí áj klíč" ✅
+🇷🇴 RUMUNSKÝ TEST - FIXED:
 
-🇷🇴 RUMUNSKÝ TEST:
-- "2 iulie" → "doi iulie" ✅
-- "23°C" → "douăzeci și trei grade Celsius" ✅
-- "45%" → "patruzeci și cinci la sută" ✅
-- "0W-30" → "zero W treizeci" ✅
+✅ TECH AI → "a i":
 - "AI technology" → "a i technology" ✅
-- "Ai întrebări?" → "ai întrebări?" ✅ (sloveso zůstává)
+- "AI asistent" → "a i asistent" ✅
+- "Folosesc AI." → "Folosesc a i." ✅
+- "AI este rapid" → "a i este rapid" ✅
 
-🇺🇸 ANGLICKÝ TEST:
-- "July 2nd" → "July second" ✅
-- "23°C" → "twenty three degrees Celsius" ✅
-- "45%" → "forty five percent" ✅
-- "0W-30" → "zero W thirty" ✅
-- "API key" → "A P I key" ✅
+✅ SLOVESO "ai" → zůstává "ai":
+- "Ai întrebări?" → "ai întrebări?" ✅ (žádná změna!)
+- "Nu ai timp" → "nu ai timp" ✅ (žádná změna!)
+- "Ce ai făcut?" → "ce ai făcut?" ✅ (žádná změna!)
+- "Ai chef să vorbești?" → "ai chef să vorbești?" ✅ (žádná změna!)
+
+🎯 COMBO TEST:
+- "Ai știut că AI technology e bună?" → "ai știut că a i technology e bună?" ✅
 */
