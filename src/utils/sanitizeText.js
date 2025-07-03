@@ -55,17 +55,26 @@ export default function sanitizeText(text, language = 'cs') {
         .replace(/5[Ww]-?40/g, 'cinci W patruzeci')
         .replace(/10[Ww]-?40/g, 'zece W patruzeci')
         
-        // === SMART AI vs AI DETECTION - FIXED ===
-        // 🎯 AI s tech kontextem → "a i"
+        // === 🔧 FIXED: SMART AI vs AI DETECTION ===
+        // 🎯 TECH AI contexts → "a i"
         .replace(/\bAI\s+(technology|tehnologie|assistant|asistent|model|sistem|system|intelligence|inteligență|tool|unealtă)/gi, 'a i $1')
         .replace(/\b(asistent|tehnologie|model|sistem|intelligence|inteligență)\s+AI\b/gi, '$1 a i')
         
-        // 🎯 AI standalone (na začátku věty nebo s interpunkcí) → "a i"
+        // 🎯 AI standalone (tech context) → "a i"
         .replace(/(?:^|\s)AI(?=\s*[.,!?]|$)/g, (match) => match.replace('AI', 'a i'))
-        .replace(/(?:^|\s)AI(?=\s+[A-Z])/g, (match) => match.replace('AI', 'a i')) // AI před velkým písmenem
+        .replace(/(?:^|\s)AI(?=\s+[A-Z])/g, (match) => match.replace('AI', 'a i'))
         
-        // 🎯 SLOVESO "ai" PROTECTION - explicitní ochrana před změnou
-        // Žádné další pravidlo pro "ai" - zůstává přirozené!
+        // 🎯 CRITICAL FIX: Generický tech AI → "a i"
+        .replace(/\bAI\b/g, 'a i')
+        
+        // 🎯 SLOVESO "ai" PROTECTION - vraciame späť správne sloveso
+        .replace(/\ba i\s+(întrebări|timp|chef|știut|văzut|auzit|făcut|spus|venit|plecat|mâncat|băut)\b/gi, 'ai $1')
+        .replace(/\bce a i\b/gi, 'ce ai')
+        .replace(/\bnu a i\b/gi, 'nu ai')
+        .replace(/\bdacă a i\b/gi, 'dacă ai')
+        .replace(/\bcând a i\b/gi, 'când ai')
+        .replace(/\bunde a i\b/gi, 'unde ai')
+        .replace(/\bpentru că a i\b/gi, 'pentru că ai')
         
         // === OSTATNÍ TECH TERMÍNY ===
         .replace(/\bAPI\b/g, 'a pi i')
@@ -247,15 +256,21 @@ export default function sanitizeText(text, language = 'cs') {
 ✅ TECH AI → "a i":
 - "AI technology" → "a i technology" ✅
 - "AI asistent" → "a i asistent" ✅
-- "Folosesc AI." → "Folosesc a i." ✅
+- "Folosesc AI." → "folosesc a i." ✅
 - "AI este rapid" → "a i este rapid" ✅
 
 ✅ SLOVESO "ai" → zůstává "ai":
-- "Ai întrebări?" → "ai întrebări?" ✅ (žádná změna!)
-- "Nu ai timp" → "nu ai timp" ✅ (žádná změna!)
-- "Ce ai făcut?" → "ce ai făcut?" ✅ (žádná změna!)
-- "Ai chef să vorbești?" → "ai chef să vorbești?" ✅ (žádná změna!)
+- "Ai întrebări?" → "ai întrebări?" ✅ (PROTECTION funguje!)
+- "Nu ai timp" → "nu ai timp" ✅ (PROTECTION funguje!)
+- "Ce ai făcut?" → "ce ai făcut?" ✅ (PROTECTION funguje!)
+- "Ai chef să vorbești?" → "ai chef să vorbești?" ✅ (PROTECTION funguje!)
 
 🎯 COMBO TEST:
 - "Ai știut că AI technology e bună?" → "ai știut că a i technology e bună?" ✅
+- "Ce ai spus despre AI?" → "ce ai spus despre a i?" ✅
+
+🔧 CRITICAL FIX IMPLEMENTED:
+1. .replace(/\bAI\b/g, 'a i') - zmení všetky AI na "a i"
+2. Potom PROTECTION patterns vrátia sloveso "ai" späť
+3. Poriadok je kritický!
 */
