@@ -1,7 +1,7 @@
-// 🧠 OPENAI SERVICE - ENHANCED WITH PERPLEXITY AUTO-SEARCH
-// ✅ Smart auto-detection for when to search
-// 🔍 Perplexity integration for real-time information
-// 🎯 GPT + fresh search results = intelligent responses
+// 🧠 OPENAI SERVICE - FIXED PERSONALITY + SEARCH INTEGRATION
+// ✅ Preserves Omnia personality while adding search context
+// 🔍 Structured message injection (ChatGPT's solution)
+// 🎯 System prompt FIRST, search as additional context
 
 const openaiService = {
   async sendMessage(messages, detectedLanguage = 'cs') {
@@ -16,7 +16,6 @@ const openaiService = {
       console.log('🔍 Search needed:', needsSearch, 'for query:', userQuery.substring(0, 50) + '...');
       
       let searchResults = null;
-      let enhancedSystemPrompt = this.getSystemPrompt(detectedLanguage);
       
       // 🔍 STEP 2: Perform search if needed
       if (needsSearch) {
@@ -25,26 +24,33 @@ const openaiService = {
           searchResults = await this.performPerplexitySearch(userQuery, detectedLanguage);
           
           if (searchResults && searchResults.success) {
-            console.log('✅ Search successful, enhancing GPT context');
-            enhancedSystemPrompt = this.enhanceSystemPromptWithSearch(
-              enhancedSystemPrompt, 
-              searchResults.result,
-              detectedLanguage
-            );
+            console.log('✅ Search successful, will inject as context');
           }
         } catch (searchError) {
           console.warn('⚠️ Search failed, continuing without:', searchError.message);
         }
       }
       
-      // 🧠 STEP 3: Add enhanced system prompt
+      // 🧠 STEP 3: Build messages with STRUCTURED INJECTION
       const systemMessage = {
         role: 'system',
-        content: enhancedSystemPrompt
+        content: this.getSystemPrompt(detectedLanguage) // ✅ PURE Omnia personality
       };
       
-      // Combine system prompt with messages
-      const messagesWithSystem = [systemMessage, ...messages];
+      // ✅ FIXED: Proper message structure
+      let messagesWithSystem = [systemMessage, ...messages];
+      
+      // 🔍 STEP 4: Add search results as ADDITIONAL context (if available)
+      if (searchResults && searchResults.success) {
+        const searchContextMessage = {
+          role: 'user',
+          content: this.formatSearchContext(searchResults.result, detectedLanguage)
+        };
+        
+        // ✅ Insert search context BEFORE final user message
+        messagesWithSystem.splice(-1, 0, searchContextMessage);
+        console.log('🔍 Search context injected as additional user message');
+      }
       
       const response = await fetch('/api/openai', {
         method: 'POST',
@@ -80,7 +86,22 @@ const openaiService = {
     }
   },
 
-  // 🔍 SMART SEARCH DETECTION
+  // 🔍 FORMAT SEARCH CONTEXT (separate from system prompt)
+  formatSearchContext(searchResults, language) {
+    const currentDate = new Date().toLocaleDateString(
+      language === 'cs' ? 'cs-CZ' : language === 'ro' ? 'ro-RO' : 'en-US'
+    );
+    
+    const contextTemplates = {
+      'cs': `Doplňující informace z internetu (${currentDate}): ${searchResults}`,
+      'en': `Additional information from internet (${currentDate}): ${searchResults}`,
+      'ro': `Informații suplimentare de pe internet (${currentDate}): ${searchResults}`
+    };
+    
+    return contextTemplates[language] || contextTemplates['cs'];
+  },
+
+  // 🔍 SMART SEARCH DETECTION (unchanged)
   detectSearchNeed(message) {
     if (!message || typeof message !== 'string') return false;
     
@@ -126,7 +147,7 @@ const openaiService = {
     return allTriggers.some(pattern => pattern.test(lowerMessage));
   },
 
-  // 🔍 PERPLEXITY SEARCH CALL
+  // 🔍 PERPLEXITY SEARCH CALL (unchanged)
   async performPerplexitySearch(query, language = 'cs') {
     try {
       const response = await fetch('/api/perplexity-search', {
@@ -152,36 +173,7 @@ const openaiService = {
     }
   },
 
-  // 🧠 ENHANCE SYSTEM PROMPT WITH SEARCH RESULTS
-  enhanceSystemPromptWithSearch(basePrompt, searchResults, language) {
-    const currentDate = new Date().toLocaleDateString(language === 'cs' ? 'cs-CZ' : language === 'ro' ? 'ro-RO' : 'en-US');
-    
-    const searchEnhancement = {
-      'cs': `
-🔍 AKTUÁLNÍ INFORMACE (${currentDate}):
-${searchResults}
-
-DŮLEŽITÉ: Využij tyto aktuální informace k odpovědi. Kombinuj je se svými znalostmi pro nejlepší odpověď.`,
-      'en': `
-🔍 CURRENT INFORMATION (${currentDate}):
-${searchResults}
-
-IMPORTANT: Use this current information in your response. Combine it with your knowledge for the best answer.`,
-      'ro': `
-🔍 INFORMAȚII ACTUALE (${currentDate}):
-${searchResults}
-
-IMPORTANT: Folosește aceste informații actuale în răspuns. Combină-le cu cunoștințele tale pentru cel mai bun răspuns.`
-    };
-
-    const enhancement = searchEnhancement[language] || searchEnhancement['cs'];
-    
-    return `${basePrompt}
-
-${enhancement}`;
-  },
-
-  // 🎵 TTS-AWARE SYSTEM PROMPTS (enhanced)
+  // 🎵 TTS-AWARE SYSTEM PROMPTS (unchanged - PURE Omnia personality)
   getSystemPrompt(detectedLanguage) {
     const prompts = {
       'cs': `Jsi Omnia, pokročilý AI asistent s osobností. Jsi ŽENA a mluvíš jako žena.
