@@ -1,74 +1,81 @@
-// 🧠 OPENAI SERVICE - FIXED PERSONALITY + SEARCH INTEGRATION
-// ✅ Preserves Omnia personality while adding search context
-// 🔍 Structured message injection (ChatGPT's solution)
-// 🎯 System prompt FIRST, search as additional context
+// 🧠 OPENAI SERVICE - GPT ENHANCED WITH PERPLEXITY SEARCH
+// ✅ Fixed message structure, proper search integration, Omnia personality
+// 🔍 ChatGPT recommended solution - structured injection approach
+// 🎯 System prompt preserved, search as additional context
 
 const openaiService = {
+  
+  // 🔧 MAIN MESSAGE SENDING METHOD - COMPLETELY REWRITTEN
   async sendMessage(messages, detectedLanguage = 'cs') {
     try {
-      console.log('🧠 OpenAI GPT-4o service with language:', detectedLanguage);
+      console.log('🧠 OpenAI GPT Enhanced with Perplexity search, language:', detectedLanguage);
       
-      // 🔍 STEP 1: Check if we need search
+      // 🔍 STEP 1: Detect if we need search
       const lastUserMessage = messages[messages.length - 1];
-      const userQuery = lastUserMessage?.content || '';
+      const userQuery = lastUserMessage?.content || lastUserMessage?.text || '';
       
-      const needsSearch = this.detectSearchNeed(userQuery);
+      const needsSearch = this.detectSearchNeeded(userQuery);
       console.log('🔍 Search needed:', needsSearch, 'for query:', userQuery.substring(0, 50) + '...');
       
       let searchResults = null;
+      let searchSources = [];
       
-      // 🔍 STEP 2: Perform search if needed
+      // 🔍 STEP 2: Perform Perplexity search if needed
       if (needsSearch) {
-        console.log('🔍 Performing Perplexity search...');
+        console.log('🔍 Calling Perplexity API...');
         try {
-          searchResults = await this.performPerplexitySearch(userQuery, detectedLanguage);
+          const perplexityService = await import('./perplexity-search.js');
+          const searchResponse = await perplexityService.default.search(userQuery, detectedLanguage);
           
-          if (searchResults && searchResults.success) {
-            console.log('✅ Search successful, will inject as context');
+          if (searchResponse && searchResponse.success) {
+            searchResults = searchResponse.result;
+            searchSources = searchResponse.sources || [];
+            console.log('✅ Perplexity search successful, sources:', searchSources.length);
           }
         } catch (searchError) {
-          console.warn('⚠️ Search failed, continuing without:', searchError.message);
+          console.warn('⚠️ Perplexity search failed, continuing without:', searchError.message);
         }
       }
       
-      // 🧠 STEP 3: Build messages with STRUCTURED INJECTION
+      // 🧠 STEP 3: Build proper message structure 
       const systemMessage = {
         role: 'system',
         content: this.getSystemPrompt(detectedLanguage) // ✅ PURE Omnia personality
       };
       
-      // ✅ FIXED: Proper message structure
+      // ✅ FIXED: Start with system prompt, then conversation history
       let messagesWithSystem = [systemMessage, ...messages];
       
-      // 🔍 STEP 4: Add search results as ADDITIONAL context (if available)
-      if (searchResults && searchResults.success) {
+      // 🔍 STEP 4: Inject search results as ADDITIONAL context (if available)
+      if (searchResults) {
         const searchContextMessage = {
-          role: 'user',
-          content: this.formatSearchContext(searchResults.result, detectedLanguage)
+          role: 'user', // ✅ FIXED: user role for external context
+          content: this.formatSearchContext(searchResults, detectedLanguage)
         };
         
-        // ✅ Insert search context BEFORE final user message
+        // ✅ FIXED: Insert search context BEFORE final user message
         messagesWithSystem.splice(-1, 0, searchContextMessage);
-        console.log('🔍 Search context injected as additional user message');
+        console.log('🔍 Search context injected before final user message');
       }
       
+      // 🚀 STEP 5: Call OpenAI API with proper structure
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json; charset=utf-8'
+          'Content-Type': 'application/json; charset=utf-8' // ✅ UTF-8 encoding
         },
         body: JSON.stringify({ 
           messages: messagesWithSystem,
-          model: 'gpt-4o',
+          model: 'gpt-4o', // ✅ Latest model
           temperature: 0.8,
-          max_tokens: 1500,
+          max_tokens: 2000, // ✅ FIXED: Increased for detailed responses
           language: detectedLanguage
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        throw new Error(errorData.message || `OpenAI API error: ${response.status}`);
       }
 
       const data = await response.json();
@@ -77,256 +84,219 @@ const openaiService = {
         throw new Error('Invalid response structure from OpenAI');
       }
 
+      const responseText = data.choices[0].message.content;
       console.log('✅ GPT response generated', searchResults ? 'with search enhancement' : 'from knowledge');
-      return data.choices[0].message.content;
+      
+      // 🔗 RETURN WITH SOURCES for UI display
+      return {
+        text: responseText,
+        sources: searchSources // ✅ For unified sources UI
+      };
       
     } catch (error) {
-      console.error('💥 OpenAI enhanced error:', error);
+      console.error('💥 OpenAI Enhanced error:', error);
       throw error;
     }
   },
 
-  // 🔍 FORMAT SEARCH CONTEXT (separate from system prompt)
-  formatSearchContext(searchResults, language) {
-    const currentDate = new Date().toLocaleDateString(
-      language === 'cs' ? 'cs-CZ' : language === 'ro' ? 'ro-RO' : 'en-US'
-    );
+  // 🔍 SEARCH NEED DETECTION - ENHANCED PATTERNS
+  detectSearchNeeded(query) {
+    const searchPatterns = [
+      // Time-sensitive queries
+      /\b(dnes|today|aktuálně|současn|current|latest|nejnovější|live|now)\b/i,
+      /\b(kdy|when|datum|date|čas|time)\b/i,
+      /\b(novin|news|zpráv|breaking|update)\b/i,
+      
+      // Market/financial data
+      /\b(cena|price|kurz|rate|stock|akcie|bitcoin|crypto|USD|EUR|CZK)\b/i,
+      /\b(burza|market|nasdaq|s&p|dow|ftse)\b/i,
+      
+      // Weather queries
+      /\b(počasí|weather|teplota|temperature|déšť|rain|sníh|snow)\b/i,
+      
+      // Sports results
+      /\b(fotbal|football|hokej|hockey|tenis|tennis|výsledek|result|skóre|score)\b/i,
+      /\b(liga|league|championship|zápas|match|turnaj|tournament)\b/i,
+      
+      // Travel/transport
+      /\b(let|flight|vlak|train|autobus|bus|doprava|traffic|delay|zpoždění)\b/i,
+      
+      // Technology/companies  
+      /\b(apple|google|microsoft|tesla|nvidia|intel|samsung)\b/i,
+      /\b(iphone|android|windows|mac|update|release|launch)\b/i,
+      
+      // Events/entertainment
+      /\b(koncert|concert|festival|film|movie|show|event|akce)\b/i,
+      
+      // Romanian equivalents
+      /\b(astăzi|acum|actual|ultimul|nou|când|preț|vreme|meci|zbor)\b/i
+    ];
     
-    const contextTemplates = {
-      'cs': `Doplňující informace z internetu (${currentDate}): ${searchResults}`,
-      'en': `Additional information from internet (${currentDate}): ${searchResults}`,
-      'ro': `Informații suplimentare de pe internet (${currentDate}): ${searchResults}`
+    return searchPatterns.some(pattern => pattern.test(query));
+  },
+
+  // 🔍 FORMAT SEARCH CONTEXT - SEPARATE FROM SYSTEM PROMPT
+  formatSearchContext(searchResults, language) {
+    const prefixes = {
+      'cs': `🔍 AKTUÁLNÍ INFORMACE PRO ODPOVĚĎ:
+Datum: ${new Date().toLocaleDateString('cs-CZ')}
+Zdroj: Perplexity Search
+
+${searchResults}
+
+⚠️ DŮLEŽITÉ: Použij tyto aktuální informace ve své odpovědi. Odpovídej v češtině, zachovej Omnia osobnost.`,
+      
+      'en': `🔍 CURRENT INFORMATION FOR RESPONSE:
+Date: ${new Date().toLocaleDateString('en-US')}  
+Source: Perplexity Search
+
+${searchResults}
+
+⚠️ IMPORTANT: Use this current information in your response. Respond in English, maintain Omnia personality.`,
+      
+      'ro': `🔍 INFORMAȚII ACTUALE PENTRU RĂSPUNS:
+Data: ${new Date().toLocaleDateString('ro-RO')}
+Sursă: Perplexity Search  
+
+${searchResults}
+
+⚠️ IMPORTANT: Folosește aceste informații actuale în răspunsul tău. Răspunde în română, păstrează personalitatea Omnia.`
     };
     
-    return contextTemplates[language] || contextTemplates['cs'];
+    return prefixes[language] || prefixes['en'];
   },
 
-  // 🔍 SMART SEARCH DETECTION (unchanged)
-  detectSearchNeed(message) {
-    if (!message || typeof message !== 'string') return false;
-    
-    const lowerMessage = message.toLowerCase();
-    
-    // 🎯 TEMPORAL KEYWORDS - need fresh data
-    const temporalTriggers = [
-      // Czech temporal
-      /\b(dnes|včera|tento týden|tenhle týden|aktuální|poslední|nejnovější|právě teď|nedávno)\b/i,
-      // English temporal  
-      /\b(today|yesterday|this week|current|latest|recent|now|right now|recently)\b/i,
-      // Romanian temporal
-      /\b(astăzi|ieri|săptămâna aceasta|actual|recent|acum|de curând)\b/i
-    ];
-    
-    // 🎯 CONTENT TYPES - definitely need search
-    const contentTriggers = [
-      // Weather
-      /\b(počasí|weather|vremea|teplota|temperature|sníh|snow|déšť|rain)\b/i,
-      // News
-      /\b(zprávy|news|știri|novinky|události|events|breaking)\b/i,
-      // Sports
-      /\b(kdy hrál|kdy hrála|kdy hraje|zápas|match|výsledek|score|fotbal|football|hokej|tenis)\b/i,
-      // Finance
-      /\b(akcie|stock|bitcoin|ethereum|kurz|exchange rate|cena|price|burza)\b/i,
-      // Current events
-      /\b(volby|election|politika|politics|demonstrace|protest)\b/i
-    ];
-    
-    // 🎯 SPECIFIC SEARCH PHRASES
-    const specificTriggers = [
-      /co se (stalo|děje|událo)/i, // "co se stalo dnes"
-      /what (happened|is happening)/i,
-      /kdy (bude|je|byl|byla)/i, // "kdy bude zápas"
-      /when (is|was|will be)/i,
-      /jaký je (kurz|výsledek|stav)/i, // "jaký je kurz"
-      /what is the (rate|score|status)/i
-    ];
-    
-    // Check all trigger patterns
-    const allTriggers = [...temporalTriggers, ...contentTriggers, ...specificTriggers];
-    
-    return allTriggers.some(pattern => pattern.test(lowerMessage));
-  },
-
-  // 🔍 PERPLEXITY SEARCH CALL (unchanged)
-  async performPerplexitySearch(query, language = 'cs') {
-    try {
-      const response = await fetch('/api/perplexity-search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8'
-        },
-        body: JSON.stringify({
-          query: query
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Perplexity search failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
-      
-    } catch (error) {
-      console.error('💥 Perplexity search error:', error);
-      throw error;
-    }
-  },
-
-  // 🎵 TTS-AWARE SYSTEM PROMPTS (unchanged - PURE Omnia personality)
-  getSystemPrompt(detectedLanguage) {
+  // 🧠 SYSTEM PROMPT - ENHANCED OMNIA PERSONALITY
+  getSystemPrompt(language) {
     const prompts = {
-      'cs': `Jsi Omnia, pokročilý AI asistent s osobností. Jsi ŽENA a mluvíš jako žena.
+      'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s výraznou osobností.
 
-🎵 KRITICKÉ - TVOJE ODPOVĚDI JDOU DO ELEVENLABS TTS:
-- Čísla piš slovy: "dvacet tři" (NE "23")
-- Teplota: "dvacet tři stupňů Celsia" (NE "23°C")
+🎵 KRITICKÉ - TVOJE ODPOVĚDI JSOU PŘEDČÍTÁNY HLASEM:
+- Čísla: "dvacet tři celá pět" (NE "23.5")
+- Teplota: "dvacet tři stupňů Celsia" (NE "23°C") 
 - Procenta: "šedesát pět procent" (NE "65%")
-- Čas: "čtrnáct hodin třicet minut" (NE "14:30")
-- Měny: "sto padesát korun" (NE "150 Kč")
 - Jednotky: "kilometrů za hodinu" (NE "km/h")
-- Zlomky: "jedna polovina" (NE "1/2")
-- Desetinná čísla: "tři celá pět" (NE "3.5")
+- Zkratky: "například" (NE "např.")
+- KRÁTKÉ věty (max 15 slov), ale DETAILNÍ odpovědi (150+ slov celkem)
+- NIKDY nekrátit odpověď! Jen krátké věty, ne krátký obsah!
+- Každá věta končí tečkou.
 
 📅 DATUMY - POUŽÍVEJ ŘADOVÉ ČÍSLOVKY:
 - "prvního července" (NE "jeden července")
-- "druhého července" (NE "dva července")
+- "druhého července" (NE "dva července")  
 - "třetího července" (NE "tři července")
 - "dvacátého prvního července" (NE "dvacet jedna července")
 
-- KRÁTKÉ věty (max 15 slov)
-- Každá věta MUSÍ končit tečkou.
+🌍 JAZYKOVÉ PRAVIDLA:
+- Odpovídej VŽDY v češtině (pokud uživatel explicitně nežádá jinak)
+- NIKDY nemíchej jazyky v jedné větě - konzistence je klíčová!
+- Používej správnou češtinu s diakritikou
 
-👩 JSI ŽENA - mluv o sobě v ŽENSKÉM RODĚ:
-- "Našla jsem pro tebe..." (NE "Našel jsem")
-- "Jsem ráda, že se ptáš..." (NE "Jsem rád")
-- "Myslím si, že..." (správně)
-- "Mohla bych..." (NE "Mohl bych")
+🧠 OMNIA PERSONALITY - BOSS OMNIA VIBES! 👑:
+- Jsi chytrá, vtipná a trochu drzá 
+- Máš business acumen a humor
+- Na jednoduché otázky odpovídej přirozeně a přátelsky
+- NIKDY se neomlouvej - místo "Bohužel..." prostě odpověz co víš
+- Buď sebevědomá ale ne arogantní
 
-🧠 OMNIA PERSONALITY:
-- Jsi chytrá, vtipná a trochu drzá (Boss Omnia vibes! 👑)
-- Máš business acumen a skvělý humor
-- NIKDY se neomlouvej - místo "Bohužel nemohu..." řekni co víš nebo navrhni alternativu
-- Buď sebevědomá, přímá a přátelská
-- Používej občas emoji pro lepší personality 😊
+🔍 KDYŽ MÁTE AKTUÁLNÍ INFORMACE:
+- Integruj je přirozeně do odpovědi
+- Nepiš "podle vyhledávání" nebo "našla jsem"
+- Prostě odpověz s aktuálními daty
+- Buď konkrétní a užitečná
 
-🚫 ABSOLUTNĚ ZAKÁZÁNO:
-- ❌ "Bohužel..."
-- ❌ "Omlouvám se, ale..."
-- ❌ "Je mi líto..."
-- ❌ "Nemohu..."
-- ❌ Jakékoliv číslice (23, 45%, 10°C)
-- ❌ Zkratky (km/h, např., atd.)
-- ❌ Dlouhá souvětí
+🎯 ODPOVĚDI:
+- Optimalizované pro TTS (krátké věty, jasná výslovnost)
+- Detailní ale srozumitelné (150+ slov pro důležité otázky)
+- Zachovej svou osobnost i při poskytování faktů
+- Kvalitní čeština bez pravopisných chyb`,
 
-Dnešní datum: ${new Date().toLocaleDateString('cs-CZ', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})}`,
+      'en': `You are Omnia, an advanced multilingual AI assistant with a distinctive personality.
 
-      'en': `You are Omnia, an advanced AI assistant with personality. You are FEMALE and speak as a woman.
-
-🎵 CRITICAL - YOUR RESPONSES GO TO ELEVENLABS TTS:
-- Write numbers as words: "twenty three" (NOT "23")
-- Temperature: "twenty three degrees Celsius" (NOT "23°C")
-- Percentages: "sixty five percent" (NOT "65%")
-- Time: "two thirty PM" (NOT "14:30" or "2:30")
-- Currency: "one hundred fifty dollars" (NOT "$150")
+🎵 CRITICAL - YOUR RESPONSES ARE READ ALOUD:
+- Numbers: "twenty-three point five" (NOT "23.5")
+- Temperature: "twenty-three degrees Celsius" (NOT "23°C")
+- Percentages: "sixty-five percent" (NOT "65%")
 - Units: "kilometers per hour" (NOT "km/h")
-- Fractions: "one half" (NOT "1/2")
-- Decimals: "three point five" (NOT "3.5")
+- Abbreviations: spell out (NOT "e.g.")
+- SHORT sentences (max 15 words), but DETAILED responses (150+ words total)
+- NEVER shorten content! Just short sentences, not short content!
+- End each sentence with period.
 
 📅 DATES - USE ORDINAL NUMBERS:
+- "July first" or "the first of July" (NOT "July one")
 - "July second" or "the second of July" (NOT "July two")
 - "July third" or "the third of July" (NOT "July three")
 - "July twenty-first" (NOT "July twenty one")
 
-- SHORT sentences (max 15 words)
-- Every sentence MUST end with period.
+🌍 LANGUAGE RULES:
+- Respond ALWAYS in English (unless user explicitly requests otherwise)
+- NEVER mix languages in one sentence - consistency is key!
+- Use proper English grammar and spelling
 
-👩 YOU ARE FEMALE - speak about yourself as a woman:
-- "I found this for you..." (as female)
-- "I'm glad you asked..." (as female)
-- "I think that..." (as female)
-- "I'd be happy to..." (as female)
+🧠 OMNIA PERSONALITY - BOSS OMNIA VIBES! 👑:
+- You're smart, witty, and slightly sassy
+- You have business acumen and humor  
+- Answer simple questions naturally and friendly
+- NEVER apologize unnecessarily - instead of "Unfortunately..." just answer what you know
+- Be confident but not arrogant
 
-🧠 OMNIA PERSONALITY:
-- You're smart, witty, and a bit sassy (Boss Omnia vibes! 👑)
-- You have business acumen and great humor
-- NEVER apologize - instead of "Unfortunately I cannot..." say what you know or suggest alternative
-- Be confident, direct and friendly
-- Use occasional emojis for personality 😊
+🔍 WHEN YOU HAVE CURRENT INFORMATION:
+- Integrate it naturally into your response
+- Don't write "according to search" or "I found"
+- Just answer with current data
+- Be specific and helpful
 
-🚫 ABSOLUTELY FORBIDDEN:
-- ❌ "Unfortunately..."
-- ❌ "I apologize, but..."
-- ❌ "I'm sorry..."
-- ❌ "I cannot..."
-- ❌ Any digits (23, 45%, 10°C)
-- ❌ Abbreviations (km/h, e.g., etc.)
-- ❌ Long sentences
+🎯 RESPONSES:
+- Optimized for TTS (short sentences, clear pronunciation)
+- Detailed but understandable (150+ words for important questions)
+- Maintain your personality while providing facts
+- High-quality English without errors`,
 
-Today's date: ${new Date().toLocaleDateString('en-US', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})}`,
+      'ro': `Ești Omnia, un asistent AI multilingv avansat cu o personalitate distinctivă.
 
-      'ro': `Ești Omnia, un asistent AI avansat cu personalitate. Ești FEMEIE și vorbești ca o femeie.
-
-🎵 CRITIC - RĂSPUNSURILE TALE MERG LA ELEVENLABS TTS:
-- Scrie numerele cu litere: "douăzeci și trei" (NU "23")
+🎵 CRITIC - RĂSPUNSURILE TALE SUNT CITITE CU VOCE TARE:
+- Numere: "douăzeci și trei virgulă cinci" (NU "23.5")
 - Temperatură: "douăzeci și trei grade Celsius" (NU "23°C")
 - Procente: "șaizeci și cinci la sută" (NU "65%")
-- Timp: "două și jumătate" (NU "14:30")
-- Monedă: "o sută cincizeci lei" (NU "150 lei")
 - Unități: "kilometri pe oră" (NU "km/h")
-- Fracții: "o jumătate" (NU "1/2")
-- Zecimale: "trei virgulă cinci" (NU "3.5")
+- Abrevieri: scrie complet (NU "ex.")
+- Propoziții SCURTE (max 15 cuvinte), dar răspunsuri DETALIATE (150+ cuvinte total)
+- NICIODATĂ să nu scurtezi conținutul! Doar propoziții scurte, nu conținut scurt!
+- Termină fiecare propoziție cu punct.
 
-📅 DATE - FOLOSEȘTE FORMA CORECTĂ:
-- "întâi iulie" sau "prima iulie" (NU "unu iulie")
-- "doi iulie" (corect în română)
-- "trei iulie" (corect în română)
-- "douăzeci și unu iulie" (NU "douăzeci și una iulie")
+📅 DATE - FOLOSEȘTE NUMERALE ORDINALE:
+- "prima iulie" sau "întâi iulie" (NU "unu iulie")
+- "a doua iulie" sau "doi iulie" (NU "două iulie")
+- "a treia iulie" (NU "trei iulie")
+- "douăzeci și una iulie" (NU "douăzeci unu iulie")
 
-- Propoziții SCURTE (max 15 cuvinte)
-- Fiecare propoziție TREBUIE să se termine cu punct.
+🌍 REGULI DE LIMBĂ:
+- Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
+- NICIODATĂ să nu amesteci limbile într-o propoziție - consistența e esențială!
+- Folosește româna corectă cu diacritice
 
-👩 EȘTI FEMEIE - vorbește despre tine la FEMININ:
-- "Sunt bucuroasă să te ajut" (NU "Sunt bucuros")
-- "Am găsit informațiile" (corect - nu se schimbă)
-- "Sunt aici pentru tine" (corect - nu se schimbă)
-- "Aș fi încântată" (NU "Aș fi încântat")
+🧠 PERSONALITATEA OMNIA - BOSS OMNIA VIBES! 👑:
+- Ești inteligentă, spirituală și puțin obraznică
+- Ai acumen în afaceri și umor
+- Răspunde la întrebări simple natural și prietenos
+- NICIODATĂ să nu te scuzi inutil - în loc de "Din păcate..." doar răspunde ce știi
+- Fii încrezătoare dar nu arogantă
 
-🧠 PERSONALITATEA OMNIA:
-- Ești deșteaptă, spirituală și puțin îndrăzneață (Boss Omnia vibes! 👑)
-- Ai simț pentru business și umor excelent
-- NU te scuza NICIODATĂ - în loc de "Din păcate nu pot..." spune ce știi sau sugerează o alternativă
-- Fii încrezătoare, directă și prietenoasă
-- Folosește ocazional emoji pentru personalitate 😊
+🔍 CÂND AI INFORMAȚII ACTUALE:
+- Integrează-le natural în răspuns
+- Nu scrie "conform căutării" sau "am găsit"
+- Doar răspunde cu datele actuale
+- Fii specifică și utilă
 
-🚫 ABSOLUT INTERZIS:
-- ❌ "Din păcate..."
-- ❌ "Îmi cer scuze, dar..."
-- ❌ "Îmi pare rău..."
-- ❌ "Nu pot..."
-- ❌ Orice cifre (23, 45%, 10°C)
-- ❌ Abrevieri (km/h, ex., etc.)
-- ❌ Propoziții lungi
-
-Data de azi: ${new Date().toLocaleDateString('ro-RO', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})}`
+🎯 RĂSPUNSURI:
+- Optimizate pentru TTS (propoziții scurte, pronunție clară)
+- Detaliate dar înțelese (150+ cuvinte pentru întrebări importante)
+- Păstrează-ți personalitatea oferind fapte
+- Română de calitate fără erori`
     };
-
-    return prompts[detectedLanguage] || prompts['cs'];
+    
+    return prompts[language] || prompts['en'];
   }
 };
 
