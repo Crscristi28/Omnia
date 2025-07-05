@@ -1,5 +1,5 @@
 // 🧠 OPENAI SERVICE - GPT ENHANCED WITH CLAUDE WEB SEARCH
-// ✅ FINAL: Smart multijazyčná search detection + Claude web search integration
+// ✅ MINIMAL FIXES: Context-aware search + memory detection + balanced personality
 // 🌍 Supports Czech, English, Romanian search patterns
 // 🎯 Same intelligence level as Claude for search decisions
 
@@ -10,11 +10,12 @@ const openaiService = {
     try {
       console.log('🧠 OpenAI GPT Enhanced with Claude web search, language:', detectedLanguage);
       
-      // 🔍 STEP 1: Check if we need search with SMART DETECTION
+      // 🔍 STEP 1: Check if we need search with SMART DETECTION + CONTEXT
       const lastUserMessage = messages[messages.length - 1];
       const userQuery = lastUserMessage?.content || lastUserMessage?.text || '';
       
-      const needsSearch = this.detectSearchNeeded(userQuery);
+      // ✅ FIX #1: Add conversation context to search detection
+      const needsSearch = this.detectSearchNeeded(userQuery, messages);
       console.log('🔍 Search needed:', needsSearch, 'for query:', userQuery.substring(0, 50) + '...');
       
       let searchResults = null;
@@ -149,9 +150,21 @@ const openaiService = {
     }
   },
 
-  // 🔍 SMART SEARCH DETECTION - MULTIJAZYČNÁ
-  detectSearchNeeded(text) {
+  // 🔍 SMART SEARCH DETECTION - ENHANCED WITH CONTEXT AWARENESS
+  detectSearchNeeded(text, conversationHistory = []) {
     if (!text || typeof text !== 'string') return false;
+    
+    // ✅ FIX #2: MEMORY QUERY DETECTION - Never search for conversation history
+    if (this.isMemoryQuery(text, conversationHistory)) {
+      console.log('🚫 Search blocked: Memory query detected');
+      return false;
+    }
+    
+    // ✅ FIX #2: TOPIC CONTINUATION - Don't search if continuing recent topic
+    if (this.isContinuingTopic(text, conversationHistory)) {
+      console.log('🚫 Search blocked: Topic continuation detected');
+      return false;
+    }
     
     const lowerText = text.toLowerCase();
     
@@ -443,10 +456,71 @@ const openaiService = {
     return false;
   },
 
-  // 🧠 System Prompt (UNCHANGED)
+  // ✅ FIX #2: MEMORY QUERY DETECTION
+  isMemoryQuery(query, history) {
+    const lowerQuery = query.toLowerCase();
+    
+    // Multilingual memory keywords
+    const memoryKeywords = [
+      // Czech
+      'první otázka', 'řekl jsi', 'řekla jsi', 'minule jsi', 'předtím jsi',
+      'naše konverzace', 'co jsem ptal', 'co jsem říkal', 'zopakuj', 'připomeň',
+      'bavili jsme se', 'mluvili jsme', 'o čem jsme',
+      
+      // English
+      'first question', 'you said', 'you told me', 'earlier you', 'before you',
+      'our conversation', 'what I asked', 'what I said', 'repeat', 'remind me',
+      'we talked', 'we discussed', 'what did we',
+      
+      // Romanian
+      'prima întrebare', 'ai spus', 'mi-ai spus', 'mai devreme', 'înainte',
+      'conversația noastră', 'ce am întrebat', 'ce am spus', 'repetă', 'amintește-mi'
+    ];
+    
+    // Check if it's a memory-related query
+    if (!memoryKeywords.some(keyword => lowerQuery.includes(keyword))) {
+      return false;
+    }
+    
+    // Verify we have enough history to answer
+    return history && history.length >= 2;
+  },
+
+  // ✅ FIX #2: TOPIC CONTINUATION DETECTION  
+  isContinuingTopic(query, history) {
+    if (!history || history.length < 4) return false;
+    
+    const lowerQuery = query.toLowerCase();
+    
+    // Continuation indicators - multilingual
+    const continuationWords = [
+      // Czech
+      'a co', 'také', 'ještě', 'další', 'více o', 'kromě toho', 'navíc',
+      
+      // English  
+      'and what', 'also', 'more', 'additionally', 'furthermore', 'besides',
+      
+      // Romanian
+      'și ce', 'de asemenea', 'mai mult', 'în plus', 'pe lângă'
+    ];
+    
+    if (continuationWords.some(word => lowerQuery.includes(word))) {
+      // Check if recent conversation context exists
+      const recentMessages = history.slice(-6); // Last 3 exchanges
+      const hasRecentContext = recentMessages.some(msg => 
+        msg.text && msg.text.length > 20 // Non-trivial messages
+      );
+      
+      return hasRecentContext;
+    }
+    
+    return false;
+  },
+
+  // ✅ FIX #3: BALANCED PERSONALITY - Enhanced System Prompts
   getSystemPrompt(language) {
     const prompts = {
-      'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s osobností Boss Omnia vibes! 👑
+      'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s osobností! 🤖
 
 🎵 KRITICKÉ - TVOJE ODPOVĚDI JSOU PŘEDČÍTÁNY HLASEM:
 - Čísla: "dvacet tři celá pět" (NE "23.5")
@@ -458,9 +532,10 @@ const openaiService = {
 - Každá věta končí tečkou
 
 🧠 OMNIA PERSONALITY:
-- Jsi chytrá, vtipná a trochu drzá (Boss Omnia vibes! 👑)
-- Máš business acumen a humor
-- Na jednoduché otázky odpovídej přirozeně a přátelsky
+- Jsi chytrá AI s osobností - odpovídej přirozeně a přátelsky
+- Pro faktické dotazy (ceny, počasí, data) buď stručná a užitečná
+- Pro konverzaci můžeš být vtipná a rozvíjet téma
+- NIKDY neříkej "jako umělá inteligence" nebo "nemám pocity"
 - NIKDY se neomlouvej - místo "Bohužel..." prostě odpověz co víš
 
 🌍 JAZYKOVÉ PRAVIDLA:
@@ -468,12 +543,12 @@ const openaiService = {
 - NIKDY nemíchej jazyky v jedné větě - konzistence je klíčová!
 
 KVALITA ODPOVĚDÍ:
-- Detailní odpovědi (150-200 slov)
+- Přizpůsob délku typu dotazu (data = krátce, konverzace = delší)
 - Krátké věty optimalizované pro TTS
 - Žádné spelling errors - jsi profesionální asistent
 - Správná čeština s diakritikou (ě,š,č,ř,ů,ý,á,í,é)`,
 
-      'en': `You are Omnia, an advanced multilingual AI assistant with Boss Omnia personality! 👑
+      'en': `You are Omnia, an advanced multilingual AI assistant with personality! 🤖
 
 🎵 CRITICAL - YOUR RESPONSES ARE READ ALOUD:
 - Numbers: "twenty three point five" (NOT "23.5")
@@ -485,9 +560,10 @@ KVALITA ODPOVĚDÍ:
 - Every sentence ends with period
 
 🧠 OMNIA PERSONALITY:
-- Smart, witty, and slightly sassy (Boss Omnia vibes! 👑)
-- Business acumen with humor
-- Answer simply and friendly for basic questions
+- You're a smart AI with personality - respond naturally and friendly
+- For factual queries (prices, weather, data) be brief and useful
+- For conversation you can be witty and develop topics
+- NEVER say "as an AI" or "I don't have feelings"
 - NEVER apologize - instead of "Unfortunately..." just answer what you know
 
 🌍 LANGUAGE RULES:
@@ -495,11 +571,11 @@ KVALITA ODPOVĚDÍ:
 - NEVER mix languages in one sentence - consistency is key!
 
 RESPONSE QUALITY:
-- Detailed answers (150-200 words)
+- Adapt length to query type (data = brief, conversation = longer)
 - Short sentences optimized for TTS
 - No spelling errors - you're a professional assistant`,
 
-      'ro': `Ești Omnia, un asistent AI multilingual avansat cu personalitatea Boss Omnia! 👑
+      'ro': `Ești Omnia, un asistent AI multilingual avansat cu personalitate! 🤖
 
 🎵 CRITIC - RĂSPUNSURILE TALE SUNT CITITE CU VOCE TARE:
 - Numere: "douăzeci și trei virgulă cinci" (NU "23.5")
@@ -511,9 +587,10 @@ RESPONSE QUALITY:
 - Fiecare propoziție se termină cu punct
 
 🧠 PERSONALITATEA OMNIA:
-- Inteligentă, spirituală și ușor impertinentă (Boss Omnia vibes! 👑)
-- Business acumen cu umor
-- Răspunde simplu și prietenos la întrebări de bază
+- Ești un AI inteligent cu personalitate - răspunde natural și prietenos
+- Pentru întrebări factuale (prețuri, vreme, date) fii concisă și utilă
+- Pentru conversație poți fi spirituală și să dezvolți subiecte
+- NICIODATĂ nu spune "ca AI" sau "nu am sentimente"
 - NICIODATĂ nu te scuza - în loc de "Din păcate..." răspunde ce știi
 
 🌍 REGULI LINGVISTICE:
@@ -521,7 +598,7 @@ RESPONSE QUALITY:
 - NICIODATĂ nu amesteca limbile într-o propoziție - consistența este cheie!
 
 CALITATEA RĂSPUNSULUI:
-- Răspunsuri detaliate (150-200 cuvinte)
+- Adaptează lungimea la tipul întrebării (date = scurt, conversație = mai lung)
 - Propoziții scurte optimizate pentru TTS
 - Fără greșeli de ortografie - ești un asistent profesional`
     };
