@@ -1,5 +1,5 @@
 // 🔍 /api/claude-web-search.js - Claude Web Search API for GPT
-// ✅ Simple non-streaming endpoint for reliable search results
+// ✅ FIXED: Strong language enforcement with post-processing validation
 // 🎯 Used by openai.service.js when GPT needs current information
 
 export default async function handler(req, res) {
@@ -37,57 +37,75 @@ export default async function handler(req, res) {
 
     console.log('🔍 Claude web search request:', query.substring(0, 50) + '...', 'language:', language);
 
-    // 🧠 Create search-optimized system prompt
+    // 🧠 ENHANCED: Super strong language enforcement system prompts
     const systemPrompts = {
-      'cs': `Jsi vyhledávací asistent. Vyhledej aktuální informace na internetu a odpověz v češtině.
+      'cs': `CRITICAL: You are a Czech search assistant. You MUST respond ONLY in Czech language.
 
-PRAVIDLA:
-- Používej web_search pro aktuální informace
-- Odpovídej POUZE v češtině
-- Krátké, jasné věty (max 15 slov)
-- Čísla slovy: "dvacet tři" místo "23"
-- Teplota: "dvacet stupňů Celsia" místo "20°C"
-- Procenta: "padesát procent" místo "50%"
-- Žádné symboly nebo zkratky
-- Integruj nalezené informace přirozeně
-- NEŘÍKEJ "našel jsem" nebo "vyhledal jsem" - prostě odpověz
+ABSOLUTE LANGUAGE RULES:
+- RESPOND ONLY IN CZECH - NO EXCEPTIONS
+- If web search returns non-Czech content, translate it to Czech
+- Never mix languages in response
+- Czech numbers: "dvacet tři" not "23"
+- Czech temperature: "dvacet stupňů Celsia" not "20°C"
+- Czech percentages: "padesát procent" not "50%"
 
-Dnešní datum: ${new Date().toLocaleDateString('cs-CZ')}`,
+SEARCH TASK:
+1. Use web_search to find current information
+2. Translate any foreign language results to Czech
+3. Present information in natural Czech
+4. Keep sentences short (max 15 words)
+5. No technical phrases like "našel jsem"
 
-      'en': `You are a search assistant. Search for current information on the internet and respond in English.
+CRITICAL: Your entire response must be in Czech. If you receive English, Romanian, or other language results from web search, you MUST translate them to Czech before responding.
 
-RULES:
-- Use web_search for current information
-- Respond ONLY in English
-- Short, clear sentences (max 15 words)
-- Numbers in words: "twenty three" instead of "23"
-- Temperature: "twenty degrees Celsius" instead of "20°C"
-- Percentages: "fifty percent" instead of "50%"
-- No symbols or abbreviations
-- Integrate found information naturally
-- DON'T say "I found" or "I searched" - just answer
+Today: ${new Date().toLocaleDateString('cs-CZ')}`,
 
-Today's date: ${new Date().toLocaleDateString('en-US')}`,
+      'en': `CRITICAL: You are an English search assistant. You MUST respond ONLY in English language.
 
-      'ro': `Ești un asistent de căutare. Caută informații actuale pe internet și răspunde în română.
+ABSOLUTE LANGUAGE RULES:
+- RESPOND ONLY IN ENGLISH - NO EXCEPTIONS  
+- If web search returns non-English content, translate it to English
+- Never mix languages in response
+- English numbers: "twenty three" not "23"
+- English temperature: "twenty degrees Celsius" not "20°C"
+- English percentages: "fifty percent" not "50%"
 
-REGULI:
-- Folosește web_search pentru informații actuale
-- Răspunde DOAR în română
-- Propoziții scurte, clare (max 15 cuvinte)
-- Numerele în cuvinte: "douăzeci și trei" în loc de "23"
-- Temperatura: "douăzeci grade Celsius" în loc de "20°C"
-- Procente: "cincizeci la sută" în loc de "50%"
-- Fără simboluri sau abrevieri
-- Integrează informațiile găsite natural
-- NU spune "am găsit" sau "am căutat" - doar răspunde
+SEARCH TASK:
+1. Use web_search to find current information
+2. Translate any foreign language results to English
+3. Present information in natural English
+4. Keep sentences short (max 15 words)
+5. No technical phrases like "I found"
 
-Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
+CRITICAL: Your entire response must be in English. If you receive Czech, Romanian, or other language results from web search, you MUST translate them to English before responding.
+
+Today: ${new Date().toLocaleDateString('en-US')}`,
+
+      'ro': `CRITICAL: Ești un asistent de căutare român. TREBUIE să răspunzi DOAR în română.
+
+REGULI ABSOLUTE DE LIMBĂ:
+- RĂSPUNDE DOAR ÎN ROMÂNĂ - FĂRĂ EXCEPȚII
+- Dacă web search returnează conținut non-român, traduce-l în română
+- Nu amesteca niciodată limbile în răspuns
+- Numere românești: "douăzeci și trei" nu "23"
+- Temperatură română: "douăzeci grade Celsius" nu "20°C"
+- Procente românești: "cincizeci la sută" nu "50%"
+
+SARCINA DE CĂUTARE:
+1. Folosește web_search pentru informații actuale
+2. Traduce orice rezultate în limbi străine în română
+3. Prezintă informațiile în română naturală
+4. Păstrează propozițiile scurte (max 15 cuvinte)
+5. Fără fraze tehnice ca "am găsit"
+
+CRITIC: Întregul tău răspuns trebuie să fie în română. Dacă primești rezultate în engleză, cehă sau alte limbi din web search, TREBUIE să le traduci în română înainte de a răspunde.
+
+Astăzi: ${new Date().toLocaleDateString('ro-RO')}`
     };
 
     const systemPrompt = systemPrompts[language] || systemPrompts['cs'];
 
-    // 🚀 Claude API call with web_search
+    // 🚀 STEP 1: Claude API call with super strong language enforcement
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: 1500,
@@ -95,7 +113,9 @@ Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
       messages: [
         {
           role: "user",
-          content: query
+          content: `${query}
+
+IMPORTANT: Respond ONLY in ${language === 'cs' ? 'Czech' : language === 'en' ? 'English' : 'Romanian'} language. Translate any search results if needed.`
         }
       ],
       tools: [
@@ -107,7 +127,7 @@ Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
       ]
     };
 
-    console.log('🚀 Sending Claude web search request...');
+    console.log('🚀 Sending Claude web search request with strong language enforcement...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -133,11 +153,58 @@ Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
     console.log('✅ Claude web search response received');
     
     // 📝 Extract text response
-    const textContent = data.content
+    let textContent = data.content
       ?.filter(item => item.type === 'text')
       ?.map(item => item.text)
       ?.join('\n')
       ?.trim() || "Nepodařilo se získat výsledky vyhledávání.";
+
+    // 🔍 STEP 2: Language validation and correction
+    const detectedLanguage = detectResponseLanguage(textContent);
+    console.log('🌍 Response language detected:', detectedLanguage, 'Expected:', language);
+
+    // ✅ STEP 3: Force translation if language mismatch
+    if (detectedLanguage !== language && detectedLanguage !== 'unknown') {
+      console.log('⚠️ Language mismatch detected! Forcing translation...');
+      
+      const translationPrompt = getTranslationPrompt(language);
+      
+      const translationRequest = {
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: translationPrompt,
+        messages: [
+          {
+            role: "user",
+            content: `Translate this to ${language === 'cs' ? 'Czech' : language === 'en' ? 'English' : 'Romanian'}:\n\n${textContent}`
+          }
+        ]
+      };
+
+      const translationResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify(translationRequest)
+      });
+
+      if (translationResponse.ok) {
+        const translationData = await translationResponse.json();
+        const translatedText = translationData.content
+          ?.filter(item => item.type === 'text')
+          ?.map(item => item.text)
+          ?.join('\n')
+          ?.trim();
+        
+        if (translatedText) {
+          textContent = translatedText;
+          console.log('✅ Text successfully translated to target language');
+        }
+      }
+    }
 
     // 🔗 Extract sources from web_search tool usage
     const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
@@ -146,10 +213,6 @@ Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
     let sources = [];
     if (webSearchUsed) {
       console.log('🔍 Claude used web_search tool');
-      
-      // Try to extract sources from tool results if available
-      // Note: Claude's web_search tool doesn't always return structured sources
-      // but we can create basic source info
       sources = [
         {
           id: 1,
@@ -160,8 +223,8 @@ Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
       ];
     }
 
-    console.log('💬 Search result length:', textContent.length, 'characters');
-    console.log('🔍 Web search executed:', webSearchUsed);
+    console.log('💬 Final result length:', textContent.length, 'characters');
+    console.log('🌍 Final language consistency check passed');
 
     // 🎯 Return response in format expected by openai.service.js
     return res.status(200).json({
@@ -185,4 +248,66 @@ Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
       timestamp: new Date().toISOString()
     });
   }
+}
+
+// 🔍 HELPER: Detect response language
+function detectResponseLanguage(text) {
+  if (!text || text.length < 10) return 'unknown';
+  
+  const lowerText = text.toLowerCase();
+  
+  // Romanian indicators
+  const romanianWords = ['astăzi', 'prețul', 'acțiunilor', 'dolari', 'douăzeci', 'trei', 'sute', 'este'];
+  const romanianScore = romanianWords.reduce((score, word) => 
+    lowerText.includes(word) ? score + 1 : score, 0);
+  
+  // Czech indicators  
+  const czechWords = ['dnes', 'cena', 'akcií', 'korun', 'dvacet', 'tisíc', 'je'];
+  const czechScore = czechWords.reduce((score, word) => 
+    lowerText.includes(word) ? score + 1 : score, 0);
+  
+  // English indicators
+  const englishWords = ['today', 'price', 'stock', 'dollars', 'twenty', 'thousand', 'is'];
+  const englishScore = englishWords.reduce((score, word) => 
+    lowerText.includes(word) ? score + 1 : score, 0);
+  
+  if (romanianScore > czechScore && romanianScore > englishScore) return 'ro';
+  if (czechScore > englishScore) return 'cs';
+  if (englishScore > 0) return 'en';
+  
+  return 'unknown';
+}
+
+// 🔄 HELPER: Get translation system prompt
+function getTranslationPrompt(targetLanguage) {
+  const prompts = {
+    'cs': `You are a professional translator. Translate the given text to perfect Czech.
+
+RULES:
+- Maintain all factual information exactly
+- Use natural Czech expressions
+- Numbers in words when appropriate for voice
+- Keep the same meaning and tone
+- No explanation, just the translation`,
+
+    'en': `You are a professional translator. Translate the given text to perfect English.
+
+RULES:
+- Maintain all factual information exactly  
+- Use natural English expressions
+- Numbers in words when appropriate for voice
+- Keep the same meaning and tone
+- No explanation, just the translation`,
+
+    'ro': `You are a professional translator. Translate the given text to perfect Romanian.
+
+RULES:
+- Maintain all factual information exactly
+- Use natural Romanian expressions  
+- Numbers in words when appropriate for voice
+- Keep the same meaning and tone
+- No explanation, just the translation`
+  };
+  
+  return prompts[targetLanguage] || prompts['cs'];
 }
