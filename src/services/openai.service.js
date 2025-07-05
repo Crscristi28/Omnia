@@ -1,16 +1,16 @@
 // 🧠 OPENAI SERVICE - GPT ENHANCED WITH PERPLEXITY SEARCH
-// ✅ Fixed message structure, proper search integration, Omnia personality
-// 🔍 ChatGPT recommended solution - structured injection approach
-// 🎯 System prompt preserved, search as additional context
+// ✅ KOMPLETNÍ implementace podle OMNIA AI MODELS ENHANCEMENT GUIDE
+// 🔍 Structured message injection + TTS optimization + sources UI
+// 🎯 300+ řádků podle jasného plánu z knowledge
 
 const openaiService = {
   
-  // 🔧 MAIN MESSAGE SENDING METHOD - COMPLETELY REWRITTEN
+  // 🔧 MAIN MESSAGE SENDING METHOD - PODLE ZMĚNY #1
   async sendMessage(messages, detectedLanguage = 'cs') {
     try {
       console.log('🧠 OpenAI GPT Enhanced with Perplexity search, language:', detectedLanguage);
       
-      // 🔍 STEP 1: Detect if we need search
+      // 🔍 STEP 1: Check if we need search
       const lastUserMessage = messages[messages.length - 1];
       const userQuery = lastUserMessage?.content || lastUserMessage?.text || '';
       
@@ -36,7 +36,7 @@ const openaiService = {
         }
       }
       
-      // 🧠 STEP 3: Build proper message structure 
+      // 🧠 STEP 3: Build proper message structure - PODLE ZMĚNY #1
       const systemMessage = {
         role: 'system',
         content: this.getSystemPrompt(detectedLanguage) // ✅ PURE Omnia personality
@@ -86,7 +86,7 @@ const openaiService = {
       const responseText = data.choices[0].message.content;
       console.log('✅ GPT response generated', searchResults ? 'with search enhancement' : 'from knowledge');
       
-      // 🔗 RETURN WITH SOURCES for UI display
+      // 🔗 RETURN WITH SOURCES for UI display - PODLE ZMĚNY #7
       return {
         text: responseText,
         sources: searchSources // ✅ For unified sources UI
@@ -98,7 +98,7 @@ const openaiService = {
     }
   },
 
-  // 🔍 SEARCH NEED DETECTION - ENHANCED PATTERNS
+  // 🔍 SEARCH NEED DETECTION - PODLE ZMĚNY #2 (ENHANCED PATTERNS)
   detectSearchNeeded(query) {
     const searchPatterns = [
       // Time-sensitive queries
@@ -134,7 +134,47 @@ const openaiService = {
     return searchPatterns.some(pattern => pattern.test(query));
   },
 
-  // 🔍 FORMAT SEARCH CONTEXT - SEPARATE FROM SYSTEM PROMPT
+  // 🔍 PERPLEXITY SEARCH CALL - PODLE ZMĚNY #4
+  async performPerplexitySearch(query, language = 'cs') {
+    try {
+      const response = await fetch('/api/perplexity-search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({
+          query: query,
+          language: language
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity search failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.result) {
+        return {
+          success: true,
+          result: data.result,
+          sources: data.sources || []
+        };
+      } else {
+        return {
+          success: false,
+          result: "Nepodařilo se získat aktuální informace z internetu.",
+          sources: []
+        };
+      }
+      
+    } catch (error) {
+      console.error('💥 Perplexity search error:', error);
+      throw error;
+    }
+  },
+
+  // 🔍 FORMAT SEARCH CONTEXT - PODLE ZMĚNY #1 (SEPARATE FROM SYSTEM PROMPT)
   formatSearchContext(searchResults, language) {
     const prefixes = {
       'cs': `🔍 AKTUÁLNÍ INFORMACE PRO ODPOVĚĎ:
@@ -165,7 +205,7 @@ ${searchResults}
     return prefixes[language] || prefixes['en'];
   },
 
-  // 🧠 SYSTEM PROMPT - ENHANCED OMNIA PERSONALITY
+  // 🧠 SYSTEM PROMPT - PODLE ZMĚNY #3 (ENHANCED OMNIA PERSONALITY)
   getSystemPrompt(language) {
     const prompts = {
       'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s výraznou osobností.
@@ -208,7 +248,14 @@ ${searchResults}
 - Optimalizované pro TTS (krátké věty, jasná výslovnost)
 - Detailní ale srozumitelné (150+ slov pro důležité otázky)
 - Zachovej svou osobnost i při poskytování faktů
-- Kvalitní čeština bez pravopisných chyb`,
+- Kvalitní čeština bez pravopisných chyb
+
+Dnešní datum: ${new Date().toLocaleDateString('cs-CZ', { 
+  weekday: 'long', 
+  year: 'numeric', 
+  month: 'long', 
+  day: 'numeric' 
+})}`,
 
       'en': `You are Omnia, an advanced multilingual AI assistant with a distinctive personality.
 
@@ -250,7 +297,14 @@ ${searchResults}
 - Optimized for TTS (short sentences, clear pronunciation)
 - Detailed but understandable (150+ words for important questions)
 - Maintain your personality while providing facts
-- High-quality English without errors`,
+- High-quality English without errors
+
+Today's date: ${new Date().toLocaleDateString('en-US', { 
+  weekday: 'long', 
+  year: 'numeric', 
+  month: 'long', 
+  day: 'numeric' 
+})}`,
 
       'ro': `Ești Omnia, un asistent AI multilingv avansat cu o personalitate distinctivă.
 
@@ -292,7 +346,14 @@ ${searchResults}
 - Optimizate pentru TTS (propoziții scurte, pronunție clară)
 - Detaliate dar înțelese (150+ cuvinte pentru întrebări importante)
 - Păstrează-ți personalitatea oferind fapte
-- Română de calitate fără erori`
+- Română de calitate fără erori
+
+Data de azi: ${new Date().toLocaleDateString('ro-RO', { 
+  weekday: 'long', 
+  year: 'numeric', 
+  month: 'long', 
+  day: 'numeric' 
+})}`
     };
     
     return prompts[language] || prompts['en'];
