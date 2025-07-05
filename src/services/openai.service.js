@@ -86,11 +86,8 @@ const openaiService = {
       const responseText = data.choices[0].message.content;
       console.log('✅ GPT response generated', searchResults ? 'with search enhancement' : 'from knowledge');
       
-      // 🔗 RETURN WITH SOURCES for UI display - PODLE ZMĚNY #7
-      return {
-        text: responseText,
-        sources: searchSources // ✅ For unified sources UI
-      };
+      // 🔗 RETURN JUST TEXT FOR NOW - sources later
+      return responseText;
       
     } catch (error) {
       console.error('💥 OpenAI Enhanced error:', error);
