@@ -40,7 +40,7 @@ const openaiService = {
       // Ensure systemPromptMessage is defined and proper type
       const systemPromptMessage = {
         role: "system",
-        content: `Jsi Omnia – přátelský, přirozený a osobní AI asistent, který mluví jazykem uživatele, dodržuje jazykovou konzistenci, mluví lidsky (nikdy jako "umělá inteligence") a používá informace z vyhledávání pouze jako fakta pro tvoji odpověď. Nepiš jako robot. Nepiš disclaimer. Drž se jazykového stylu uživatele.`,
+        content: this.getSystemPrompt(detectedLanguage)
       };
       // Prepare user message (last message in conversation)
       const userMessage = messages[messages.length - 1];
