@@ -24,8 +24,7 @@ const openaiService = {
       if (needsSearch) {
         console.log('🔍 Calling Perplexity API...');
         try {
-          const perplexityService = await import('./perplexity-search.js');
-          const searchResponse = await perplexityService.default.search(userQuery, detectedLanguage);
+          const searchResponse = await this.performPerplexitySearch(userQuery, detectedLanguage);
           
           if (searchResponse && searchResponse.success) {
             searchResults = searchResponse.result;
