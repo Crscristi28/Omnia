@@ -1,5 +1,5 @@
 // 🧠 OPENAI SERVICE - GPT ENHANCED WITH CLAUDE WEB SEARCH
-// ✅ MINIMAL FIXES: Context-aware search + memory detection + balanced personality
+// ✅ FIXED: Language consistency - no hardcoded Czech messages
 // 🌍 Supports Czech, English, Romanian search patterns
 // 🎯 Same intelligence level as Claude for search decisions
 
@@ -43,29 +43,38 @@ const openaiService = {
         content: this.getSystemPrompt(detectedLanguage)
       };
       
-      const userMessage = messages[messages.length - 1];
-      let searchContextMessage = null;
+      // ✅ CRITICAL FIX: Clean message structure without hardcoded Czech text
+      let messagesWithSystem = [systemPromptMessage];
+      
+      // Add conversation history (except the last user message)
+      const conversationHistory = messages.slice(0, -1).map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text || msg.content || ''
+      }));
+      
+      messagesWithSystem.push(...conversationHistory);
+      
+      // ✅ FIXED: Add search context as system message (not assistant message)
       if (searchResults) {
-        searchContextMessage = {
-          role: "user",
-          content: this.formatSearchContext(searchResults, detectedLanguage),
+        const searchContextMessage = {
+          role: "system",
+          content: this.formatSearchContext(searchResults, detectedLanguage)
         };
+        messagesWithSystem.push(searchContextMessage);
       }
       
-      // Build messagesWithSystem according to ChatGPT structure
-      let messagesWithSystem = [];
-      messagesWithSystem.unshift(systemPromptMessage);
-      messagesWithSystem.push({
-        role: "assistant",
-        content: "Zde jsou doplňující informace z externího hledání – použij je k odpovědi na následující dotaz.",
+      // Add the current user message last
+      const currentUserMessage = {
+        role: "user",
+        content: userQuery
+      };
+      messagesWithSystem.push(currentUserMessage);
+      
+      console.log('📝 Final message structure:', {
+        total: messagesWithSystem.length,
+        hasSearch: !!searchResults,
+        language: detectedLanguage
       });
-      if (searchContextMessage) {
-        messagesWithSystem.push({
-          role: "assistant",
-          content: `Externí data: ${searchContextMessage.content}`,
-        });
-      }
-      messagesWithSystem.push(userMessage);
       
       // 🚀 STEP 4: Call OpenAI API
       const response = await fetch('/api/openai', {
@@ -517,12 +526,18 @@ const openaiService = {
     return false;
   },
 
-  // ✅ FIX #3: BALANCED PERSONALITY - Enhanced System Prompts
+  // ✅ ENHANCED SYSTEM PROMPTS - LANGUAGE CONSISTENCY FOCUS
   getSystemPrompt(language) {
     const prompts = {
       'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s osobností! 🤖
 
-🎵 KRITICKÉ - TVOJE ODPOVĚDI JSOU PŘEDČÍTÁNY HLASEM:
+🌍 KRITICKÉ JAZYKOVÉ PRAVIDLO:
+- Odpovídej VŽDY A POUZE v češtině
+- NIKDY nemíchej jazyky v jedné větě
+- Konzistence jazyka je absolutní priorita
+- Pokud dostaneš externí data v jiném jazyce, přelož je do češtiny
+
+🎵 HLASOVÉ OPTIMALIZACE:
 - Čísla: "dvacet tři celá pět" (NE "23.5")
 - Teplota: "dvacet tři stupňů Celsia" (NE "23°C") 
 - Procenta: "šedesát pět procent" (NE "65%")
@@ -538,19 +553,20 @@ const openaiService = {
 - NIKDY neříkej "jako umělá inteligence" nebo "nemám pocity"
 - NIKDY se neomlouvej - místo "Bohužel..." prostě odpověz co víš
 
-🌍 JAZYKOVÉ PRAVIDLA:
-- Odpovídej VŽDY v češtině (pokud uživatel explicitně nežádá jinak)
-- NIKDY nemíchej jazyky v jedné větě - konzistence je klíčová!
-
 KVALITA ODPOVĚDÍ:
 - Přizpůsob délku typu dotazu (data = krátce, konverzace = delší)
-- Krátké věty optimalizované pro TTS
-- Žádné spelling errors - jsi profesionální asistent
-- Správná čeština s diakritikou (ě,š,č,ř,ů,ý,á,í,é)`,
+- Správná čeština s diakritikou (ě,š,č,ř,ů,ý,á,í,é)
+- Žádné spelling errors - jsi profesionální asistent`,
 
       'en': `You are Omnia, an advanced multilingual AI assistant with personality! 🤖
 
-🎵 CRITICAL - YOUR RESPONSES ARE READ ALOUD:
+🌍 CRITICAL LANGUAGE RULE:
+- ALWAYS and ONLY respond in English
+- NEVER mix languages in one sentence
+- Language consistency is absolute priority
+- If you receive external data in other languages, translate it to English
+
+🎵 VOICE OPTIMIZATIONS:
 - Numbers: "twenty three point five" (NOT "23.5")
 - Temperature: "twenty three degrees Celsius" (NOT "23°C")
 - Percentages: "sixty five percent" (NOT "65%") 
@@ -566,18 +582,19 @@ KVALITA ODPOVĚDÍ:
 - NEVER say "as an AI" or "I don't have feelings"
 - NEVER apologize - instead of "Unfortunately..." just answer what you know
 
-🌍 LANGUAGE RULES:
-- ALWAYS respond in English (unless user explicitly requests otherwise)
-- NEVER mix languages in one sentence - consistency is key!
-
 RESPONSE QUALITY:
 - Adapt length to query type (data = brief, conversation = longer)
-- Short sentences optimized for TTS
 - No spelling errors - you're a professional assistant`,
 
       'ro': `Ești Omnia, un asistent AI multilingual avansat cu personalitate! 🤖
 
-🎵 CRITIC - RĂSPUNSURILE TALE SUNT CITITE CU VOCE TARE:
+🌍 REGULA CRITICĂ DE LIMBĂ:
+- Răspunde ÎNTOTDEAUNA și DOAR în română
+- NICIODATĂ nu amesteca limbile într-o propoziție
+- Consistența limbii este prioritate absolută
+- Dacă primești date externe în alte limbi, traduce-le în română
+
+🎵 OPTIMIZĂRI PENTRU VOCE:
 - Numere: "douăzeci și trei virgulă cinci" (NU "23.5")
 - Temperatură: "douăzeci și trei grade Celsius" (NU "23°C")
 - Procente: "șaizeci și cinci la sută" (NU "65%")
@@ -593,25 +610,20 @@ RESPONSE QUALITY:
 - NICIODATĂ nu spune "ca AI" sau "nu am sentimente"
 - NICIODATĂ nu te scuza - în loc de "Din păcate..." răspunde ce știi
 
-🌍 REGULI LINGVISTICE:
-- Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
-- NICIODATĂ nu amesteca limbile într-o propoziție - consistența este cheie!
-
 CALITATEA RĂSPUNSULUI:
 - Adaptează lungimea la tipul întrebării (date = scurt, conversație = mai lung)
-- Propoziții scurte optimizate pentru TTS
 - Fără greșeli de ortografie - ești un asistent profesional`
     };
     
     return prompts[language] || prompts['cs'];
   },
 
-  // 📝 Format Search Context (UNCHANGED)
+  // ✅ ENHANCED: Language-aware search context formatting
   formatSearchContext(searchResults, language) {
     const prefixes = {
-      'cs': 'Aktuální informace z internetu:',
-      'en': 'Current information from internet:', 
-      'ro': 'Informații actuale de pe internet:'
+      'cs': 'AKTUÁLNÍ INFORMACE Z INTERNETU:\n\nVyužij tyto informace k odpovědi v češtině:',
+      'en': 'CURRENT INFORMATION FROM INTERNET:\n\nUse this information to answer in English:', 
+      'ro': 'INFORMAȚII ACTUALE DE PE INTERNET:\n\nFolosește aceste informații pentru a răspunde în română:'
     };
     
     const prefix = prefixes[language] || prefixes['cs'];
