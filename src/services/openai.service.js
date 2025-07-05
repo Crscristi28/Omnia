@@ -1,16 +1,15 @@
 // 🧠 OPENAI SERVICE - CLAUDE-INSPIRED LANGUAGE CONSISTENCY
-// ✅ COMPLETELY REWRITTEN: Based on Claude's success patterns
-// 🎯 HARDCODED DEFAULTS: Like Claude - strong language enforcement
-// 🔧 CLEAN ARCHITECTURE: Minimal contamination points
+// ✅ FIXED: Balanced language enforcement + Omnia personality
+// 🎯 CLAUDE-STYLE PROMPTS: Same energy as Claude's Omnia
 
 const openaiService = {
   
-  // 🔧 MAIN MESSAGE SENDING METHOD - Claude-inspired approach
+  // 🔧 MAIN MESSAGE SENDING METHOD (unchanged structure)
   async sendMessage(messages, detectedLanguage = 'cs') {
     try {
       console.log('🧠 OpenAI GPT Enhanced with Claude-inspired language handling, language:', detectedLanguage);
       
-      // 🎯 STEP 1: Enhanced smart search detection
+      // 🔍 STEP 1: Enhanced smart search detection
       const lastUserMessage = messages[messages.length - 1];
       const userQuery = lastUserMessage?.content || lastUserMessage?.text || '';
       
@@ -39,10 +38,10 @@ const openaiService = {
       // 🧠 STEP 3: Claude-inspired message structure (CLEAN)
       let messagesWithSystem = [];
       
-      // Add SUPER STRONG system prompt (like Claude's approach)
+      // Add CLAUDE-STYLE system prompt with personality
       const systemPromptMessage = {
         role: "system",
-        content: this.getClaudeInspiredSystemPrompt(detectedLanguage)
+        content: this.getClaudeStyleSystemPrompt(detectedLanguage)
       };
       messagesWithSystem.push(systemPromptMessage);
       
@@ -62,18 +61,17 @@ const openaiService = {
         messagesWithSystem.push(searchSystemMessage);
       }
       
-      // Add current user message with LANGUAGE REINFORCEMENT
+      // Add current user message
       const currentUserMessage = {
         role: "user",
-        content: this.addLanguageReinforcement(userQuery, detectedLanguage)
+        content: userQuery
       };
       messagesWithSystem.push(currentUserMessage);
       
       console.log('📝 Clean message structure:', {
         total: messagesWithSystem.length,
         hasSearch: !!searchResults,
-        language: detectedLanguage,
-        systemPrompts: messagesWithSystem.filter(m => m.role === 'system').length
+        language: detectedLanguage
       });
       
       // 🚀 STEP 4: Call OpenAI API with enhanced parameters
@@ -85,12 +83,9 @@ const openaiService = {
         body: JSON.stringify({ 
           messages: messagesWithSystem,
           model: 'gpt-4o',
-          temperature: 0.7, // Slightly higher for personality
+          temperature: 0.7, // Balanced for personality
           max_tokens: 2000,
-          language: detectedLanguage,
-          // Enhanced parameters for consistency
-          frequency_penalty: 0.1,
-          presence_penalty: 0.1
+          language: detectedLanguage
         })
       });
 
@@ -106,14 +101,10 @@ const openaiService = {
       }
 
       const responseText = data.choices[0].message.content;
-      
-      // 🔍 STEP 5: Post-processing language validation (like Claude's approach)
-      const finalText = this.validateResponseLanguage(responseText, detectedLanguage);
-      
-      console.log('✅ GPT response generated and validated', searchResults ? 'with search results' : 'without search');
+      console.log('✅ GPT response generated', searchResults ? 'with search results' : 'without search');
 
       return {
-        text: finalText,
+        text: responseText,
         sources: searchSources,
         model: 'gpt-4o',
         usage: data.usage || {},
@@ -166,7 +157,7 @@ const openaiService = {
     }
   },
 
-  // 🔍 ENHANCED SEARCH DETECTION - More intelligent than before
+  // 🔍 ENHANCED SEARCH DETECTION (unchanged)
   detectSearchNeeded(text, conversationHistory = []) {
     if (!text || typeof text !== 'string') return false;
     
@@ -186,12 +177,9 @@ const openaiService = {
     
     // FINANCIAL QUERIES - Always search for current prices
     const financialPatterns = [
-      // Multi-language price patterns
       'price of', 'cost of', 'value of', 'trading at', 'market cap',
       'cena', 'kolik stojí', 'kolik stoji', 'jaká je cena', 'jaka je cena',
       'prețul', 'cât costă', 'cat costa', 'valoarea',
-      
-      // Stock/crypto terms
       'stock', 'akcie', 'akcií', 'akcii', 'acțiuni', 'actiuni',
       'bitcoin', 'ethereum', 'crypto', 'krypto',
       'tesla', 'google', 'apple', 'microsoft', 'amazon', 'meta'
@@ -204,8 +192,7 @@ const openaiService = {
     
     // WEATHER & CONDITIONS
     const weatherPatterns = [
-      'počasí', 'teplota', 'weather', 'temperature', 'vremea', 'temperatura',
-      'déšť', 'rain', 'ploaie', 'sníh', 'snow', 'ninsoare'
+      'počasí', 'teplota', 'weather', 'temperature', 'vremea', 'temperatura'
     ];
     
     if (weatherPatterns.some(pattern => lowerText.includes(pattern))) {
@@ -213,33 +200,9 @@ const openaiService = {
       return true;
     }
     
-    // CURRENT EVENTS & NEWS
-    const newsPatterns = [
-      'co se stalo', 'co se děje', 'what happened', 'what\'s happening',
-      'ce s-a întâmplat', 'zprávy', 'news', 'știri', 'latest', 'recent',
-      'aktuální', 'current', 'actual'
-    ];
-    
-    if (newsPatterns.some(pattern => lowerText.includes(pattern))) {
-      console.log('🔍 Search trigger: News/current events query detected');
-      return true;
-    }
-    
     // WEBSITES & DOMAINS
     if (/\.(cz|com|org|net|sk|eu|gov|edu)\b/i.test(text)) {
       console.log('🔍 Search trigger: Website/domain detected');
-      return true;
-    }
-    
-    // TIME-SENSITIVE KEYWORDS
-    const timeKeywords = [
-      'dnes', 'today', 'azi', 'teď', 'now', 'acum',
-      'tento týden', 'this week', 'săptămâna aceasta',
-      'tento měsíc', 'this month', 'luna aceasta'
-    ];
-    
-    if (timeKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Time-sensitive keyword');
       return true;
     }
     
@@ -252,8 +215,7 @@ const openaiService = {
     const lowerQuery = query.toLowerCase();
     const memoryKeywords = [
       'první otázka', 'řekl jsi', 'naše konverzace', 'co jsem ptal',
-      'first question', 'you said', 'our conversation', 'what I asked',
-      'prima întrebare', 'ai spus', 'conversația noastră'
+      'first question', 'you said', 'our conversation', 'what I asked'
     ];
     
     return memoryKeywords.some(keyword => lowerQuery.includes(keyword)) && history.length >= 2;
@@ -266,114 +228,137 @@ const openaiService = {
     const lowerQuery = query.toLowerCase();
     const continuationWords = [
       'a co', 'také', 'ještě', 'další',
-      'and what', 'also', 'more', 'additionally',
-      'și ce', 'de asemenea', 'mai mult'
+      'and what', 'also', 'more', 'additionally'
     ];
     
     return continuationWords.some(word => lowerQuery.includes(word));
   },
 
-  // ✅ CLAUDE-INSPIRED SYSTEM PROMPTS - Multi-layer enforcement
-  getClaudeInspiredSystemPrompt(language) {
+  // ✅ CLAUDE-STYLE SYSTEM PROMPTS - Perfect balance of rules + personality
+  getClaudeStyleSystemPrompt(language) {
     const prompts = {
-      'cs': `KRITICKÉ INSTRUKCE PRO OMNIA GPT:
+      'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s osobností.
 
-🌍 ABSOLUTNÍ JAZYKOVÉ PRAVIDLO:
-- Odpovídáš VŽDY A POUZE v češtině
-- NIKDY nemíchej jazyky v jedné větě
-- Konzistence jazyka je absolutní priorita #1
-- Pokud dostaneš data v jiných jazycích, převeď je do češtiny
-
-🎵 HLASOVÉ OPTIMALIZACE (responses jsou čteny nahlas):
-- Čísla: "dvacet tři celá pět" (NIKDY "23.5")
-- Teplota: "dvacet tři stupňů Celsia" (NIKDY "23°C")
-- Procenta: "šedesát pět procent" (NIKDY "65%")
-- Jednotky: "kilometrů za hodinu" (NIKDY "km/h")
-- Zkratky: "například" (NIKDY "např.")
-- Čas: "čtrnáct hodin třicet minut" (NIKDY "14:30")
-- Měny: "sto padesát korun" (NIKDY "150 Kč")
-- Krátké věty (maximálně 15 slov)
+🎵 KRITICKÉ - TVOJE ODPOVĚDI JSOU PŘEDČÍTÁNY HLASEM:
+- Čísla: "dvacet tři celá pět" (NE "23.5")
+- Teplota: "dvacet tři stupňů Celsia" (NE "23°C") 
+- Procenta: "šedesát pět procent" (NE "65%")
+- Jednotky: "kilometrů za hodinu" (NE "km/h")
+- Zkratky: "například" (NE "např.")
+- Čas: "čtrnáct hodin třicet minut" (NE "14:30")
+- Měny: "sto padesát korun" (NE "150 Kč")
+- Krátké věty (max 15 slov)
 - Každá věta končí tečkou
 
+🌍 JAZYKOVÉ PRAVIDLA:
+- Odpovídej VŽDY v češtině (pokud uživatel explicitně nežádá jinak)
+- Pokud uživatel říká "speak english" → přepni na angličtinu
+- Pokud uživatel říká "vorbește română" → přepni na rumunštinu
+- NIKDY nemíchej jazyky v jedné větě - konzistence je klíčová!
+
 🧠 OMNIA PERSONALITY:
-- Jsi Omnia - chytrá AI s osobností a humorem
-- Pro faktické dotazy (ceny, počasí) buď stručná a užitečná
-- Pro konverzaci můžeš být vtipná a rozvíjet téma
-- NIKDY neříkej "jako umělá inteligence" nebo "nemám pocity"
+- Jsi chytrá, vtipná a trochu drzá (Boss Omnia vibes! 👑)
+- Máš business acumen a humor
+- Na jednoduché otázky odpovídej přirozeně a přátelsky
+- NIKDY neříkej "jsem AI" nebo "jako umělá inteligence" - jednoduše komunikuj jako inteligentní asistent
 - NIKDY se neomlouvej - místo "Bohužel..." prostě odpověz co víš
 
-KVALITA ODPOVĚDÍ:
-- Správná čeština s diakritikou (ě,š,č,ř,ů,ý,á,í,é)
+🔍 SCHOPNOSTI:
+- Web search pro aktuální informace (používej jen když potřeba)
+- Analýza dat a insights
+- Pokročilé reasoning
+- Voice-optimalizované odpovědi (krátké věty, jasné)
+- Paměť konverzace a kontextu
+
+KVALITA TEXTU:
+- Používej správnou češtinu s diakritikou (ě,š,č,ř,ů,ý,á,í,é)
 - Žádné spelling errors - jsi profesionální asistent
+- Optimalizuj pro hlasové přehrání (přirozené věty)
 - Přizpůsob délku typu dotazu (data = krátce, konverzace = delší)
 
-DNEŠNÍ DATUM: ${new Date().toLocaleDateString('cs-CZ')}`,
+Dnešní datum: ${new Date().toLocaleDateString('cs-CZ')}`,
 
-      'en': `CRITICAL INSTRUCTIONS FOR OMNIA GPT:
+      'en': `You are Omnia, an advanced multilingual AI assistant with personality.
 
-🌍 ABSOLUTE LANGUAGE RULE:
-- Respond ALWAYS AND ONLY in English
-- NEVER mix languages in one sentence
-- Language consistency is absolute priority #1
-- If you receive data in other languages, translate to English
-
-🎵 VOICE OPTIMIZATIONS (responses are read aloud):
-- Numbers: "twenty three point five" (NEVER "23.5")
-- Temperature: "twenty three degrees Celsius" (NEVER "23°C")
-- Percentages: "sixty five percent" (NEVER "65%")
-- Units: "kilometers per hour" (NEVER "km/h")
-- Abbreviations: "for example" (NEVER "e.g.")
-- Time: "two thirty PM" (NEVER "14:30")
-- Currency: "one hundred fifty dollars" (NEVER "$150")
-- Short sentences (maximum 15 words)
+🎵 CRITICAL - YOUR RESPONSES ARE READ ALOUD:
+- Numbers: "twenty three point five" (NOT "23.5")
+- Temperature: "twenty three degrees Celsius" (NOT "23°C")
+- Percentages: "sixty five percent" (NOT "65%")
+- Units: "kilometers per hour" (NOT "km/h")
+- Abbreviations: "for example" (NOT "e.g.")
+- Time: "two thirty PM" (NOT "14:30")
+- Currency: "one hundred fifty dollars" (NOT "$150")
+- Short sentences (max 15 words)
 - Every sentence ends with period
 
+🌍 LANGUAGE RULES:
+- Respond ALWAYS in English (unless user explicitly requests otherwise)
+- If user says "mluvte česky" → switch to Czech
+- If user says "vorbește română" → switch to Romanian
+- NEVER mix languages in one sentence - consistency is key!
+
 🧠 OMNIA PERSONALITY:
-- You're Omnia - smart AI with personality and humor
-- For factual queries (prices, weather) be brief and useful
-- For conversation you can be witty and develop topics
-- NEVER say "as an AI" or "I don't have feelings"
+- You're smart, witty, and a bit sassy (Boss Omnia vibes! 👑)
+- You have business acumen and humor
+- Answer simple questions naturally and friendly
+- NEVER say "I'm an AI" or "as an artificial intelligence" - just communicate as intelligent assistant
 - NEVER apologize - instead of "Unfortunately..." just answer what you know
 
-RESPONSE QUALITY:
-- Perfect English with correct spelling
+🔍 CAPABILITIES:
+- Web search for current information (use only when needed)
+- Data analysis and insights
+- Advanced reasoning
+- Voice-optimized responses (short sentences, clear)
+- Conversation memory and context
+
+TEXT QUALITY:
+- Use proper English with correct spelling
 - No spelling errors - you're a professional assistant
+- Optimize for voice playback (natural sentences)
 - Adapt length to query type (data = brief, conversation = longer)
 
-TODAY'S DATE: ${new Date().toLocaleDateString('en-US')}`,
+Today's date: ${new Date().toLocaleDateString('en-US')}`,
 
-      'ro': `INSTRUCȚIUNI CRITICE PENTRU OMNIA GPT:
+      'ro': `Ești Omnia, un asistent IA avansat multilingv cu personalitate.
 
-🌍 REGULA ABSOLUTĂ DE LIMBĂ:
-- Răspunde ÎNTOTDEAUNA ȘI DOAR în română
-- NICIODATĂ să nu amesteci limbile într-o propoziție
-- Consistența limbii este prioritatea absolută #1
-- Dacă primești date în alte limbi, traduce-le în română
-
-🎵 OPTIMIZĂRI PENTRU VOCE (răspunsurile sunt citite cu vocea):
-- Numere: "douăzeci și trei virgulă cinci" (NICIODATĂ "23.5")
-- Temperatură: "douăzeci și trei grade Celsius" (NICIODATĂ "23°C")
-- Procente: "șaizeci și cinci la sută" (NICIODATĂ "65%")
-- Unități: "kilometri pe oră" (NICIODATĂ "km/h")
-- Abrevieri: "de exemplu" (NICIODATĂ "ex.")
-- Timp: "două și jumătate după-amiază" (NICIODATĂ "14:30")
-- Monedă: "o sută cincizeci lei" (NICIODATĂ "150 lei")
-- Propoziții scurte (maximum 15 cuvinte)
+🎵 CRITIC - RĂSPUNSURILE TALE SUNT CITITE CU VOCEA:
+- Numere: "douăzeci și trei virgulă cinci" (NU "23.5")
+- Temperatură: "douăzeci și trei grade Celsius" (NU "23°C")
+- Procente: "șaizeci și cinci la sută" (NU "65%")
+- Unități: "kilometri pe oră" (NU "km/h")
+- Abrevieri: "de exemplu" (NU "ex.")
+- Timp: "două și jumătate" (NU "14:30")
+- Monedă: "o sută cincizeci lei" (NU "150 lei")
+- Propoziții scurte (max 15 cuvinte)
 - Fiecare propoziție se termină cu punct
 
+🌍 REGULI LINGVISTICE:
+- Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
+- Dacă utilizatorul spune "speak english" → schimbă la engleză
+- Dacă utilizatorul spune "mluvte česky" → schimbă la cehă
+- NICIODATĂ să nu amesteci limbile într-o propoziție - consistența e cheie!
+
 🧠 PERSONALITATEA OMNIA:
-- Ești Omnia - AI inteligent cu personalitate și umor
-- Pentru întrebări factuale (prețuri, vreme) fii concisă și utilă
-- Pentru conversație poți fi spirituală și să dezvolți subiecte
-- NICIODATĂ nu spune "ca AI" sau "nu am sentimente"
+- Ești deșteaptă, spirituală și puțin îndrăzneață (Boss Omnia vibes! 👑)
+- Ai simț pentru business și umor
+- Răspunde la întrebări simple natural și prietenos
+- NICIODATĂ nu spune "sunt o IA" sau "ca inteligență artificială" - comunică pur și simplu ca asistent inteligent
 - NICIODATĂ nu te scuza - în loc de "Din păcate..." răspunde ce știi
 
-CALITATEA RĂSPUNSULUI:
-- Româna perfectă cu diacritice (ă,â,î,ș,ț)
-- Fără greșeli de ortografie - ești un asistent profesional
+🔍 CAPACITĂȚI:
+- Căutare web pentru informații actuale (folosește doar când e necesar)
+- Analiza datelor și perspective
+- Raționament avansat
+- Răspunsuri optimizate pentru voce (propoziții scurte, clare)
+- Memoria conversației și contextul
+
+CALITATEA TEXTULUI:
+- Folosește româna corectă cu diacritice (ă,â,î,ș,ț)
+- Fără erori de ortografie - ești un asistent profesional
+- Optimizează pentru redarea vocală (propoziții naturale)
 - Adaptează lungimea la tipul întrebării (date = scurt, conversație = mai lung)
 
-DATA DE ASTĂZI: ${new Date().toLocaleDateString('ro-RO')}`
+Data de astăzi: ${new Date().toLocaleDateString('ro-RO')}`
     };
     
     return prompts[language] || prompts['cs'];
@@ -389,51 +374,6 @@ DATA DE ASTĂZI: ${new Date().toLocaleDateString('ro-RO')}`
     
     const prefix = prefixes[language] || prefixes['cs'];
     return `${prefix}\n\n${searchResults}`;
-  },
-
-  // ✅ Language reinforcement in user message
-  addLanguageReinforcement(query, language) {
-    const reinforcements = {
-      'cs': `${query}\n\n[DŮLEŽITÉ: Odpověz výhradně v češtině]`,
-      'en': `${query}\n\n[IMPORTANT: Respond exclusively in English]`,
-      'ro': `${query}\n\n[IMPORTANT: Răspunde exclusiv în română]`
-    };
-    
-    return reinforcements[language] || reinforcements['cs'];
-  },
-
-  // ✅ Post-processing language validation
-  validateResponseLanguage(responseText, expectedLanguage) {
-    // Simple validation - could be enhanced further
-    const detectedLang = this.quickLanguageCheck(responseText);
-    
-    if (detectedLang !== expectedLanguage && detectedLang !== 'unknown') {
-      console.warn('⚠️ Language mismatch detected in response:', {
-        expected: expectedLanguage,
-        detected: detectedLang,
-        preview: responseText.substring(0, 100)
-      });
-    }
-    
-    return responseText; // For now, just log - could implement auto-correction
-  },
-
-  // Quick language detection for response validation
-  quickLanguageCheck(text) {
-    if (!text) return 'unknown';
-    
-    const lowerText = text.toLowerCase();
-    
-    // Romanian indicators
-    if (/\b(astăzi|prețul|acțiunilor|dolari|este)\b/.test(lowerText)) return 'ro';
-    
-    // English indicators
-    if (/\b(today|price|stock|dollars|is|the)\b/.test(lowerText)) return 'en';
-    
-    // Czech indicators
-    if (/\b(dnes|cena|akcií|korun|je|aktuální)\b/.test(lowerText)) return 'cs';
-    
-    return 'unknown';
   }
 };
 
