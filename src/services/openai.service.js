@@ -60,7 +60,7 @@ const openaiService = {
       });
       if (searchContextMessage) {
         messagesWithSystem.push({
-          role: "system",
+          role: "assistant",
           content: `Externí data: ${searchContextMessage.content}`,
         });
       }
