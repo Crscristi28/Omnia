@@ -1,27 +1,26 @@
-// 🧠 OPENAI SERVICE - GPT ENHANCED WITH CLAUDE WEB SEARCH
-// ✅ MINIMAL FIXES: Context-aware search + memory detection + balanced personality
-// 🌍 Supports Czech, English, Romanian search patterns
-// 🎯 Same intelligence level as Claude for search decisions
+// 🧠 OPENAI SERVICE - CLAUDE-INSPIRED LANGUAGE CONSISTENCY
+// ✅ COMPLETELY REWRITTEN: Based on Claude's success patterns
+// 🎯 HARDCODED DEFAULTS: Like Claude - strong language enforcement
+// 🔧 CLEAN ARCHITECTURE: Minimal contamination points
 
 const openaiService = {
   
-  // 🔧 MAIN MESSAGE SENDING METHOD
+  // 🔧 MAIN MESSAGE SENDING METHOD - Claude-inspired approach
   async sendMessage(messages, detectedLanguage = 'cs') {
     try {
-      console.log('🧠 OpenAI GPT Enhanced with Claude web search, language:', detectedLanguage);
+      console.log('🧠 OpenAI GPT Enhanced with Claude-inspired language handling, language:', detectedLanguage);
       
-      // 🔍 STEP 1: Check if we need search with SMART DETECTION + CONTEXT
+      // 🎯 STEP 1: Enhanced smart search detection
       const lastUserMessage = messages[messages.length - 1];
       const userQuery = lastUserMessage?.content || lastUserMessage?.text || '';
       
-      // ✅ FIX #1: Add conversation context to search detection
       const needsSearch = this.detectSearchNeeded(userQuery, messages);
       console.log('🔍 Search needed:', needsSearch, 'for query:', userQuery.substring(0, 50) + '...');
       
       let searchResults = null;
       let searchSources = [];
       
-      // 🔍 STEP 2: Perform Claude web search if needed
+      // 🔍 STEP 2: Claude web search with clean language handling
       if (needsSearch) {
         console.log('🔍 Calling Claude web search API...');
         try {
@@ -37,37 +36,47 @@ const openaiService = {
         }
       }
       
-      // 🧠 STEP 3: Build proper message structure
+      // 🧠 STEP 3: Claude-inspired message structure (CLEAN)
+      let messagesWithSystem = [];
+      
+      // Add SUPER STRONG system prompt (like Claude's approach)
       const systemPromptMessage = {
         role: "system",
-        content: this.getSystemPrompt(detectedLanguage)
+        content: this.getClaudeInspiredSystemPrompt(detectedLanguage)
       };
+      messagesWithSystem.push(systemPromptMessage);
       
-      const userMessage = messages[messages.length - 1];
-      let searchContextMessage = null;
+      // Add conversation history cleanly
+      const conversationHistory = messages.slice(0, -1).map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text || msg.content || ''
+      }));
+      messagesWithSystem.push(...conversationHistory);
+      
+      // ✅ CRITICAL: Add search context as CLEAN system instruction
       if (searchResults) {
-        searchContextMessage = {
-          role: "user",
-          content: this.formatSearchContext(searchResults, detectedLanguage),
+        const searchSystemMessage = {
+          role: "system",
+          content: this.formatCleanSearchContext(searchResults, detectedLanguage)
         };
+        messagesWithSystem.push(searchSystemMessage);
       }
       
-      // Build messagesWithSystem according to ChatGPT structure
-      let messagesWithSystem = [];
-      messagesWithSystem.unshift(systemPromptMessage);
-      messagesWithSystem.push({
-        role: "assistant",
-        content: "Zde jsou doplňující informace z externího hledání – použij je k odpovědi na následující dotaz.",
+      // Add current user message with LANGUAGE REINFORCEMENT
+      const currentUserMessage = {
+        role: "user",
+        content: this.addLanguageReinforcement(userQuery, detectedLanguage)
+      };
+      messagesWithSystem.push(currentUserMessage);
+      
+      console.log('📝 Clean message structure:', {
+        total: messagesWithSystem.length,
+        hasSearch: !!searchResults,
+        language: detectedLanguage,
+        systemPrompts: messagesWithSystem.filter(m => m.role === 'system').length
       });
-      if (searchContextMessage) {
-        messagesWithSystem.push({
-          role: "assistant",
-          content: `Externí data: ${searchContextMessage.content}`,
-        });
-      }
-      messagesWithSystem.push(userMessage);
       
-      // 🚀 STEP 4: Call OpenAI API
+      // 🚀 STEP 4: Call OpenAI API with enhanced parameters
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: { 
@@ -76,9 +85,12 @@ const openaiService = {
         body: JSON.stringify({ 
           messages: messagesWithSystem,
           model: 'gpt-4o',
-          temperature: 0.65,
+          temperature: 0.7, // Slightly higher for personality
           max_tokens: 2000,
-          language: detectedLanguage
+          language: detectedLanguage,
+          // Enhanced parameters for consistency
+          frequency_penalty: 0.1,
+          presence_penalty: 0.1
         })
       });
 
@@ -94,11 +106,15 @@ const openaiService = {
       }
 
       const responseText = data.choices[0].message.content;
-      console.log('✅ GPT response generated', searchResults ? 'with search results' : 'without search');
+      
+      // 🔍 STEP 5: Post-processing language validation (like Claude's approach)
+      const finalText = this.validateResponseLanguage(responseText, detectedLanguage);
+      
+      console.log('✅ GPT response generated and validated', searchResults ? 'with search results' : 'without search');
 
       return {
-        text: responseText,
-        sources: searchSources, // ✅ For sources UI
+        text: finalText,
+        sources: searchSources,
         model: 'gpt-4o',
         usage: data.usage || {},
         timestamp: new Date().toISOString()
@@ -110,7 +126,7 @@ const openaiService = {
     }
   },
 
-  // 🆕 NEW: Claude Web Search Method
+  // 🆕 Claude Web Search Method (unchanged)
   async performClaudeWebSearch(query, language = 'cs') {
     try {
       console.log('🔍 Claude web search for:', query.substring(0, 50) + '...');
@@ -150,17 +166,17 @@ const openaiService = {
     }
   },
 
-  // 🔍 SMART SEARCH DETECTION - ENHANCED WITH CONTEXT AWARENESS
+  // 🔍 ENHANCED SEARCH DETECTION - More intelligent than before
   detectSearchNeeded(text, conversationHistory = []) {
     if (!text || typeof text !== 'string') return false;
     
-    // ✅ FIX #2: MEMORY QUERY DETECTION - Never search for conversation history
+    // Memory query detection - NEVER search for conversation history
     if (this.isMemoryQuery(text, conversationHistory)) {
       console.log('🚫 Search blocked: Memory query detected');
       return false;
     }
     
-    // ✅ FIX #2: TOPIC CONTINUATION - Don't search if continuing recent topic
+    // Topic continuation - Don't search if continuing recent topic
     if (this.isContinuingTopic(text, conversationHistory)) {
       console.log('🚫 Search blocked: Topic continuation detected');
       return false;
@@ -168,39 +184,58 @@ const openaiService = {
     
     const lowerText = text.toLowerCase();
     
-    // 🌐 WEBSITES & DOMAINS - ALWAYS SEARCH
-    if (/\.(cz|com|org|net|sk|eu|gov|edu|mil|co\.uk|de|fr|it|es|pl|ru|au|ca|jp|kr|in|br|mx|ro|hu|at|ch|be|nl|se|no|dk|fi|gr|pt|bg|hr|si|lt|lv|ee|cy|mt|lu)\b/i.test(text)) {
+    // FINANCIAL QUERIES - Always search for current prices
+    const financialPatterns = [
+      // Multi-language price patterns
+      'price of', 'cost of', 'value of', 'trading at', 'market cap',
+      'cena', 'kolik stojí', 'kolik stoji', 'jaká je cena', 'jaka je cena',
+      'prețul', 'cât costă', 'cat costa', 'valoarea',
+      
+      // Stock/crypto terms
+      'stock', 'akcie', 'akcií', 'akcii', 'acțiuni', 'actiuni',
+      'bitcoin', 'ethereum', 'crypto', 'krypto',
+      'tesla', 'google', 'apple', 'microsoft', 'amazon', 'meta'
+    ];
+    
+    if (financialPatterns.some(pattern => lowerText.includes(pattern))) {
+      console.log('🔍 Search trigger: Financial query detected');
+      return true;
+    }
+    
+    // WEATHER & CONDITIONS
+    const weatherPatterns = [
+      'počasí', 'teplota', 'weather', 'temperature', 'vremea', 'temperatura',
+      'déšť', 'rain', 'ploaie', 'sníh', 'snow', 'ninsoare'
+    ];
+    
+    if (weatherPatterns.some(pattern => lowerText.includes(pattern))) {
+      console.log('🔍 Search trigger: Weather query detected');
+      return true;
+    }
+    
+    // CURRENT EVENTS & NEWS
+    const newsPatterns = [
+      'co se stalo', 'co se děje', 'what happened', 'what\'s happening',
+      'ce s-a întâmplat', 'zprávy', 'news', 'știri', 'latest', 'recent',
+      'aktuální', 'current', 'actual'
+    ];
+    
+    if (newsPatterns.some(pattern => lowerText.includes(pattern))) {
+      console.log('🔍 Search trigger: News/current events query detected');
+      return true;
+    }
+    
+    // WEBSITES & DOMAINS
+    if (/\.(cz|com|org|net|sk|eu|gov|edu)\b/i.test(text)) {
       console.log('🔍 Search trigger: Website/domain detected');
       return true;
     }
     
-    // 📱 APPS & PLATFORMS - CURRENT INFO NEEDED
-    const platforms = [
-      'facebook', 'instagram', 'twitter', 'tiktok', 'youtube', 'linkedin',
-      'netflix', 'spotify', 'amazon', 'ebay', 'aliexpress', 'booking',
-      'uber', 'bolt', 'foodpanda', 'wolt', 'airbnb', 'gmail', 'outlook',
-      'whatsapp', 'telegram', 'discord', 'skype', 'zoom', 'teams'
-    ];
-    if (platforms.some(platform => lowerText.includes(platform))) {
-      console.log('🔍 Search trigger: Platform/app mentioned');
-      return true;
-    }
-    
-    // ⏰ TIME-SENSITIVE KEYWORDS - MULTIJAZYČNÉ
+    // TIME-SENSITIVE KEYWORDS
     const timeKeywords = [
-      // Czech
-      'aktuální', 'současn', 'nejnovější', 'poslední', 'čerstvé', 'dnes', 'teď', 'nyní',
-      'když', 'kdy', 'kolik stojí', 'kolik stála', 'kolik bude', 'jak dlouho',
-      'tento týden', 'tento měsíc', 'tento rok', 'letos', 'loni',
-      
-      // English  
-      'current', 'latest', 'recent', 'today', 'now', 'this week', 'this month', 'this year',
-      'how much does', 'how much costs', 'when does', 'when will', 'when did',
-      'right now', 'at the moment', 'currently', 'recently', 'lately',
-      
-      // Romanian
-      'actual', 'curent', 'recent', 'azi', 'acum', 'când', 'cât costă', 'cât a costat',
-      'săptămâna aceasta', 'luna aceasta', 'anul acesta', 'în prezent', 'în acest moment'
+      'dnes', 'today', 'azi', 'teď', 'now', 'acum',
+      'tento týden', 'this week', 'săptămâna aceasta',
+      'tento měsíc', 'this month', 'luna aceasta'
     ];
     
     if (timeKeywords.some(keyword => lowerText.includes(keyword))) {
@@ -208,414 +243,197 @@ const openaiService = {
       return true;
     }
     
-    // 💰 FINANCIAL & MARKET DATA - MULTIJAZYČNÉ
-    const financialKeywords = [
-      // Stocks & companies (univerzální)
-      'akcie', 'akciích', 'burza', 'nasdaq', 'google', 'apple', 'microsoft', 'tesla', 'amazon',
-      'bitcoin', 'ethereum', 'crypto', 'krypto', 'dogecoin', 'binance', 'coinbase',
-      'stocks', 'shares', 'stock market', 'trading', 'investment',
-      'acțiuni', 'bursă', 'investiție',
-      
-      // Currencies
-      'cena', 'kurz', 'směnný kurz', 'dolar', 'euro', 'koruna', 'libra', 'frank',
-      'price', 'exchange rate', 'dollar', 'pound', 'yen', 'currency',
-      'preț', 'curs valutar', 'monedă',
-      
-      // Czech companies
-      'čez', 'kb', 'erste', 'avast', 'jetbrains', 'socialbakers', 'bohemia interactive',
-      
-      // Price queries
-      'kolik stojí', 'price of', 'cost of', 'value of', 'trading at', 'market cap',
-      'cât costă', 'prețul', 'valoarea'
-    ];
-    
-    if (financialKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Financial/market data');
-      return true;
-    }
-    
-    // 🌡️ WEATHER & CONDITIONS - MULTIJAZYČNÉ
-    const weatherKeywords = [
-      // Czech
-      'počasí', 'teplota', 'déšť', 'sníh', 'bouře', 'vítr', 'slunečno', 'oblačno',
-      'předpověď počasí', 'meteorologie',
-      
-      // English
-      'weather', 'temperature', 'rain', 'snow', 'storm', 'sunny', 'cloudy',
-      'weather forecast', 'meteorology', 'climate',
-      
-      // Romanian
-      'vremea', 'temperatura', 'ploaie', 'ninsoare', 'furtună', 'vânt', 'însorit',
-      'prognoza meteo', 'meteorologie'
-    ];
-    
-    if (weatherKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Weather query');
-      return true;
-    }
-    
-    // 📺 ENTERTAINMENT & SPORTS - MULTIJAZYČNÉ
-    const entertainmentKeywords = [
-      // Sports - Czech
-      'kdy hraje', 'kdy začíná', 'fotbal', 'hokej', 'basketbal', 'tenis',
-      'sparta', 'slavia', 'baník', 'plzeň', 'liga', 'česká liga',
-      
-      // Sports - English  
-      'when does play', 'when starts', 'football', 'soccer', 'basketball', 'tennis',
-      'premier league', 'champions league', 'uefa', 'fifa', 'nhl', 'nba',
-      'barcelona', 'real madrid', 'chelsea', 'manchester', 'liverpool',
-      
-      // Sports - Romanian
-      'când joacă', 'când începe', 'fotbal', 'baschet', 'tenis',
-      
-      // Movies & shows - univerzální
-      'kdy vychází', 'when comes out', 'premiéra', 'netflix', 'hbo', 'disney',
-      'film', 'movie', 'seriál', 'series', 'season', 'episode',
-      'când apare', 'premieră',
-      
-      // Events
-      'koncert', 'festival', 'výstava', 'conference', 'event', 'concert',
-      'concierto', 'festivalul'
-    ];
-    
-    if (entertainmentKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Entertainment/sports');
-      return true;
-    }
-    
-    // 🏢 BUSINESS & COMPANY INFO - MULTIJAZYČNÉ
-    const businessKeywords = [
-      // English/Universal
-      'company', 'startup', 'unicorn', 'ipo', 'acquisition', 'merger',
-      'ceo', 'founder', 'management', 'board of directors',
-      'revenue', 'profit', 'earnings', 'quarterly results',
-      
-      // Czech
-      'firma', 'podnik', 'společnost', 'zakladatel', 'ředitel', 'vedení',
-      'tržby', 'zisk', 'výsledky', 'hospodaření',
-      
-      // Romanian
-      'companie', 'firmă', 'întreprindere', 'fondator', 'director', 'management',
-      'venituri', 'profit', 'rezultate'
-    ];
-    
-    if (businessKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Business info');
-      return true;
-    }
-    
-    // 🗞️ NEWS & CURRENT EVENTS - MULTIJAZYČNÉ
-    const newsKeywords = [
-      // Czech
-      'co se stalo', 'co se děje', 'zprávy', 'novinky', 'události',
-      'incident', 'nehoda', 'politik', 'politika', 'volby', 'minister', 'premiér', 'prezident',
-      
-      // English
-      'what happened', 'what\'s happening', 'breaking news', 'news', 'latest news',
-      'incident', 'accident', 'politics', 'election', 'minister', 'president', 'prime minister',
-      
-      // Romanian
-      'ce s-a întâmplat', 'ce se întâmplă', 'știri', 'evenimente',
-      'incident', 'accident', 'politică', 'alegeri', 'ministru', 'președinte'
-    ];
-    
-    if (newsKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: News/current events');
-      return true;
-    }
-    
-    // 🎯 SPECIFIC LOCATION QUERIES - MULTIJAZYČNÉ
-    const locationKeywords = [
-      // Czech locations
-      'v praze', 'v brně', 'v ostravě', 'v plzni', 'v olomouci', 'v liberci',
-      'v bratislavě', 'v košicích',
-      
-      // English locations  
-      'in prague', 'in brno', 'in bratislava', 'in vienna', 'in budapest',
-      'in london', 'in paris', 'in berlin', 'in rome', 'in madrid',
-      
-      // Romanian locations
-      'în bucurești', 'în cluj', 'în timișoara', 'în iași', 'în constanța',
-      
-      // Transport & local services
-      'metro', 'mhd', 'doprava', 'transport', 'restaurant', 'restaurace',
-      'hotel', 'ubytování', 'accommodation', 'cazare'
-    ];
-    
-    if (locationKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Location-specific query');
-      return true;
-    }
-    
-    // 📱 TECH & SOFTWARE - MULTIJAZYČNÉ
-    const techKeywords = [
-      // Operating systems & browsers
-      'ios', 'android', 'windows', 'macos', 'linux', 'ubuntu',
-      'chrome', 'firefox', 'safari', 'edge', 'opera',
-      
-      // Software terms
-      'update', 'version', 'download', 'install', 'upgrade',
-      'bug', 'fix', 'patch', 'release', 'beta',
-      'aktualizace', 'verze', 'stažení', 'instalace',
-      'chyba', 'oprava', 'vydání',
-      'actualizare', 'versiune', 'descărcare', 'instalare'
-    ];
-    
-    if (techKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Tech/software query');
-      return true;
-    }
-    
-    // 🚗 TRANSPORTATION - MULTIJAZYČNÉ
-    const transportKeywords = [
-      // Czech
-      'vlak', 'autobus', 'letadlo', 'jízdní řád', 'zpoždění',
-      'cd', 'české dráhy', 'regiojet', 'flixbus', 'ryanair', 'czech airlines',
-      
-      // English
-      'train', 'bus', 'plane', 'flight', 'schedule', 'timetable', 'delay',
-      'airline', 'airport', 'railway', 'subway',
-      
-      // Romanian
-      'tren', 'autobuz', 'avion', 'zbor', 'orar', 'întârziere',
-      'tarom', 'blue air', 'cfr'
-    ];
-    
-    if (transportKeywords.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Transportation');
-      return true;
-    }
-    
-    // 🔍 EXPLICIT SEARCH REQUESTS - MULTIJAZYČNÉ
-    const explicitSearch = [
-      // Czech
-      'vyhledej', 'najdi', 'hledej', 'co je', 'poví mi o', 'informace o',
-      'zkontroluj', 'ověř', 'zjisti',
-      
-      // English
-      'search for', 'look up', 'find', 'google', 'what is', 'tell me about',
-      'check', 'verify', 'find out',
-      
-      // Romanian
-      'caută', 'găsește', 'ce este', 'spune-mi despre', 'informații despre',
-      'verifică', 'află'
-    ];
-    
-    if (explicitSearch.some(keyword => lowerText.includes(keyword))) {
-      console.log('🔍 Search trigger: Explicit search request');
-      return true;
-    }
-    
-    // ❌ NEVER SEARCH - GENERAL KNOWLEDGE - MULTIJAZYČNÉ
-    const neverSearch = [
-      // Programming concepts
-      'jak napsat', 'how to write', 'cum să scriu', 'algorithm', 'algoritmus',
-      'for loop', 'if statement', 'function', 'variable', 'programming',
-      'programování', 'programare',
-      
-      // General definitions
-      'co znamená', 'what does mean', 'ce înseamnă', 'definition', 'definice',
-      'definiție',
-      
-      // Historical facts (unless recent)
-      'kdy vznikl', 'when was founded', 'când a fost fondat', 'history of', 'historie',
-      'istorie',
-      
-      // Basic science
-      'jak funguje', 'how does work', 'cum funcționează', 'fyzika', 'physics',
-      'fizică', 'chemie', 'chemistry', 'chimie',
-      
-      // Personal questions
-      'jak se máš', 'how are you', 'cum ești', 'co děláš', 'what do you do',
-      'ce faci'
-    ];
-    
-    if (neverSearch.some(keyword => lowerText.includes(keyword))) {
-      console.log('🚫 Search blocked: General knowledge/definitions');
-      return false;
-    }
-    
-    // 🤔 UNKNOWN ENTITIES - CHECK FOR PROPER NOUNS
-    const properNouns = text.match(/\b[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ][a-záčďéěíňóřšťúůýž]+(?:\s+[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ][a-záčďéěíňóřšťúůýž]+)*\b/g);
-    if (properNouns && properNouns.length > 0) {
-      // Filter out common words that are often capitalized
-      const commonWords = [
-        'Czech', 'English', 'German', 'French', 'American', 'European', 'Romanian',
-        'AI', 'API', 'GPS', 'USB', 'WiFi', 'HTML', 'CSS', 'JavaScript',
-        'Praha', 'Brno', 'Ostrava', 'Plzeň', 'České', 'Slovenská'
-      ];
-      const realProperNouns = properNouns.filter(noun => !commonWords.includes(noun));
-      
-      if (realProperNouns.length > 0) {
-        console.log('🔍 Search trigger: Proper nouns detected (potential entities):', realProperNouns);
-        return true;
-      }
-    }
-    
     console.log('🚫 No search needed: General query');
     return false;
   },
 
-  // ✅ FIX #2: MEMORY QUERY DETECTION
+  // Memory query detection
   isMemoryQuery(query, history) {
     const lowerQuery = query.toLowerCase();
-    
-    // Multilingual memory keywords
     const memoryKeywords = [
-      // Czech
-      'první otázka', 'řekl jsi', 'řekla jsi', 'minule jsi', 'předtím jsi',
-      'naše konverzace', 'co jsem ptal', 'co jsem říkal', 'zopakuj', 'připomeň',
-      'bavili jsme se', 'mluvili jsme', 'o čem jsme',
-      
-      // English
-      'first question', 'you said', 'you told me', 'earlier you', 'before you',
-      'our conversation', 'what I asked', 'what I said', 'repeat', 'remind me',
-      'we talked', 'we discussed', 'what did we',
-      
-      // Romanian
-      'prima întrebare', 'ai spus', 'mi-ai spus', 'mai devreme', 'înainte',
-      'conversația noastră', 'ce am întrebat', 'ce am spus', 'repetă', 'amintește-mi'
+      'první otázka', 'řekl jsi', 'naše konverzace', 'co jsem ptal',
+      'first question', 'you said', 'our conversation', 'what I asked',
+      'prima întrebare', 'ai spus', 'conversația noastră'
     ];
     
-    // Check if it's a memory-related query
-    if (!memoryKeywords.some(keyword => lowerQuery.includes(keyword))) {
-      return false;
-    }
-    
-    // Verify we have enough history to answer
-    return history && history.length >= 2;
+    return memoryKeywords.some(keyword => lowerQuery.includes(keyword)) && history.length >= 2;
   },
 
-  // ✅ FIX #2: TOPIC CONTINUATION DETECTION  
+  // Topic continuation detection
   isContinuingTopic(query, history) {
     if (!history || history.length < 4) return false;
     
     const lowerQuery = query.toLowerCase();
-    
-    // Continuation indicators - multilingual
     const continuationWords = [
-      // Czech
-      'a co', 'také', 'ještě', 'další', 'více o', 'kromě toho', 'navíc',
-      
-      // English  
-      'and what', 'also', 'more', 'additionally', 'furthermore', 'besides',
-      
-      // Romanian
-      'și ce', 'de asemenea', 'mai mult', 'în plus', 'pe lângă'
+      'a co', 'také', 'ještě', 'další',
+      'and what', 'also', 'more', 'additionally',
+      'și ce', 'de asemenea', 'mai mult'
     ];
     
-    if (continuationWords.some(word => lowerQuery.includes(word))) {
-      // Check if recent conversation context exists
-      const recentMessages = history.slice(-6); // Last 3 exchanges
-      const hasRecentContext = recentMessages.some(msg => 
-        msg.text && msg.text.length > 20 // Non-trivial messages
-      );
-      
-      return hasRecentContext;
-    }
-    
-    return false;
+    return continuationWords.some(word => lowerQuery.includes(word));
   },
 
-  // ✅ FIX #3: BALANCED PERSONALITY - Enhanced System Prompts
-  getSystemPrompt(language) {
+  // ✅ CLAUDE-INSPIRED SYSTEM PROMPTS - Multi-layer enforcement
+  getClaudeInspiredSystemPrompt(language) {
     const prompts = {
-      'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s osobností! 🤖
+      'cs': `KRITICKÉ INSTRUKCE PRO OMNIA GPT:
 
-🎵 KRITICKÉ - TVOJE ODPOVĚDI JSOU PŘEDČÍTÁNY HLASEM:
-- Čísla: "dvacet tři celá pět" (NE "23.5")
-- Teplota: "dvacet tři stupňů Celsia" (NE "23°C") 
-- Procenta: "šedesát pět procent" (NE "65%")
-- Jednotky: "kilometrů za hodinu" (NE "km/h")
-- Zkratky: "například" (NE "např.")
-- Krátké věty (max 15 slov každá)
+🌍 ABSOLUTNÍ JAZYKOVÉ PRAVIDLO:
+- Odpovídáš VŽDY A POUZE v češtině
+- NIKDY nemíchej jazyky v jedné větě
+- Konzistence jazyka je absolutní priorita #1
+- Pokud dostaneš data v jiných jazycích, převeď je do češtiny
+
+🎵 HLASOVÉ OPTIMALIZACE (responses jsou čteny nahlas):
+- Čísla: "dvacet tři celá pět" (NIKDY "23.5")
+- Teplota: "dvacet tři stupňů Celsia" (NIKDY "23°C")
+- Procenta: "šedesát pět procent" (NIKDY "65%")
+- Jednotky: "kilometrů za hodinu" (NIKDY "km/h")
+- Zkratky: "například" (NIKDY "např.")
+- Čas: "čtrnáct hodin třicet minut" (NIKDY "14:30")
+- Měny: "sto padesát korun" (NIKDY "150 Kč")
+- Krátké věty (maximálně 15 slov)
 - Každá věta končí tečkou
 
 🧠 OMNIA PERSONALITY:
-- Jsi chytrá AI s osobností - odpovídej přirozeně a přátelsky
-- Pro faktické dotazy (ceny, počasí, data) buď stručná a užitečná
+- Jsi Omnia - chytrá AI s osobností a humorem
+- Pro faktické dotazy (ceny, počasí) buď stručná a užitečná
 - Pro konverzaci můžeš být vtipná a rozvíjet téma
 - NIKDY neříkej "jako umělá inteligence" nebo "nemám pocity"
 - NIKDY se neomlouvej - místo "Bohužel..." prostě odpověz co víš
 
-🌍 JAZYKOVÉ PRAVIDLA:
-- Odpovídej VŽDY v češtině (pokud uživatel explicitně nežádá jinak)
-- NIKDY nemíchej jazyky v jedné větě - konzistence je klíčová!
-
 KVALITA ODPOVĚDÍ:
-- Přizpůsob délku typu dotazu (data = krátce, konverzace = delší)
-- Krátké věty optimalizované pro TTS
+- Správná čeština s diakritikou (ě,š,č,ř,ů,ý,á,í,é)
 - Žádné spelling errors - jsi profesionální asistent
-- Správná čeština s diakritikou (ě,š,č,ř,ů,ý,á,í,é)`,
+- Přizpůsob délku typu dotazu (data = krátce, konverzace = delší)
 
-      'en': `You are Omnia, an advanced multilingual AI assistant with personality! 🤖
+DNEŠNÍ DATUM: ${new Date().toLocaleDateString('cs-CZ')}`,
 
-🎵 CRITICAL - YOUR RESPONSES ARE READ ALOUD:
-- Numbers: "twenty three point five" (NOT "23.5")
-- Temperature: "twenty three degrees Celsius" (NOT "23°C")
-- Percentages: "sixty five percent" (NOT "65%") 
-- Units: "kilometers per hour" (NOT "km/h")
-- Abbreviations: "for example" (NOT "e.g.")
-- Short sentences (max 15 words each)
+      'en': `CRITICAL INSTRUCTIONS FOR OMNIA GPT:
+
+🌍 ABSOLUTE LANGUAGE RULE:
+- Respond ALWAYS AND ONLY in English
+- NEVER mix languages in one sentence
+- Language consistency is absolute priority #1
+- If you receive data in other languages, translate to English
+
+🎵 VOICE OPTIMIZATIONS (responses are read aloud):
+- Numbers: "twenty three point five" (NEVER "23.5")
+- Temperature: "twenty three degrees Celsius" (NEVER "23°C")
+- Percentages: "sixty five percent" (NEVER "65%")
+- Units: "kilometers per hour" (NEVER "km/h")
+- Abbreviations: "for example" (NEVER "e.g.")
+- Time: "two thirty PM" (NEVER "14:30")
+- Currency: "one hundred fifty dollars" (NEVER "$150")
+- Short sentences (maximum 15 words)
 - Every sentence ends with period
 
 🧠 OMNIA PERSONALITY:
-- You're a smart AI with personality - respond naturally and friendly
-- For factual queries (prices, weather, data) be brief and useful
+- You're Omnia - smart AI with personality and humor
+- For factual queries (prices, weather) be brief and useful
 - For conversation you can be witty and develop topics
 - NEVER say "as an AI" or "I don't have feelings"
 - NEVER apologize - instead of "Unfortunately..." just answer what you know
 
-🌍 LANGUAGE RULES:
-- ALWAYS respond in English (unless user explicitly requests otherwise)
-- NEVER mix languages in one sentence - consistency is key!
-
 RESPONSE QUALITY:
+- Perfect English with correct spelling
+- No spelling errors - you're a professional assistant
 - Adapt length to query type (data = brief, conversation = longer)
-- Short sentences optimized for TTS
-- No spelling errors - you're a professional assistant`,
 
-      'ro': `Ești Omnia, un asistent AI multilingual avansat cu personalitate! 🤖
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US')}`,
 
-🎵 CRITIC - RĂSPUNSURILE TALE SUNT CITITE CU VOCE TARE:
-- Numere: "douăzeci și trei virgulă cinci" (NU "23.5")
-- Temperatură: "douăzeci și trei grade Celsius" (NU "23°C")
-- Procente: "șaizeci și cinci la sută" (NU "65%")
-- Unități: "kilometri pe oră" (NU "km/h") 
-- Abrevieri: "de exemplu" (NU "ex.")
-- Propoziții scurte (max 15 cuvinte fiecare)
+      'ro': `INSTRUCȚIUNI CRITICE PENTRU OMNIA GPT:
+
+🌍 REGULA ABSOLUTĂ DE LIMBĂ:
+- Răspunde ÎNTOTDEAUNA ȘI DOAR în română
+- NICIODATĂ să nu amesteci limbile într-o propoziție
+- Consistența limbii este prioritatea absolută #1
+- Dacă primești date în alte limbi, traduce-le în română
+
+🎵 OPTIMIZĂRI PENTRU VOCE (răspunsurile sunt citite cu vocea):
+- Numere: "douăzeci și trei virgulă cinci" (NICIODATĂ "23.5")
+- Temperatură: "douăzeci și trei grade Celsius" (NICIODATĂ "23°C")
+- Procente: "șaizeci și cinci la sută" (NICIODATĂ "65%")
+- Unități: "kilometri pe oră" (NICIODATĂ "km/h")
+- Abrevieri: "de exemplu" (NICIODATĂ "ex.")
+- Timp: "două și jumătate după-amiază" (NICIODATĂ "14:30")
+- Monedă: "o sută cincizeci lei" (NICIODATĂ "150 lei")
+- Propoziții scurte (maximum 15 cuvinte)
 - Fiecare propoziție se termină cu punct
 
 🧠 PERSONALITATEA OMNIA:
-- Ești un AI inteligent cu personalitate - răspunde natural și prietenos
-- Pentru întrebări factuale (prețuri, vreme, date) fii concisă și utilă
+- Ești Omnia - AI inteligent cu personalitate și umor
+- Pentru întrebări factuale (prețuri, vreme) fii concisă și utilă
 - Pentru conversație poți fi spirituală și să dezvolți subiecte
 - NICIODATĂ nu spune "ca AI" sau "nu am sentimente"
 - NICIODATĂ nu te scuza - în loc de "Din păcate..." răspunde ce știi
 
-🌍 REGULI LINGVISTICE:
-- Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
-- NICIODATĂ nu amesteca limbile într-o propoziție - consistența este cheie!
-
 CALITATEA RĂSPUNSULUI:
+- Româna perfectă cu diacritice (ă,â,î,ș,ț)
+- Fără greșeli de ortografie - ești un asistent profesional
 - Adaptează lungimea la tipul întrebării (date = scurt, conversație = mai lung)
-- Propoziții scurte optimizate pentru TTS
-- Fără greșeli de ortografie - ești un asistent profesional`
+
+DATA DE ASTĂZI: ${new Date().toLocaleDateString('ro-RO')}`
     };
     
     return prompts[language] || prompts['cs'];
   },
 
-  // 📝 Format Search Context (UNCHANGED)
-  formatSearchContext(searchResults, language) {
+  // ✅ CLEAN search context formatting
+  formatCleanSearchContext(searchResults, language) {
     const prefixes = {
-      'cs': 'Aktuální informace z internetu:',
-      'en': 'Current information from internet:', 
-      'ro': 'Informații actuale de pe internet:'
+      'cs': 'AKTUÁLNÍ INFORMACE Z INTERNETU (použij pro odpověď v češtině):',
+      'en': 'CURRENT INFORMATION FROM INTERNET (use for English response):',
+      'ro': 'INFORMAȚII ACTUALE DE PE INTERNET (folosește pentru răspuns în română):'
     };
     
     const prefix = prefixes[language] || prefixes['cs'];
     return `${prefix}\n\n${searchResults}`;
+  },
+
+  // ✅ Language reinforcement in user message
+  addLanguageReinforcement(query, language) {
+    const reinforcements = {
+      'cs': `${query}\n\n[DŮLEŽITÉ: Odpověz výhradně v češtině]`,
+      'en': `${query}\n\n[IMPORTANT: Respond exclusively in English]`,
+      'ro': `${query}\n\n[IMPORTANT: Răspunde exclusiv în română]`
+    };
+    
+    return reinforcements[language] || reinforcements['cs'];
+  },
+
+  // ✅ Post-processing language validation
+  validateResponseLanguage(responseText, expectedLanguage) {
+    // Simple validation - could be enhanced further
+    const detectedLang = this.quickLanguageCheck(responseText);
+    
+    if (detectedLang !== expectedLanguage && detectedLang !== 'unknown') {
+      console.warn('⚠️ Language mismatch detected in response:', {
+        expected: expectedLanguage,
+        detected: detectedLang,
+        preview: responseText.substring(0, 100)
+      });
+    }
+    
+    return responseText; // For now, just log - could implement auto-correction
+  },
+
+  // Quick language detection for response validation
+  quickLanguageCheck(text) {
+    if (!text) return 'unknown';
+    
+    const lowerText = text.toLowerCase();
+    
+    // Romanian indicators
+    if (/\b(astăzi|prețul|acțiunilor|dolari|este)\b/.test(lowerText)) return 'ro';
+    
+    // English indicators
+    if (/\b(today|price|stock|dollars|is|the)\b/.test(lowerText)) return 'en';
+    
+    // Czech indicators
+    if (/\b(dnes|cena|akcií|korun|je|aktuální)\b/.test(lowerText)) return 'cs';
+    
+    return 'unknown';
   }
 };
 
