@@ -37,25 +37,34 @@ const openaiService = {
       }
       
       // 🧠 STEP 3: Build proper message structure - PODLE ZMĚNY #1
-      const systemMessage = {
-        role: 'system',
-        content: this.getSystemPrompt(detectedLanguage) // ✅ PURE Omnia personality
+      // Ensure systemPromptMessage is defined and proper type
+      const systemPromptMessage = {
+        role: "system",
+        content: `Jsi Omnia – přátelský, přirozený a osobní AI asistent, který mluví jazykem uživatele, dodržuje jazykovou konzistenci, mluví lidsky (nikdy jako "umělá inteligence") a používá informace z vyhledávání pouze jako fakta pro tvoji odpověď. Nepiš jako robot. Nepiš disclaimer. Drž se jazykového stylu uživatele.`,
       };
-      
-      // ✅ FIXED: Start with system prompt, then conversation history
-      let messagesWithSystem = [systemMessage, ...messages];
-      
-      // 🔍 STEP 4: Inject search results as ADDITIONAL context (if available)
+      // Prepare user message (last message in conversation)
+      const userMessage = messages[messages.length - 1];
+      let searchContextMessage = null;
       if (searchResults) {
-        const searchContextMessage = {
-          role: 'user', // ✅ FIXED: user role for external context
-          content: this.formatSearchContext(searchResults, detectedLanguage)
+        searchContextMessage = {
+          role: "user",
+          content: this.formatSearchContext(searchResults, detectedLanguage),
         };
-        
-        // ✅ FIXED: Insert search context BEFORE final user message
-        messagesWithSystem.splice(-1, 0, searchContextMessage);
-        console.log('🔍 Search context injected before final user message');
       }
+      // Build messagesWithSystem according to new structure
+      let messagesWithSystem = [];
+      messagesWithSystem.unshift(systemPromptMessage);
+      messagesWithSystem.push({
+        role: "assistant",
+        content: "Zde jsou doplňující informace z externího hledání – použij je k odpovědi na následující dotaz.",
+      });
+      if (searchContextMessage) {
+        messagesWithSystem.push({
+          role: "system",
+          content: `Externí data: ${searchContextMessage.content}`,
+        });
+      }
+      messagesWithSystem.push(userMessage);
       
       // 🚀 STEP 5: Call OpenAI API with proper structure
       const response = await fetch('/api/openai', {
@@ -66,7 +75,7 @@ const openaiService = {
         body: JSON.stringify({ 
           messages: messagesWithSystem,
           model: 'gpt-4o', // ✅ Latest model
-          temperature: 0.8,
+          temperature: 0.65,
           max_tokens: 2000, // ✅ FIXED: Increased for detailed responses
           language: detectedLanguage
         })
