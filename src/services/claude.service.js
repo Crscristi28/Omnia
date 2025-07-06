@@ -47,8 +47,9 @@ function formatSearchResponse(text) {
   const lines = text.split('\n');
   const formattedLines = [];
   let inBulletSection = false;
+  let i = 0;
   
-  for (let i = 0; i < lines.length; i++) {
+  while (i < lines.length) {
     const line = lines[i].trim();
     
     if (!line) {
@@ -56,6 +57,7 @@ function formatSearchResponse(text) {
       if (!inBulletSection) {
         formattedLines.push('');
       }
+      i++;
       continue;
     }
     
@@ -63,14 +65,38 @@ function formatSearchResponse(text) {
     if (/^[🌤️💰🛍️📈🎬🏠🚗💊🍔⚽🎵📱💼🌍📰🏛️⚡🎯🔥]\s*[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ\s]+:$/i.test(line)) {
       formattedLines.push(line);
       inBulletSection = true;
+      i++;
       continue;
     }
     
-    // Process bullet points with sanitizeText
+    // Process bullet points with sanitizeText - MULTI-LINE FIX
     if (line.startsWith('•')) {
-      const bulletText = line.substring(1).trim();
+      let bulletText = line.substring(1).trim();
+      
+      // 🔧 FIX: Check if next lines are continuation (no bullet, no header)
+      let j = i + 1;
+      while (j < lines.length) {
+        const nextLine = lines[j].trim();
+        if (!nextLine) {
+          j++;
+          continue;
+        }
+        
+        // Stop if we hit another bullet, header, or are out of bullet section
+        if (nextLine.startsWith('•') || 
+            /^[🌤️💰🛍️📈🎬🏠🚗💊🍔⚽🎵📱💼🌍📰🏛️⚡🎯🔥]/.test(nextLine) ||
+            (!inBulletSection && nextLine)) {
+          break;
+        }
+        
+        // This is continuation of bullet text
+        bulletText += ' ' + nextLine;
+        j++;
+      }
+      
       const sanitizedBullet = sanitizeText(bulletText);
       formattedLines.push('• ' + sanitizedBullet);
+      i = j;
       continue;
     }
     
@@ -86,6 +112,7 @@ function formatSearchResponse(text) {
     // Normal text - apply sanitizeText for TTS but keep normal formatting
     const sanitizedLine = sanitizeText(line);
     formattedLines.push(sanitizedLine);
+    i++;
   }
   
   const result = formattedLines.join('\n')
