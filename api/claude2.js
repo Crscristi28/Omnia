@@ -100,9 +100,9 @@ export default async function handler(req, res) {
     console.log('💬 Response length:', textContent.length, 'characters');
     console.log('🔍 Web search executed:', webSearchUsed);
 
-    // 🎭 FAKE STREAMING: Postupné posílání textu po částech
+    // 🎭 SLOWER STREAMING: Postupné posílání textu pro čitelnost
     const words = textContent.split(' ');
-    const chunkSize = 3; // Posíláme po 3 slovech
+    const chunkSize = 2; // 🔧 CHANGED: 2 words per chunk (was 3)
     
     for (let i = 0; i < words.length; i += chunkSize) {
       const chunk = words.slice(i, i + chunkSize).join(' ');
@@ -113,9 +113,9 @@ export default async function handler(req, res) {
         content: chunk + (i + chunkSize < words.length ? ' ' : '')
       }) + '\n');
       
-      // Malá pauza pro realističnost streaming efektu
+      // 🔧 SLOWER DELAY: 300ms between chunks for readability (was 100ms)
       if (i + chunkSize < words.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
     
