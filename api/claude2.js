@@ -1,4 +1,4 @@
-// api/claude2.js - FAKE STREAMING (funkční + simulované) + SOURCES EXTRACTION
+// api/claude2.js - FAKE STREAMING + CITATIONS EXTRACTION (FIXED)
 export default async function handler(req, res) {
   // CORS headers pro fake streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,16 +30,14 @@ export default async function handler(req, res) {
     const recentMessages = messages.slice(-8);
     
     // 🔧 FIXED: Use system prompt from claude.service.js DIRECTLY
-    // Don't override with complex enhancedSystem!
     const finalSystem = system || "Jsi Omnia, pokročilý AI asistent.";
 
-    // ✅ PŮVODNÍ funkční request (BEZ streaming)
+    // ✅ PŮVODNÍ funkční request
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
       system: finalSystem,
       messages: recentMessages,
-      // stream: false, // 🔧 BEZ streaming - používáme tvůj funkční způsob
       tools: [
         {
           type: "web_search_20250305",
@@ -49,14 +47,14 @@ export default async function handler(req, res) {
       ]
     };
 
-    console.log('🚀 Sending FAKE STREAMING request (funkční způsob)...');
+    console.log('🚀 Sending request to Claude...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01' // ✅ Tvá funkční API verze
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify(claudeRequest)
     });
@@ -72,84 +70,80 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Claude Sonnet 4 response received');
-    console.log('📊 Full Claude response data:', JSON.stringify(data, null, 2));
+    console.log('✅ Claude response received');
     
     // Check for web search usage
-    const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
+    const toolUses = data.content?.filter(item => item.type === 'server_tool_use') || [];
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
-    // 🔗 EXTRACT SOURCES FROM CLAUDE RESPONSE
+    // 🔗 EXTRACT SOURCES FROM CLAUDE RESPONSE - CITATIONS METHOD
     let extractedSources = [];
     
-    if (webSearchUsed && data.content) {
-      console.log('🔍 Claude used web_search - extracting sources...');
+    if (data.content) {
+      console.log('🔍 Extracting sources from Claude response...');
       
-      // Look for tool_result blocks with sources
-      const toolResults = data.content.filter(item => item.type === 'tool_result');
-      
-      for (const result of toolResults) {
-        if (result.content) {
-          try {
-            let toolData;
-            
-            // Handle both string and object content
-            if (typeof result.content === 'string') {
-              toolData = JSON.parse(result.content);
-            } else {
-              toolData = result.content;
-            }
-            
-            console.log('🔍 Tool result data:', toolData);
-            
-            // Extract sources from various possible formats
-            if (toolData.sources && Array.isArray(toolData.sources)) {
-              extractedSources = extractedSources.concat(toolData.sources);
-            } else if (toolData.results && Array.isArray(toolData.results)) {
-              extractedSources = extractedSources.concat(toolData.results);
-            } else if (toolData.webSearchResults && Array.isArray(toolData.webSearchResults)) {
-              extractedSources = extractedSources.concat(toolData.webSearchResults);
-            }
-            
-          } catch (parseError) {
-            console.warn('⚠️ Could not parse tool result:', parseError);
-            
-            // If can't parse, create mock sources for testing
-            if (typeof result.content === 'string' && result.content.includes('http')) {
-              // Extract URLs from string content
-              const urls = result.content.match(/https?:\/\/[^\s]+/g) || [];
-              for (const url of urls) {
+      // Method 1: Extract from citations in text blocks
+      for (const item of data.content) {
+        if (item.type === 'text' && item.citations && Array.isArray(item.citations)) {
+          console.log('✅ Found citations in text block:', item.citations.length);
+          
+          for (const citation of item.citations) {
+            if (citation.url && citation.title) {
+              try {
+                const urlObj = new URL(citation.url);
                 extractedSources.push({
-                  title: `Source from ${new URL(url).hostname}`,
-                  url: url
+                  title: citation.title,
+                  url: citation.url,
+                  domain: urlObj.hostname.replace('www.', ''),
+                  type: 'citation'
                 });
+              } catch (urlError) {
+                console.warn('⚠️ Invalid URL in citation:', citation.url);
               }
             }
           }
         }
       }
       
-      // 🧪 FALLBACK: If no sources found but web search was used, create mock sources
-      if (extractedSources.length === 0) {
-        console.log('⚠️ No sources extracted, creating mock sources for testing...');
-        extractedSources = [
-          {
-            title: 'Počasí - Meteorologická služba',
-            url: 'https://www.chmi.cz'
-          },
-          {
-            title: 'Aktuální počasí Praha',
-            url: 'https://weather.com/cs-CZ/weather/today/l/Praha'
-          },
-          {
-            title: 'Předpověď počasí',
-            url: 'https://www.idnes.cz/pocasi'
+      // Method 2: Extract from web_search_tool_result blocks
+      const toolResults = data.content.filter(item => item.type === 'web_search_tool_result');
+      
+      for (const result of toolResults) {
+        if (result.content && Array.isArray(result.content)) {
+          for (const searchResult of result.content) {
+            if (searchResult.type === 'web_search_result' && searchResult.url && searchResult.title) {
+              try {
+                const urlObj = new URL(searchResult.url);
+                extractedSources.push({
+                  title: searchResult.title,
+                  url: searchResult.url,
+                  domain: urlObj.hostname.replace('www.', ''),
+                  type: 'search_result'
+                });
+              } catch (urlError) {
+                console.warn('⚠️ Invalid URL in search result:', searchResult.url);
+              }
+            }
           }
-        ];
+        }
       }
+      
+      // Remove duplicates based on URL
+      const uniqueSources = [];
+      const seenUrls = new Set();
+      
+      for (const source of extractedSources) {
+        if (!seenUrls.has(source.url)) {
+          seenUrls.add(source.url);
+          uniqueSources.push(source);
+        }
+      }
+      
+      extractedSources = uniqueSources;
+      
+      console.log('🔗 Total unique sources extracted:', extractedSources.length);
+      console.log('📋 Sources:', extractedSources.map(s => ({ title: s.title, domain: s.domain })));
     }
-    
-    console.log('🔗 Final extracted sources:', extractedSources);
     
     if (webSearchUsed) {
       console.log('🔍 Claude used web_search!');
@@ -167,7 +161,7 @@ export default async function handler(req, res) {
     const textContent = data.content
       ?.filter(item => item.type === 'text')
       ?.map(item => item.text)
-      ?.join(' ')
+      ?.join('')
       ?.trim() || "Nepodařilo se získat odpověď.";
 
     console.log('💬 Response length:', textContent.length, 'characters');
@@ -194,17 +188,18 @@ export default async function handler(req, res) {
       fullText: textContent,
       webSearchUsed: webSearchUsed,
       sources: extractedSources,
-      toolResults: data.content?.filter(item => item.type === 'tool_result') || [],
+      citations: extractedSources,
+      toolResults: data.content?.filter(item => item.type === 'web_search_tool_result') || [],
       searchData: {
         sources: extractedSources
       }
     }) + '\n');
 
-    console.log('✅ FAKE STREAMING completed with sources');
+    console.log('✅ Streaming completed with', extractedSources.length, 'sources');
     res.end();
 
   } catch (error) {
-    console.error('💥 Fatal error in FAKE streaming:', error);
+    console.error('💥 Fatal error in streaming:', error);
     
     res.write(JSON.stringify({
       error: true,
