@@ -109,9 +109,16 @@ function formatSearchResponse(text) {
       }
     }
     
-    // Normal text - apply sanitizeText for TTS but keep normal formatting
-    const sanitizedLine = sanitizeText(line);
-    formattedLines.push(sanitizedLine);
+    // 🔧 FIX: Normal text - NO sanitizeText for summary, keep natural flow
+    // Only sanitize if it contains problematic patterns, otherwise keep original
+    let processedLine = line;
+    const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h/i.test(line);
+    
+    if (hasProblematicPatterns) {
+      processedLine = sanitizeText(line);
+    }
+    
+    formattedLines.push(processedLine);
     i++;
   }
   
