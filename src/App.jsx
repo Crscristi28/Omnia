@@ -1,6 +1,7 @@
-// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS (CLEAN)
+// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS (CLEAN + SOURCES)
 // ✅ REMOVED: formatClaudeResponse() bullshit - let Claude handle formatting naturally
 // 🎯 CLEAN: No text processing - trust Claude's output
+// 🔗 NEW: Sources system integration
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -27,6 +28,9 @@ import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
 // 🆕 IMPORT INPUT BAR
 import InputBar from './components/input/InputBar.jsx';
+
+// 🔗 IMPORT SOURCES COMPONENTS
+import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 MOBILE AUDIO MANAGER
 class MobileAudioManager {
@@ -204,6 +208,10 @@ function App() {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
+  // 🔗 SOURCES STATE
+  const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
+  const [currentSources, setCurrentSources] = useState([]);
+  
   // 📱 DEVICE STATE
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
@@ -270,9 +278,10 @@ function App() {
     return () => clearInterval(interval);
   }, [streaming, model]);
 
-  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN)
+  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN + SOURCES)
 // ✅ CLEAN: No formatClaudeResponse() calls - trust Claude's natural output
 // 🎯 SIMPLE: Direct text handling without processing
+// 🔗 NEW: Sources integration in message handling
 
 // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
@@ -321,6 +330,19 @@ function App() {
         }, 400);
       }
     }, type === 'error' ? 8000 : 4000);
+  };
+
+  // 🔗 SOURCES MODAL HANDLERS
+  const handleSourcesClick = (sources) => {
+    console.log('🔗 Opening sources modal with:', sources.length, 'sources');
+    setCurrentSources(sources);
+    setSourcesModalOpen(true);
+  };
+
+  const handleSourcesModalClose = () => {
+    console.log('🔗 Closing sources modal');
+    setSourcesModalOpen(false);
+    setCurrentSources([]);
   };
 
   // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON
@@ -517,6 +539,10 @@ function App() {
     if (isListening) setIsListening(false);
     if (isRecordingSTT) stopSTTRecording();
     
+    // 🔗 Close sources modal on new chat
+    setSourcesModalOpen(false);
+    setCurrentSources([]);
+    
     sessionManager.clearSession();
     setMessages([]);
     setUserLanguage('cs');
@@ -554,7 +580,7 @@ function App() {
     }
   };
 
-// 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse()
+// 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse() + SOURCES INTEGRATION
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
 
@@ -581,7 +607,7 @@ function App() {
       if (model === 'claude') {
         let streamedText = '';
         
-        responseText = await claudeService.sendMessage(
+        const result = await claudeService.sendMessage(
           messagesWithUser,
           (text, isStreaming) => {
             streamedText = text;
@@ -596,10 +622,22 @@ function App() {
           detectedLang
         );
         
-        const finalText = streamedText || responseText;
+        const finalText = streamedText || result.text;
         
-        // ✅ CLEAN: Use Claude's text directly - no formatting!
-        const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
+        // 🔗 SOURCES INTEGRATION - Add sources to message
+        const finalMessage = { 
+          sender: 'bot', 
+          text: finalText,
+          sources: result.sources || []
+        };
+        
+        console.log('🔗 Claude response with sources:', {
+          textLength: finalText.length,
+          sourcesCount: (result.sources || []).length,
+          sources: result.sources
+        });
+        
+        const finalMessages = [...messagesWithUser, finalMessage];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
@@ -616,7 +654,12 @@ function App() {
         const response = await openaiService.sendMessage(openAIMessages, detectedLang);
         responseText = (typeof response === 'object' && response.text) ? response.text : response;
         
-        const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+        // 🔗 GPT doesn't have sources yet - add empty array
+        const finalMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: responseText,
+          sources: []
+        }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
@@ -628,7 +671,13 @@ function App() {
       else if (model === 'sonar') {
         const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
         responseText = searchResult.success ? searchResult.result : searchResult.message;
-        const finalMessages = [...messagesWithUser, { sender: 'bot', text: responseText }];
+        
+        // 🔗 Sonar doesn't have sources yet - add empty array
+        const finalMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: responseText,
+          sources: []
+        }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
@@ -659,9 +708,10 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🚀 OMNIA - APP.JSX ČÁST 3/3 - JSX RENDER + STYLES (FINÁLNÍ CLEAN)
+  };// 🚀 OMNIA - APP.JSX ČÁST 3/3 - JSX RENDER + STYLES (FINÁLNÍ CLEAN + SOURCES)
 // ✅ CLEAN: TypewriterText gets Claude's natural output - no processing
 // 🎯 TRUST: Let Claude handle formatting, TypewriterText handle display
+// 🔗 NEW: Sources UI integration
 
 // 🎨 JSX RENDER
   return (
@@ -844,7 +894,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                🧠 Claude Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced • 🎨 NATURAL Formatting
+                🧠 Claude Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced • 🎨 NATURAL Formatting • 🔗 SOURCES Ready
               </div>
             </>
           )}
@@ -934,6 +984,12 @@ function App() {
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
+                        {/* 🔗 SOURCES BUTTON - NEW! */}
+                        <SourcesButton 
+                          sources={msg.sources || []}
+                          onClick={() => handleSourcesClick(msg.sources || [])}
+                          language={detectLanguage(msg.text)}
+                        />
                         <VoiceButton 
                           text={msg.text} 
                           onAudioStart={() => setIsAudioPlaying(true)}
@@ -1018,6 +1074,14 @@ function App() {
         uiLanguage={uiLanguage}
         messages={messages}
         audioManager={mobileAudioManager}
+      />
+
+      {/* 🔗 SOURCES MODAL - NEW! */}
+      <SourcesModal 
+        isOpen={sourcesModalOpen}
+        onClose={handleSourcesModalClose}
+        sources={currentSources}
+        language={uiLanguage}
       />
 
       <style>{`

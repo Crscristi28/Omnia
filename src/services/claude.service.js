@@ -1,8 +1,9 @@
-// 🤖 CLAUDE SERVICE - ENHANCED with VERBOSE SUPPRESSION + PERFECT FORMATTING
+// 🤖 CLAUDE SERVICE - ENHANCED with SOURCES EXTRACTION + VERBOSE SUPPRESSION + PERFECT FORMATTING
 // ✅ FIXED: Verbose search messages eliminated
 // 🎯 NEW: Perfect left-aligned formatting like target examples
 // 🎨 NEW: Smart conditional formatting - search results vs conversation
 // 🚫 NEW: No markdown symbols fix
+// 🔗 NEW: Complete sources extraction and processing
 
 const claudeService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
@@ -141,8 +142,209 @@ const claudeService = {
     }
   },
 
+  // 🔗 ENHANCED SOURCES EXTRACTION - COMPLETE IMPLEMENTATION
   extractSearchSources(data) {
-    return [];
+    try {
+      console.log('🔍 Extracting sources from Claude data:', data);
+      
+      let rawSources = [];
+      
+      // Method 1: Direct sources array
+      if (data.sources && Array.isArray(data.sources)) {
+        rawSources = data.sources;
+        console.log('✅ Found sources via Method 1 (direct):', rawSources.length);
+      }
+      
+      // Method 2: Web search results
+      else if (data.webSearchResults && Array.isArray(data.webSearchResults)) {
+        rawSources = data.webSearchResults;
+        console.log('✅ Found sources via Method 2 (webSearchResults):', rawSources.length);
+      }
+      
+      // Method 3: Search data nested
+      else if (data.searchData && data.searchData.sources) {
+        rawSources = data.searchData.sources;
+        console.log('✅ Found sources via Method 3 (searchData):', rawSources.length);
+      }
+      
+      // Method 4: Tool results (Claude web_search tool format)
+      else if (data.toolResults && Array.isArray(data.toolResults)) {
+        rawSources = data.toolResults
+          .filter(result => result.type === 'web_search')
+          .flatMap(result => result.sources || result.results || []);
+        console.log('✅ Found sources via Method 4 (toolResults):', rawSources.length);
+      }
+      
+      // Method 5: Citations format
+      else if (data.citations && Array.isArray(data.citations)) {
+        rawSources = data.citations;
+        console.log('✅ Found sources via Method 5 (citations):', rawSources.length);
+      }
+      
+      // Method 6: Web search tool usage (streaming format)
+      else if (data.tool_use && data.tool_use.name === 'web_search') {
+        if (data.tool_use.result && data.tool_use.result.sources) {
+          rawSources = data.tool_use.result.sources;
+          console.log('✅ Found sources via Method 6 (tool_use):', rawSources.length);
+        }
+      }
+      
+      // Method 7: Check for any property containing URL arrays
+      else {
+        // Search for arrays containing objects with URLs
+        for (const [key, value] of Object.entries(data)) {
+          if (Array.isArray(value) && value.length > 0) {
+            // Check if first item looks like a source
+            const firstItem = value[0];
+            if (firstItem && typeof firstItem === 'object' && 
+                (firstItem.url || firstItem.link || firstItem.href)) {
+              rawSources = value;
+              console.log(`✅ Found sources via Method 7 (${key}):`, rawSources.length);
+              break;
+            }
+          }
+        }
+      }
+      
+      // If still no sources, try to extract from any nested objects
+      if (rawSources.length === 0) {
+        const findSourcesRecursively = (obj, path = '') => {
+          if (!obj || typeof obj !== 'object') return [];
+          
+          let found = [];
+          for (const [key, value] of Object.entries(obj)) {
+            const currentPath = path ? `${path}.${key}` : key;
+            
+            if (Array.isArray(value) && value.length > 0) {
+              const firstItem = value[0];
+              if (firstItem && typeof firstItem === 'object' && 
+                  (firstItem.url || firstItem.link || firstItem.href || firstItem.title)) {
+                console.log(`✅ Found sources recursively at ${currentPath}:`, value.length);
+                found = found.concat(value);
+              }
+            } else if (typeof value === 'object' && value !== null) {
+              found = found.concat(findSourcesRecursively(value, currentPath));
+            }
+          }
+          return found;
+        };
+        
+        rawSources = findSourcesRecursively(data);
+      }
+      
+      if (rawSources.length === 0) {
+        console.log('⚠️ No sources found in Claude response data');
+        return [];
+      }
+      
+      // Clean and format sources
+      const cleanSources = rawSources
+        .filter(source => source && typeof source === 'object')
+        .map(source => {
+          // Extract URL from various possible properties
+          const url = source.url || source.link || source.href || source.source_url || '';
+          
+          // Extract title from various possible properties  
+          const title = source.title || source.name || source.headline || 
+                       source.description || source.snippet || 
+                       (url ? this.extractTitleFromUrl(url) : 'Untitled');
+          
+          // Clean and validate
+          if (!url || !this.isValidUrl(url)) {
+            console.log('⚠️ Skipping invalid source:', { title, url });
+            return null;
+          }
+          
+          return {
+            title: this.cleanTitle(title),
+            url: this.cleanUrl(url),
+            domain: this.extractDomain(url),
+            timestamp: source.timestamp || source.date || Date.now()
+          };
+        })
+        .filter(source => source !== null) // Remove invalid sources
+        .slice(0, 10); // Limit to 10 sources max
+      
+      console.log('✅ Extracted and cleaned sources:', cleanSources.length);
+      console.log('📋 Final sources:', cleanSources);
+      
+      return cleanSources;
+      
+    } catch (error) {
+      console.error('💥 Error extracting sources:', error);
+      console.error('📊 Data that caused error:', data);
+      return [];
+    }
+  },
+
+  // 🔗 HELPER FUNCTIONS FOR SOURCES PROCESSING
+  extractTitleFromUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      
+      // Extract meaningful part from path
+      const parts = pathname.split('/').filter(part => part.length > 0);
+      if (parts.length > 0) {
+        const lastPart = parts[parts.length - 1];
+        // Convert URL slug to readable title
+        return lastPart
+          .replace(/[-_]/g, ' ')
+          .replace(/\.(html|php|aspx?)$/i, '')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+      
+      return urlObj.hostname.replace('www.', '');
+    } catch (error) {
+      return 'Web Page';
+    }
+  },
+
+  cleanTitle(title) {
+    if (!title || typeof title !== 'string') return 'Untitled';
+    
+    return title
+      .trim()
+      .replace(/\s+/g, ' ') // Multiple spaces to single
+      .replace(/^[|\-–—]\s*/, '') // Remove leading pipes/dashes
+      .replace(/\s*[|\-–—]\s*$/, '') // Remove trailing pipes/dashes
+      .slice(0, 100); // Max 100 characters
+  },
+
+  cleanUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+      return urlObj.href;
+    } catch (error) {
+      return url;
+    }
+  },
+
+  extractDomain(url) {
+    if (!url || typeof url !== 'string') return 'Unknown';
+    
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+      return urlObj.hostname.replace('www.', '');
+    } catch (error) {
+      const match = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/);
+      return match ? match[1] : 'Unknown';
+    }
+  },
+
+  isValidUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    
+    try {
+      new URL(url.startsWith('http') ? url : `https://${url}`);
+      return true;
+    } catch (error) {
+      return false;
+    }
   },
 
   getEnhancedSystemPrompt(language) {
