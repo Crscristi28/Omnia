@@ -1,6 +1,6 @@
-// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS + POST-PROCESSING
-// ✅ OPRAVA: Claude response formatting fix - clean left-aligned bullets
-// 🎯 NEW: formatClaudeResponse() function for clean formatting
+// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS (CLEAN)
+// ✅ REMOVED: formatClaudeResponse() bullshit - let Claude handle formatting naturally
+// 🎯 CLEAN: No text processing - trust Claude's output
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -27,51 +27,6 @@ import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
 // 🆕 IMPORT INPUT BAR
 import InputBar from './components/input/InputBar.jsx';
-
-// 🆕 CLAUDE RESPONSE FORMATTING FIX
-function formatClaudeResponse(text) {
-  if (!text || typeof text !== 'string') return text;
-  
-  // 🔧 Fix Claude's weird formatting issues
-  let formatted = text
-    // Remove excessive spacing and centering
-    .replace(/\n\s+/g, '\n')
-    // Fix bullets that are on separate lines
-    .replace(/\n\s*•\s*\n\s*/g, '\n• ')
-    // Ensure bullets start properly after headers
-    .replace(/(🌤️|💰|🛍️|📈|🎬|🏠|🚗|💊|🍔|⚽|🎵|📱|💼|🌍)([^:]+):\s*\n\s*/g, '$1$2:\n• ')
-    // Clean up multiple newlines
-    .replace(/\n{3,}/g, '\n\n')
-    // Fix bullet spacing
-    .replace(/\n•\s+/g, '\n• ')
-    // Remove leading/trailing whitespace
-    .trim();
-    
-  // 🎯 Ensure proper bullet list format
-  const lines = formatted.split('\n');
-  const cleanLines = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Skip empty lines in bullet sections
-    if (line === '' && i > 0 && i < lines.length - 1) {
-      const prevLine = lines[i - 1]?.trim();
-      const nextLine = lines[i + 1]?.trim();
-      if (prevLine?.startsWith('•') && nextLine?.startsWith('•')) {
-        continue; // Skip empty line between bullets
-      }
-    }
-    
-    if (line) {
-      cleanLines.push(line);
-    } else if (cleanLines.length > 0 && !cleanLines[cleanLines.length - 1].startsWith('•')) {
-      cleanLines.push(''); // Keep spacing for paragraphs
-    }
-  }
-  
-  return cleanLines.join('\n');
-}
 
 // 🆕 MOBILE AUDIO MANAGER
 class MobileAudioManager {
@@ -229,7 +184,7 @@ function App() {
   // 📊 BASIC STATE
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('gpt-4o'); // 🆕 ZMĚNA: Default GPT místo 'claude'
+  const [model, setModel] = useState('claude'); // 🔧 CHANGED: Default Claude for better formatting
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -301,8 +256,9 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING
-// ✅ UPDATED: Claude responses now use formatClaudeResponse() for clean formatting
+  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN)
+// ✅ CLEAN: No formatClaudeResponse() calls - trust Claude's natural output
+// 🎯 SIMPLE: Direct text handling without processing
 
 // 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
@@ -353,7 +309,7 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🎵 FIXED TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON!
+  // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -363,7 +319,6 @@ function App() {
       const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h|AI|API|0W-30|1\.?\s*července|2\.?\s*července/i.test(sentence);
       
       if (hasProblematicPatterns) {
-        // 🔧 FIXED: Use same logic as VoiceButton - NO language parameter!
         textToSpeak = sanitizeText(sentence);
         console.log('🔧 Applied sanitizeText (same as VoiceButton):', {
           original: sentence.substring(0, 50),
@@ -371,7 +326,6 @@ function App() {
         });
       }
       
-      // 🚀 CRITICAL FIX: Use same service as VoiceButton!
       console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
       const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
       
@@ -381,14 +335,13 @@ function App() {
     } catch (error) {
       console.error('💥 TTS generation failed:', error);
       
-      // 🔄 FALLBACK: Try Google TTS if ElevenLabs fails
       try {
         console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
         const googleResponse = await fetch('/api/google-tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ 
-            text: sentence, // Google TTS má vlastní preprocessing
+            text: sentence,
             language: language,
             voice: 'natural'
           })
@@ -568,7 +521,6 @@ function App() {
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
-    // 🚀 AUTO-SWITCH TO GPT FOR VOICE (pokud už není GPT)
     if (model !== 'gpt-4o') {
       console.log('🎤 Voice mode: Auto-switching to GPT for faster responses');
       setPreviousModel(model);
@@ -581,7 +533,6 @@ function App() {
   const handleVoiceScreenClose = () => {
     setShowVoiceScreen(false);
     
-    // 🔄 RESTORE PREVIOUS MODEL
     if (previousModel && previousModel !== 'gpt-4o') {
       console.log('🔄 Voice closed: Restoring previous model:', previousModel);
       setModel(previousModel);
@@ -589,7 +540,7 @@ function App() {
     }
   };
 
-// 🤖 AI CONVERSATION WITH CLAUDE FORMATTING FIX - UPDATED!
+// 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse()
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
 
@@ -633,21 +584,15 @@ function App() {
         
         const finalText = streamedText || responseText;
         
-        // 🔧 APPLY CLAUDE FORMATTING FIX!
-        const formattedText = formatClaudeResponse(finalText);
-        console.log('🎨 Claude formatting applied:', {
-          original: finalText.substring(0, 100),
-          formatted: formattedText.substring(0, 100)
-        });
-        
-        const finalMessages = [...messagesWithUser, { sender: 'bot', text: formattedText }];
+        // ✅ CLEAN: Use Claude's text directly - no formatting!
+        const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        if (fromVoice && showVoiceScreen && formattedText) {
+        if (fromVoice && showVoiceScreen && finalText) {
           console.log('🎵 Claude complete, instant voice playback...');
           setTimeout(async () => {
-            await processVoiceResponse(formattedText, detectedLang);
+            await processVoiceResponse(finalText, detectedLang);
           }, 500);
         }
       }
@@ -700,8 +645,9 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🚀 OMNIA - APP.JSX ČÁST 3/3 - JSX RENDER + STYLES (FINÁLNÍ)
-// ✅ FORMATTING: Claude responses now formatted via formatClaudeResponse()
+  };// 🚀 OMNIA - APP.JSX ČÁST 3/3 - JSX RENDER + STYLES (FINÁLNÍ CLEAN)
+// ✅ CLEAN: TypewriterText gets Claude's natural output - no processing
+// 🎯 TRUST: Let Claude handle formatting, TypewriterText handle display
 
 // 🎨 JSX RENDER
   return (
@@ -785,8 +731,8 @@ function App() {
                 overflow: 'hidden'
               }}>
                 {[
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice (DEFAULT)' },
-                  { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + voice' },
+                  { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + perfect formatting (DEFAULT)' },
+                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice' },
                   { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time info + voice' }
                 ].map((item) => (
                   <button
@@ -884,7 +830,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                ⚡ GPT Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced • 🎨 CLEAN Formatting
+                🧠 Claude Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced • 🎨 NATURAL Formatting
               </div>
             </>
           )}
@@ -951,7 +897,7 @@ function App() {
                   borderRadius: '0 12px 12px 0',
                   paddingLeft: '1.8rem', 
                   backdropFilter: 'blur(10px)',
-                  textAlign: 'left'  // 🔧 CRITICAL FIX: Force left alignment!
+                  textAlign: 'left'
                 }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
@@ -1006,7 +952,7 @@ function App() {
                 borderRadius: '0 12px 12px 0',
                 paddingLeft: '1.8rem', 
                 backdropFilter: 'blur(10px)',
-                textAlign: 'left'  // 🔧 CRITICAL FIX: Force left alignment for loading too!
+                textAlign: 'left'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ 
