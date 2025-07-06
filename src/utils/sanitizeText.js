@@ -270,6 +270,11 @@ export function cleanMarkdownForUI(text) {
     .replace(/^\n+/, '')                   // Remove leading newlines
     .replace(/\n+$/, '');                  // Remove trailing newlines
 
+  // 💪 CONVERT CAPS TO BOLD CAPS - BEST OF BOTH WORLDS!
+  cleanText = cleanText
+    .replace(/\b([A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]{3,}):?\s*/g, '**$1**: ')  // VÝHODY: → **VÝHODY**: 
+    .replace(/\*\*([^*]+)\*\*:\s*\*\*([^*]+)\*\*:/g, '**$1**: **$2**:'); // Fix double bold
+
   return cleanText.trim();
 }
 
