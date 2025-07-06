@@ -100,23 +100,18 @@ export default async function handler(req, res) {
     console.log('💬 Response length:', textContent.length, 'characters');
     console.log('🔍 Web search executed:', webSearchUsed);
 
-    // 🎭 SLOWER STREAMING: Postupné posílání textu pro čitelnost
-    const words = textContent.split(' ');
-    const chunkSize = 2; // 🔧 CHANGED: 2 words per chunk (was 3)
-    
-    for (let i = 0; i < words.length; i += chunkSize) {
-      const chunk = words.slice(i, i + chunkSize).join(' ');
-      
-      // Pošli chunk textu
+    // 🎭 LETTER-BY-LETTER STREAMING: Posílání textu písmo po písmenu
+    const letters = textContent.split('');
+
+    for (let i = 0; i < letters.length; i++) {
+      const char = letters[i];
+
       res.write(JSON.stringify({
         type: 'text',
-        content: chunk + (i + chunkSize < words.length ? ' ' : '')
+        content: char
       }) + '\n');
-      
-      // 🔧 SLOWER DELAY: 300ms between chunks for readability (was 100ms)
-      if (i + chunkSize < words.length) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+
+      await new Promise(resolve => setTimeout(resolve, 30)); // adjust speed as needed
     }
     
     // Send final completion
