@@ -2,11 +2,24 @@
 // 🎵 ENHANCED MULTILINGUAL SANITIZATION pro ElevenLabs TTS
 // ✅ FIXED: Smart AI vs ai detection pro rumunštinu
 // ✅ Tech "AI" → "a i", ale sloveso "ai" → zůstává "ai"
+// 🚫 NEW: Markdown cleanup - removes **bold**, *italic*, ###, etc.
 
 export default function sanitizeText(text, language = 'cs') {
   if (!text || typeof text !== 'string') return '';
   
   let processedText = text;
+  
+  // 🚫 MARKDOWN CLEANUP - UNIVERSAL (applies to all languages)
+  // CRITICAL: Must be FIRST before any other processing!
+  processedText = processedText
+    .replace(/\*\*([^*]+)\*\*/g, '$1')           // Remove **bold**
+    .replace(/\*([^*]+)\*/g, '$1')               // Remove *italic*
+    .replace(/#{1,6}\s*/g, '')                   // Remove ### headers
+    .replace(/`([^`]+)`/g, '$1')                 // Remove `inline code`
+    .replace(/```[\s\S]*?```/g, '')              // Remove ```code blocks```
+    .replace(/_([^_]+)_/g, '$1')                 // Remove _underline_
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')    // Remove [links](url)
+    .replace(/~~([^~]+)~~/g, '$1');              // Remove ~~strikethrough~~
   
   switch (language.toLowerCase()) {
     
@@ -227,6 +240,25 @@ export default function sanitizeText(text, language = 'cs') {
   
   return processedText;
 }
+
+// 🧪 MARKDOWN CLEANUP TEST CASES:
+/*
+🚫 MARKDOWN REMOVAL TESTS:
+
+INPUT:  "**Pes - nejlepší přítel člověka**"
+OUTPUT: "Pes - nejlepší přítel člověka" ✅
+
+INPUT:  "### Hlavní typy umělé inteligence"
+OUTPUT: "Hlavní typy umělé inteligence" ✅
+
+INPUT:  "*důležité* informace s `kódem`"
+OUTPUT: "důležité informace s kódem" ✅
+
+INPUT:  "Text s [odkazy](https://example.com) a ~~škrtáním~~"
+OUTPUT: "Text s odkazy a škrtáním" ✅
+
+✅ CRITICAL: Markdown cleanup happens BEFORE language-specific TTS processing!
+*/
 
 // 🧪 SMART AI DETECTION TEST CASES:
 /*
