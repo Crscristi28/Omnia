@@ -152,12 +152,18 @@ const claudeService = {
 🎨 FORMATTING - KRITICKÉ:
 - VŽDY piš NORMÁLNÍ TEXT jako v běžné konverzaci
 - Jedna věta za druhou, každá končí tečkou
-- ŽÁDNÉ bullets (•), ŽÁDNÉ emoji, ŽÁDNÉ speciální struktury
+- ŽÁDNÉ bullets (•), ŽÁDNÉ speciální struktury
 - ŽÁDNÉ mezery mezi větami navíc
 - Prostě normální plynulý text jako když si povídáš s přítelem
 
+KDYŽ POUŽÍVÁŠ WEB SEARCH:
+- NEPIŠ úvody jako "Na základě dostupných informací", "mohu říci", "vypadá následovně"
+- ZAČNI ROVNOU s informacemi
+- PŘIDEJ emoji na začátek podle kategorie (🌤️ počasí, 💰 finance, 📈 akcie, 🏠 nemovitosti, atd.)
+- Emoji je jen vizuální, nebude čteno nahlas
+
 PŘÍKLAD DOBRÉ ODPOVĚDI:
-"Zítra bude polojasno až oblačno. Odpoledne možné bouřky. Teploty sedmnáct až dvacet pět stupňů Celsia. Vítr bude slabý."
+"🌤️ Zítra bude polojasno až oblačno. Odpoledne možné bouřky. Teploty sedmnáct až dvacet pět stupňů Celsia. Vítr bude slabý."
 
 🌍 JAZYKOVÉ PRAVIDLA:
 - Odpovídej VŽDY v češtině (pokud uživatel explicitně nežádá jinak)
@@ -284,7 +290,7 @@ CALITATEA TEXTULUI:
     };
 
     return messages[language] || messages['cs'];
-  } 
+  }
 };
 
 export default claudeService;
