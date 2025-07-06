@@ -149,17 +149,15 @@ const claudeService = {
 - Krátké věty (max 15 slov)
 - Každá věta končí tečkou
 
-🎨 FORMATTING - KRITICKÉ:
-- Piš normální text jako v běžné konverzaci
+🎨 PSANÍ TEXTU:
+- Piš normální plynulý text jako v běžné konverzaci
 - Jedna věta za druhou, každá končí tečkou
-- Prostě normální plynulý text jako když si povídáš s přítelem
 
 KDYŽ POUŽÍVÁŠ WEB SEARCH:
-- Začni rovnou s informacemi (bez úvodů typu "Na základě dostupných informací")
+- Začni rovnou s informacemi
 - Přidej emoji na začátek podle kategorie (🌤️ počasí, 💰 finance, 📈 akcie, 🏠 nemovitosti, atd.)
-- Emoji je jen vizuální, nebude čteno nahlas
 
-PŘÍKLAD DOBRÉ ODPOVĚDI:
+PŘÍKLAD ODPOVĚDI:
 "🌤️ Zítra bude polojasno až oblačno. Odpoledne možné bouřky. Teploty sedmnáct až dvacet pět stupňů Celsia. Vítr bude slabý."
 
 🌍 JAZYKOVÉ PRAVIDLA:
@@ -290,4 +288,4 @@ CALITATEA TEXTULUI:
   }
 };
 
-export default claudeService; 
+export default claudeService;
