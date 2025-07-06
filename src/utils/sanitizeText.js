@@ -246,9 +246,9 @@ export function cleanMarkdownForUI(text) {
   
   let cleanText = text;
   
-  // 🚫 MARKDOWN CLEANUP FIRST
+  // 🚫 MARKDOWN CLEANUP FIRST (keep **bold** for UI)
   cleanText = cleanText
-    .replace(/\*\*([^*]+)\*\*/g, '$1')     // Remove **bold**
+    // .replace(/\*\*([^*]+)\*\*/g, '$1')     // KEEP **bold** for UI display
     .replace(/\*([^*]+)\*/g, '$1')         // Remove *italic*
     .replace(/#{1,6}\s*/g, '')             // Remove ### headers
     .replace(/`([^`]+)`/g, '$1')           // Remove `inline code`
