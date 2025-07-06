@@ -94,7 +94,7 @@ export default async function handler(req, res) {
     const textContent = data.content
       ?.filter(item => item.type === 'text')
       ?.map(item => item.text)
-      ?.join('\n')
+      ?.join(' ')
       ?.trim() || "Nepodařilo se získat odpověď.";
 
     console.log('💬 Response length:', textContent.length, 'characters');
@@ -122,7 +122,6 @@ export default async function handler(req, res) {
     // Send final completion
     res.write(JSON.stringify({
       type: 'completed',
-      fullText: textContent,
       webSearchUsed: webSearchUsed
     }) + '\n');
 
