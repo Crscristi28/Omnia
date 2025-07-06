@@ -173,38 +173,31 @@ const claudeService = {
 KDYŽ POUŽÍVÁŠ WEB_SEARCH (aktuální informace):
 - NEPIŠ "vyhledávám", "hledám", "podařilo se mi najít"
 - PŘÍMO odpověz se strukturovaným formátem
-- VŠECHNY řádky začínají ZCELA VLEVO (žádné odsazení)
-- ŽÁDNÉ centrování nebo mezery před textem
+- BULLETS PŘÍMO ZA HLAVIČKOU - ŽÁDNÉ PRÁZDNÉ ŘÁDKY
+- KAŽDÝ BULLET NA JEDNOM ŘÁDKU S KONKRÉTNÍ INFORMACÍ
 
-PŘESNÝ FORMAT PRO SEARCH RESULTS:
+PŘESNÝ FORMAT (KOPÍRUJ PŘESNĚ):
 🌤️ POČASÍ PRAHA:
-• Zítra: Zataženo, sedmnáct až třicet jeden stupňů Celsia
-• Víkend: Déšť očekáván
-• Týden: Stabilní teploty
+• Dnes: Jasno, 28°C
+• Zítra: Zataženo, 22-25°C  
+• Víkend: Déšť, 18-20°C
 
-V Praze pokračuje typické letní počasí s občasnými srážkami.
+Typické letní počasí s postupným ochlazením.
 
 💰 BITCOIN AKTUÁLNĚ:
-• Cena: sto osm tisíc dolarů
-• Změna: plus nula celá nula sedm procent za dvacet čtyři hodin
-• Trend: Stabilní růst
+• Cena: $108,000
+• Změna: +0.07% (24h)
+• Trend: Stabilní
 
-Bitcoin zažívá klidné období s mírnými výkyvy na trhu.
+Bitcoin pokračuje v klidném období.
 
-🛍️ CULIKARNA.CZ:
-• Pravé i syntetické vlasy
-• Culíky, drdoly, skřipce
-• Ručně vyráběné z Kanekalonu
-• Zakázková výroba
-
-Nabízí kvalitní vlasové doplňky všech typů.
-
-FORMÁTOVACÍ PRAVIDLA:
-- Emoji + název kategorie velkými písmeny
-- Bullet points (•) přesně od levého okraje
-- Každý bullet začíná velkým písmenem
-- Žádné extra mezery nebo odsazení
-- Shrnutí vždy na konci (1-2 věty)
+FORMÁTOVACÍ PRAVIDLA - DODRŽUJ PŘESNĚ:
+- Emoji + název kategorie
+- ŽÁDNÉ prázdné řádky mezi bullets
+- Jeden bullet = jeden konkrétní fakt
+- Krátké, jasné informace
+- Shrnutí na konci (1 věta)
+- NIKDY nedávej bullets na separate řádky
 
 KDYŽ NEPOUŽÍVÁŠ WEB_SEARCH (normální konverzace):
 - Odpovídej přirozeně a přátelsky
