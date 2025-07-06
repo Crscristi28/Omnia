@@ -1,6 +1,6 @@
-// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS
-// ✅ OPRAVA: Voice chat bude používat stejnou logiku jako VoiceButton
-// 🎯 FIX: generateAudioForSentence → elevenLabsService.generateSpeech
+// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS + POST-PROCESSING
+// ✅ OPRAVA: Claude response formatting fix - clean left-aligned bullets
+// 🎯 NEW: formatClaudeResponse() function for clean formatting
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -27,6 +27,51 @@ import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
 // 🆕 IMPORT INPUT BAR
 import InputBar from './components/input/InputBar.jsx';
+
+// 🆕 CLAUDE RESPONSE FORMATTING FIX
+function formatClaudeResponse(text) {
+  if (!text || typeof text !== 'string') return text;
+  
+  // 🔧 Fix Claude's weird formatting issues
+  let formatted = text
+    // Remove excessive spacing and centering
+    .replace(/\n\s+/g, '\n')
+    // Fix bullets that are on separate lines
+    .replace(/\n\s*•\s*\n\s*/g, '\n• ')
+    // Ensure bullets start properly after headers
+    .replace(/(🌤️|💰|🛍️|📈|🎬|🏠|🚗|💊|🍔|⚽|🎵|📱|💼|🌍)([^:]+):\s*\n\s*/g, '$1$2:\n• ')
+    // Clean up multiple newlines
+    .replace(/\n{3,}/g, '\n\n')
+    // Fix bullet spacing
+    .replace(/\n•\s+/g, '\n• ')
+    // Remove leading/trailing whitespace
+    .trim();
+    
+  // 🎯 Ensure proper bullet list format
+  const lines = formatted.split('\n');
+  const cleanLines = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Skip empty lines in bullet sections
+    if (line === '' && i > 0 && i < lines.length - 1) {
+      const prevLine = lines[i - 1]?.trim();
+      const nextLine = lines[i + 1]?.trim();
+      if (prevLine?.startsWith('•') && nextLine?.startsWith('•')) {
+        continue; // Skip empty line between bullets
+      }
+    }
+    
+    if (line) {
+      cleanLines.push(line);
+    } else if (cleanLines.length > 0 && !cleanLines[cleanLines.length - 1].startsWith('•')) {
+      cleanLines.push(''); // Keep spacing for paragraphs
+    }
+  }
+  
+  return cleanLines.join('\n');
+}
 
 // 🆕 MOBILE AUDIO MANAGER
 class MobileAudioManager {
@@ -256,7 +301,10 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  const shouldHideLogo = messages.length > 0;// 🔧 NOTIFICATION SYSTEM
+  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING
+// ✅ UPDATED: Claude responses now use formatClaudeResponse() for clean formatting
+
+// 🔧 NOTIFICATION SYSTEM
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -541,7 +589,7 @@ function App() {
     }
   };
 
-// 🤖 AI CONVERSATION WITH GPT VOICE PIPELINE - FIXED!
+// 🤖 AI CONVERSATION WITH CLAUDE FORMATTING FIX - UPDATED!
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
 
@@ -584,25 +632,28 @@ function App() {
         );
         
         const finalText = streamedText || responseText;
-        const finalMessages = [...messagesWithUser, { sender: 'bot', text: finalText }];
+        
+        // 🔧 APPLY CLAUDE FORMATTING FIX!
+        const formattedText = formatClaudeResponse(finalText);
+        console.log('🎨 Claude formatting applied:', {
+          original: finalText.substring(0, 100),
+          formatted: formattedText.substring(0, 100)
+        });
+        
+        const finalMessages = [...messagesWithUser, { sender: 'bot', text: formattedText }];
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        if (fromVoice && showVoiceScreen && finalText) {
+        if (fromVoice && showVoiceScreen && formattedText) {
           console.log('🎵 Claude complete, instant voice playback...');
-          console.log('📝 Final text length:', finalText.length);
-          console.log('📝 Text preview:', finalText.substring(0, 100) + '...');
-          
           setTimeout(async () => {
-            console.log('🎤 Starting voice processing...');
-            await processVoiceResponse(finalText, detectedLang);
+            await processVoiceResponse(formattedText, detectedLang);
           }, 500);
         }
       }
       else if (model === 'gpt-4o') {
         const openAIMessages = convertMessagesForOpenAI(messagesWithUser);
         
-        // ✅ JEDINÁ OPRAVA: Handle new { text, sources } format from openai.service.js
         const response = await openaiService.sendMessage(openAIMessages, detectedLang);
         responseText = (typeof response === 'object' && response.text) ? response.text : response;
         
@@ -610,12 +661,8 @@ function App() {
         setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
-        // 🆕 GPT VOICE PIPELINE - FIXED WITH SAME LOGIC AS VOICEBUTTON!
         if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎵 GPT response complete, processing voice with FIXED logic...');
-          console.log('🌍 Language for GPT voice:', detectedLang);
-          console.log('📝 GPT text preview:', responseText.substring(0, 100) + '...');
-          console.log('🔧 Using same TTS path as VoiceButton!');
+          console.log('🎵 GPT response complete, processing voice...');
           await processVoiceResponse(responseText, detectedLang);
         }
       }
@@ -644,7 +691,6 @@ function App() {
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
-    // 🔧 FIXED: Force language detection for voice consistency
     const detectedLang = detectLanguage(text);
     setUserLanguage(detectedLang);
     console.log('🌍 Voice detected language:', detectedLang);
@@ -654,7 +700,10 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🎨 JSX RENDER
+  };// 🚀 OMNIA - APP.JSX ČÁST 3/3 - JSX RENDER + STYLES (FINÁLNÍ)
+// ✅ FORMATTING: Claude responses now formatted via formatClaudeResponse()
+
+// 🎨 JSX RENDER
   return (
     <div style={{ 
       position: 'fixed', 
@@ -835,7 +884,7 @@ function App() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontWeight: '500'
               }}>
-                ⚡ GPT Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced
+                ⚡ GPT Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced • 🎨 CLEAN Formatting
               </div>
             </>
           )}
