@@ -256,9 +256,9 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
-  // ✅ SCROLLING DURING STREAMING (e.g. Claude) - skips for GPT
+  // ✅ SCROLLING DURING STREAMING (e.g. Claude) and also for GPT-4o animation
   useEffect(() => {
-    if (!streaming) return;
+    if (!streaming && model !== 'gpt-4o') return;
 
     const scroll = () => {
       if (endOfMessagesRef.current) {
@@ -266,9 +266,9 @@ function App() {
       }
     };
 
-    const interval = setInterval(scroll, 120); // scroll každých 120 ms během streamu
+    const interval = setInterval(scroll, 120);
     return () => clearInterval(interval);
-  }, [streaming]);
+  }, [streaming, model]);
 
   const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN)
 // ✅ CLEAN: No formatClaudeResponse() calls - trust Claude's natural output
