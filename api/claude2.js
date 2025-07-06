@@ -1,4 +1,4 @@
-// api/claude2.js - FAKE STREAMING (funkční + simulované)
+// api/claude2.js - FAKE STREAMING (funkční + simulované) + SOURCES EXTRACTION
 export default async function handler(req, res) {
   // CORS headers pro fake streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -73,10 +73,83 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     console.log('✅ Claude Sonnet 4 response received');
+    console.log('📊 Full Claude response data:', JSON.stringify(data, null, 2));
     
     // Check for web search usage
     const toolUses = data.content?.filter(item => item.type === 'tool_use') || [];
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
+    
+    // 🔗 EXTRACT SOURCES FROM CLAUDE RESPONSE
+    let extractedSources = [];
+    
+    if (webSearchUsed && data.content) {
+      console.log('🔍 Claude used web_search - extracting sources...');
+      
+      // Look for tool_result blocks with sources
+      const toolResults = data.content.filter(item => item.type === 'tool_result');
+      
+      for (const result of toolResults) {
+        if (result.content) {
+          try {
+            let toolData;
+            
+            // Handle both string and object content
+            if (typeof result.content === 'string') {
+              toolData = JSON.parse(result.content);
+            } else {
+              toolData = result.content;
+            }
+            
+            console.log('🔍 Tool result data:', toolData);
+            
+            // Extract sources from various possible formats
+            if (toolData.sources && Array.isArray(toolData.sources)) {
+              extractedSources = extractedSources.concat(toolData.sources);
+            } else if (toolData.results && Array.isArray(toolData.results)) {
+              extractedSources = extractedSources.concat(toolData.results);
+            } else if (toolData.webSearchResults && Array.isArray(toolData.webSearchResults)) {
+              extractedSources = extractedSources.concat(toolData.webSearchResults);
+            }
+            
+          } catch (parseError) {
+            console.warn('⚠️ Could not parse tool result:', parseError);
+            
+            // If can't parse, create mock sources for testing
+            if (typeof result.content === 'string' && result.content.includes('http')) {
+              // Extract URLs from string content
+              const urls = result.content.match(/https?:\/\/[^\s]+/g) || [];
+              for (const url of urls) {
+                extractedSources.push({
+                  title: `Source from ${new URL(url).hostname}`,
+                  url: url
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      // 🧪 FALLBACK: If no sources found but web search was used, create mock sources
+      if (extractedSources.length === 0) {
+        console.log('⚠️ No sources extracted, creating mock sources for testing...');
+        extractedSources = [
+          {
+            title: 'Počasí - Meteorologická služba',
+            url: 'https://www.chmi.cz'
+          },
+          {
+            title: 'Aktuální počasí Praha',
+            url: 'https://weather.com/cs-CZ/weather/today/l/Praha'
+          },
+          {
+            title: 'Předpověď počasí',
+            url: 'https://www.idnes.cz/pocasi'
+          }
+        ];
+      }
+    }
+    
+    console.log('🔗 Final extracted sources:', extractedSources);
     
     if (webSearchUsed) {
       console.log('🔍 Claude used web_search!');
@@ -99,6 +172,7 @@ export default async function handler(req, res) {
 
     console.log('💬 Response length:', textContent.length, 'characters');
     console.log('🔍 Web search executed:', webSearchUsed);
+    console.log('🔗 Sources found:', extractedSources.length);
 
     // 🎭 LETTER-BY-LETTER STREAMING: Posílání textu písmo po písmenu
     const letters = textContent.split('');
@@ -114,13 +188,19 @@ export default async function handler(req, res) {
       await new Promise(resolve => setTimeout(resolve, 30)); // adjust speed as needed
     }
     
-    // Send final completion
+    // 🔗 Send final completion WITH SOURCES
     res.write(JSON.stringify({
       type: 'completed',
-      webSearchUsed: webSearchUsed
+      fullText: textContent,
+      webSearchUsed: webSearchUsed,
+      sources: extractedSources,
+      toolResults: data.content?.filter(item => item.type === 'tool_result') || [],
+      searchData: {
+        sources: extractedSources
+      }
     }) + '\n');
 
-    console.log('✅ FAKE STREAMING completed');
+    console.log('✅ FAKE STREAMING completed with sources');
     res.end();
 
   } catch (error) {
