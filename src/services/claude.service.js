@@ -38,68 +38,12 @@ function sanitizeText(text) {
     .trim();
 }
 
-// 🎯 SMART SEARCH FORMATTING FUNCTION
+// 🎯 SIMPLE SEARCH FORMATTING - BASIC VERSION
 function formatSearchResponse(text) {
   if (!text || typeof text !== 'string') return text;
   
-  console.log('🔍 Formatting search response for TTS...');
-  
-  const lines = text.split('\n');
-  const formattedLines = [];
-  let inBulletSection = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    if (!line) {
-      // Skip empty lines in bullet sections
-      if (!inBulletSection) {
-        formattedLines.push('');
-      }
-      continue;
-    }
-    
-    // Detect section headers (emoji + text + colon)
-    if (/^[🌤️💰🛍️📈🎬🏠🚗💊🍔⚽🎵📱💼🌍📰🏛️⚡🎯🔥]\s*[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ\s]+:$/i.test(line)) {
-      formattedLines.push(line);
-      inBulletSection = true;
-      continue;
-    }
-    
-    // Process bullet points - SIMPLE VERSION
-    if (line.startsWith('•')) {
-      const bulletText = line.substring(1).trim();
-      const sanitizedBullet = sanitizeText(bulletText);
-      formattedLines.push('• ' + sanitizedBullet);
-      continue;
-    }
-    
-    // Summary/normal text - format like normal chat (left-aligned, clean)
-    if (inBulletSection && !line.startsWith('•')) {
-      inBulletSection = false;
-      // Add empty line before summary for readability
-      if (formattedLines.length > 0 && formattedLines[formattedLines.length - 1] !== '') {
-        formattedLines.push('');
-      }
-    }
-    
-    // Normal summary text - minimal processing, keep natural
-    const hasNumbers = /\d+°C|\d+%|\d+:\d+/i.test(line);
-    const processedLine = hasNumbers ? sanitizeText(line) : line;
-    formattedLines.push(processedLine);
-  }
-  
-  const result = formattedLines.join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .replace(/\n+$/, '')
-    .trim();
-  
-  console.log('✅ Search formatting complete:', {
-    originalLength: text.length,
-    formattedLength: result.length
-  });
-  
-  return result;
+  // Just apply sanitizeText to whole response for TTS
+  return sanitizeText(text);
 }
 
 const claudeService = {
