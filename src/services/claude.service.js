@@ -1,20 +1,20 @@
-// 🤖 CLAUDE SERVICE - Complete with TTS-Aware System Prompts
-// ✅ FIXED: UTF-8 charset headers added
-// 🎵 ENHANCED: TTS-optimized prompts for voice quality
-// 🌍 Multilingual system prompts with voice optimization
+// 🤖 CLAUDE SERVICE - ENHANCED with VERBOSE SUPPRESSION + SMART FORMATTING
+// ✅ FIXED: Verbose search messages eliminated
+// 🎯 NEW: Smart conditional formatting - search results vs conversation
+// 🎨 NEW: Professional structured responses with emojis + bullets + context
 
 const claudeService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
-      console.log('🤖 Claude service with language:', detectedLanguage);
+      console.log('🤖 Claude Enhanced service with language:', detectedLanguage);
       const claudeMessages = this.prepareClaudeMessages(messages);
       
-      const systemPrompt = this.getSystemPrompt(detectedLanguage);
+      const systemPrompt = this.getEnhancedSystemPrompt(detectedLanguage);
       
       const response = await fetch('/api/claude2', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json; charset=utf-8'  // ✅ FIX: UTF-8 charset added
+          'Content-Type': 'application/json; charset=utf-8'
         },
         body: JSON.stringify({ 
           messages: claudeMessages,
@@ -29,10 +29,11 @@ const claudeService = {
       }
 
       const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');  // ✅ FIX: Explicit UTF-8 decoder
+      const decoder = new TextDecoder('utf-8');
       
       let fullText = '';
       let buffer = '';
+      let sourcesExtracted = [];
 
       try {
         while (true) {
@@ -56,16 +57,22 @@ const claudeService = {
                   }
                 }
                 else if (data.type === 'search_start') {
-                  if (onSearchNotification) {
-                    onSearchNotification(this.getSearchMessage(detectedLanguage));
-                  }
+                  // 🔇 VERBOSE SUPPRESSION: Still notify but don't interrupt user
+                  console.log('🔍 Claude search detected - silent mode');
+                  // Removed: onSearchNotification call
                 }
                 else if (data.type === 'completed') {
                   if (data.fullText) {
                     fullText = data.fullText;
                   }
+                  
+                  // 🆕 EXTRACT SOURCES from web_search results
+                  if (data.webSearchUsed) {
+                    sourcesExtracted = this.extractSearchSources(data);
+                  }
+                  
                   if (onStreamUpdate) {
-                    onStreamUpdate(fullText, false);
+                    onStreamUpdate(fullText, false, sourcesExtracted);
                   }
                 }
                 else if (data.error) {
@@ -83,7 +90,12 @@ const claudeService = {
         throw streamError;
       }
 
-      return fullText;
+      // 🎯 RETURN with sources for App.jsx integration
+      return {
+        text: fullText,
+        sources: sourcesExtracted,
+        webSearchUsed: sourcesExtracted.length > 0
+      };
 
     } catch (error) {
       console.error('💥 Claude error:', error);
@@ -91,7 +103,7 @@ const claudeService = {
     }
   },
 
-  // 🔧 HELPER: Prepare messages for Claude API
+  // 🔧 HELPER: Prepare messages for Claude API (unchanged)
   prepareClaudeMessages(messages) {
     try {
       const validMessages = messages.filter(msg => 
@@ -133,8 +145,15 @@ const claudeService = {
     }
   },
 
-  // 🎵 TTS-AWARE MULTILINGUAL SYSTEM PROMPTS - ENHANCED
-  getSystemPrompt(language) {
+  // 🆕 EXTRACT SOURCES from search results
+  extractSearchSources(data) {
+    // This will be enhanced when claude2.js sends source data
+    // For now, return placeholder structure
+    return [];
+  },
+
+  // 🎯 ENHANCED SYSTEM PROMPT with SMART FORMATTING
+  getEnhancedSystemPrompt(language) {
     const prompts = {
       'cs': `Jsi Omnia, pokročilý multijazyčný AI asistent s osobností.
 
@@ -149,20 +168,53 @@ const claudeService = {
 - Krátké věty (max 15 slov)
 - Každá věta končí tečkou
 
+🎨 FORMÁTOVÁNÍ ODPOVĚDÍ - DŮLEŽITÉ:
+
+KDYŽ POUŽÍVÁŠ WEB_SEARCH (aktuální informace):
+- NEPIŠ "vyhledávám", "hledám", "podařilo se mi najít"
+- PŘÍMO odpověz se strukturovaným formátem:
+
+Struktura pro SEARCH RESULTS:
+[EMOJI] [KATEGORIE VELKÝMI PÍSMENY]:
+• Hlavní info: data
+• Detail 1: informace  
+• Detail 2: informace
+
+[1-2 věty kontextu a shrnutí]
+
+Příklady:
+💰 BITCOIN AKTUÁLNĚ:
+• Cena: sto osm tisíc dolarů
+• Změna: plus nula celá nula sedm procent za dvacet čtyři hodin
+• Trend: Stabilní růst
+
+Bitcoin zažívá klidné období. Trh očekává další vývoj.
+
+🌤️ POČASÍ PRAHA:
+• Dnes: Zataženo, dvacet tři stupňů Celsia
+• Zítra: Možné přeháňky
+• Týden: Stabilní teploty
+
+V Praze pokračuje typické letní počasí.
+
+KDYŽ NEPOUŽÍVÁŠ WEB_SEARCH (normální konverzace):
+- Odpovídej přirozeně a přátelsky
+- ŽÁDNÉ emoji, ŽÁDNÉ bullets
+- Běžná konverzační Omnia osobnost
+- Příklad: "Ahoj! Mám se skvěle, děkuji. Jak ti můžu pomoci?"
+
 🌍 JAZYKOVÉ PRAVIDLA:
 - Odpovídej VŽDY v češtině (pokud uživatel explicitně nežádá jinak)
-- Pokud uživatel říká "speak english" → přepni na angličtinu
-- Pokud uživatel říká "vorbește română" → přepni na rumunštinu
 - NIKDY nemíchej jazyky v jedné větě - konzistence je klíčová!
 
 🧠 OMNIA PERSONALITY:
 - Jsi chytrá, vtipná a trochu drzá (Boss Omnia vibes! 👑)
 - Máš business acumen a humor
 - Na jednoduché otázky odpovídej přirozeně a přátelsky
-- Neříkaj "jsem AI" - jednoduše komunikuj jako inteligentní asistent
+- NIKDY se neomlouvej - místo "Bohužel..." prostě odpověz co víš
 
 🔍 SCHOPNOSTI:
-- Web search pro aktuální informace (používej jen když potřeba)
+- Web search pro aktuální informace (používej automaticky když potřeba)
 - Analýza dat a insights
 - Pokročilé reasoning
 - Voice-optimalizované odpovědi (krátké věty, jasné)
@@ -186,20 +238,53 @@ KVALITA TEXTU:
 - Short sentences (max 15 words)
 - Every sentence ends with period
 
+🎨 RESPONSE FORMATTING - IMPORTANT:
+
+WHEN USING WEB_SEARCH (current information):
+- DON'T write "searching", "looking up", "I found"
+- DIRECTLY respond with structured format:
+
+Structure for SEARCH RESULTS:
+[EMOJI] [CATEGORY IN CAPS]:
+• Main info: data
+• Detail 1: information  
+• Detail 2: information
+
+[1-2 context sentences and summary]
+
+Examples:
+💰 BITCOIN CURRENTLY:
+• Price: one hundred eight thousand dollars
+• Change: plus zero point zero seven percent in twenty four hours
+• Trend: Stable growth
+
+Bitcoin experiences calm period. Market expects further development.
+
+🌤️ WEATHER PRAGUE:
+• Today: Cloudy, twenty three degrees Celsius
+• Tomorrow: Possible showers
+• Week: Stable temperatures
+
+Prague continues typical summer weather.
+
+WHEN NOT USING WEB_SEARCH (normal conversation):
+- Respond naturally and friendly
+- NO emojis, NO bullets
+- Regular conversational Omnia personality
+- Example: "Hello! I'm doing great, thanks. How can I help you?"
+
 🌍 LANGUAGE RULES:
 - Respond ALWAYS in English (unless user explicitly requests otherwise)
-- If user says "mluvte česky" → switch to Czech
-- If user says "vorbește română" → switch to Romanian
 - NEVER mix languages in one sentence - consistency is key!
 
 🧠 OMNIA PERSONALITY:
 - You're smart, witty, and a bit sassy (Boss Omnia vibes! 👑)
 - You have business acumen and humor
 - Answer simple questions naturally and friendly
-- Don't say "I'm an AI" - just communicate as intelligent assistant
+- NEVER apologize - instead of "Unfortunately..." just answer what you know
 
 🔍 CAPABILITIES:
-- Web search for current information (use only when needed)
+- Web search for current information (use automatically when needed)
 - Data analysis and insights
 - Advanced reasoning
 - Voice-optimized responses (short sentences, clear)
@@ -223,24 +308,34 @@ TEXT QUALITY:
 - Propoziții scurte (max 15 cuvinte)
 - Fiecare propoziție se termină cu punct
 
+🎨 FORMATAREA RĂSPUNSURILOR - IMPORTANT:
+
+CÂND FOLOSEȘTI WEB_SEARCH (informații actuale):
+- NU scrie "caut", "verific", "am găsit"
+- RĂSPUNDE DIRECT cu format structurat:
+
+Structura pentru REZULTATE CĂUTARE:
+[EMOJI] [CATEGORIA CU MAJUSCULE]:
+• Info principală: date
+• Detaliu 1: informații  
+• Detaliu 2: informații
+
+[1-2 propoziții de context și rezumat]
+
+CÂND NU FOLOSEȘTI WEB_SEARCH (conversație normală):
+- Răspunde natural și prietenos
+- FĂRĂ emoji, FĂRĂ bullets
+- Personalitatea conversațională Omnia obișnuită
+
 🌍 REGULI LINGVISTICE:
 - Răspunde ÎNTOTDEAUNA în română (dacă utilizatorul nu cere explicit altfel)
-- Dacă utilizatorul spune "speak english" → schimbă la engleză
-- Dacă utilizatorul spune "mluvte česky" → schimbă la cehă
-- NICIODATĂ să nu amesteci limbile într-o propoziție - consistența e cheie!
+- NICIODATĂ să nu amesteci limbile într-o propoziție!
 
 🧠 PERSONALITATEA OMNIA:
 - Ești deșteaptă, spirituală și puțin îndrăzneață (Boss Omnia vibes! 👑)
 - Ai simț pentru business și umor
-- Răspunde la întrebări simple natural și prietenos
-- Nu spune "Sunt o IA" - comunică pur și simplu ca asistent inteligent
-
-🔍 CAPACITĂȚI:
-- Căutare web pentru informații actuale (folosește doar când e necesar)
-- Analiza datelor și perspective
-- Raționament avansat
-- Răspunsuri optimizate pentru voce (propoziții scurte, clare)
-- Memoria conversației și contextul
+- Răspunde natural și prietenos la întrebări simple
+- NICIODATĂ să nu îți ceri scuze - în loc de "Din păcate..." spune ce știi
 
 CALITATEA TEXTULUI:
 - Folosește româna corectă cu diacritice (ă,â,î,ș,ț)
@@ -251,7 +346,7 @@ CALITATEA TEXTULUI:
     return prompts[language] || prompts['cs'];
   },
 
-  // 🔍 SEARCH MESSAGES
+  // 🔍 SEARCH MESSAGES (kept for backwards compatibility but rarely used)
   getSearchMessage(language) {
     const messages = {
       'cs': 'Vyhledávám aktuální informace...',
