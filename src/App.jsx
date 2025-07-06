@@ -256,6 +256,20 @@ function App() {
     return () => clearTimeout(timeout);
   }, [messages]);
 
+  // ✅ SCROLLING DURING STREAMING (e.g. Claude) - skips for GPT
+  useEffect(() => {
+    if (!streaming) return;
+
+    const scroll = () => {
+      if (endOfMessagesRef.current) {
+        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    const interval = setInterval(scroll, 120); // scroll každých 120 ms během streamu
+    return () => clearInterval(interval);
+  }, [streaming]);
+
   const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN)
 // ✅ CLEAN: No formatClaudeResponse() calls - trust Claude's natural output
 // 🎯 SIMPLE: Direct text handling without processing
