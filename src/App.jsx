@@ -950,7 +950,8 @@ function App() {
                   borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                   borderRadius: '0 12px 12px 0',
                   paddingLeft: '1.8rem', 
-                  backdropFilter: 'blur(10px)'
+                  backdropFilter: 'blur(10px)',
+                  textAlign: 'left'  // 🔧 CRITICAL FIX: Force left alignment!
                 }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
@@ -1004,7 +1005,8 @@ function App() {
                 borderLeft: isMobile ? 'none' : `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                 borderRadius: '0 12px 12px 0',
                 paddingLeft: '1.8rem', 
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                textAlign: 'left'  // 🔧 CRITICAL FIX: Force left alignment for loading too!
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ 
