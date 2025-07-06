@@ -32,7 +32,7 @@ function TypewriterText({ text, isStreaming = false }) {
   }, [charIndex, chars, text, isStreaming, displayedText]);
 
   return (
-    <span>
+    <span style={{ whiteSpace: 'pre-wrap' }}>
       {displayedText}
       {isStreaming && (
         <span style={{ 
