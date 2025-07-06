@@ -945,7 +945,7 @@ function App() {
                   </div>
                   
                   <TypewriterText 
-                    text={sanitizeText(msg.text, detectedLanguage)} 
+                    text={sanitizeText(typeof msg.text === 'string' ? msg.text : msg.text?.text ?? '', detectedLanguage)} 
                     isStreaming={msg.isStreaming}
                   />
                 </div>
