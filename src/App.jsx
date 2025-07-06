@@ -15,7 +15,7 @@ import elevenLabsService from './services/elevenLabs.service.js';
 import { uiTexts, getTranslation } from './utils/translations.js';
 import sessionManager from './utils/sessionManager.js';
 import detectLanguage from './utils/smartLanguageDetection.js';
-import sanitizeText from './utils/sanitizeText.js';
+import sanitizeText, { cleanMarkdownForUI } from './utils/sanitizeText.js';
 
 // 🔧 IMPORT UI COMPONENTS
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
@@ -945,7 +945,7 @@ function App() {
                   </div>
                   
                   <TypewriterText 
-                    text={sanitizeText(typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.text || ''))} 
+                    text={cleanMarkdownForUI(typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.text || ''))} 
                     isStreaming={msg.isStreaming}
                   />
                 </div>

@@ -241,6 +241,25 @@ export default function sanitizeText(text, language = 'cs') {
   return processedText;
 }
 
+export function cleanMarkdownForUI(text) {
+  if (!text) return '';
+  
+  // Remove markdown styling
+  let cleanText = text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // bold
+    .replace(/\*(.*?)\*/g, '$1')     // italics
+    .replace(/_(.*?)_/g, '$1');      // underline
+
+  // Normalize list bullets
+  cleanText = cleanText
+    .replace(/[\u2022\u2023\u25E6\u2043\u2219\-\–·]\s*/g, '\n– ');
+
+  // Replace multiple newlines with single newline
+  cleanText = cleanText.replace(/\n{2,}/g, '\n');
+
+  return cleanText.trim();
+}
+
 // 🧪 MARKDOWN CLEANUP TEST CASES:
 /*
 🚫 MARKDOWN REMOVAL TESTS:
