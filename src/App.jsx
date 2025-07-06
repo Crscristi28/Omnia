@@ -944,7 +944,10 @@ function App() {
                     )}
                   </div>
                   
-                  <TypewriterText text={msg.text} isStreaming={msg.isStreaming} />
+                  <TypewriterText 
+                    text={sanitizeText(msg.text)} 
+                    isStreaming={msg.isStreaming}
+                  />
                 </div>
               )}
             </div>
