@@ -29,18 +29,15 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-8);
     
-    const enhancedSystem = `${system || "Jsi Omnia v2, pokročilý český AI asistent."}
-    
-Odpovídej VŽDY výhradně v češtině. Dnešní datum je ${new Date().toLocaleDateString('cs-CZ')}.
-Máš přístup k web_search funkci pro vyhledávání aktuálních informací na internetu.
-Automaticky používej web_search když potřebuješ aktuální informace o cenách, počasí, zprávách nebo jakýchkoli datech co se mění.
-Pro české lokální informace (počasí měst, české zprávy) vyhledávej česky a zaměřuj se na české zdroje.`;
+    // 🔧 FIXED: Use system prompt from claude.service.js DIRECTLY
+    // Don't override with complex enhancedSystem!
+    const finalSystem = system || "Jsi Omnia, pokročilý AI asistent.";
 
     // ✅ PŮVODNÍ funkční request (BEZ streaming)
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
-      system: enhancedSystem,
+      system: finalSystem,
       messages: recentMessages,
       // stream: false, // 🔧 BEZ streaming - používáme tvůj funkční způsob
       tools: [
