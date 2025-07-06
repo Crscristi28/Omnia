@@ -284,7 +284,7 @@ CALITATEA TEXTULUI:
     };
 
     return messages[language] || messages['cs'];
-  }
+  } 
 };
 
 export default claudeService;
