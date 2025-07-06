@@ -1,7 +1,108 @@
-// 🤖 CLAUDE SERVICE - ENHANCED with VERBOSE SUPPRESSION + PERFECT FORMATTING
-// ✅ FIXED: Verbose search messages eliminated
-// 🎯 NEW: Perfect left-aligned formatting like target examples
-// 🎨 NEW: Smart conditional formatting - search results vs conversation
+// 🤖 CLAUDE SERVICE - ENHANCED with SEARCH FORMATTING FIX
+// ✅ FIXED: Search results use sanitizeText for TTS compatibility
+// 🎨 FIXED: Summary text properly left-aligned like normal chat
+// 🔇 KEPT: Verbose suppression + perfect normal chat formatting
+
+// 🆕 IMPORT SANITIZE TEXT
+function sanitizeText(text) {
+  if (!text || typeof text !== 'string') return '';
+  
+  return text
+    // Zkratky
+    .replace(/\bnapř\.\b/gi, 'například')
+    .replace(/\batd\.\b/gi, 'a tak dále')
+    // Procenta
+    .replace(/(\d+)\s*%/g, '$1 procent')
+    // Stupně
+    .replace(/(\d+)[\s]*°C/g, '$1 stupňů Celsia')
+    .replace(/(\d+)[\s]*°/g, '$1 stupňů')
+    // Čas
+    .replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut')
+    // Měny
+    .replace(/(\d+)\s*Kč/g, '$1 korun')
+    .replace(/(\d+)\s*\$/g, '$1 dolarů')
+    .replace(/(\d+)\s*€/g, '$1 eur')
+    // Desetinná čísla – čte jako „celá"
+    .replace(/(\d+)[.,](\d+)/g, '$1 celá $2')
+    // Jednotky
+    .replace(/(\d+)\s*km\/h/g, '$1 kilometrů za hodinu')
+    .replace(/(\d+)\s*kg/g, '$1 kilogramů')
+    .replace(/(\d+)\s*kWh/g, '$1 kilowatthodin')
+    // Rozsahy teplot
+    .replace(/(\d+)-(\d+)/g, '$1 až $2')
+    // Zlomky
+    .replace(/\b1\/2\b/g, 'půl')
+    .replace(/\b1\/4\b/g, 'čtvrt')
+    // Nadbytečné mezery
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// 🎯 SMART SEARCH FORMATTING FUNCTION
+function formatSearchResponse(text) {
+  if (!text || typeof text !== 'string') return text;
+  
+  console.log('🔍 Formatting search response for TTS...');
+  
+  const lines = text.split('\n');
+  const formattedLines = [];
+  let inBulletSection = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    if (!line) {
+      // Skip empty lines in bullet sections
+      if (!inBulletSection) {
+        formattedLines.push('');
+      }
+      continue;
+    }
+    
+    // Detect section headers (emoji + text + colon)
+    if (/^[🌤️💰🛍️📈🎬🏠🚗💊🍔⚽🎵📱💼🌍📰🏛️⚡🎯🔥]\s*[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ\s]+:$/i.test(line)) {
+      formattedLines.push(line);
+      inBulletSection = true;
+      continue;
+    }
+    
+    // Process bullet points with sanitizeText
+    if (line.startsWith('•')) {
+      const bulletText = line.substring(1).trim();
+      const sanitizedBullet = sanitizeText(bulletText);
+      formattedLines.push('• ' + sanitizedBullet);
+      continue;
+    }
+    
+    // Summary/normal text - format like normal chat (left-aligned, clean)
+    if (inBulletSection && !line.startsWith('•')) {
+      inBulletSection = false;
+      // Add empty line before summary for readability
+      if (formattedLines.length > 0 && formattedLines[formattedLines.length - 1] !== '') {
+        formattedLines.push('');
+      }
+    }
+    
+    // Normal text - apply sanitizeText for TTS but keep normal formatting
+    const sanitizedLine = sanitizeText(line);
+    formattedLines.push(sanitizedLine);
+  }
+  
+  const result = formattedLines.join('\n')
+    // Clean up multiple empty lines
+    .replace(/\n{3,}/g, '\n\n')
+    // Remove trailing empty lines
+    .replace(/\n+$/, '')
+    .trim();
+  
+  console.log('✅ Search formatting complete:', {
+    originalLength: text.length,
+    formattedLength: result.length,
+    linesProcessed: lines.length
+  });
+  
+  return result;
+}
 
 const claudeService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
@@ -34,6 +135,7 @@ const claudeService = {
       let fullText = '';
       let buffer = '';
       let sourcesExtracted = [];
+      let webSearchUsed = false;
 
       try {
         while (true) {
@@ -59,6 +161,7 @@ const claudeService = {
                 else if (data.type === 'search_start') {
                   // 🔇 VERBOSE SUPPRESSION: Still notify but don't interrupt user
                   console.log('🔍 Claude search detected - silent mode');
+                  webSearchUsed = true;
                   // Removed: onSearchNotification call
                 }
                 else if (data.type === 'completed') {
@@ -66,9 +169,16 @@ const claudeService = {
                     fullText = data.fullText;
                   }
                   
-                  // 🆕 EXTRACT SOURCES from web_search results
+                  // 🆕 DETECT WEB SEARCH USAGE
                   if (data.webSearchUsed) {
+                    webSearchUsed = true;
                     sourcesExtracted = this.extractSearchSources(data);
+                  }
+                  
+                  // 🎯 APPLY SEARCH FORMATTING IF NEEDED
+                  if (webSearchUsed) {
+                    console.log('🔍 Applying search formatting...');
+                    fullText = formatSearchResponse(fullText);
                   }
                   
                   if (onStreamUpdate) {
@@ -90,11 +200,16 @@ const claudeService = {
         throw streamError;
       }
 
+      // 🎯 FINAL FORMATTING CHECK
+      if (webSearchUsed && fullText) {
+        fullText = formatSearchResponse(fullText);
+      }
+
       // 🎯 RETURN with sources for App.jsx integration
       return {
         text: fullText,
         sources: sourcesExtracted,
-        webSearchUsed: sourcesExtracted.length > 0
+        webSearchUsed: webSearchUsed
       };
 
     } catch (error) {
@@ -178,15 +293,15 @@ KDYŽ POUŽÍVÁŠ WEB_SEARCH (aktuální informace z internetu):
 
 PŘESNÝ FORMAT JEN PRO WEB_SEARCH (kopíruj přesně):
 🌤️ POČASÍ PRAHA:
-• Dnes: Jasno, 28°C
-• Zítra: Zataženo, 22-25°C  
-• Víkend: Déšť, 18-20°C
+• Dnes: Jasno, dvacet osm stupňů Celsia
+• Zítra: Zataženo, dvacet dva až dvacet pět stupňů Celsia  
+• Víkend: Déšť, osmnáct až dvacet stupňů Celsia
 
 Typické letní počasí s postupným ochlazením.
 
 💰 BITCOIN AKTUÁLNĚ:
-• Cena: $108,000
-• Změna: +0.07% (24h)
+• Cena: sto osm tisíc dolarů
+• Změna: plus nula celá nula sedm procent za dvacet čtyři hodin
 • Trend: Stabilní
 
 Bitcoin pokračuje v klidném období.
