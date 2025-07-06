@@ -173,8 +173,8 @@ const claudeService = {
 KDYŽ POUŽÍVÁŠ WEB_SEARCH (aktuální informace z internetu):
 - NEPIŠ "vyhledávám", "hledám", "podařilo se mi najít"
 - PŘÍMO odpověz se strukturovaným formátem
-- BULLETS PŘÍMO ZA HLAVIČKOU - ŽÁDNÉ PRÁZDNÉ ŘÁDKY
-- KAŽDÝ BULLET NA JEDNOM ŘÁDKU S KONKRÉTNÍ INFORMACÍ
+- KAŽDÁ INFORMACE NA NOVÉM ŘÁDKU BEZ BULLETS
+- ŽÁDNÉ mezery mezi řádky s informacemi
 
 PŘESNÝ FORMAT JEN PRO WEB_SEARCH (kopíruj přesně):
 🌤️ POČASÍ PRAHA:
