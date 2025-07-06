@@ -47,9 +47,8 @@ function formatSearchResponse(text) {
   const lines = text.split('\n');
   const formattedLines = [];
   let inBulletSection = false;
-  let i = 0;
   
-  while (i < lines.length) {
+  for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     
     if (!line) {
@@ -57,7 +56,6 @@ function formatSearchResponse(text) {
       if (!inBulletSection) {
         formattedLines.push('');
       }
-      i++;
       continue;
     }
     
@@ -65,38 +63,14 @@ function formatSearchResponse(text) {
     if (/^[🌤️💰🛍️📈🎬🏠🚗💊🍔⚽🎵📱💼🌍📰🏛️⚡🎯🔥]\s*[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ\s]+:$/i.test(line)) {
       formattedLines.push(line);
       inBulletSection = true;
-      i++;
       continue;
     }
     
-    // Process bullet points with sanitizeText - MULTI-LINE FIX
+    // Process bullet points - SIMPLE VERSION
     if (line.startsWith('•')) {
-      let bulletText = line.substring(1).trim();
-      
-      // 🔧 FIX: Check if next lines are continuation (no bullet, no header)
-      let j = i + 1;
-      while (j < lines.length) {
-        const nextLine = lines[j].trim();
-        if (!nextLine) {
-          j++;
-          continue;
-        }
-        
-        // Stop if we hit another bullet, header, or are out of bullet section
-        if (nextLine.startsWith('•') || 
-            /^[🌤️💰🛍️📈🎬🏠🚗💊🍔⚽🎵📱💼🌍📰🏛️⚡🎯🔥]/.test(nextLine) ||
-            (!inBulletSection && nextLine)) {
-          break;
-        }
-        
-        // This is continuation of bullet text
-        bulletText += ' ' + nextLine;
-        j++;
-      }
-      
+      const bulletText = line.substring(1).trim();
       const sanitizedBullet = sanitizeText(bulletText);
       formattedLines.push('• ' + sanitizedBullet);
-      i = j;
       continue;
     }
     
@@ -109,30 +83,20 @@ function formatSearchResponse(text) {
       }
     }
     
-    // 🔧 FIX: Normal text - NO sanitizeText for summary, keep natural flow
-    // Only sanitize if it contains problematic patterns, otherwise keep original
-    let processedLine = line;
-    const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h/i.test(line);
-    
-    if (hasProblematicPatterns) {
-      processedLine = sanitizeText(line);
-    }
-    
+    // Normal summary text - minimal processing, keep natural
+    const hasNumbers = /\d+°C|\d+%|\d+:\d+/i.test(line);
+    const processedLine = hasNumbers ? sanitizeText(line) : line;
     formattedLines.push(processedLine);
-    i++;
   }
   
   const result = formattedLines.join('\n')
-    // Clean up multiple empty lines
     .replace(/\n{3,}/g, '\n\n')
-    // Remove trailing empty lines
     .replace(/\n+$/, '')
     .trim();
   
   console.log('✅ Search formatting complete:', {
     originalLength: text.length,
-    formattedLength: result.length,
-    linesProcessed: lines.length
+    formattedLength: result.length
   });
   
   return result;
