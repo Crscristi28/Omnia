@@ -5,6 +5,7 @@
 // 🚫 NEW: Markdown cleanup - removes **bold**, *italic*, ###, etc.
 // 🔧 FIXED: cleanMarkdownForUI bullet formatting
 // 🔧 MINIMAL FIX: Added .toLowerCase() ONLY for Czech capitals
+// 🔧 EMOJI FIX: Add punctuation for emoji section transitions
 
 export default function sanitizeText(text, language = 'cs') {
   if (!text || typeof text !== 'string') return '';
@@ -27,6 +28,10 @@ export default function sanitizeText(text, language = 'cs') {
     
     case 'ro': // 🇷🇴 RUMUNŠTINA - SMART AI DETECTION
       processedText = processedText
+        // === EMOJI PUNCTUATION - ROMANIAN ===
+        .replace(/([a-zA-Zăîâșț])\s*(📊|🎯|⚡|💡|🚀|👨‍💻|🔍|💰|🌟)\s*([A-ZĂÎÂȘȚ])/gi, '$1. $2 $3')  // New sections
+        .replace(/✅/g, ',')  // ✅ = comma pause
+        
         // === DATUMY - řadové číslovky ===
         .replace(/\b1\.?\s*(ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|septembrie|octombrie|noiembrie|decembrie)\b/gi, (match, month) => `întâi ${month}`)
         .replace(/\b2\.?\s*(ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|septembrie|octombrie|noiembrie|decembrie)\b/gi, (match, month) => `doi ${month}`)
@@ -97,6 +102,10 @@ export default function sanitizeText(text, language = 'cs') {
       
     case 'en': // 🇺🇸 ANGLIČTINA
       processedText = processedText
+        // === EMOJI PUNCTUATION - ENGLISH ===
+        .replace(/([a-zA-Z])\s*(📊|🎯|⚡|💡|🚀|👨‍💻|🔍|💰|🌟)\s*([A-Z])/gi, '$1. $2 $3')  // New sections
+        .replace(/✅/g, ',')  // ✅ = comma pause
+        
         // === DATES - ordinal numbers ===
         .replace(/\b1st\s+/gi, 'first ')
         .replace(/\b2nd\s+/gi, 'second ')
@@ -169,6 +178,10 @@ export default function sanitizeText(text, language = 'cs') {
       processedText = processedText
         // 🔧 MINIMAL FIX: Convert Czech capitals to lowercase for ElevenLabs
         .toLowerCase()  // DŮLEŽITÁ → důležitá, VÝHODA → výhoda, MŮJ → můj
+        
+        // === EMOJI PUNCTUATION - CZECH ===
+        .replace(/([a-záčďéěíňóřšťúůýž])\s*(📊|🎯|⚡|💡|🚀|👨‍💻|🔍|💰|🌟)\s*([a-záčďéěíňóřšťúůýž])/gi, '$1. $2 $3')  // New sections  
+        .replace(/✅/g, ',')  // ✅ = comma pause
         
         // === DATUMY - řadové číslovky ===
         .replace(/\b1\.?\s*(ledna|února|března|dubna|května|června|července|srpna|září|října|listopadu|prosince)\b/gi, (match, month) => `prvního ${month}`)

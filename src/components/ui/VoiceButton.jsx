@@ -1,11 +1,11 @@
 // 📁 src/components/ui/VoiceButton.jsx
 // 🔊 Voice playback button - UPDATED with sanitizeText integration
-// ✅ MINIMAL FIX: Replace local sanitizeText with utils import for capital letters support
+// ✅ FIXED: Uses sanitizeText from utils (not local copy) for emoji fixes
 
 import React, { useState, useRef, useEffect } from 'react';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 import elevenLabsService from '../../services/elevenLabs.service.js';
-import sanitizeText from '../../utils/sanitizeText.js';  // 🔧 MINIMAL FIX: Import from utils instead of local function
+import sanitizeText from '../../utils/sanitizeText.js';  // 🔧 FIXED: Import from utils with emoji support
 
 // 🆕 CONFIG - ElevenLabs vs Google TTS
 const USE_ELEVENLABS = true;
@@ -43,17 +43,17 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
       if (USE_ELEVENLABS) {
         try {
-          // 🔧 MINIMAL FIX: Use utils sanitizeText with language parameter for capital letters support
+          // 🔧 EMOJI FIX: Use utils sanitizeText with language parameter for emoji punctuation
           const sanitizedText = sanitizeText(text, langToUse);
           
-          console.log('🎵 ElevenLabs with enhanced sanitization:', {
+          console.log('🎵 ElevenLabs with emoji-enhanced sanitization:', {
             original: text.substring(0, 50) + '...',
             sanitized: sanitizedText.substring(0, 50) + '...',
             language: langToUse
           });
           
           audioBlob = await elevenLabsService.generateSpeech(sanitizedText);
-          console.log('✅ VoiceButton: ElevenLabs SUCCESS with enhanced sanitization');
+          console.log('✅ VoiceButton: ElevenLabs SUCCESS with emoji fixes');
         } catch (error) {
           console.error('❌ VoiceButton: ElevenLabs failed, using Google:', error);
           // Fallback to Google TTS (with old preprocessing for compatibility)
@@ -136,7 +136,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         color: 'white'
       }}
-      title={isPlaying ? "Klepněte pro zastavení" : `Přehrát s kvalitní výslovností (${USE_ELEVENLABS ? 'ElevenLabs + enhanced sanitization' : 'Google TTS'})`}
+      title={isPlaying ? "Klepněte pro zastavení" : `Přehrát s kvalitní výslovností (${USE_ELEVENLABS ? 'ElevenLabs + emoji fixes' : 'Google TTS'})`}
     >
       {isLoading ? (
         <div style={{ 
