@@ -4,6 +4,7 @@
 // ✅ Tech "AI" → "a i", ale sloveso "ai" → zůstává "ai"
 // 🚫 NEW: Markdown cleanup - removes **bold**, *italic*, ###, etc.
 // 🔧 FIXED: cleanMarkdownForUI bullet formatting
+// 🔥 NEW: CZECH UPPERCASE DIACRITICS SUPPORT - PĚKNÝ → PYEKNY
 
 export default function sanitizeText(text, language = 'cs') {
   if (!text || typeof text !== 'string') return '';
@@ -166,6 +167,40 @@ export default function sanitizeText(text, language = 'cs') {
       
     default: // 🇨🇿 ČEŠTINA (default)
       processedText = processedText
+        // === CZECH UPPERCASE DIACRITICS - NEW! ===
+        .replace(/Ě/g, 'YE')
+        .replace(/Š/g, 'SH')
+        .replace(/Č/g, 'CH')
+        .replace(/Ř/g, 'RZ')
+        .replace(/Ž/g, 'ZH')
+        .replace(/Ý/g, 'YY')
+        .replace(/Á/g, 'AA')
+        .replace(/Í/g, 'II')
+        .replace(/É/g, 'EE')
+        .replace(/Ů/g, 'UU')
+        .replace(/Ú/g, 'UU')
+        .replace(/Ň/g, 'NY')
+        .replace(/Ť/g, 'TY')
+        .replace(/Ď/g, 'DY')
+        .replace(/Ó/g, 'OO')
+        
+        // === CZECH LOWERCASE DIACRITICS (backup) ===
+        .replace(/ě/g, 'ye')
+        .replace(/š/g, 'sh')
+        .replace(/č/g, 'ch')
+        .replace(/ř/g, 'rz')
+        .replace(/ž/g, 'zh')
+        .replace(/ý/g, 'yy')
+        .replace(/á/g, 'aa')
+        .replace(/í/g, 'ii')
+        .replace(/é/g, 'ee')
+        .replace(/ů/g, 'uu')
+        .replace(/ú/g, 'uu')
+        .replace(/ň/g, 'ny')
+        .replace(/ť/g, 'ty')
+        .replace(/ď/g, 'dy')
+        .replace(/ó/g, 'oo')
+        
         // === DATUMY - řadové číslovky ===
         .replace(/\b1\.?\s*(ledna|února|března|dubna|května|června|července|srpna|září|října|listopadu|prosince)\b/gi, (match, month) => `prvního ${month}`)
         .replace(/\b2\.?\s*(ledna|února|března|dubna|května|června|července|srpna|září|října|listopadu|prosince)\b/gi, (match, month) => `druhého ${month}`)
@@ -274,64 +309,3 @@ export function cleanMarkdownForUI(text) {
 
   return cleanText.trim();
 }
-
-// 🧪 CLEANMARKDOWNFORUI TEST CASES:
-/*
-🔧 BULLET FORMATTING TESTS - FIXED:
-
-INPUT:  "🌤️ VREMEA MAINE ÎN PRAGA: • Dimineața: Ploaie • Temperatura: Caldă"
-OUTPUT: "🌤️ VREMEA MAINE ÎN PRAGA:\n• Dimineața: Ploaie\n• Temperatura: Caldă" ✅
-
-INPUT:  "💰 BITCOIN AKTUÁLNĚ: • Cena: $108,000 • Změna: +0.07%"
-OUTPUT: "💰 BITCOIN AKTUÁLNĚ:\n• Cena: $108,000\n• Změna: +0.07%" ✅
-
-INPUT:  "Normální text s **bold** a • odrážka uprostřed textu"
-OUTPUT: "Normální text s bold a\n• odrážka uprostřed textu" ✅
-
-✅ RESULT: Clean structured formatting with proper line breaks!
-*/
-
-// 🧪 MARKDOWN CLEANUP TEST CASES:
-/*
-🚫 MARKDOWN REMOVAL TESTS:
-
-INPUT:  "**Pes - nejlepší přítel člověka**"
-OUTPUT: "Pes - nejlepší přítel člověka" ✅
-
-INPUT:  "### Hlavní typy umělé inteligence"
-OUTPUT: "Hlavní typy umělé inteligence" ✅
-
-INPUT:  "*důležité* informace s `kódem`"
-OUTPUT: "důležité informace s kódem" ✅
-
-INPUT:  "Text s [odkazy](https://example.com) a ~~škrtáním~~"
-OUTPUT: "Text s odkazy a škrtáním" ✅
-
-✅ CRITICAL: Markdown cleanup happens BEFORE language-specific TTS processing!
-*/
-
-// 🧪 SMART AI DETECTION TEST CASES:
-/*
-🇷🇴 RUMUNSKÝ TEST - FIXED:
-
-✅ TECH AI → "a i":
-- "AI technology" → "a i technology" ✅
-- "AI asistent" → "a i asistent" ✅
-- "Folosesc AI." → "folosesc a i." ✅
-- "AI este rapid" → "a i este rapid" ✅
-
-✅ SLOVESO "ai" → zůstává "ai":
-- "Ai întrebări?" → "ai întrebări?" ✅ (PROTECTION funguje!)
-- "Nu ai timp" → "nu ai timp" ✅ (PROTECTION funguje!)
-- "Ce ai făcut?" → "ce ai făcut?" ✅ (PROTECTION funguje!)
-- "Ai chef să vorbești?" → "ai chef să vorbești?" ✅ (PROTECTION funguje!)
-
-🎯 COMBO TEST:
-- "Ai știut că AI technology e bună?" → "ai știut că a i technology e bună?" ✅
-- "Ce ai spus despre AI?" → "ce ai spus despre a i?" ✅
-
-🔧 CRITICAL FIX IMPLEMENTED:
-1. .replace(/\bAI\b/g, 'a i') - zmení všetky AI na "a i"
-2. Potom PROTECTION patterns vrátia sloveso "ai" späť
-3. Poriadok je kritický!
-*/
