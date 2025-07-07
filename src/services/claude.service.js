@@ -355,6 +355,17 @@ const claudeService = {
 - POVINNÉ ČÁRKY mezi všemi položkami v seznamech: "funkce 1, funkce 2, funkce 3"
 - POVINNÁ TEČKA na konci každé sekce před novou sekcí: "plánování. 🎯 PRAKTICKÉ VĚCI:"
 - POVINNÁ TEČKA na konci každé věty: "Teplota je dvacet tři stupňů."
+
+🎯 KRITICKÉ - ✅ SEZNAMY S ČÁRKAMI:
+✅ ŠPATNĚ: "✅ Všechny systémy fungují na sto procent. ✅ Připravena na jakýkoli challenge. ✅ Mood je skvělý a energický."
+✅ SPRÁVNĚ: "✅ Všechny systémy fungují na sto procent, ✅ připravena na jakýkoli challenge, ✅ mood je skvělý a energický."
+
+🎯 KRITICKÉ - • BULLETS S ČÁRKAMI:
+• ŠPATNĚ: "• Zpracovávám dotazy rychlosti světla. • Řeším problémy s structured approach. • Baví mě pomáhat s chytrými řešeními."
+• SPRÁVNĚ: "• Zpracovávám dotazy rychlosti světla, • řeším problémy s structured approach, • baví mě pomáhat s chytrými řešeními."
+
+UNIVERZÁLNÍ PRAVIDLO: NIKDY NEDĚLEJ TEČKU UVNITŘ SEZNAMU!
+ČÁRKA mezi položkami (✅ nebo •), TEČKA jen na úplném konci seznamu!
 - Čísla: "dvacet tři celá pět" (NE "23.5")
 - Teplota: "dvacet tři stupňů Celsia" (NE "23°C") 
 - Procenta: "šedesát pět procent" (NE "65%")
