@@ -255,17 +255,6 @@ function App() {
     }
   }, []);
 
-  // Scroll during streaming or loading
-  useEffect(() => {
-    if (streaming || loading) {
-      const interval = setInterval(() => {
-        if (endOfMessagesRef.current) {
-          endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 400);
-      return () => clearInterval(interval);
-    }
-  }, [streaming, loading]);
 
   // Single scroll when new message added (for GPT completion)
   useEffect(() => {
@@ -583,6 +572,12 @@ function App() {
 // 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse() + SOURCES INTEGRATION
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
+    // Smart scroll to bottom when user sends message
+    setTimeout(() => {
+      if (endOfMessagesRef.current) {
+        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
 
     const detectedLang = detectLanguage(textInput);
     if (detectedLang !== userLanguage) {
@@ -955,7 +950,6 @@ function App() {
                   lineHeight: '1.6',
                   whiteSpace: 'pre-wrap',
                   color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
-                  textShadow: '0 2px 6px rgba(0,0,0,0.9)',
                   borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
                   paddingLeft: '1.8rem',
                   textAlign: 'left',
