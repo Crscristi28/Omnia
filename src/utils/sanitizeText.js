@@ -2,6 +2,7 @@
 // 🎵 SIMPLIFIED SANITIZATION - Only essential fixes for ElevenLabs TTS
 // ✅ PHILOSOPHY: ElevenLabs umí česky/rumunsky/anglicky sám - nekazit to!
 // 🎯 FOCUS: Jen čísla, procenta, markdown - zbytek nechat na ElevenLabs
+// 🔧 CRITICAL FIX: Czech capitals → lowercase (DŮLEŽITÁ → důležitá)
 
 export default function sanitizeText(text, language = 'cs') {
   if (!text || typeof text !== 'string') return '';
@@ -99,8 +100,11 @@ export default function sanitizeText(text, language = 'cs') {
         .trim();
       break;
       
-    default: // 🇨🇿 ČEŠTINA - SIMPLIFIED
+    default: // 🇨🇿 ČEŠTINA - SIMPLIFIED + LOWERCASE FIX
       processedText = processedText
+        // 🔧 CRITICAL FIX: Convert Czech capitals to lowercase for ElevenLabs
+        .toLowerCase()  // DŮLEŽITÁ → důležitá, VÝHODA → výhoda, MŮJ → můj
+        
         // === PROCENTA ===
         .replace(/(\d+)\s*%/gi, '$1 procent')
         
