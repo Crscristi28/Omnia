@@ -352,7 +352,7 @@ function App() {
       console.log('🌍 Target language:', language);
       
       let textToSpeak = sentence;
-      const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h|AI|API|0W-30|1\.?\s*července|2\.?\s*července/i.test(sentence);
+      const hasProblematicPatterns = /\d+[.,]\d+|%|\d+°C|\d+:\d+|\d+Kč|\d+€|\d+\$|km\/h|AI|API|0W-30|1\.?\s*července|2\.?\s*července|[ěščřžýáíéůú]/i.test(sentence);
       
       if (hasProblematicPatterns) {
         textToSpeak = sanitizeText(sentence);
@@ -950,18 +950,16 @@ function App() {
                 </div>
               ) : (
                 <div style={{
-                  maxWidth: isMobile ? '90%' : '85%',
                   padding: isMobile ? '1.2rem' : '1.6rem',
                   fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: '1.6', 
-                  whiteSpace: 'pre-wrap', 
-                  color: '#ffffff',
-                  background: 'rgba(255, 255, 255, 0.03)',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
+                  textShadow: '0 2px 6px rgba(0,0,0,0.9)',
                   borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
-                  borderRadius: '0 12px 12px 0',
-                  paddingLeft: '1.8rem', 
-                  backdropFilter: 'blur(10px)',
-                  textAlign: 'left'
+                  paddingLeft: '1.8rem',
+                  textAlign: 'left',
+                  marginBottom: '2rem'
                 }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
