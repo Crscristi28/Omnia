@@ -1,43 +1,12 @@
 // 📁 src/components/ui/VoiceButton.jsx
 // 🔊 Voice playback button - UPDATED with sanitizeText integration
-// ✅ FIXED: Uses sanitizeText for ElevenLabs quality
+// ✅ FIXED: Uses sanitizeText from utils (not local copy)
+// 🎯 CRITICAL FIX: Supports Czech uppercase diacritics - MŮJ → MUUJ
 
 import React, { useState, useRef, useEffect } from 'react';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 import elevenLabsService from '../../services/elevenLabs.service.js';
-
-// 🆕 IMPORT SANITIZE TEXT
-function sanitizeText(text) {
-  if (!text || typeof text !== 'string') return '';
-  
-  return text
-    // Zkratky
-    .replace(/\bnapř\.\b/gi, 'například')
-    .replace(/\batd\.\b/gi, 'a tak dále')
-    // Procenta
-    .replace(/(\d+)\s*%/g, '$1 procent')
-    // Stupně
-    .replace(/(\d+)[\s]*°C/g, '$1 stupňů Celsia')
-    .replace(/(\d+)[\s]*°/g, '$1 stupňů')
-    // Čas
-    .replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut')
-    // Měny
-    .replace(/(\d+)\s*Kč/g, '$1 korun')
-    .replace(/(\d+)\s*\$/g, '$1 dolarů')
-    .replace(/(\d+)\s*€/g, '$1 eur')
-    // Desetinná čísla – čte jako „celá"
-    .replace(/(\d+)[.,](\d+)/g, '$1 celá $2')
-    // Jednotky
-    .replace(/(\d+)\s*km\/h/g, '$1 kilometrů za hodinu')
-    .replace(/(\d+)\s*kg/g, '$1 kilogramů')
-    .replace(/(\d+)\s*kWh/g, '$1 kilowatthodin')
-    // Zlomky
-    .replace(/\b1\/2\b/g, 'půl')
-    .replace(/\b1\/4\b/g, 'čtvrt')
-    // Nadbytečné mezery
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+import sanitizeText from '../../utils/sanitizeText.js';  // 🔧 FIXED: Import from utils!
 
 // 🆕 CONFIG - ElevenLabs vs Google TTS
 const USE_ELEVENLABS = true;
@@ -75,17 +44,17 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
       if (USE_ELEVENLABS) {
         try {
-          // 🔧 CRITICAL FIX: Apply sanitizeText for ElevenLabs!
-          const sanitizedText = sanitizeText(text);
+          // 🔧 CRITICAL FIX: Apply sanitizeText from utils with language support!
+          const sanitizedText = sanitizeText(text, langToUse);
           
-          console.log('🎵 ElevenLabs with sanitization:', {
+          console.log('🎵 ElevenLabs with enhanced sanitization:', {
             original: text.substring(0, 50) + '...',
             sanitized: sanitizedText.substring(0, 50) + '...',
             language: langToUse
           });
           
           audioBlob = await elevenLabsService.generateSpeech(sanitizedText);
-          console.log('✅ VoiceButton: ElevenLabs SUCCESS with sanitization');
+          console.log('✅ VoiceButton: ElevenLabs SUCCESS with enhanced sanitization');
         } catch (error) {
           console.error('❌ VoiceButton: ElevenLabs failed, using Google:', error);
           // Fallback to Google TTS (with old preprocessing for compatibility)
@@ -168,7 +137,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         color: 'white'
       }}
-      title={isPlaying ? "Klepněte pro zastavení" : `Přehrát s kvalitní výslovností (${USE_ELEVENLABS ? 'ElevenLabs + sanitization' : 'Google TTS'})`}
+      title={isPlaying ? "Klepněte pro zastavení" : `Přehrát s kvalitní výslovností (${USE_ELEVENLABS ? 'ElevenLabs + enhanced sanitization' : 'Google TTS'})`}
     >
       {isLoading ? (
         <div style={{ 
