@@ -1,12 +1,11 @@
 // 📁 src/components/ui/VoiceButton.jsx
 // 🔊 Voice playback button - UPDATED with sanitizeText integration
-// ✅ FIXED: Uses sanitizeText from utils (not local copy)
-// 🎯 CRITICAL FIX: Supports Czech uppercase diacritics - MŮJ → MUUJ
+// ✅ MINIMAL FIX: Replace local sanitizeText with utils import for capital letters support
 
 import React, { useState, useRef, useEffect } from 'react';
 import detectLanguage from '../../utils/smartLanguageDetection.js';
 import elevenLabsService from '../../services/elevenLabs.service.js';
-import sanitizeText from '../../utils/sanitizeText.js';  // 🔧 FIXED: Import from utils!
+import sanitizeText from '../../utils/sanitizeText.js';  // 🔧 MINIMAL FIX: Import from utils instead of local function
 
 // 🆕 CONFIG - ElevenLabs vs Google TTS
 const USE_ELEVENLABS = true;
@@ -44,7 +43,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
 
       if (USE_ELEVENLABS) {
         try {
-          // 🔧 CRITICAL FIX: Apply sanitizeText from utils with language support!
+          // 🔧 MINIMAL FIX: Use utils sanitizeText with language parameter for capital letters support
           const sanitizedText = sanitizeText(text, langToUse);
           
           console.log('🎵 ElevenLabs with enhanced sanitization:', {
