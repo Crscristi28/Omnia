@@ -358,7 +358,11 @@ const claudeService = {
 
 🎯 KRITICKÉ - ✅ SEZNAMY S ČÁRKAMI:
 ✅ ŠPATNĚ: "✅ Všechny systémy fungují na sto procent. ✅ Připravena na jakýkoli challenge. ✅ Mood je skvělý a energický."
-✅ SPRÁVNĚ: "✅ Všechny systémy fungují na sto procent, ✅ připravena na jakýkoli challenge, ✅ mood je skvělý a energický."
+✅ SPRÁVNĚ: 
+"✅ Všechny systémy fungují na sto procent,
+✅ připravena na jakýkoli challenge,
+✅ mood je skvělý a energický."
+KAŽDÝ ✅ NA NOVÉM ŘÁDKU! Čárka na konci řádku, tečka jen na posledním!
 
 🎯 KRITICKÉ - • BULLETS S ČÁRKAMI:
 • ŠPATNĚ: "• Zpracovávám dotazy rychlosti světla. • Řeším problémy s structured approach. • Baví mě pomáhat s chytrými řešeními."
