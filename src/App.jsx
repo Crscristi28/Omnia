@@ -255,28 +255,28 @@ function App() {
     }
   }, []);
 
+  // Scroll during streaming or loading
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (messages.length > 0 && endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [messages]);
+    if (streaming || loading) {
+      const interval = setInterval(() => {
+        if (endOfMessagesRef.current) {
+          endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 400);
+      return () => clearInterval(interval);
+    }
+  }, [streaming, loading]);
 
-  // ✅ SCROLLING DURING STREAMING (e.g. Claude) and also for GPT-4o animation
+  // Single scroll when new message added (for GPT completion)
   useEffect(() => {
-    if (!streaming && model !== 'gpt-4o') return;
-
-    const scroll = () => {
-      if (endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
-
-    const interval = setInterval(scroll, 120);
-    return () => clearInterval(interval);
-  }, [streaming, model]);
+    if (!loading && !streaming && messages.length > 0) {
+      setTimeout(() => {
+        if (endOfMessagesRef.current) {
+          endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 200);
+    }
+  }, [messages.length]);
 
   const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN + SOURCES)
 // ✅ CLEAN: No formatClaudeResponse() calls - trust Claude's natural output
