@@ -115,7 +115,13 @@ export const MiniOmniaLogo = ({
 
   return (
     <div
-      style={getLogoStyle()}
+      style={{
+        ...getLogoStyle(),
+        visibility: 'visible !important',
+        opacity: '1 !important',
+        display: 'flex !important',
+        pointerEvents: 'auto !important'
+      }}
       onClick={onClick}
       title={isListening ? "Poslouchám..." : "Voice Screen"}
     >

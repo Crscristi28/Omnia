@@ -391,14 +391,13 @@ const InputBar = ({
               {!input.trim() ? (
                 <button
                   onClick={onVoiceScreen}
-                  className="input-bar-button input-button"
+                  className="input-bar-button voice-button-static"
                   disabled={isLoading}
                   style={{
                     width: buttonSize,
                     height: buttonSize,
                     borderRadius: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    // Remove background, boxShadow, transition for static look
                     background: 'transparent',
                     boxShadow: 'none',
                     transition: 'none',
@@ -410,9 +409,12 @@ const InputBar = ({
                     justifyContent: 'center',
                     padding: '8px',
                     opacity: isLoading ? 0.5 : 1,
-                    outline: 'none'
+                    outline: 'none',
+                    visibility: 'visible !important',
+                    pointerEvents: 'auto !important',
+                    zIndex: '100 !important',
+                    position: 'relative !important'
                   }}
-                  // Remove hover effect for static look
                   title="Voice Chat"
                 >
                   <MiniOmniaLogo />
@@ -614,3 +616,27 @@ if (typeof window !== 'undefined' && !document.querySelector('style[data-input-b
   style.setAttribute('data-input-bar-button', 'true');
   document.head.appendChild(style);
 }
+
+// Add static voice button style
+// Add at the end of the file so it's rendered by React
+// eslint-disable-next-line
+export const VoiceButtonStaticStyle = (
+  <style>
+    {`
+      .voice-button-static,
+      .voice-button-static * {
+        visibility: visible !important;
+        opacity: 1 !important;
+        display: flex !important;
+        pointer-events: auto !important;
+      }
+
+      .voice-button-static:hover,
+      .voice-button-static:hover * {
+        visibility: visible !important;
+        opacity: 1 !important;
+        display: flex !important;
+      }
+    `}
+  </style>
+);
