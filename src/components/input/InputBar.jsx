@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
-import { MagnifyingGlassIcon, MicrophoneIcon } from '@heroicons/react/24/solid';
+import { MagnifyingGlassIcon, MicrophoneIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 // 🎨 CLEAN SVG ICONS
 const PlusIcon = ({ size = 20 }) => (
@@ -271,9 +271,7 @@ const InputBar = ({
               >
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-600" />
               </button>
-              </div>
-              
-              {/* CENTER: VOICE CHAT */}
+              {/* OMNIA VOICE CHAT BUTTON */}
               <button
                 onClick={onVoiceScreen}
                 disabled={isLoading}
@@ -281,8 +279,11 @@ const InputBar = ({
                 title="Voice Chat"
                 className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
               >
-                <AdjustmentsHorizontalIcon className="h-5 w-5 text-white" />
+                <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
               </button>
+              </div>
+              
+              {/* CENTER: (removed, voice chat now in left group) */}
               
               {/* RIGHT GROUP */}
               <div style={{
