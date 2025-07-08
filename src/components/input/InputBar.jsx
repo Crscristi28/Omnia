@@ -243,30 +243,27 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: '#1a365d', // Tmavě modrá ikona
+                border: 'none',
+                background: 'transparent',
+                color: '#ffffff',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: isLoading ? 0.5 : 1,
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                outline: 'none'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
-                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.color = 'rgba(255, 255, 255, 0.8)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
+                  e.target.style.color = '#ffffff';
                 }
               }}
               title="Add Content"
@@ -282,30 +279,27 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: '#1a365d', // Tmavě modrá ikona
+                border: 'none',
+                background: 'transparent',
+                color: '#ffffff',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: isLoading ? 0.5 : 1,
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                outline: 'none'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
-                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.color = 'rgba(255, 255, 255, 0.8)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
+                  e.target.style.color = '#ffffff';
                 }
               }}
               title="Research"
@@ -321,30 +315,27 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                background: showModelDropdown ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)', // Světle modrá
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: '#1a365d', // Tmavě modrá ikona
+                border: 'none',
+                background: 'transparent',
+                color: '#ffffff',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: isLoading ? 0.5 : 1,
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                outline: 'none'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
-                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.color = 'rgba(255, 255, 255, 0.8)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = showModelDropdown ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
+                  e.target.style.color = '#ffffff';
                 }
               }}
               title="AI Models"
@@ -360,30 +351,27 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                background: isRecording ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)', // Světle modrá
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: '#1a365d', // Tmavě modrá ikona
+                border: 'none',
+                background: 'transparent',
+                color: '#ffffff',
                 cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
-                outline: 'none',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                outline: 'none'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading && !isAudioPlaying) {
-                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
-                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.color = 'rgba(255, 255, 255, 0.8)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading && !isAudioPlaying) {
-                  e.target.style.background = isRecording ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
+                  e.target.style.color = '#ffffff';
                 }
               }}
               title={isRecording ? 'Stop Recording' : 'Voice Input'}
