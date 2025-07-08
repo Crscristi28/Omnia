@@ -92,52 +92,27 @@ export const OmniaLogo = ({ size = 80, animate = false, shouldHide = false, isLi
 };
 
 // 🎨 MINI OMNIA LOGO - Small clickable logo for voice screen
-export const MiniOmniaLogo = ({ 
-  size = 28, 
-  onClick, 
-  isAudioPlaying = false, 
-  loading = false, 
-  streaming = false, 
-  isListening = false 
+export const MiniOmniaLogo = ({
+  size = 28,
+  onClick,
+  isAudioPlaying = false,
+  loading = false,
+  streaming = false,
+  isListening = false
 }) => {
-  const getLogoStyle = () => {
-    const baseStyle = {
-      width: size,
-      height: size,
-      borderRadius: '50%',
-      background: `
-        radial-gradient(circle at 30% 40%, 
-          #00ffff 0%,
-          #0099ff 30%,
-          #6432ff 60%,
-          #9932cc 80%,
-          #4b0082 100%
-        )
-      `,
-      cursor: 'pointer',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      transform: 'translateZ(0)'
-    };
-
-    if (isListening || streaming || loading || isAudioPlaying) {
-      return {
-        ...baseStyle,
-        animation: 'omnia-pulse 1s ease-in-out infinite',
-        boxShadow: `0 0 ${size * 1.5}px rgba(0, 255, 255, 1)`,
-        transform: 'scale(1.05) translateZ(0)'
-      };
-    }
-    
-    return {
-      ...baseStyle,
-      boxShadow: `0 0 ${size * 0.6}px rgba(100, 50, 255, 0.5)`
-    };
-  };
+  const getLogoStyle = () => ({
+    width: size,
+    height: size,
+    borderRadius: '50%',
+    background: 'transparent',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    transform: 'translateZ(0)'
+  });
 
   return (
     <div
