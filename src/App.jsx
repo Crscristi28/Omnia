@@ -1,24 +1,24 @@
-// 🚀 OMNIA - APP.JSX ČÁST 1/3 - IMPORTS + STATE + EFFECTS (CLEAN + SOURCES)
-// ✅ REMOVED: formatClaudeResponse() bullshit - let Claude handle formatting naturally
-// 🎯 CLEAN: No text processing - trust Claude's output
-// 🔗 NEW: Sources system integration
+// 🚀 OMNIA - APP.JSX PART 1/3 - IMPORTS + STATE + EFFECTS (REDESIGNED)
+// ✅ ADDED: ChatSidebar + NewChatButton imports
+// ✅ ADDED: welcomeTexts for multilingual welcome
+// 🎯 UNCHANGED: Všechny původní importy a funkčnost
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-// 🔧 IMPORT SERVICES
+// 🔧 IMPORT SERVICES (UNCHANGED)
 import claudeService from './services/claude.service.js';
 import openaiService from './services/openai.service.js';
 import sonarService from './services/sonar.service.js';
 import elevenLabsService from './services/elevenLabs.service.js';
 
-// 🔧 IMPORT UTILS  
+// 🔧 IMPORT UTILS (UNCHANGED)
 import { uiTexts, getTranslation } from './utils/translations.js';
 import sessionManager from './utils/sessionManager.js';
 import detectLanguage from './utils/smartLanguageDetection.js';
 import sanitizeText, { cleanMarkdownForUI } from './utils/sanitizeText.js';
 
-// 🔧 IMPORT UI COMPONENTS
+// 🔧 IMPORT UI COMPONENTS (UNCHANGED + NEW)
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
 import { OmniaLogo, MiniOmniaLogo, ChatOmniaLogo } from './components/ui/OmniaLogos.jsx';
 import TypewriterText from './components/ui/TypewriterText.jsx';
@@ -26,13 +26,33 @@ import VoiceButton from './components/ui/VoiceButton.jsx';
 import CopyButton from './components/ui/CopyButton.jsx';
 import VoiceScreen from './components/voice/VoiceScreen.jsx';
 
-// 🆕 IMPORT INPUT BAR
+// 🆕 IMPORT INPUT BAR (UNCHANGED)
 import InputBar from './components/input/InputBar.jsx';
 
-// 🔗 IMPORT SOURCES COMPONENTS
+// 🔗 IMPORT SOURCES COMPONENTS (UNCHANGED)
 import { SourcesButton, SourcesModal } from './components/sources';
 
-// 🆕 MOBILE AUDIO MANAGER
+// 🆕 NEW COMPONENTS - Added for redesign
+import ChatSidebar from './components/ui/ChatSidebar.jsx';
+import NewChatButton from './components/ui/NewChatButton.jsx';
+
+// 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
+const welcomeTexts = {
+  cs: { 
+    hello: "Ahoj!", 
+    subtitle: "Jak se dnes máš?" 
+  },
+  en: { 
+    hello: "Hello!", 
+    subtitle: "How's it going today?" 
+  },
+  ro: { 
+    hello: "Salut!", 
+    subtitle: "Cum îți merge astăzi?" 
+  }
+};
+
+// 🆕 MOBILE AUDIO MANAGER (UNCHANGED)
 class MobileAudioManager {
   constructor() {
     this.currentAudio = null;
@@ -175,44 +195,47 @@ class MobileAudioManager {
   }
 }
 
-// Create global instance
+// Create global instance (UNCHANGED)
 const mobileAudioManager = new MobileAudioManager();
 
-// 🆕 SENTENCE SPLITTER
+// 🆕 SENTENCE SPLITTER (UNCHANGED)
 function splitIntoSentences(text) {
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
 function App() {
-  // 📊 BASIC STATE
+  // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('claude'); // 🔧 CHANGED: Default Claude for better formatting
+  const [model, setModel] = useState('claude');
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
-  // 🎤 VOICE STATE
+  // 🎤 VOICE STATE (UNCHANGED)
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
-  // 🆕 MODEL SWITCH STATE FOR VOICE
+  // 🆕 MODEL SWITCH STATE FOR VOICE (UNCHANGED)
   const [previousModel, setPreviousModel] = useState(null);
   
-  // 🌍 LANGUAGE & UI STATE
+  // 🌍 LANGUAGE & UI STATE (UNCHANGED)
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
-  // 🔗 SOURCES STATE
+  // 🔗 SOURCES STATE (UNCHANGED)
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
   const [currentSources, setCurrentSources] = useState([]);
   
-  // 📱 DEVICE STATE
+  // 🆕 NEW SIDEBAR STATE - Added for redesign
+  const [showChatSidebar, setShowChatSidebar] = useState(false);
+  
+  // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
@@ -220,7 +243,7 @@ function App() {
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
-  // 🆕 AUDIO INITIALIZATION
+  // 🆕 AUDIO INITIALIZATION (UNCHANGED)
   useEffect(() => {
     mobileAudioManager.initialize();
     
@@ -241,7 +264,7 @@ function App() {
     };
   }, []);
 
-  // ⚙️ INITIALIZATION
+  // ⚙️ INITIALIZATION (UNCHANGED)
   useEffect(() => {
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
@@ -255,8 +278,7 @@ function App() {
     }
   }, []);
 
-
-  // Single scroll when new message added (for GPT completion)
+  // Single scroll when new message added (UNCHANGED)
   useEffect(() => {
     if (!loading && !streaming && messages.length > 0) {
       setTimeout(() => {
@@ -267,12 +289,11 @@ function App() {
     }
   }, [messages.length]);
 
-  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX ČÁST 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (CLEAN + SOURCES)
-// ✅ CLEAN: No formatClaudeResponse() calls - trust Claude's natural output
-// 🎯 SIMPLE: Direct text handling without processing
-// 🔗 NEW: Sources integration in message handling
+  const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX PART 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (REDESIGNED)
+// ✅ ADDED: Sidebar handlers
+// 🎯 UNCHANGED: Všechny původní funkce (TTS, STT, AI conversation)
 
-// 🔧 NOTIFICATION SYSTEM
+// 🔧 NOTIFICATION SYSTEM (UNCHANGED)
   const showNotification = (message, type = 'info', onClick = null) => {
     const notification = document.createElement('div');
     
@@ -321,7 +342,7 @@ function App() {
     }, type === 'error' ? 8000 : 4000);
   };
 
-  // 🔗 SOURCES MODAL HANDLERS
+  // 🔗 SOURCES MODAL HANDLERS (UNCHANGED)
   const handleSourcesClick = (sources) => {
     console.log('🔗 Opening sources modal with:', sources.length, 'sources');
     setCurrentSources(sources);
@@ -334,7 +355,21 @@ function App() {
     setCurrentSources([]);
   };
 
-  // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON
+  // 🆕 SIDEBAR HANDLERS - NEW for redesign
+  const handleSidebarOpen = () => {
+    setShowChatSidebar(true);
+  };
+
+  const handleSidebarClose = () => {
+    setShowChatSidebar(false);
+  };
+
+  const handleSidebarNewChat = () => {
+    handleNewChat();
+    setShowChatSidebar(false);
+  };
+
+  // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON (UNCHANGED)
   const generateAudioForSentence = async (sentence, language) => {
     try {
       console.log('🎵 Generating audio for sentence:', sentence.substring(0, 30) + '...');
@@ -384,7 +419,7 @@ function App() {
     }
   };
 
-  // 🎵 VOICE PROCESSING
+  // 🎵 VOICE PROCESSING (UNCHANGED)
   const processVoiceResponse = async (responseText, language) => {
     console.log('🎵 Processing voice response - INSTANT MODE:', {
       textLength: responseText.length,
@@ -400,7 +435,7 @@ function App() {
     }
   };
 
-  // 🎤 STT FUNCTIONS
+  // 🎤 STT FUNCTIONS (UNCHANGED)
   const startSTTRecording = async () => {
     try {
       console.log('🎤 Starting ElevenLabs STT recording...');
@@ -518,7 +553,7 @@ function App() {
     }
   };
 
-  // 🔧 UTILITY FUNCTIONS
+  // 🔧 UTILITY FUNCTIONS (UNCHANGED)
   const handleNewChat = () => {
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
@@ -546,7 +581,7 @@ function App() {
     }));
   };
 
-  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE
+  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE (UNCHANGED)
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
@@ -569,7 +604,7 @@ function App() {
     }
   };
 
-// 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse() + SOURCES INTEGRATION
+// 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse() + SOURCES INTEGRATION (UNCHANGED)
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
     // Smart scroll to bottom when user sends message
@@ -703,10 +738,19 @@ function App() {
     } else {
       setInput(text);
     }
-  };// 🚀 OMNIA - APP.JSX ČÁST 3/3 - JSX RENDER + STYLES (FINÁLNÍ CLEAN + SOURCES)
-// ✅ CLEAN: TypewriterText gets Claude's natural output - no processing
-// 🎯 TRUST: Let Claude handle formatting, TypewriterText handle display
-// 🔗 NEW: Sources UI integration
+  };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
+// ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
+// ✅ NEW: Logo zmizí po první zprávě + clean layout
+// 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
+
+// 🎨 CLEAN SVG IKONY pro fixed buttons
+const HamburgerIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+);
 
 // 🎨 JSX RENDER
   return (
@@ -731,177 +775,76 @@ function App() {
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       
-      {/* HEADER */}
-      <header style={{ 
-        padding: isMobile ? '1rem 1rem 0.5rem' : '1.5rem 2rem 1rem',
-        background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.85), rgba(0, 78, 146, 0.6))',
-        backdropFilter: 'blur(20px)', 
-        zIndex: 10, 
-        flexShrink: 0
+      {/* 📌 FIXED TOP BUTTONS - VŽDY VIDITELNÉ */}
+      <div style={{
+        position: 'fixed',
+        top: isMobile ? '1rem' : '1.5rem',
+        left: isMobile ? '1rem' : '2rem',
+        right: isMobile ? '1rem' : '2rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 1000,
+        pointerEvents: 'none' // Allow clicks through to background
       }}>
-        <div style={{
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: isMobile ? '1.5rem' : '2rem', 
-          maxWidth: '1200px',
-          margin: '0 auto', 
-          marginBottom: isMobile ? '1.5rem' : '2rem'
-        }}>
-          
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowModelDropdown(!showModelDropdown)}
-              disabled={loading || streaming || showVoiceScreen}
-              style={{
-                background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
-                border: '1px solid rgba(74, 85, 104, 0.6)', 
-                borderRadius: '10px',
-                padding: '0.6rem 0.9rem', 
-                fontSize: '0.85rem', 
-                color: '#e2e8f0',
-                cursor: (loading || streaming || showVoiceScreen) ? 'not-allowed' : 'pointer',
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem', 
-                fontWeight: '500',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                backdropFilter: 'blur(10px)',
-                opacity: showVoiceScreen ? 0.5 : 1
-              }}
-            >
-              {model === 'claude' ? '🧠 Omnia' : model === 'sonar' ? '🔍 Omnia Search' : '⚡ Omnia GPT'}
-              {!streaming && !loading && !isListening && !showVoiceScreen && ' ▼'}
-            </button>
-            
-            {showModelDropdown && !loading && !streaming && !showVoiceScreen && (
-              <div style={{
-                position: 'absolute', 
-                top: '100%', 
-                left: 0, 
-                marginTop: '6px',
-                background: 'rgba(45, 55, 72, 0.95)', 
-                border: '1px solid rgba(74, 85, 104, 0.6)',
-                borderRadius: '12px', 
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(16px)', 
-                zIndex: 1000, 
-                minWidth: '220px', 
-                overflow: 'hidden'
-              }}>
-                {[
-                  { key: 'claude', label: '🧠 Omnia', desc: 'Advanced reasoning + perfect formatting (DEFAULT)' },
-                  { key: 'gpt-4o', label: '⚡ Omnia GPT', desc: 'Fast responses + voice' },
-                  { key: 'sonar', label: '🔍 Omnia Search', desc: 'Real-time info + voice' }
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => { setModel(item.key); setShowModelDropdown(false); }}
-                    style={{
-                      display: 'block', 
-                      width: '100%', 
-                      padding: '0.8rem 1rem', 
-                      border: 'none',
-                      background: model === item.key ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
-                      textAlign: 'left', 
-                      fontSize: '0.85rem', 
-                      cursor: 'pointer',
-                      fontWeight: model === item.key ? '600' : '400',
-                      color: model === item.key ? '#00ffff' : '#e2e8f0',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <div>{item.label}</div>
-                    <div style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '2px' }}>{item.desc}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        
+        {/* HAMBURGER BUTTON - vlevo */}
+        <button
+          onClick={handleSidebarOpen}
+          disabled={loading || streaming}
+          style={{
+            width: isMobile ? 40 : 44,
+            height: isMobile ? 40 : 44,
+            borderRadius: '12px',
+            border: 'none',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            color: 'rgba(255, 255, 255, 0.9)',
+            cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            opacity: (loading || streaming) ? 0.5 : 1,
+            outline: 'none',
+            pointerEvents: 'auto',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          }}
+          onMouseEnter={(e) => {
+            if (!loading && !streaming) {
+              e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+              e.target.style.transform = 'scale(1.05)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading && !streaming) {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.target.style.transform = 'scale(1)';
+            }
+          }}
+          title="Chat History & Settings"
+        >
+          <HamburgerIcon size={isMobile ? 18 : 20} />
+        </button>
 
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
-              disabled={loading || streaming}
-              style={{
-                background: 'linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(45, 55, 72, 0.6))',
-                border: '1px solid rgba(74, 85, 104, 0.6)', 
-                borderRadius: '10px',
-                padding: '0.6rem', 
-                fontSize: '1rem', 
-                color: '#e2e8f0',
-                cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                backdropFilter: 'blur(10px)'
-              }}
-              title={t('settings')}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-              </svg>
-            </button>
-            
-            <SettingsDropdown 
-              isOpen={showSettingsDropdown && !loading && !streaming}
-              onClose={() => setShowSettingsDropdown(false)}
-              onNewChat={handleNewChat}
-              uiLanguage={uiLanguage}
-              setUILanguage={setUILanguage}
-              t={t}
-            />
-          </div>
-        </div>
-
-        <div style={{ 
-          textAlign: 'center', 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          gap: '1rem', 
-          maxWidth: '1200px', 
-          margin: '0 auto'
-        }}>
-          <OmniaLogo 
-            size={isMobile ? 70 : 90} 
-            animate={streaming || loading}
-            isListening={isListening || isRecordingSTT}
-            shouldHide={shouldHideLogo}
+        {/* NEW CHAT BUTTON - vpravo */}
+        <div style={{ pointerEvents: 'auto' }}>
+          <NewChatButton
+            onClick={handleNewChat}
+            disabled={loading || streaming}
+            size="default"
           />
-          {!shouldHideLogo && (
-            <>
-              <h1 style={{ 
-                fontSize: isMobile ? '2.2rem' : '2.8rem', 
-                fontWeight: '700', 
-                margin: 0, 
-                color: '#ffffff',
-                letterSpacing: '0.02em'
-              }}>
-                OMNIA
-              </h1>
-              <div style={{
-                fontSize: '0.95rem', 
-                opacity: 0.8, 
-                textAlign: 'center',
-                padding: '6px 12px', 
-                borderRadius: '15px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(5px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                fontWeight: '500'
-              }}>
-                🧠 Claude Default • 🎵 FIXED Voice • 🇨🇿🇷🇴🇺🇸 Enhanced • 🎨 NATURAL Formatting • 🔗 SOURCES Ready
-              </div>
-            </>
-          )}
         </div>
-      </header>
+      </div>
 
-      {/* MAIN CONTENT */}
+      {/* 🎨 MAIN CONTENT AREA */}
       <main style={{ 
         flex: 1, 
         overflowY: 'auto', 
         overflowX: 'hidden',
         padding: isMobile ? '1rem' : '2rem',
+        paddingTop: isMobile ? '5rem' : '6rem', // Space for fixed buttons
         paddingBottom: '240px',
         width: '100%',
         WebkitOverflowScrolling: 'touch',
@@ -916,10 +859,56 @@ function App() {
           justifyContent: messages.length === 0 ? 'center' : 'flex-start'
         }}>
           
-          {messages.length === 0 && !shouldHideLogo && (
-            <div style={{ height: '40vh' }}></div>
+          {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
+          {messages.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: isMobile ? '1.5rem' : '2rem',
+              marginBottom: '4rem'
+            }}>
+              
+              {/* OMNIA LOGO */}
+              <OmniaLogo 
+                size={isMobile ? 120 : 160} 
+                animate={streaming || loading}
+                isListening={isListening || isRecordingSTT}
+                shouldHide={false}
+              />
+              
+              {/* 🌍 MULTILINGUAL WELCOME TEXT */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '1rem'
+              }}>
+                <h1 style={{ 
+                  fontSize: isMobile ? '3rem' : '4rem', 
+                  fontWeight: '700', 
+                  margin: 0, 
+                  color: '#ffffff',
+                  letterSpacing: '0.02em'
+                }}>
+                  {welcomeTexts[uiLanguage]?.hello || welcomeTexts.cs.hello}
+                </h1>
+                
+                <p style={{
+                  fontSize: isMobile ? '1.2rem' : '1.5rem',
+                  fontWeight: '400',
+                  margin: 0,
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  letterSpacing: '0.01em'
+                }}>
+                  {welcomeTexts[uiLanguage]?.subtitle || welcomeTexts.cs.subtitle}
+                </p>
+              </div>
+            </div>
           )}
 
+          {/* 💬 CHAT MESSAGES - UNCHANGED styling */}
           {messages.map((msg, idx) => (
             <div key={idx} style={{
               display: 'flex',
@@ -976,7 +965,7 @@ function App() {
                     </span>
                     {!msg.isStreaming && (
                       <div style={{ display: 'flex', gap: '10px' }}>
-                        {/* 🔗 SOURCES BUTTON - NEW! */}
+                        {/* 🔗 SOURCES BUTTON - UNCHANGED */}
                         <SourcesButton 
                           sources={msg.sources || []}
                           onClick={() => handleSourcesClick(msg.sources || [])}
@@ -1001,6 +990,7 @@ function App() {
             </div>
           ))}
           
+          {/* ⏳ LOADING INDICATOR - UNCHANGED */}
           {(loading || streaming) && (
             <div style={{ 
               display: 'flex', 
@@ -1043,7 +1033,7 @@ function App() {
         </div>
       </main>
 
-      {/* INPUT BAR */}
+      {/* 📝 INPUT BAR - přidán model prop */}
       <InputBar
         input={input}
         setInput={setInput}
@@ -1054,9 +1044,23 @@ function App() {
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}
         uiLanguage={uiLanguage}
+        model={model}
+        setModel={setModel}
       />
 
-      {/* VOICE SCREEN WITH CLOSE HANDLER */}
+      {/* 📋 CHAT SIDEBAR - NEW! */}
+      <ChatSidebar
+        isOpen={showChatSidebar}
+        onClose={handleSidebarClose}
+        onNewChat={handleSidebarNewChat}
+        uiLanguage={uiLanguage}
+        setUILanguage={setUILanguage}
+        chatHistory={[]} // TODO: Implement chat history
+        onSelectChat={(chatId) => console.log('Select chat:', chatId)}
+        currentChatId={null}
+      />
+
+      {/* 🎤 VOICE SCREEN - UNCHANGED */}
       <VoiceScreen 
         isOpen={showVoiceScreen}
         onClose={handleVoiceScreenClose}
@@ -1068,7 +1072,7 @@ function App() {
         audioManager={mobileAudioManager}
       />
 
-      {/* 🔗 SOURCES MODAL - NEW! */}
+      {/* 🔗 SOURCES MODAL - UNCHANGED */}
       <SourcesModal 
         isOpen={sourcesModalOpen}
         onClose={handleSourcesModalClose}
@@ -1076,6 +1080,7 @@ function App() {
         language={uiLanguage}
       />
 
+      {/* 🎨 STYLES - UNCHANGED + nové animace */}
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
