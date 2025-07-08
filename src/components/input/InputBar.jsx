@@ -160,20 +160,22 @@ const InputBar = ({
     console.log('🔍 Research clicked - Coming Soon!');
   };
 
-  // Unified button style
-  const buttonStyle = {
-    width: 36,
-    height: 36,
+  // Unified button style for all toolbar actions
+  const toolbarButtonStyle = {
+    width: 34,
+    height: 34,
     borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    background: 'rgba(255, 255, 255, 0.1)',
-    color: '#ffffff',
-    cursor: 'pointer',
+    border: '1px solid rgba(0, 200, 200, 0.3)',
+    background: 'rgba(0, 150, 150, 0.15)',
+    color: 'rgba(255, 255, 255, 0.95)',
+    cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: '4px',
+    fontSize: '16px',
     transition: 'all 0.2s ease',
-    fontSize: '18px'
+    opacity: isLoading ? 0.5 : 1
   };
 
   return (
@@ -256,20 +258,7 @@ const InputBar = ({
                 <button
                   onClick={() => setShowPlusMenu(true)}
                   disabled={isLoading}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    opacity: isLoading ? 0.5 : 1
-                  }}
+                  style={toolbarButtonStyle}
                   title="Add Content"
                 >
                   <PlusIcon size={20} />
@@ -279,20 +268,7 @@ const InputBar = ({
                 <button
                   onClick={() => setShowModelDropdown(!showModelDropdown)}
                   disabled={isLoading}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    opacity: isLoading ? 0.5 : 1
-                  }}
+                  style={toolbarButtonStyle}
                   title="AI Models"
                 >
                   <MenuIcon size={20} />
@@ -302,27 +278,11 @@ const InputBar = ({
                 <button
                   onClick={handleDeepSearch}
                   disabled={isLoading}
-                  style={{
-                    width: 'auto',
-                    height: 36,
-                    borderRadius: '18px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    gap: '6px',
-                    fontSize: '14px',
-                    padding: '0 14px',
-                    opacity: isLoading ? 0.5 : 1
-                  }}
+                  style={toolbarButtonStyle}
                   title="Deep Search"
                 >
-                  <SearchIcon size={16} />
-                  <span>Research</span>
+                  {/* <SearchIcon size={16} /> */}
+                  <span role="img" aria-label="search">🔍</span>
                 </button>
               </div>
               
@@ -330,20 +290,7 @@ const InputBar = ({
               <button
                 onClick={onVoiceScreen}
                 disabled={isLoading}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  color: '#ffffff',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  opacity: isLoading ? 0.5 : 1
-                }}
+                style={toolbarButtonStyle}
                 title="Voice Chat"
               >
                 {/* MiniOmniaLogo imported from OmniaLogos.jsx */}
@@ -362,18 +309,10 @@ const InputBar = ({
                   onClick={onSTT}
                   disabled={isLoading || isAudioPlaying}
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: isRecording ? '#ff4444' : '#ffffff',
-                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    opacity: (isLoading || isAudioPlaying) ? 0.5 : 1
+                    ...toolbarButtonStyle,
+                    color: isRecording ? '#ff4444' : toolbarButtonStyle.color,
+                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : toolbarButtonStyle.cursor,
+                    opacity: (isLoading || isAudioPlaying) ? 0.5 : toolbarButtonStyle.opacity
                   }}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
@@ -381,43 +320,39 @@ const InputBar = ({
                 </button>
                 
                 {/* SEND BUTTON */}
-                <button
-                  onClick={onSend}
-                  disabled={isLoading || !input.trim()}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: input.trim()
-                      ? 'rgba(255, 255, 255, 0.9)'
-                      : 'rgba(255, 255, 255, 0.1)',
-                    color: input.trim()
-                      ? '#000000'
-                      : '#ffffff',
-                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    opacity: isLoading ? 0.5 : 1
-                  }}
-                  title="Send Message"
-                >
-                  <svg
-                    width={18}
-                    height={18}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                {input.trim() ? (
+                  <button
+                    onClick={onSend}
+                    disabled={isLoading}
+                    style={{
+                      ...toolbarButtonStyle,
+                      background: 'rgba(0, 150, 150, 0.85)',
+                      border: '1px solid rgba(0, 200, 200, 0.3)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    title="Send"
                   >
-                    <line x1="22" y1="2" x2="11" y2="13" stroke="currentColor"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" stroke="currentColor"></polygon>
-                  </svg>
-                </button>
+                    ➤
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    style={{
+                      ...toolbarButtonStyle,
+                      background: 'rgba(0, 200, 200, 0.3)',
+                      border: '1px solid rgba(0, 200, 200, 0.3)',
+                      opacity: 0.5
+                    }}
+                    title="Send"
+                  >
+                    ➤
+                  </button>
+                )}
               </div>
             </div>
           </div>
