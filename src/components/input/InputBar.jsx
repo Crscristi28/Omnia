@@ -1,7 +1,7 @@
-// 🚀 InputBar.jsx - CLAUDE.AI STYLE WITH FIXED LAYOUT
-// ✅ All buttons visible, no dynamic switching
-// ✅ Glass morphism design
-// ✅ Layout: [+] [≡] [🔍] | textarea | [🎙️] | [🎤] [→]
+// 🚀 InputBar.jsx - CLAUDE.AI STYLE WITH TWO ROWS
+// ✅ Text area on top
+// ✅ Buttons below
+// ✅ One unified glass container
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
@@ -39,7 +39,7 @@ const MicIcon = ({ size = 20 }) => (
   </svg>
 );
 
-// PLUS MENU COMPONENT
+// PLUS MENU COMPONENT (unchanged)
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
@@ -165,7 +165,7 @@ const InputBar = ({
 
   return (
     <>
-      {/* 🎨 CLAUDE.AI STYLE INPUT BAR */}
+      {/* 🎨 CLAUDE.AI STYLE INPUT BAR - TWO ROWS */}
       <div style={{
         position: 'fixed',
         bottom: 0,
@@ -179,117 +179,26 @@ const InputBar = ({
       }}>
         
         <div style={{
-          maxWidth: '900px',
+          maxWidth: '800px',
           margin: '0 auto',
           pointerEvents: 'auto'
         }}>
           
-          {/* 💎 UNIFIED GLASS CONTAINER */}
+          {/* 💎 UNIFIED GLASS CONTAINER WITH TWO SECTIONS */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.06)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            borderRadius: '28px',
+            borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1rem',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            minHeight: isMobile ? '52px' : '56px'
+            overflow: 'hidden'
           }}>
             
-            {/* LEFT GROUP: PLUS + MODELS + RESEARCH */}
+            {/* TOP SECTION: TEXTAREA */}
             <div style={{
-              display: 'flex',
-              gap: '0.5rem',
-              alignItems: 'center'
-            }}>
-              {/* PLUS BUTTON */}
-              <button
-                onClick={() => setShowPlusMenu(true)}
-                disabled={isLoading}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => !isLoading && (e.target.style.background = 'rgba(255, 255, 255, 0.1)')}
-                onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                title="Add Content"
-              >
-                <PlusIcon size={20} />
-              </button>
-              
-              {/* MODELS BUTTON */}
-              <button
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                disabled={isLoading}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => !isLoading && (e.target.style.background = 'rgba(255, 255, 255, 0.1)')}
-                onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                title="AI Models"
-              >
-                <MenuIcon size={20} />
-              </button>
-              
-              {/* RESEARCH BUTTON */}
-              <button
-                onClick={handleDeepSearch}
-                disabled={isLoading}
-                style={{
-                  height: 36,
-                  borderRadius: '18px',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  background: 'transparent',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '0 14px',
-                  fontSize: '14px',
-                  transition: 'all 0.2s ease',
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => !isLoading && (e.target.style.background = 'rgba(255, 255, 255, 0.1)')}
-                onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                title="Deep Search"
-              >
-                <SearchIcon size={16} />
-                <span>Research</span>
-              </button>
-            </div>
-            
-            {/* CENTER: TEXTAREA */}
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: '0.5rem',
-              paddingRight: '0.5rem'
+              padding: isMobile ? '1rem 1.5rem' : '1.25rem 1.75rem',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
             }}>
               <textarea
                 value={input}
@@ -300,130 +209,248 @@ const InputBar = ({
                 rows={1}
                 style={{
                   width: '100%',
-                  minHeight: '24px',
+                  minHeight: isMobile ? '24px' : '28px',
                   maxHeight: '120px',
                   border: 'none',
                   outline: 'none',
                   background: 'transparent',
                   color: 'rgba(255, 255, 255, 0.9)',
-                  fontSize: isMobile ? '15px' : '16px',
+                  fontSize: isMobile ? '16px' : '18px',
                   fontFamily: 'inherit',
                   resize: 'none',
                   lineHeight: '1.5',
-                  paddingTop: '4px',
-                  paddingBottom: '4px'
+                  fontWeight: '400',
+                  letterSpacing: '0.01em'
                 }}
               />
             </div>
             
-            {/* CENTER: VOICE CHAT BUTTON */}
-            <div
-              onClick={onVoiceScreen}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: '8px',
-                background: 'transparent',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                opacity: isLoading ? 0.5 : 1,
-                transition: 'all 0.2s ease',
-                border: 'none',
-                padding: 0,
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => !isLoading && (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              title="Voice Chat"
-            >
-              <MiniOmniaLogo size={24} />
-            </div>
-            
-            {/* RIGHT GROUP: MICROPHONE + SEND */}
+            {/* BOTTOM SECTION: BUTTONS */}
             <div style={{
+              padding: isMobile ? '0.75rem' : '1rem',
               display: 'flex',
-              gap: '0.5rem',
-              alignItems: 'center'
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}>
-              {/* MICROPHONE BUTTON */}
-              <button
-                onClick={onSTT}
-                disabled={isLoading || isAudioPlaying}
+              
+              {/* LEFT GROUP */}
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                alignItems: 'center'
+              }}>
+                {/* PLUS BUTTON */}
+                <button
+                  onClick={() => setShowPlusMenu(true)}
+                  disabled={isLoading}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    border: '1px solid rgba(0, 200, 200, 0.3)',
+                    background: 'rgba(0, 150, 150, 0.15)',
+                    color: 'rgba(255, 255, 255, 0.95)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
+                    e.target.style.transform = 'scale(1.0)';
+                  }}
+                  title="Add Content"
+                >
+                  <PlusIcon size={20} />
+                </button>
+                
+                {/* MODELS BUTTON */}
+                <button
+                  onClick={() => setShowModelDropdown(!showModelDropdown)}
+                  disabled={isLoading}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    border: '1px solid rgba(0, 200, 200, 0.3)',
+                    background: 'rgba(0, 150, 150, 0.15)',
+                    color: 'rgba(255, 255, 255, 0.95)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
+                    e.target.style.transform = 'scale(1.0)';
+                  }}
+                  title="AI Models"
+                >
+                  <MenuIcon size={20} />
+                </button>
+                
+                {/* RESEARCH BUTTON */}
+                <button
+                  onClick={handleDeepSearch}
+                  disabled={isLoading}
+                  style={{
+                    height: 36,
+                    borderRadius: '18px',
+                    border: '1px solid rgba(0, 200, 200, 0.3)',
+                    background: 'rgba(0, 150, 150, 0.15)',
+                    color: 'rgba(255, 255, 255, 0.95)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '0 14px',
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
+                    e.target.style.transform = 'scale(1.0)';
+                  }}
+                  title="Deep Search"
+                >
+                  <SearchIcon size={16} />
+                  <span>Research</span>
+                </button>
+              </div>
+              
+              {/* CENTER: VOICE CHAT */}
+              <div
+                onClick={onVoiceScreen}
                 style={{
                   width: 36,
                   height: 36,
                   borderRadius: '8px',
-                  border: 'none',
                   background: 'transparent',
-                  color: isRecording ? '#ff4444' : 'rgba(255, 255, 255, 0.7)',
-                  cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  flexShrink: 0
+                  opacity: isLoading ? 0.5 : 1,
+                  transition: 'all 0.2s ease'
                 }}
-                onMouseEnter={(e) => !isLoading && !isAudioPlaying && (e.target.style.background = 'rgba(255, 255, 255, 0.1)')}
-                onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                onMouseEnter={(e) => !isLoading && (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                title="Voice Chat"
               >
-                <MicIcon size={20} />
-              </button>
+                <MiniOmniaLogo size={24} />
+              </div>
               
-              {/* SEND BUTTON - ALWAYS VISIBLE */}
-              <button
-                onClick={onSend}
-                disabled={isLoading || !input.trim()}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '50%',
-                  border: 'none',
-                  background: input.trim() 
-                    ? 'rgba(255, 255, 255, 0.9)' 
-                    : 'rgba(255, 255, 255, 0.1)',
-                  color: input.trim() 
-                    ? '#000000' 
-                    : 'rgba(255, 255, 255, 0.4)',
-                  cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  flexShrink: 0,
-                  opacity: isLoading ? 0.5 : 1
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading && input.trim()) {
-                    e.target.style.transform = 'scale(1.1)';
-                    e.target.style.background = '#ffffff';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'scale(1)';
-                  if (input.trim()) {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.9)';
-                  }
-                }}
-                title="Send Message"
-              >
-                <svg
-                  width={18}
-                  height={18}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+              {/* RIGHT GROUP */}
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                alignItems: 'center'
+              }}>
+                {/* MICROPHONE BUTTON */}
+                <button
+                  onClick={onSTT}
+                  disabled={isLoading || isAudioPlaying}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    border: '1px solid rgba(0, 200, 200, 0.3)',
+                    background: 'rgba(0, 150, 150, 0.15)',
+                    color: isRecording ? '#ff4444' : 'rgba(255, 255, 255, 0.95)',
+                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && !isAudioPlaying) {
+                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
+                    e.target.style.transform = 'scale(1.0)';
+                  }}
+                  title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
+                  <MicIcon size={20} />
+                </button>
+                
+                {/* SEND BUTTON */}
+                <button
+                  onClick={onSend}
+                  disabled={isLoading || !input.trim()}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    border: '1px solid rgba(0, 200, 200, 0.3)',
+                    background: input.trim()
+                      ? 'rgba(0, 200, 200, 0.8)'
+                      : 'rgba(0, 150, 150, 0.15)',
+                    color: input.trim()
+                      ? '#ffffff'
+                      : 'rgba(255, 255, 255, 0.95)',
+                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    opacity: isLoading ? 0.5 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && input.trim()) {
+                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (input.trim()) {
+                      e.target.style.background = 'rgba(0, 200, 200, 0.8)';
+                    } else {
+                      e.target.style.background = 'rgba(0, 150, 150, 0.15)';
+                    }
+                    e.target.style.transform = 'scale(1.0)';
+                  }}
+                  title="Send Message"
+                >
+                  <svg
+                    width={18}
+                    height={18}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -455,7 +482,7 @@ const InputBar = ({
           
           <div style={{
             position: 'fixed',
-            bottom: '100px',
+            bottom: '140px',
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'rgba(255, 255, 255, 0.95)',
