@@ -149,8 +149,8 @@ const InputBar = ({
 
   // Unified button style for all toolbar actions
   const toolbarButtonStyle = {
-    width: 34,
-    height: 34,
+    width: isMobile ? 30 : 34,
+    height: isMobile ? 30 : 34,
     borderRadius: '8px',
     border: '1px solid rgba(0, 200, 200, 0.3)',
     background: 'rgba(0, 150, 150, 0.15)',
@@ -238,7 +238,7 @@ const InputBar = ({
               {/* LEFT GROUP */}
               <div style={{
                 display: 'flex',
-                gap: '0.5rem',
+                gap: isMobile ? '0.25rem' : '0.5rem',
                 alignItems: 'center'
               }}>
                 {/* PLUS BUTTON */}
@@ -297,7 +297,7 @@ const InputBar = ({
               {/* RIGHT GROUP */}
               <div style={{
                 display: 'flex',
-                gap: '0.5rem',
+                gap: isMobile ? '0.25rem' : '0.5rem',
                 alignItems: 'center'
               }}>
                 {/* MICROPHONE BUTTON */}
@@ -429,4 +429,4 @@ const InputBar = ({
   );
 };
 
-export default InputBar; 
+export default InputBar;
