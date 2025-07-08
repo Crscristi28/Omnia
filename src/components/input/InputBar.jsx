@@ -10,17 +10,17 @@ import { MagnifyingGlassIcon, MicrophoneIcon, ChatBubbleLeftRightIcon } from '@h
 
 // 🎨 CLEAN SVG ICONS
 const PlusIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor"></line>
-    <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor"></line>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
+    <line x1="12" y1="5" x2="12" y2="19" stroke="white"></line>
+    <line x1="5" y1="12" x2="19" y2="12" stroke="white"></line>
   </svg>
 );
 
 const MenuIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor"></line>
-    <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor"></line>
-    <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor"></line>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
+    <line x1="3" y1="6" x2="21" y2="6" stroke="white"></line>
+    <line x1="3" y1="12" x2="21" y2="12" stroke="white"></line>
+    <line x1="3" y1="18" x2="21" y2="18" stroke="white"></line>
   </svg>
 );
 
@@ -268,7 +268,7 @@ const InputBar = ({
                 style={toolbarButtonStyle}
                 title="Deep Search"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="20" height="20">
+                <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5" width="20" height="20">
                   <circle cx="10" cy="10" r="6" />
                   <line x1="14" y1="14" x2="20" y2="20" />
                   <line x1="8" y1="9" x2="12" y2="9" />
@@ -282,7 +282,7 @@ const InputBar = ({
                 style={toolbarButtonStyle}
                 title="Voice Chat"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="20" height="20">
+                <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5" width="20" height="20">
                   <line x1="4" y1="12" x2="4" y2="16" />
                   <line x1="8" y1="8" x2="8" y2="16" />
                   <line x1="12" y1="4" x2="12" y2="16" />
@@ -307,7 +307,7 @@ const InputBar = ({
                   style={toolbarButtonStyle}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
-                  <MicrophoneIcon className="h-5 w-5 text-white" />
+                  <MicrophoneIcon className="h-5 w-5" style={{ fill: 'white', stroke: 'white', strokeWidth: '1.5' }} />
                 </button>
                 
                 {/* SEND BUTTON */}
@@ -328,7 +328,7 @@ const InputBar = ({
                     }}
                     title="Send"
                   >
-                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
                       <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
@@ -341,7 +341,7 @@ const InputBar = ({
                     }}
                     title="Send"
                   >
-                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
                       <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
