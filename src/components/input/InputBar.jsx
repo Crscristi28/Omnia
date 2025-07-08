@@ -388,59 +388,61 @@ const InputBar = ({
             </button>
 
             {/* 5. DYNAMIC OMNIA/SEND - ÚPLNĚ VPRAVO! */}
-            {hasInput ? (
-              <OmniaArrowButton
-                onClick={onSend}
-                disabled={isLoading || !input.trim()}
-                loading={isLoading}
-                isListening={isRecording}
-                size={buttonSize}
-              />
-            ) : (
-              <button
-                className="input-bar-button"
-                onClick={onVoiceScreen}
-                disabled={isLoading}
-                style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px',
-                  transition: 'all 0.3s ease',
-                  opacity: isLoading ? 0.5 : 1,
-                  outline: 'none',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading) {
-                    e.target.style.background = 'rgba(135, 206, 250, 0.9)';
-                    e.target.style.transform = 'scale(1.05)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isLoading) {
-                    e.target.style.background = 'rgba(135, 206, 250, 0.8)';
-                    e.target.style.transform = 'scale(1)';
-                  }
-                }}
-                title="Voice Chat"
-              >
-                <MiniOmniaLogo 
-                  size={buttonSize - 4}
-                  onClick={() => {}}
-                  isAudioPlaying={isAudioPlaying}
+            <div className="button-wrapper">
+              {input.trim() === '' ? (
+                <button
+                  className="input-bar-button"
+                  onClick={onVoiceScreen}
+                  disabled={isLoading}
+                  style={{
+                    width: buttonSize,
+                    height: buttonSize,
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    transition: 'all 0.3s ease',
+                    opacity: isLoading ? 0.5 : 1,
+                    outline: 'none',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.background = 'rgba(135, 206, 250, 0.9)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading) {
+                      e.target.style.background = 'rgba(135, 206, 250, 0.8)';
+                      e.target.style.transform = 'scale(1)';
+                    }
+                  }}
+                  title="Voice Chat"
+                >
+                  <MiniOmniaLogo 
+                    size={buttonSize - 4}
+                    onClick={() => {}}
+                    isAudioPlaying={isAudioPlaying}
+                    loading={isLoading}
+                  />
+                </button>
+              ) : (
+                <OmniaArrowButton
+                  onClick={onSend}
+                  disabled={isLoading || !input.trim()}
                   loading={isLoading}
+                  isListening={isRecording}
+                  size={buttonSize}
                 />
-              </button>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
