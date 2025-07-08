@@ -579,11 +579,26 @@ style.innerHTML = `
   opacity: 1 !important;
   border-radius: 12px !important;
 }
-/* Disable hover effect for static voice button */
-.input-button:hover {
+/* Voice Chat (Omnia icon) button - keep static, no effects */
+.input-button,
+.input-button:hover,
+.input-button:focus,
+.input-button:active {
   background: transparent !important;
   box-shadow: none !important;
   transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+  animation: none !important;
+}
+.input-button svg,
+.input-button:hover svg,
+.input-button:focus svg,
+.input-button:active svg {
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+  animation: none !important;
 }
 /* Remove glowing/animation/scale for static voice button */
 .input-bar-button.glowing,
