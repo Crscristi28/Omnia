@@ -5,7 +5,8 @@
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, MicrophoneIcon } from '@heroicons/react/24/solid';
 
 // 🎨 CLEAN SVG ICONS
 const PlusIcon = ({ size = 20 }) => (
@@ -23,14 +24,6 @@ const MenuIcon = ({ size = 20 }) => (
   </svg>
 );
 
-const MicIcon = ({ size = 20, className = "h-5 w-5 text-white" }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor"></path>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor"></path>
-    <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor"></line>
-    <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor"></line>
-  </svg>
-);
 
 // PLUS MENU COMPONENT
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
@@ -276,7 +269,7 @@ const InputBar = ({
                 title="Deep Search"
                 className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
               >
-                <MagnifyingGlassIcon className="h-5 w-5 text-white" />
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-600" />
               </button>
               </div>
               
@@ -310,7 +303,7 @@ const InputBar = ({
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                   className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                 >
-                  <MicIcon className="h-5 w-5 text-white" />
+                  <MicrophoneIcon className="h-5 w-5 text-gray-600" />
                 </button>
                 
                 {/* SEND BUTTON */}
