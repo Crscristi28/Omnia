@@ -230,19 +230,35 @@ const InputBar = ({
             
             {/* BOTTOM SECTION: BUTTONS */}
             {isMobile ? (
-              <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', padding: '0.75rem' }}>
+              <div className="button-group flex gap-2 sm:gap-3 md:gap-4 items-center justify-center flex-nowrap px-3 py-3">
                 {/* PLUS BUTTON */}
-                <button onClick={() => setShowPlusMenu(true)} disabled={isLoading} style={toolbarButtonStyle} title="Add Content">
+                <button
+                  onClick={() => setShowPlusMenu(true)}
+                  disabled={isLoading}
+                  className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
+                  title="Add Content"
+                  style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
+                >
                   <PlusIcon size={20} />
                 </button>
-
                 {/* MODELS BUTTON */}
-                <button onClick={() => setShowModelDropdown(!showModelDropdown)} disabled={isLoading} style={toolbarButtonStyle} title="AI Models">
+                <button
+                  onClick={() => setShowModelDropdown(!showModelDropdown)}
+                  disabled={isLoading}
+                  className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
+                  title="AI Models"
+                  style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
+                >
                   <MenuIcon size={20} />
                 </button>
-
                 {/* RESEARCH BUTTON */}
-                <button onClick={handleDeepSearch} disabled={isLoading} style={toolbarButtonStyle} title="Deep Search">
+                <button
+                  onClick={handleDeepSearch}
+                  disabled={isLoading}
+                  className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
+                  title="Deep Search"
+                  style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
+                >
                   <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5" width="20" height="20">
                     <circle cx="10" cy="10" r="6" />
                     <line x1="14" y1="14" x2="20" y2="20" />
@@ -250,9 +266,14 @@ const InputBar = ({
                     <line x1="8" y1="11" x2="12" y2="11" />
                   </svg>
                 </button>
-
                 {/* OMNIA BUTTON */}
-                <button onClick={onVoiceScreen} disabled={isLoading} style={toolbarButtonStyle} title="Voice Chat">
+                <button
+                  onClick={onVoiceScreen}
+                  disabled={isLoading}
+                  className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
+                  title="Voice Chat"
+                  style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
+                >
                   <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5" width="20" height="20">
                     <line x1="4" y1="12" x2="4" y2="16" />
                     <line x1="8" y1="8" x2="8" y2="16" />
@@ -261,23 +282,37 @@ const InputBar = ({
                     <line x1="20" y1="14" x2="20" y2="16" />
                   </svg>
                 </button>
-
                 {/* MICROPHONE BUTTON */}
-                <button onClick={onSTT} disabled={isLoading || isAudioPlaying} style={toolbarButtonStyle} title={isRecording ? 'Stop Recording' : 'Voice Input'}>
+                <button
+                  onClick={onSTT}
+                  disabled={isLoading || isAudioPlaying}
+                  className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
+                  title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                  style={{ opacity: isLoading || isAudioPlaying ? 0.5 : 1, cursor: isLoading || isAudioPlaying ? "not-allowed" : "pointer" }}
+                >
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="white" stroke="white" strokeWidth="1.5">
                     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3zm5-3c0 2.5-2 4.5-4.5 4.5S8 13.5 8 11H6c0 3.03 2.13 5.44 5 5.92V21h2v-4.08c2.87-.48 5-2.89 5-5.92h-2z"/>
                   </svg>
                 </button>
-
                 {/* SEND BUTTON */}
                 {input.trim() ? (
-                  <button onClick={onSend} disabled={isLoading} style={{ ...toolbarButtonStyle, background: 'rgba(0, 150, 150, 0.85)', border: '1px solid rgba(0, 200, 200, 0.3)' }} title="Send">
+                  <button
+                    onClick={onSend}
+                    disabled={isLoading}
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/85 text-white flex items-center justify-center p-1.5 text-base transition-all"
+                    title="Send"
+                    style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
+                  >
                     <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5">
                       <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
                 ) : (
-                  <button disabled style={{ ...toolbarButtonStyle, opacity: 0.5 }} title="Send">
+                  <button
+                    disabled
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all opacity-50"
+                    title="Send"
+                  >
                     <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5">
                       <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
@@ -285,24 +320,16 @@ const InputBar = ({
                 )}
               </div>
             ) : (
-              <div style={{
-                padding: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
+              <div className="button-group flex items-center justify-between px-4 py-4 md:gap-4">
                 {/* LEFT GROUP */}
-                <div style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  alignItems: 'center'
-                }}>
+                <div className="flex gap-2 sm:gap-3 md:gap-4 items-center">
                   {/* PLUS BUTTON */}
                   <button
                     onClick={() => setShowPlusMenu(true)}
                     disabled={isLoading}
-                    style={toolbarButtonStyle}
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
                     title="Add Content"
+                    style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
                   >
                     <PlusIcon size={20} />
                   </button>
@@ -310,8 +337,9 @@ const InputBar = ({
                   <button
                     onClick={() => setShowModelDropdown(!showModelDropdown)}
                     disabled={isLoading}
-                    style={toolbarButtonStyle}
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
                     title="AI Models"
+                    style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
                   >
                     <MenuIcon size={20} />
                   </button>
@@ -319,8 +347,9 @@ const InputBar = ({
                   <button
                     onClick={handleDeepSearch}
                     disabled={isLoading}
-                    style={toolbarButtonStyle}
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
                     title="Deep Search"
+                    style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
                   >
                     <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5" width="20" height="20">
                       <circle cx="10" cy="10" r="6" />
@@ -333,8 +362,9 @@ const InputBar = ({
                   <button
                     onClick={onVoiceScreen}
                     disabled={isLoading}
-                    style={toolbarButtonStyle}
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
                     title="Voice Chat"
+                    style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
                   >
                     <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5" width="20" height="20">
                       <line x1="4" y1="12" x2="4" y2="16" />
@@ -346,17 +376,14 @@ const InputBar = ({
                   </button>
                 </div>
                 {/* RIGHT GROUP */}
-                <div style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  alignItems: 'center'
-                }}>
+                <div className="flex gap-2 sm:gap-3 md:gap-4 items-center">
                   {/* MICROPHONE BUTTON */}
                   <button
                     onClick={onSTT}
                     disabled={isLoading || isAudioPlaying}
-                    style={toolbarButtonStyle}
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all"
                     title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                    style={{ opacity: isLoading || isAudioPlaying ? 0.5 : 1, cursor: isLoading || isAudioPlaying ? "not-allowed" : "pointer" }}
                   >
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="white" stroke="white" strokeWidth="1.5">
                       <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3zm5-3c0 2.5-2 4.5-4.5 4.5S8 13.5 8 11H6c0 3.03 2.13 5.44 5 5.92V21h2v-4.08c2.87-.48 5-2.89 5-5.92h-2z"/>
@@ -367,11 +394,7 @@ const InputBar = ({
                     <button
                       onClick={onSend}
                       disabled={isLoading}
-                      style={{
-                        ...toolbarButtonStyle,
-                        background: 'rgba(0, 150, 150, 0.85)',
-                        border: '1px solid rgba(0, 200, 200, 0.3)'
-                      }}
+                      className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/85 text-white flex items-center justify-center p-1.5 text-base transition-all"
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'scale(1.05)';
                       }}
@@ -379,6 +402,7 @@ const InputBar = ({
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
                       title="Send"
+                      style={{ opacity: isLoading ? 0.5 : 1, cursor: isLoading ? "not-allowed" : "pointer" }}
                     >
                       <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5">
                         <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
@@ -387,10 +411,7 @@ const InputBar = ({
                   ) : (
                     <button
                       disabled
-                      style={{
-                        ...toolbarButtonStyle,
-                        opacity: 0.5
-                      }}
+                      className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg border border-cyan-300/30 bg-cyan-700/15 text-white flex items-center justify-center p-1.5 text-base transition-all opacity-50"
                       title="Send"
                     >
                       <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5">
