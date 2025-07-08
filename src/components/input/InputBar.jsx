@@ -355,6 +355,13 @@ const InputBar = ({
               onClick={onSTT}
               disabled={isLoading || isAudioPlaying}
               style={{
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0,
+                margin: 0,
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '12px',
@@ -363,25 +370,16 @@ const InputBar = ({
                 color: '#ffffff',
                 opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
                 cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px',
                 transition: 'all 0.3s ease',
-                outline: 'none'
+                outline: 'none',
+                // Reset transform/animation/scale unless active
+                transform: 'none',
+                animation: 'none',
+                boxShadow: 'none'
               }}
-              onMouseEnter={(e) => {
-                if (!isLoading && !isAudioPlaying) {
-                  e.target.style.transform = 'scale(1.1)';
-                  e.target.style.color = 'rgba(255, 255, 255, 0.8)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isLoading && !isAudioPlaying) {
-                  e.target.style.transform = 'scale(1)';
-                  e.target.style.color = '#ffffff';
-                }
-              }}
+              // No glowing/transform/scale/animation when not active
+              onMouseEnter={undefined}
+              onMouseLeave={undefined}
               title={isRecording ? 'Stop Recording' : 'Voice Input'}
             >
               <MicIcon size={iconSize} />
@@ -569,20 +567,32 @@ export default InputBar;
 const style = document.createElement('style');
 style.innerHTML = `
 .input-bar-button {
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
   background: rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
   opacity: 1 !important;
   border-radius: 12px !important;
-  padding: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
 }
 /* Disable hover effect for static voice button */
 .input-button:hover {
   background: transparent !important;
   box-shadow: none !important;
   transform: none !important;
+}
+/* Remove glowing/animation/scale for static voice button */
+.input-bar-button.glowing,
+.input-bar-button:focus,
+.input-bar-button:active {
+  animation: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  scale: 1 !important;
 }
 `;
 if (typeof window !== 'undefined' && !document.querySelector('style[data-input-bar-button]')) {
