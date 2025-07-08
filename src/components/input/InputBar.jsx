@@ -5,19 +5,13 @@
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 
 // 🎨 CLEAN SVG ICONS
 const PlusIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor"></line>
     <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor"></line>
-  </svg>
-);
-
-const SearchIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="11" cy="11" r="8" stroke="currentColor"></circle>
-    <path d="m21 21-4.35-4.35" stroke="currentColor"></path>
   </svg>
 );
 
@@ -29,8 +23,8 @@ const MenuIcon = ({ size = 20 }) => (
   </svg>
 );
 
-const MicIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+const MicIcon = ({ size = 20, className = "h-5 w-5 text-white" }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor"></path>
     <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor"></path>
     <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor"></line>
@@ -274,16 +268,16 @@ const InputBar = ({
                   <MenuIcon size={20} />
                 </button>
                 
-                {/* RESEARCH BUTTON */}
-                <button
-                  onClick={handleDeepSearch}
-                  disabled={isLoading}
-                  style={toolbarButtonStyle}
-                  title="Deep Search"
-                >
-                  {/* <SearchIcon size={16} /> */}
-                  <span role="img" aria-label="search">🔍</span>
-                </button>
+              {/* RESEARCH BUTTON */}
+              <button
+                onClick={handleDeepSearch}
+                disabled={isLoading}
+                style={toolbarButtonStyle}
+                title="Deep Search"
+                className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
+              >
+                <MagnifyingGlassIcon className="h-5 w-5 text-white" />
+              </button>
               </div>
               
               {/* CENTER: VOICE CHAT */}
@@ -292,10 +286,9 @@ const InputBar = ({
                 disabled={isLoading}
                 style={toolbarButtonStyle}
                 title="Voice Chat"
+                className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
               >
-                {/* MiniOmniaLogo imported from OmniaLogos.jsx */}
-                {/* eslint-disable-next-line */}
-                {typeof MiniOmniaLogo !== "undefined" ? <MiniOmniaLogo /> : '🎙️'}
+                <AdjustmentsHorizontalIcon className="h-5 w-5 text-white" />
               </button>
               
               {/* RIGHT GROUP */}
@@ -315,8 +308,9 @@ const InputBar = ({
                     opacity: (isLoading || isAudioPlaying) ? 0.5 : toolbarButtonStyle.opacity
                   }}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                  className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                 >
-                  <MicIcon size={20} />
+                  <MicIcon className="h-5 w-5 text-white" />
                 </button>
                 
                 {/* SEND BUTTON */}
@@ -336,8 +330,11 @@ const InputBar = ({
                       e.currentTarget.style.transform = 'scale(1)';
                     }}
                     title="Send"
+                    className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                   >
-                    ➤
+                    <svg className="h-5 w-5 text-white" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill="currentColor" />
+                    </svg>
                   </button>
                 ) : (
                   <button
@@ -349,8 +346,11 @@ const InputBar = ({
                       opacity: 0.5
                     }}
                     title="Send"
+                    className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                   >
-                    ➤
+                    <svg className="h-5 w-5 text-white" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill="currentColor" />
+                    </svg>
                   </button>
                 )}
               </div>
