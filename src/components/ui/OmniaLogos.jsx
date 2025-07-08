@@ -144,7 +144,33 @@ export const MiniOmniaLogo = ({
       style={getLogoStyle()}
       onClick={onClick}
       title={isListening ? "Poslouchám..." : "Voice Screen"}
-    />
+    >
+      <div
+        style={{
+          width: '40%',
+          height: '50%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        {[1, 2, 3].map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: 3,
+              height: `${6 + i * 3}px`,
+              backgroundColor: 'white',
+              borderRadius: 1,
+              animation: isListening
+                ? `equalizerPulse ${0.5 + i * 0.2}s ease-in-out infinite`
+                : 'none',
+              transformOrigin: 'bottom',
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 
