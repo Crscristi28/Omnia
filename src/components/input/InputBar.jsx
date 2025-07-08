@@ -307,7 +307,9 @@ const InputBar = ({
                   style={toolbarButtonStyle}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
-                  <MicrophoneIcon className="h-5 w-5" style={{ fill: 'white', stroke: 'white', strokeWidth: '1.5' }} />
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="white" stroke="white" strokeWidth="1.5">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3zm5-3c0 2.5-2 4.5-4.5 4.5S8 13.5 8 11H6c0 3.03 2.13 5.44 5 5.92V21h2v-4.08c2.87-.48 5-2.89 5-5.92h-2z"/>
+                  </svg>
                 </button>
                 
                 {/* SEND BUTTON */}
@@ -328,7 +330,7 @@ const InputBar = ({
                     }}
                     title="Send"
                   >
-                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
+                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5">
                       <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
@@ -341,7 +343,7 @@ const InputBar = ({
                     }}
                     title="Send"
                   >
-                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
+                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="rgba(0,0,0,0.3)" strokeWidth="0.5">
                       <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
