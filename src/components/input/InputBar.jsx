@@ -405,10 +405,28 @@ const InputBar = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: '8px',
-                    transition: 'all 0.3s ease',
-                    outline: 'none'
+                    outline: 'none',
+                    position: 'relative',
+                    transform: 'none !important',
+                    top: '0 !important',
+                    left: '0 !important',
+                    marginLeft: '0 !important',
+                    marginTop: '0 !important',
+                    transition: 'opacity 0.3s ease'
                   }}
                   title="Voice Chat"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.position = 'relative';
+                    e.currentTarget.style.top = '0';
+                    e.currentTarget.style.left = '0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.position = 'relative';
+                    e.currentTarget.style.top = '0';
+                    e.currentTarget.style.left = '0';
+                  }}
                 >
                   <MiniOmniaLogo />
                 </button>
