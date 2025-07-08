@@ -267,9 +267,13 @@ const InputBar = ({
                 disabled={isLoading}
                 style={toolbarButtonStyle}
                 title="Deep Search"
-                className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
               >
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-600" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="20" height="20">
+                  <circle cx="10" cy="10" r="6" />
+                  <line x1="14" y1="14" x2="20" y2="20" />
+                  <line x1="8" y1="9" x2="12" y2="9" />
+                  <line x1="8" y1="11" x2="12" y2="11" />
+                </svg>
               </button>
               {/* OMNIA VOICE CHAT BUTTON */}
               <button
@@ -277,9 +281,14 @@ const InputBar = ({
                 disabled={isLoading}
                 style={toolbarButtonStyle}
                 title="Voice Chat"
-                className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
               >
-                <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="20" height="20">
+                  <line x1="4" y1="12" x2="4" y2="16" />
+                  <line x1="8" y1="8" x2="8" y2="16" />
+                  <line x1="12" y1="4" x2="12" y2="16" />
+                  <line x1="16" y1="10" x2="16" y2="16" />
+                  <line x1="20" y1="14" x2="20" y2="16" />
+                </svg>
               </button>
               </div>
               
@@ -297,14 +306,13 @@ const InputBar = ({
                   disabled={isLoading || isAudioPlaying}
                   style={{
                     ...toolbarButtonStyle,
-                    color: isRecording ? '#ff4444' : toolbarButtonStyle.color,
+                    color: isRecording ? '#ff4444' : 'white',
                     cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : toolbarButtonStyle.cursor,
                     opacity: (isLoading || isAudioPlaying) ? 0.5 : toolbarButtonStyle.opacity
                   }}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
-                  className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                 >
-                  <MicrophoneIcon className="h-5 w-5 text-gray-600" />
+                  <MicrophoneIcon className="h-5 w-5" />
                 </button>
                 
                 {/* SEND BUTTON */}
