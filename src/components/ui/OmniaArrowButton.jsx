@@ -32,16 +32,8 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50, isListening =
 
     return {
       ...baseStyle,
-      background: `
-        radial-gradient(circle at 30% 40%, 
-          #00ffff 0%,
-          #0096ff 30%,
-          #6432ff 60%,
-          #9932cc 80%,
-          #4b0082 100%
-        )
-      `,
-      boxShadow: '0 4px 12px rgba(100, 50, 255, 0.4)'
+      background: 'radial-gradient(circle at center, #1b6cf2 0%, #007bff 60%, #0056b3 100%)',
+      boxShadow: '0 0 10px rgba(0,123,255,0.6)'
     };
   };
 
@@ -68,15 +60,19 @@ const OmniaArrowButton = ({ onClick, disabled, loading, size = 50, isListening =
       }}
     >
       {loading ? (
-        <div style={{ 
-          width: '12px', 
-          height: '12px', 
-          border: '2px solid rgba(255,255,255,0.3)', 
+        <div style={{
+          width: '12px',
+          height: '12px',
+          border: '2px solid rgba(255,255,255,0.3)',
           borderTop: '2px solid white',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-      ) : isListening ? '🎙️' : '→'}
+      ) : (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 6l6 6-6 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
     </button>
   );
 };
