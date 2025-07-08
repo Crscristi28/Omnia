@@ -1,11 +1,10 @@
-// 🚀 InputBar.jsx - CLAUDE.AI STYLE WITH TWO ROWS
+// 🚀 InputBar.jsx - CLAUDE.AI STYLE WITH FIXED BUTTONS
 // ✅ Text area on top
-// ✅ Buttons below
+// ✅ All buttons visible below
 // ✅ One unified glass container
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
-import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
 
 // 🎨 CLEAN SVG ICONS
 const PlusIcon = ({ size = 20 }) => (
@@ -39,7 +38,7 @@ const MicIcon = ({ size = 20 }) => (
   </svg>
 );
 
-// PLUS MENU COMPONENT (unchanged)
+// PLUS MENU COMPONENT
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
@@ -163,9 +162,25 @@ const InputBar = ({
     console.log('🔍 Research clicked - Coming Soon!');
   };
 
+  // Unified button style
+  const buttonStyle = {
+    width: 36,
+    height: 36,
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: '#ffffff',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
+    fontSize: '18px'
+  };
+
   return (
     <>
-      {/* 🎨 CLAUDE.AI STYLE INPUT BAR - TWO ROWS */}
+      {/* 🎨 CLAUDE.AI STYLE INPUT BAR */}
       <div style={{
         position: 'fixed',
         bottom: 0,
@@ -184,7 +199,7 @@ const InputBar = ({
           pointerEvents: 'auto'
         }}>
           
-          {/* 💎 UNIFIED GLASS CONTAINER WITH TWO SECTIONS */}
+          {/* 💎 UNIFIED GLASS CONTAINER */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.06)',
             backdropFilter: 'blur(20px)',
@@ -198,7 +213,7 @@ const InputBar = ({
             {/* TOP SECTION: TEXTAREA */}
             <div style={{
               padding: isMobile ? '1rem 1.5rem' : '1.25rem 1.75rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+              borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
             }}>
               <textarea
                 value={input}
@@ -244,27 +259,9 @@ const InputBar = ({
                   onClick={() => setShowPlusMenu(true)}
                   disabled={isLoading}
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    border: '1px solid rgba(0, 200, 200, 0.3)',
-                    background: 'rgba(0, 150, 150, 0.15)',
-                    color: 'rgba(255, 255, 255, 0.95)',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
-                    e.target.style.transform = 'scale(1.0)';
+                    ...buttonStyle,
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer'
                   }}
                   title="Add Content"
                 >
@@ -276,27 +273,9 @@ const InputBar = ({
                   onClick={() => setShowModelDropdown(!showModelDropdown)}
                   disabled={isLoading}
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    border: '1px solid rgba(0, 200, 200, 0.3)',
-                    background: 'rgba(0, 150, 150, 0.15)',
-                    color: 'rgba(255, 255, 255, 0.95)',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
-                    e.target.style.transform = 'scale(1.0)';
+                    ...buttonStyle,
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer'
                   }}
                   title="AI Models"
                 >
@@ -308,28 +287,15 @@ const InputBar = ({
                   onClick={handleDeepSearch}
                   disabled={isLoading}
                   style={{
+                    ...buttonStyle,
                     height: 36,
+                    width: 'auto',
                     borderRadius: '18px',
-                    border: '1px solid rgba(0, 200, 200, 0.3)',
-                    background: 'rgba(0, 150, 150, 0.15)',
-                    color: 'rgba(255, 255, 255, 0.95)',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
                     padding: '0 14px',
+                    gap: '6px',
                     fontSize: '14px',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
-                    e.target.style.transform = 'scale(1.0)';
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer'
                   }}
                   title="Deep Search"
                 >
@@ -339,26 +305,18 @@ const InputBar = ({
               </div>
               
               {/* CENTER: VOICE CHAT */}
-              <div
+              <button
                 onClick={onVoiceScreen}
+                disabled={isLoading}
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '8px',
-                  background: 'transparent',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  ...buttonStyle,
                   opacity: isLoading ? 0.5 : 1,
-                  transition: 'all 0.2s ease'
+                  cursor: isLoading ? 'not-allowed' : 'pointer'
                 }}
-                onMouseEnter={(e) => !isLoading && (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 title="Voice Chat"
               >
-                <MiniOmniaLogo size={24} />
-              </div>
+                🎙️
+              </button>
               
               {/* RIGHT GROUP */}
               <div style={{
@@ -371,27 +329,10 @@ const InputBar = ({
                   onClick={onSTT}
                   disabled={isLoading || isAudioPlaying}
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    border: '1px solid rgba(0, 200, 200, 0.3)',
-                    background: 'rgba(0, 150, 150, 0.15)',
-                    color: isRecording ? '#ff4444' : 'rgba(255, 255, 255, 0.95)',
-                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading && !isAudioPlaying) {
-                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(0, 150, 150, 0.15)';
-                    e.target.style.transform = 'scale(1.0)';
+                    ...buttonStyle,
+                    color: isRecording ? '#ff4444' : '#ffffff',
+                    opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
+                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer'
                   }}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
@@ -403,36 +344,16 @@ const InputBar = ({
                   onClick={onSend}
                   disabled={isLoading || !input.trim()}
                   style={{
-                    width: 36,
-                    height: 36,
+                    ...buttonStyle,
                     borderRadius: '50%',
-                    border: '1px solid rgba(0, 200, 200, 0.3)',
-                    background: input.trim()
-                      ? 'rgba(0, 200, 200, 0.8)'
-                      : 'rgba(0, 150, 150, 0.15)',
-                    color: input.trim()
-                      ? '#ffffff'
-                      : 'rgba(255, 255, 255, 0.95)',
-                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    opacity: isLoading ? 0.5 : 1
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading && input.trim()) {
-                      e.target.style.background = 'rgba(0, 200, 200, 0.25)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (input.trim()) {
-                      e.target.style.background = 'rgba(0, 200, 200, 0.8)';
-                    } else {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.15)';
-                    }
-                    e.target.style.transform = 'scale(1.0)';
+                    background: input.trim() 
+                      ? 'rgba(255, 255, 255, 0.9)' 
+                      : 'rgba(255, 255, 255, 0.1)',
+                    color: input.trim() 
+                      ? '#000000' 
+                      : '#ffffff',
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer'
                   }}
                   title="Send Message"
                 >
