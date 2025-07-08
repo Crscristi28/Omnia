@@ -243,11 +243,11 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                color: '#ffffff',
+                color: '#1a365d', // Tmavě modrá ikona
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -259,13 +259,13 @@ const InputBar = ({
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
                   e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -282,11 +282,11 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                color: '#ffffff',
+                color: '#1a365d', // Tmavě modrá ikona
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -298,13 +298,13 @@ const InputBar = ({
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
                   e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -321,11 +321,11 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: showModelDropdown ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                background: showModelDropdown ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)', // Světle modrá
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                color: '#ffffff',
+                color: '#1a365d', // Tmavě modrá ikona
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -337,13 +337,13 @@ const InputBar = ({
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
                   e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = showModelDropdown ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = showModelDropdown ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -360,11 +360,11 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                background: isRecording ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                background: isRecording ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)', // Světle modrá
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                color: '#ffffff',
+                color: '#1a365d', // Tmavě modrá ikona
                 cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -376,13 +376,13 @@ const InputBar = ({
               }}
               onMouseEnter={(e) => {
                 if (!isLoading && !isAudioPlaying) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.background = 'rgba(135, 206, 250, 0.9)';
                   e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading && !isAudioPlaying) {
-                  e.target.style.background = isRecording ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = isRecording ? 'rgba(135, 206, 250, 0.9)' : 'rgba(135, 206, 250, 0.8)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -408,8 +408,8 @@ const InputBar = ({
                   width: buttonSize,
                   height: buttonSize,
                   borderRadius: '50%',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -423,13 +423,13 @@ const InputBar = ({
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                    e.target.style.background = 'rgba(135, 206, 250, 0.9)';
                     e.target.style.transform = 'scale(1.05)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isLoading) {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                    e.target.style.background = 'rgba(135, 206, 250, 0.8)';
                     e.target.style.transform = 'scale(1)';
                   }
                 }}
