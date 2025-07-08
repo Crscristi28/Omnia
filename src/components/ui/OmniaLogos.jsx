@@ -103,10 +103,9 @@ export const MiniOmniaLogo = ({
   const getLogoStyle = () => ({
     width: size,
     height: size,
-    borderRadius: '50%',
-    background: 'transparent',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
