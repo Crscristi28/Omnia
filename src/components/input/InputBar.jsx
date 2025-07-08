@@ -9,32 +9,32 @@ import { getTranslation } from '../../utils/translations.js';
 // 🎨 CLEAN SVG ICONS
 const PlusIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor"></line>
+    <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor"></line>
   </svg>
 );
 
 const SearchIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="11" cy="11" r="8"></circle>
-    <path d="m21 21-4.35-4.35"></path>
+    <circle cx="11" cy="11" r="8" stroke="currentColor"></circle>
+    <path d="m21 21-4.35-4.35" stroke="currentColor"></path>
   </svg>
 );
 
 const MenuIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="3" y1="6" x2="21" y2="6"></line>
-    <line x1="3" y1="12" x2="21" y2="12"></line>
-    <line x1="3" y1="18" x2="21" y2="18"></line>
+    <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor"></line>
+    <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor"></line>
+    <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor"></line>
   </svg>
 );
 
 const MicIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-    <line x1="12" y1="19" x2="12" y2="23"></line>
-    <line x1="8" y1="23" x2="16" y2="23"></line>
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor"></path>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor"></path>
+    <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor"></line>
+    <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor"></line>
   </svg>
 );
 
@@ -99,28 +99,26 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
         </div>
 
         {menuItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => {
-              console.log(`${item.key} clicked - Coming Soon!`);
-              onClose();
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              width: '100%',
-              padding: '1rem',
-              border: 'none',
-              background: 'transparent',
-              color: '#e2e8f0',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
-            onMouseLeave={(e) => e.target.style.background = 'transparent'}
-          >
+            <button
+              key={item.key}
+              onClick={() => {
+                console.log(`${item.key} clicked - Coming Soon!`);
+                onClose();
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                width: '100%',
+                padding: '1rem',
+                border: 'none',
+                background: 'transparent',
+                color: '#e2e8f0',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
             <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
             <span>{getLabel(item)}</span>
             <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, fontStyle: 'italic' }}>
@@ -259,9 +257,18 @@ const InputBar = ({
                   onClick={() => setShowPlusMenu(true)}
                   disabled={isLoading}
                   style={{
-                    ...buttonStyle,
-                    opacity: isLoading ? 0.5 : 1,
-                    cursor: isLoading ? 'not-allowed' : 'pointer'
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#ffffff',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    opacity: isLoading ? 0.5 : 1
                   }}
                   title="Add Content"
                 >
@@ -273,9 +280,18 @@ const InputBar = ({
                   onClick={() => setShowModelDropdown(!showModelDropdown)}
                   disabled={isLoading}
                   style={{
-                    ...buttonStyle,
-                    opacity: isLoading ? 0.5 : 1,
-                    cursor: isLoading ? 'not-allowed' : 'pointer'
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#ffffff',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    opacity: isLoading ? 0.5 : 1
                   }}
                   title="AI Models"
                 >
@@ -287,15 +303,21 @@ const InputBar = ({
                   onClick={handleDeepSearch}
                   disabled={isLoading}
                   style={{
-                    ...buttonStyle,
-                    height: 36,
                     width: 'auto',
+                    height: 36,
                     borderRadius: '18px',
-                    padding: '0 14px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#ffffff',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
                     gap: '6px',
                     fontSize: '14px',
-                    opacity: isLoading ? 0.5 : 1,
-                    cursor: isLoading ? 'not-allowed' : 'pointer'
+                    padding: '0 14px',
+                    opacity: isLoading ? 0.5 : 1
                   }}
                   title="Deep Search"
                 >
@@ -309,13 +331,24 @@ const InputBar = ({
                 onClick={onVoiceScreen}
                 disabled={isLoading}
                 style={{
-                  ...buttonStyle,
-                  opacity: isLoading ? 0.5 : 1,
-                  cursor: isLoading ? 'not-allowed' : 'pointer'
+                  width: 36,
+                  height: 36,
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#ffffff',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  opacity: isLoading ? 0.5 : 1
                 }}
                 title="Voice Chat"
               >
-                🎙️
+                {/* MiniOmniaLogo imported from OmniaLogos.jsx */}
+                {/* eslint-disable-next-line */}
+                {typeof MiniOmniaLogo !== "undefined" ? <MiniOmniaLogo /> : '🎙️'}
               </button>
               
               {/* RIGHT GROUP */}
@@ -329,10 +362,18 @@ const InputBar = ({
                   onClick={onSTT}
                   disabled={isLoading || isAudioPlaying}
                   style={{
-                    ...buttonStyle,
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.1)',
                     color: isRecording ? '#ff4444' : '#ffffff',
-                    opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
-                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer'
+                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    opacity: (isLoading || isAudioPlaying) ? 0.5 : 1
                   }}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
@@ -344,16 +385,22 @@ const InputBar = ({
                   onClick={onSend}
                   disabled={isLoading || !input.trim()}
                   style={{
-                    ...buttonStyle,
+                    width: 36,
+                    height: 36,
                     borderRadius: '50%',
-                    background: input.trim() 
-                      ? 'rgba(255, 255, 255, 0.9)' 
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: input.trim()
+                      ? 'rgba(255, 255, 255, 0.9)'
                       : 'rgba(255, 255, 255, 0.1)',
-                    color: input.trim() 
-                      ? '#000000' 
+                    color: input.trim()
+                      ? '#000000'
                       : '#ffffff',
-                    opacity: isLoading ? 0.5 : 1,
-                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer'
+                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    opacity: isLoading ? 0.5 : 1
                   }}
                   title="Send Message"
                 >
@@ -367,8 +414,8 @@ const InputBar = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    <line x1="22" y1="2" x2="11" y2="13" stroke="currentColor"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" stroke="currentColor"></polygon>
                   </svg>
                 </button>
               </div>
@@ -437,16 +484,6 @@ const InputBar = ({
                   cursor: 'pointer',
                   color: 'rgba(0, 78, 146, 0.8)',
                   transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (model !== item.key) {
-                    e.target.style.background = 'rgba(0, 78, 146, 0.05)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (model !== item.key) {
-                    e.target.style.background = 'transparent';
-                  }
                 }}
               >
                 <div style={{ fontWeight: '500' }}>{item.label}</div>
