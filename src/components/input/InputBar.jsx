@@ -391,29 +391,22 @@ const InputBar = ({
               {!input.trim() ? (
                 <button
                   onClick={onVoiceScreen}
-                  className="input-bar-button voice-button-static"
                   disabled={isLoading}
                   style={{
                     width: buttonSize,
                     height: buttonSize,
                     borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'transparent',
-                    boxShadow: 'none',
-                    transition: 'none',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
+                    border: 'none',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: '#ffffff',
+                    opacity: isLoading ? 0.5 : 1,
                     cursor: isLoading ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: '8px',
-                    opacity: isLoading ? 0.5 : 1,
-                    outline: 'none',
-                    visibility: 'visible !important',
-                    pointerEvents: 'auto !important',
-                    zIndex: '100 !important',
-                    position: 'relative !important'
+                    transition: 'all 0.3s ease',
+                    outline: 'none'
                   }}
                   title="Voice Chat"
                 >
@@ -564,79 +557,3 @@ const InputBar = ({
 };
 
 export default InputBar;
-// 💡 Input bar button styles for visibility
-// (Move to CSS file in real project)
-const style = document.createElement('style');
-style.innerHTML = `
-.input-bar-button {
-  position: relative !important;
-  overflow: hidden !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-  opacity: 1 !important;
-  border-radius: 12px !important;
-}
-/* Voice Chat (Omnia icon) button - keep static, no effects */
-.input-button,
-.input-button:hover,
-.input-button:focus,
-.input-button:active {
-  background: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
-  opacity: 1 !important;
-  transition: none !important;
-  animation: none !important;
-}
-.input-button svg,
-.input-button:hover svg,
-.input-button:focus svg,
-.input-button:active svg {
-  transform: none !important;
-  opacity: 1 !important;
-  transition: none !important;
-  animation: none !important;
-}
-/* Remove glowing/animation/scale for static voice button */
-.input-bar-button.glowing,
-.input-bar-button:focus,
-.input-bar-button:active {
-  animation: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-  scale: 1 !important;
-}
-`;
-if (typeof window !== 'undefined' && !document.querySelector('style[data-input-bar-button]')) {
-  style.setAttribute('data-input-bar-button', 'true');
-  document.head.appendChild(style);
-}
-
-// Add static voice button style
-// Add at the end of the file so it's rendered by React
-// eslint-disable-next-line
-export const VoiceButtonStaticStyle = (
-  <style>
-    {`
-      .voice-button-static,
-      .voice-button-static * {
-        visibility: visible !important;
-        opacity: 1 !important;
-        display: flex !important;
-        pointer-events: auto !important;
-      }
-
-      .voice-button-static:hover,
-      .voice-button-static:hover * {
-        visibility: visible !important;
-        opacity: 1 !important;
-        display: flex !important;
-      }
-    `}
-  </style>
-);
