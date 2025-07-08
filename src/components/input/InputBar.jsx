@@ -389,17 +389,18 @@ const InputBar = ({
 
             {/* 5. DYNAMIC OMNIA/SEND - ÚPLNĚ VPRAVO! */}
             <div className="button-wrapper">
-              {input.trim() === '' ? (
+              {/* Dynamic Omnia/Send button using unified input-bar-button class */}
+              {!input.trim() ? (
                 <button
-                  className="input-bar-button"
                   onClick={onVoiceScreen}
+                  className="input-bar-button"
                   disabled={isLoading}
                   style={{
                     width: buttonSize,
                     height: buttonSize,
                     borderRadius: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
+                    background: 'rgba(135, 206, 250, 0.8)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
                     cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -426,21 +427,61 @@ const InputBar = ({
                   }}
                   title="Voice Chat"
                 >
-                  <MiniOmniaLogo 
-                    size={buttonSize - 4}
-                    onClick={() => {}}
-                    isAudioPlaying={isAudioPlaying}
-                    loading={isLoading}
-                  />
+                  <MiniOmniaLogo />
                 </button>
               ) : (
-                <OmniaArrowButton
+                <button
                   onClick={onSend}
+                  className="input-bar-button"
                   disabled={isLoading || !input.trim()}
-                  loading={isLoading}
-                  isListening={isRecording}
-                  size={buttonSize}
-                />
+                  style={{
+                    width: buttonSize,
+                    height: buttonSize,
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(135, 206, 250, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    cursor: (isLoading || !input.trim()) ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    transition: 'all 0.3s ease',
+                    opacity: isLoading ? 0.5 : 1,
+                    outline: 'none',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && !!input.trim()) {
+                      e.target.style.background = 'rgba(135, 206, 250, 0.9)';
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading && !!input.trim()) {
+                      e.target.style.background = 'rgba(135, 206, 250, 0.8)';
+                      e.target.style.transform = 'scale(1)';
+                    }
+                  }}
+                  title="Send"
+                >
+                  {/* Paper plane icon (FaPaperPlane) */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={iconSize + 2}
+                    height={iconSize + 2}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
               )}
             </div>
           </div>
