@@ -4,6 +4,7 @@
 // ✅ One unified glass container
 
 import React, { useState } from 'react';
+import '../../App.css'; // Ensure global styles (including responsive input bar styles) are loaded
 import { getTranslation } from '../../utils/translations.js';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { MagnifyingGlassIcon, MicrophoneIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
