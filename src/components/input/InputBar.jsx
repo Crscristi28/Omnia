@@ -393,14 +393,17 @@ const InputBar = ({
               {!input.trim() ? (
                 <button
                   onClick={onVoiceScreen}
-                  className="input-bar-button"
+                  className="input-bar-button input-button"
                   disabled={isLoading}
                   style={{
                     width: buttonSize,
                     height: buttonSize,
                     borderRadius: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(135, 206, 250, 0.8)',
+                    // Remove background, boxShadow, transition for static look
+                    background: 'transparent',
+                    boxShadow: 'none',
+                    transition: 'none',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
                     cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -408,23 +411,10 @@ const InputBar = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: '8px',
-                    transition: 'all 0.3s ease',
                     opacity: isLoading ? 0.5 : 1,
-                    outline: 'none',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                    outline: 'none'
                   }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'rgba(135, 206, 250, 0.9)';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'rgba(135, 206, 250, 0.8)';
-                      e.target.style.transform = 'scale(1)';
-                    }
-                  }}
+                  // Remove hover effect for static look
                   title="Voice Chat"
                 >
                   <MiniOmniaLogo />
@@ -587,6 +577,12 @@ style.innerHTML = `
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+/* Disable hover effect for static voice button */
+.input-button:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 `;
 if (typeof window !== 'undefined' && !document.querySelector('style[data-input-bar-button]')) {
