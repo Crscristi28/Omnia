@@ -304,15 +304,10 @@ const InputBar = ({
                 <button
                   onClick={onSTT}
                   disabled={isLoading || isAudioPlaying}
-                  style={{
-                    ...toolbarButtonStyle,
-                    color: isRecording ? '#ff4444' : 'white',
-                    cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : toolbarButtonStyle.cursor,
-                    opacity: (isLoading || isAudioPlaying) ? 0.5 : toolbarButtonStyle.opacity
-                  }}
+                  style={toolbarButtonStyle}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
-                  <MicrophoneIcon className="h-5 w-5" />
+                  <MicrophoneIcon className="h-5 w-5 text-white" />
                 </button>
                 
                 {/* SEND BUTTON */}
@@ -332,10 +327,9 @@ const InputBar = ({
                       e.currentTarget.style.transform = 'scale(1)';
                     }}
                     title="Send"
-                    className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                   >
-                    <svg className="h-5 w-5 text-white" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill="currentColor" />
+                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
                 ) : (
@@ -343,15 +337,12 @@ const InputBar = ({
                     disabled
                     style={{
                       ...toolbarButtonStyle,
-                      background: 'rgba(0, 200, 200, 0.3)',
-                      border: '1px solid rgba(0, 200, 200, 0.3)',
                       opacity: 0.5
                     }}
                     title="Send"
-                    className="w-10 h-10 flex items-center justify-center rounded-md bg-sky-900/50"
                   >
-                    <svg className="h-5 w-5 text-white" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill="currentColor" />
+                    <svg className="h-5 w-5" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" />
                     </svg>
                   </button>
                 )}
