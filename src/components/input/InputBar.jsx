@@ -434,4 +434,4 @@ const InputBar = ({
   );
 };
 
-export default InputBar;
+export default InputBar; 
