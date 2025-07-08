@@ -237,21 +237,23 @@ const InputBar = ({
             
             {/* 1. PLUS */}
             <button
+              className="input-bar-button"
               onClick={() => setShowPlusMenu(true)}
               disabled={isLoading}
               style={{
                 width: buttonSize,
                 height: buttonSize,
-                borderRadius: '50%',
+                borderRadius: '12px',
                 border: 'none',
-                background: 'transparent',
+                background: 'rgba(255, 255, 255, 0.08)',
                 color: '#ffffff',
+                opacity: isLoading ? 0.5 : 1,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                padding: '8px',
                 transition: 'all 0.3s ease',
-                opacity: isLoading ? 0.5 : 1,
                 outline: 'none'
               }}
               onMouseEnter={(e) => {
@@ -273,21 +275,23 @@ const InputBar = ({
 
             {/* 2. RESEARCH */}
             <button
+              className="input-bar-button"
               onClick={handleDeepSearch}
               disabled={isLoading}
               style={{
                 width: buttonSize,
                 height: buttonSize,
-                borderRadius: '50%',
+                borderRadius: '12px',
                 border: 'none',
-                background: 'transparent',
+                background: 'rgba(255, 255, 255, 0.08)',
                 color: '#ffffff',
+                opacity: isLoading ? 0.5 : 1,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                padding: '8px',
                 transition: 'all 0.3s ease',
-                opacity: isLoading ? 0.5 : 1,
                 outline: 'none'
               }}
               onMouseEnter={(e) => {
@@ -309,21 +313,23 @@ const InputBar = ({
 
             {/* 3. MODELS MENU */}
             <button
+              className="input-bar-button"
               onClick={() => setShowModelDropdown(!showModelDropdown)}
               disabled={isLoading}
               style={{
                 width: buttonSize,
                 height: buttonSize,
-                borderRadius: '50%',
+                borderRadius: '12px',
                 border: 'none',
-                background: 'transparent',
+                background: 'rgba(255, 255, 255, 0.08)',
                 color: '#ffffff',
+                opacity: isLoading ? 0.5 : 1,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                padding: '8px',
                 transition: 'all 0.3s ease',
-                opacity: isLoading ? 0.5 : 1,
                 outline: 'none'
               }}
               onMouseEnter={(e) => {
@@ -345,21 +351,23 @@ const InputBar = ({
 
             {/* 4. MICROPHONE */}
             <button
+              className="input-bar-button"
               onClick={onSTT}
               disabled={isLoading || isAudioPlaying}
               style={{
                 width: buttonSize,
                 height: buttonSize,
-                borderRadius: '50%',
+                borderRadius: '12px',
                 border: 'none',
-                background: 'transparent',
+                background: 'rgba(255, 255, 255, 0.08)',
                 color: '#ffffff',
+                opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
                 cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                padding: '8px',
                 transition: 'all 0.3s ease',
-                opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
                 outline: 'none'
               }}
               onMouseEnter={(e) => {
@@ -390,12 +398,13 @@ const InputBar = ({
               />
             ) : (
               <button
+                className="input-bar-button"
                 onClick={onVoiceScreen}
                 disabled={isLoading}
                 style={{
                   width: buttonSize,
                   height: buttonSize,
-                  borderRadius: '50%',
+                  borderRadius: '12px',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   background: 'rgba(135, 206, 250, 0.8)', // Světle modrá
                   backdropFilter: 'blur(10px)',
@@ -404,6 +413,7 @@ const InputBar = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  padding: '8px',
                   transition: 'all 0.3s ease',
                   opacity: isLoading ? 0.5 : 1,
                   outline: 'none',
@@ -521,3 +531,22 @@ const InputBar = ({
 };
 
 export default InputBar;
+// 💡 Input bar button styles for visibility
+// (Move to CSS file in real project)
+const style = document.createElement('style');
+style.innerHTML = `
+.input-bar-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+`;
+if (typeof window !== 'undefined' && !document.querySelector('style[data-input-bar-button]')) {
+  style.setAttribute('data-input-bar-button', 'true');
+  document.head.appendChild(style);
+}
