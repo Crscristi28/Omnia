@@ -243,26 +243,29 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: 'none',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#ffffff',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: isLoading ? 0.5 : 1,
-                outline: 'none'
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.color = '#ffffff';
-                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.color = 'rgba(255, 255, 255, 0.9)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -279,26 +282,29 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: 'none',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#ffffff',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: isLoading ? 0.5 : 1,
-                outline: 'none'
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.color = '#ffffff';
-                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.color = 'rgba(255, 255, 255, 0.9)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -315,26 +321,29 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: 'none',
-                background: 'transparent',
-                color: showModelDropdown ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: showModelDropdown ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#ffffff',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: isLoading ? 0.5 : 1,
-                outline: 'none'
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.color = '#ffffff';
-                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading) {
-                  e.target.style.color = showModelDropdown ? '#ffffff' : 'rgba(255, 255, 255, 0.9)';
+                  e.target.style.background = showModelDropdown ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -351,26 +360,29 @@ const InputBar = ({
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: '50%',
-                border: 'none',
-                background: 'transparent',
-                color: isRecording ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: isRecording ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#ffffff',
                 cursor: (isLoading || isAudioPlaying) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 opacity: (isLoading || isAudioPlaying) ? 0.5 : 1,
-                outline: 'none'
+                outline: 'none',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
                 if (!isLoading && !isAudioPlaying) {
-                  e.target.style.color = '#ffffff';
-                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isLoading && !isAudioPlaying) {
-                  e.target.style.color = isRecording ? '#ffffff' : 'rgba(255, 255, 255, 0.9)';
+                  e.target.style.background = isRecording ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)';
                   e.target.style.transform = 'scale(1)';
                 }
               }}
@@ -396,23 +408,28 @@ const InputBar = ({
                   width: buttonSize,
                   height: buttonSize,
                   borderRadius: '50%',
-                  border: 'none',
-                  background: 'transparent',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'all 0.3s ease',
                   opacity: isLoading ? 0.5 : 1,
-                  outline: 'none'
+                  outline: 'none',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) {
-                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                    e.target.style.transform = 'scale(1.05)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isLoading) {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                     e.target.style.transform = 'scale(1)';
                   }
                 }}
