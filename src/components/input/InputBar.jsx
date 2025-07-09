@@ -1,54 +1,53 @@
-// 🚀 InputBar.jsx - COMPLETE REDESIGN
-// ✅ 4 circular buttons: Plus | Research | Mikrofon | Dynamic
-// ✅ Crystal glass container with layered button backgrounds
-// ✅ Mobile & Desktop responsive
-// ✅ No model selector (moved to header)
+// 🚀 InputBar.jsx - ÚPLNĚ NOVÝ DESIGN S TRANSPARENTNÍM LAYEREM
+// ✅ Ikony na separátním layeru = 100% viditelné
+// ✅ Kulaté tlačítka 34x34px podle ui.md
+// ✅ Žádné skákání, čistý kód
 
 import React, { useState } from 'react';
-import '../../App.css';
 import { getTranslation } from '../../utils/translations.js';
-import sonarService from '../../services/sonar.service.js';
 
-// 🎨 SVG ICONS - BETTER CONTRAST
-const PlusIcon = ({ size = 20, color = "#FFD700" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <line x1="12" y1="5" x2="12" y2="19" stroke={color} strokeWidth="2.5"></line>
-    <line x1="5" y1="12" x2="19" y2="12" stroke={color} strokeWidth="2.5"></line>
+// 🎨 SVG IKONY - BÍLÉ PRO MAXIMÁLNÍ KONTRAST
+const PlusIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="12" y1="5" x2="12" y2="19" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="5" y1="12" x2="19" y2="12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
   </svg>
 );
 
-const ResearchIcon = ({ size = 20, color = "#FFD700" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <circle cx="11" cy="11" r="8" fill="none" stroke={color} strokeWidth="2.5"></circle>
-    <path d="M21 21L16.65 16.65" stroke={color} strokeWidth="2.5" strokeLinecap="round"></path>
-    <line x1="9" y1="11" x2="13" y2="11" stroke={color} strokeWidth="2.5"></line>
-    <line x1="9" y1="13" x2="13" y2="13" stroke={color} strokeWidth="2.5"></line>
+const ResearchIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="11" cy="11" r="8" stroke="white" strokeWidth="2.5" fill="none"/>
+    <path d="M21 21L16.65 16.65" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="8" y1="9" x2="14" y2="9" stroke="white" strokeWidth="1.5"/>
+    <line x1="8" y1="11" x2="14" y2="11" stroke="white" strokeWidth="1.5"/>
+    <line x1="8" y1="13" x2="12" y2="13" stroke="white" strokeWidth="1.5"/>
   </svg>
 );
 
-const MikrofonIcon = ({ size = 20, color = "#FFD700" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3z" fill={color}></path>
-    <path d="M19 11c0 3.03-2.13 5.44-5 5.92V21h2v2H8v-2h2v-4.08C7.13 16.44 5 14.03 5 11" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"></path>
+const MikrofonIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="9" y="3" width="6" height="11" rx="3" stroke="white" strokeWidth="2.5" fill="none"/>
+    <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="12" y1="18" x2="12" y2="22" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="8" y1="22" x2="16" y2="22" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
   </svg>
 );
 
-const OmniaVoiceIcon = ({ size = 20, color = "#FFD700" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <circle cx="12" cy="12" r="10" fill="rgba(255, 255, 255, 0.2)"/>
-    <rect x="9" y="8" width="2" height="8" rx="1" fill={color}/>
-    <rect x="11" y="6" width="2" height="12" rx="1" fill={color}/>
-    <rect x="13" y="9" width="2" height="6" rx="1" fill={color}/>
+const OmniaVoiceIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="7" y="8" width="2" height="8" rx="1" fill="white"/>
+    <rect x="11" y="5" width="2" height="14" rx="1" fill="white"/>
+    <rect x="15" y="10" width="2" height="4" rx="1" fill="white"/>
   </svg>
 );
 
-const SendArrowIcon = ({ size = 20, color = "#FFD700" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill={color}/>
+const SendArrowIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
   </svg>
 );
 
-// 🆕 PLUS MENU COMPONENT (Simplified - NO research)
+// 🆕 PLUS MENU COMPONENT
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
@@ -128,12 +127,8 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-            }}
+            onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+            onMouseLeave={(e) => e.target.style.background = 'transparent'}
           >
             <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
             <span>{getLabel(item)}</span>
@@ -162,26 +157,6 @@ const InputBar = ({
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
-  // 🔍 SONAR RESEARCH FUNCTION
-  const handleResearch = async () => {
-    if (!input.trim() || isLoading) return;
-    
-    try {
-      console.log('🔍 Starting Sonar research for:', input.trim());
-      const searchResult = await sonarService.search(input.trim(), null, uiLanguage);
-      
-      if (searchResult.success) {
-        // Add research result as new message
-        console.log('✅ Research completed:', searchResult.result.substring(0, 100) + '...');
-        // You can integrate this with your message system
-      } else {
-        console.error('❌ Research failed:', searchResult.message);
-      }
-    } catch (error) {
-      console.error('💥 Research error:', error);
-    }
-  };
-
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
       e.preventDefault();
@@ -189,319 +164,213 @@ const InputBar = ({
     }
   };
 
-  // 🎨 UNIFIED SQUARE BUTTON STYLE - FIXED VISIBILITY & NO SHIFTING
-  const getSquareButtonStyle = (isActive = false) => ({
-    width: isMobile ? 40 : 44,
-    height: isMobile ? 40 : 44,
-    minWidth: isMobile ? 40 : 44,
-    minHeight: isMobile ? 40 : 44,
-    borderRadius: '8px',
-    border: 'none',
-    background: 'transparent',
-    color: '#e2e8f0',
-    cursor: isLoading ? 'not-allowed' : 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: isLoading ? 0.5 : 1,
-    outline: 'none',
-    fontWeight: 'bold',
-    padding: 0,
-    position: 'relative',
-    transition: 'none !important',
-    transform: 'none !important',
-    animation: 'none !important',
-    boxSizing: 'border-box',
-  });
-
-  // Remove transform/scale/transition/animation on hover, only color highlight if needed
-  const handleButtonHover = (e, isEnter) => {
-    if (isLoading) return;
-    e.target.style.transition = 'none';
-    e.target.style.transform = 'none';
-    e.target.style.animation = 'none';
-    if (isEnter) {
-      e.target.style.background = 'rgba(100, 150, 255, 0.13)';
-    } else {
-      e.target.style.background = 'transparent';
-    }
+  const handleDeepSearch = () => {
+    console.log('🔍 Deep Search clicked - Coming Soon!');
   };
+
+  // 🔧 VELIKOSTI PODLE UI.MD
+  const buttonSize = isMobile ? 28 : 34;
+  const iconSize = isMobile ? 16 : 18;
 
   return (
     <>
-      {/* 🎨 CRYSTAL GLASS INPUT CONTAINER */}
+      {/* 🎨 HLAVNÍ KONTEJNER */}
       <div style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        padding: isMobile ? '1rem' : '1.5rem',
-        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
+        padding: isMobile ? '0.5rem' : '1.5rem',
+        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)' : '1.5rem',
         zIndex: 10,
-        background: 'transparent',
-        pointerEvents: 'auto'
       }}>
         
         <div style={{
-          maxWidth: '800px',
+          maxWidth: '900px',
           margin: '0 auto',
-          pointerEvents: 'auto'
+          position: 'relative'
         }}>
           
-          {/* 💎 UNIFIED GLASS CONTAINER */}
+          {/* 💎 GLASS CONTAINER */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.06)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-            overflow: 'hidden'
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'flex-end',
+            padding: isMobile ? '0.6rem' : '1rem',
+            gap: isMobile ? '0.5rem' : '0.75rem'
           }}>
             
-            {/* TOP SECTION: TEXTAREA */}
-            <div style={{
-              padding: isMobile ? '1rem 1.5rem' : '1.25rem 1.75rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
-            }}>
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={isLoading ? t('omniaPreparingResponse') : "Chat with Omnia..."}
-                disabled={isLoading}
-                rows={1}
-                style={{
-                  width: '100%',
-                  minHeight: isMobile ? '24px' : '28px',
-                  maxHeight: '120px',
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  fontSize: isMobile ? '16px' : '18px',
-                  fontFamily: 'inherit',
-                  resize: 'none',
-                  lineHeight: '1.5',
-                  fontWeight: '400',
-                  letterSpacing: '0.01em'
-                }}
-              />
-            </div>
+            {/* TEXTAREA */}
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={isLoading ? t('omniaPreparingResponse') : "Chat with Omnia..."}
+              disabled={isLoading}
+              rows={1}
+              style={{
+                flex: 1,
+                minHeight: isMobile ? '36px' : '40px',
+                maxHeight: '120px',
+                border: 'none',
+                outline: 'none',
+                background: 'transparent',
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontSize: isMobile ? '16px' : '18px',
+                fontFamily: 'inherit',
+                resize: 'none',
+                lineHeight: '1.5',
+                padding: '0.5rem',
+              }}
+            />
             
-            {/* BOTTOM SECTION: 4 CIRCULAR BUTTONS */}
+            {/* 🎯 BUTTON CONTAINER - RELATIVNÍ POZICE */}
             <div style={{
-              padding: isMobile ? '12px' : '16px',
               display: 'flex',
+              gap: isMobile ? '6px' : '8px',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: isMobile ? '8px' : '12px'
+              position: 'relative',
+              height: buttonSize + 'px',
             }}>
               
+              {/* 🌟 TRANSPARENTNÍ LAYER S IKONAMI - ABSOLUTNÍ POZICE */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                gap: isMobile ? '6px' : '8px',
+                alignItems: 'center',
+                pointerEvents: 'none', // Neklikat na ikony
+                zIndex: 1,
+              }}>
+                {/* Plus ikona */}
+                <div style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <PlusIcon size={iconSize} />
+                </div>
+                
+                {/* Research ikona */}
+                <div style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <ResearchIcon size={iconSize} />
+                </div>
+                
+                {/* Mikrofon ikona */}
+                <div style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isRecording ? 1 : 0.8,
+                }}>
+                  <MikrofonIcon size={iconSize} />
+                </div>
+                
+                {/* Dynamic ikona */}
+                <div style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  {input.trim() ? <SendArrowIcon size={iconSize} /> : <OmniaVoiceIcon size={iconSize} />}
+                </div>
+              </div>
+              
+              {/* 🔲 PRŮHLEDNÁ TLAČÍTKA PRO KLIKÁNÍ - RELATIVNÍ POZICE */}
+              
               {/* 1. PLUS BUTTON */}
-              <div
+              <button
+                onClick={() => setShowPlusMenu(true)}
+                disabled={isLoading}
                 style={{
-                  width: isMobile ? 40 : 44,
-                  height: isMobile ? 40 : 44,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(0, 0, 0, 0.12)',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.5 : 1,
                   position: 'relative',
-                  transition: 'none !important',
-                  transform: 'none !important',
-                  animation: 'none !important',
+                  zIndex: 2,
                 }}
-              >
-                <button
-                  onClick={() => setShowPlusMenu(true)}
-                  disabled={isLoading}
-                  style={getSquareButtonStyle()}
-                  onMouseEnter={(e) => handleButtonHover(e, true)}
-                  onMouseLeave={(e) => handleButtonHover(e, false)}
-                  title="Multimodal Features"
-                >
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                    borderRadius: '6px',
-                    position: 'relative',
-                    transition: 'none !important',
-                    transform: 'none !important',
-                    animation: 'none !important',
-                  }}>
-                    <PlusIcon size={20} color="#FFD700" />
-                  </div>
-                </button>
-              </div>
-
+                title="Multimodal Features"
+              />
+              
               {/* 2. RESEARCH BUTTON */}
-              <div
+              <button
+                onClick={handleDeepSearch}
+                disabled={isLoading || !input.trim()}
                 style={{
-                  width: isMobile ? 40 : 44,
-                  height: isMobile ? 40 : 44,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(0, 0, 0, 0.12)',
+                  cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+                  opacity: isLoading || !input.trim() ? 0.5 : 1,
                   position: 'relative',
-                  transition: 'none !important',
-                  transform: 'none !important',
-                  animation: 'none !important',
+                  zIndex: 2,
                 }}
-              >
-                <button
-                  onClick={handleResearch}
-                  disabled={isLoading || !input.trim()}
-                  style={getSquareButtonStyle()}
-                  onMouseEnter={(e) => handleButtonHover(e, true)}
-                  onMouseLeave={(e) => handleButtonHover(e, false)}
-                  title="Deep Search"
-                >
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                    borderRadius: '6px',
-                    position: 'relative',
-                    transition: 'none !important',
-                    transform: 'none !important',
-                    animation: 'none !important',
-                  }}>
-                    <ResearchIcon size={20} color="#FFD700" />
-                  </div>
-                </button>
-              </div>
-
+                title="Deep Search"
+              />
+              
               {/* 3. MIKROFON BUTTON */}
-              <div
+              <button
+                onClick={onSTT}
+                disabled={isLoading || isAudioPlaying}
                 style={{
-                  width: isMobile ? 40 : 44,
-                  height: isMobile ? 40 : 44,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: isRecording ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.12)',
+                  cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
+                  opacity: isLoading || isAudioPlaying ? 0.5 : 1,
                   position: 'relative',
-                  transition: 'none !important',
-                  transform: 'none !important',
-                  animation: 'none !important',
+                  zIndex: 2,
                 }}
-              >
-                <button
-                  onClick={onSTT}
-                  disabled={isLoading || isAudioPlaying}
-                  style={getSquareButtonStyle(isRecording)}
-                  onMouseEnter={(e) => handleButtonHover(e, true)}
-                  onMouseLeave={(e) => handleButtonHover(e, false)}
-                  title={isRecording ? 'Stop Recording' : 'Voice Input'}
-                >
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                    borderRadius: '6px',
-                    position: 'relative',
-                    transition: 'none !important',
-                    transform: 'none !important',
-                    animation: 'none !important',
-                  }}>
-                    <MikrofonIcon size={20} color="#FFD700" />
-                  </div>
-                </button>
-              </div>
-
-              {/* 4. DYNAMIC BUTTON - Omnia Voice OR Send */}
-              {input.trim() ? (
-                <div
-                  style={{
-                    width: isMobile ? 40 : 44,
-                    height: isMobile ? 40 : 44,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    transition: 'none !important',
-                    transform: 'none !important',
-                    animation: 'none !important',
-                  }}
-                >
-                  <button
-                    onClick={onSend}
-                    disabled={isLoading}
-                    style={{
-                      ...getSquareButtonStyle(),
-                      background: 'transparent',
-                      color: '#e2e8f0'
-                    }}
-                    onMouseEnter={(e) => handleButtonHover(e, true)}
-                    onMouseLeave={(e) => handleButtonHover(e, false)}
-                    title="Send Message"
-                  >
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                      borderRadius: '6px',
-                      position: 'relative',
-                      transition: 'none !important',
-                      transform: 'none !important',
-                      animation: 'none !important',
-                    }}>
-                      <SendArrowIcon size={20} color="#FFD700" />
-                    </div>
-                  </button>
-                </div>
-              ) : (
-                <div
-                  style={{
-                    width: isMobile ? 40 : 44,
-                    height: isMobile ? 40 : 44,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    transition: 'none !important',
-                    transform: 'none !important',
-                    animation: 'none !important',
-                  }}
-                >
-                  <button
-                    onClick={onVoiceScreen}
-                    disabled={isLoading}
-                    style={getSquareButtonStyle()}
-                    onMouseEnter={(e) => handleButtonHover(e, true)}
-                    onMouseLeave={(e) => handleButtonHover(e, false)}
-                    title="Voice Chat"
-                  >
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                      borderRadius: '6px',
-                      position: 'relative',
-                      transition: 'none !important',
-                      transform: 'none !important',
-                      animation: 'none !important',
-                    }}>
-                      <OmniaVoiceIcon size={20} color="#FFD700" />
-                    </div>
-                  </button>
-                </div>
-              )}
+                title={isRecording ? 'Stop Recording' : 'Voice Input'}
+              />
+              
+              {/* 4. DYNAMIC BUTTON */}
+              <button
+                onClick={input.trim() ? onSend : onVoiceScreen}
+                disabled={isLoading}
+                style={{
+                  width: buttonSize,
+                  height: buttonSize,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(0, 0, 0, 0.12)',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.5 : 1,
+                  position: 'relative',
+                  zIndex: 2,
+                }}
+                title={input.trim() ? 'Send Message' : 'Voice Chat'}
+              />
             </div>
           </div>
         </div>
@@ -513,20 +382,6 @@ const InputBar = ({
         onClose={() => setShowPlusMenu(false)}
         uiLanguage={uiLanguage}
       />
-
-      {/* 🎵 TRADEMARK ATTRIBUTION */}
-      <div style={{
-        position: 'fixed',
-        bottom: '8px',
-        right: '12px',
-        fontSize: '10px',
-        opacity: 0.6,
-        color: 'rgba(255, 255, 255, 0.5)',
-        zIndex: 11,
-        pointerEvents: 'none'
-      }}>
-        Powered by ElevenLabs
-      </div>
     </>
   );
 };
