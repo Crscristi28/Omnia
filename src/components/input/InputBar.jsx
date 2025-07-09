@@ -189,33 +189,36 @@ const InputBar = ({
     }
   };
 
-  // 🎨 UNIFIED SQUARE BUTTON STYLE - WHITE ICONS
+  // 🎨 UNIFIED SQUARE BUTTON STYLE - BRIGHT YELLOW VISIBILITY
   const getSquareButtonStyle = (isActive = false) => ({
     width: isMobile ? 28 : 34,
     height: isMobile ? 28 : 34,
     borderRadius: '8px', // SQUARE WITH ROUNDED CORNERS
     border: 'none',
     background: isActive 
-      ? 'rgba(255, 255, 255, 0.15)' 
-      : 'rgba(255, 255, 255, 0.1)', // LIGHT BACKGROUND
-    color: '#ffffff', // WHITE ICONS
+      ? '#FFD700' // BRIGHT GOLD FOR ACTIVE
+      : '#FFA500', // BRIGHT ORANGE FOR NORMAL
+    color: '#000000', // BLACK ICONS FOR CONTRAST
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
-    outline: 'none'
+    outline: 'none',
+    boxShadow: '0 2px 8px rgba(255, 165, 0, 0.4)' // ORANGE GLOW
   });
 
   const handleButtonHover = (e, isEnter) => {
     if (isLoading) return;
     if (isEnter) {
-      e.target.style.background = 'rgba(255, 255, 255, 0.2)'; // LIGHTER ON HOVER
-      e.target.style.transform = 'scale(1.05)';
+      e.target.style.background = '#FFFF00'; // BRIGHT YELLOW ON HOVER
+      e.target.style.transform = 'scale(1.1)';
+      e.target.style.boxShadow = '0 4px 16px rgba(255, 255, 0, 0.6)';
     } else {
-      e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+      e.target.style.background = '#FFA500'; // BACK TO ORANGE
       e.target.style.transform = 'scale(1)';
+      e.target.style.boxShadow = '0 2px 8px rgba(255, 165, 0, 0.4)';
     }
   };
 
@@ -333,19 +336,22 @@ const InputBar = ({
                   disabled={isLoading}
                   style={{
                     ...getSquareButtonStyle(),
-                    background: 'rgba(0, 150, 150, 0.3)', // SEND BUTTON ACCENT
-                    color: '#ffffff'
+                    background: '#00FF00', // BRIGHT GREEN FOR SEND
+                    color: '#000000',
+                    boxShadow: '0 2px 12px rgba(0, 255, 0, 0.5)'
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.5)';
-                      e.target.style.transform = 'scale(1.05)';
+                      e.target.style.background = '#32FF32'; // LIGHTER GREEN
+                      e.target.style.transform = 'scale(1.1)';
+                      e.target.style.boxShadow = '0 4px 16px rgba(0, 255, 0, 0.7)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.3)';
+                      e.target.style.background = '#00FF00';
                       e.target.style.transform = 'scale(1)';
+                      e.target.style.boxShadow = '0 2px 12px rgba(0, 255, 0, 0.5)';
                     }
                   }}
                   title="Send Message"
