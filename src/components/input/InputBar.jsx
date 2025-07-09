@@ -9,16 +9,16 @@ import '../../App.css';
 import { getTranslation } from '../../utils/translations.js';
 import sonarService from '../../services/sonar.service.js';
 
-// 🎨 SVG ICONS
+// 🎨 SVG ICONS - STRONGER WHITE
 const PlusIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3">
     <line x1="12" y1="5" x2="12" y2="19"></line>
     <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
 );
 
 const ResearchIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3">
     <circle cx="11" cy="11" r="8"></circle>
     <path d="21 21L16.65 16.65"></path>
     <line x1="9" y1="11" x2="13" y2="11"></line>
@@ -27,23 +27,23 @@ const ResearchIcon = ({ size = 18 }) => (
 );
 
 const MikrofonIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3">
     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3z"></path>
     <path d="M19 11c0 3.03-2.13 5.44-5 5.92V21h2v2H8v-2h2v-4.08C7.13 16.44 5 14.03 5 11"></path>
   </svg>
 );
 
 const OmniaVoiceIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#FFFFFF">
     <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.1)"/>
-    <rect x="9" y="8" width="2" height="8" rx="1"/>
-    <rect x="11" y="6" width="2" height="12" rx="1"/>
-    <rect x="13" y="9" width="2" height="6" rx="1"/>
+    <rect x="9" y="8" width="2" height="8" rx="1" fill="#FFFFFF"/>
+    <rect x="11" y="6" width="2" height="12" rx="1" fill="#FFFFFF"/>
+    <rect x="13" y="9" width="2" height="6" rx="1" fill="#FFFFFF"/>
   </svg>
 );
 
 const SendArrowIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#FFFFFF">
     <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z"/>
   </svg>
 );
@@ -189,16 +189,16 @@ const InputBar = ({
     }
   };
 
-  // 🎨 UNIFIED SQUARE BUTTON STYLE - BRIGHT YELLOW VISIBILITY
+  // 🎨 UNIFIED SQUARE BUTTON STYLE - SUBTLE BLUE BACKGROUND + STRONG WHITE ICONS
   const getSquareButtonStyle = (isActive = false) => ({
     width: isMobile ? 28 : 34,
     height: isMobile ? 28 : 34,
-    borderRadius: '8px', // SQUARE WITH ROUNDED CORNERS
+    borderRadius: '8px',
     border: 'none',
     background: isActive 
-      ? '#FFD700' // BRIGHT GOLD FOR ACTIVE
-      : '#FFA500', // BRIGHT ORANGE FOR NORMAL
-    color: '#000000', // BLACK ICONS FOR CONTRAST
+      ? 'rgba(100, 150, 255, 0.3)' // SLIGHTLY STRONGER BLUE FOR ACTIVE
+      : 'rgba(100, 150, 255, 0.2)', // SUBTLE BLUE BACKGROUND
+    color: '#FFFFFF', // STRONG WHITE ICONS
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -206,19 +206,17 @@ const InputBar = ({
     transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
     outline: 'none',
-    boxShadow: '0 2px 8px rgba(255, 165, 0, 0.4)' // ORANGE GLOW
+    fontWeight: 'bold' // MAKE ICONS STRONGER
   });
 
   const handleButtonHover = (e, isEnter) => {
     if (isLoading) return;
     if (isEnter) {
-      e.target.style.background = '#FFFF00'; // BRIGHT YELLOW ON HOVER
-      e.target.style.transform = 'scale(1.1)';
-      e.target.style.boxShadow = '0 4px 16px rgba(255, 255, 0, 0.6)';
+      e.target.style.background = 'rgba(100, 150, 255, 0.4)'; // SLIGHTLY MORE BLUE ON HOVER
+      e.target.style.transform = 'scale(1.05)';
     } else {
-      e.target.style.background = '#FFA500'; // BACK TO ORANGE
+      e.target.style.background = 'rgba(100, 150, 255, 0.2)'; // BACK TO SUBTLE BLUE
       e.target.style.transform = 'scale(1)';
-      e.target.style.boxShadow = '0 2px 8px rgba(255, 165, 0, 0.4)';
     }
   };
 
@@ -336,22 +334,19 @@ const InputBar = ({
                   disabled={isLoading}
                   style={{
                     ...getSquareButtonStyle(),
-                    background: '#00FF00', // BRIGHT GREEN FOR SEND
-                    color: '#000000',
-                    boxShadow: '0 2px 12px rgba(0, 255, 0, 0.5)'
+                    background: 'rgba(0, 200, 150, 0.3)', // SUBTLE GREEN FOR SEND
+                    color: '#FFFFFF'
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = '#32FF32'; // LIGHTER GREEN
-                      e.target.style.transform = 'scale(1.1)';
-                      e.target.style.boxShadow = '0 4px 16px rgba(0, 255, 0, 0.7)';
+                      e.target.style.background = 'rgba(0, 200, 150, 0.4)';
+                      e.target.style.transform = 'scale(1.05)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = '#00FF00';
+                      e.target.style.background = 'rgba(0, 200, 150, 0.3)';
                       e.target.style.transform = 'scale(1)';
-                      e.target.style.boxShadow = '0 2px 12px rgba(0, 255, 0, 0.5)';
                     }
                   }}
                   title="Send Message"
