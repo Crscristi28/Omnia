@@ -277,7 +277,6 @@ const InputBar = ({
                   opacity: isLoading || !input.trim() ? 0.5 : 1,
                   cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
                   fontSize: isMobile ? '20px' : '24px',
-                  filter: 'invert(1)', // BÍLÉ RESEARCH
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
@@ -327,10 +326,10 @@ const InputBar = ({
                   fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
-                  if (!isLoading) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                  if (!isLoading) e.target.style.opacity = '0.7';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+                  e.target.style.opacity = '1';
                 }}
                 title={input.trim() ? 'Send Message' : 'Voice Chat'}
               >
