@@ -277,6 +277,7 @@ const InputBar = ({
                   opacity: isLoading || !input.trim() ? 0.5 : 1,
                   cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
                   fontSize: isMobile ? '20px' : '24px',
+                  filter: 'invert(1)', // BÍLÉ RESEARCH
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
