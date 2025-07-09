@@ -189,33 +189,36 @@ const InputBar = ({
     }
   };
 
-  // 🎨 UNIFIED CIRCULAR BUTTON STYLE
+  // 🎨 UNIFIED CIRCULAR BUTTON STYLE - ENHANCED VISIBILITY
   const getCircularButtonStyle = (isActive = false) => ({
     width: isMobile ? 28 : 34,
     height: isMobile ? 28 : 34,
     borderRadius: '50%', // CIRCULAR!
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '2px solid rgba(255, 255, 255, 0.3)', // STRONGER BORDER
     background: isActive 
-      ? 'rgba(0, 150, 150, 0.2)' 
-      : 'rgba(0, 0, 0, 0.12)', // LAYERED GLASS
-    color: 'rgba(255, 255, 255, 0.9)',
+      ? 'rgba(0, 150, 150, 0.4)' 
+      : 'rgba(0, 0, 0, 0.25)', // DARKER BACKGROUND
+    color: 'rgba(255, 255, 255, 0.95)',
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
-    outline: 'none'
+    outline: 'none',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' // ADD SHADOW FOR VISIBILITY
   });
 
   const handleButtonHover = (e, isEnter) => {
     if (isLoading) return;
     if (isEnter) {
-      e.target.style.background = 'rgba(0, 0, 0, 0.18)';
+      e.target.style.background = 'rgba(0, 0, 0, 0.35)'; // DARKER ON HOVER
       e.target.style.transform = 'scale(1.05)';
+      e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
     } else {
-      e.target.style.background = 'rgba(0, 0, 0, 0.12)';
+      e.target.style.background = 'rgba(0, 0, 0, 0.25)';
       e.target.style.transform = 'scale(1)';
+      e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
     }
   };
 
@@ -333,19 +336,22 @@ const InputBar = ({
                   disabled={isLoading}
                   style={{
                     ...getCircularButtonStyle(),
-                    background: 'rgba(0, 150, 150, 0.25)',
-                    border: '1px solid rgba(0, 200, 200, 0.3)'
+                    background: 'rgba(0, 150, 150, 0.5)', // STRONGER SEND BUTTON
+                    border: '2px solid rgba(0, 200, 200, 0.6)',
+                    boxShadow: '0 2px 12px rgba(0, 150, 150, 0.3)'
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.35)';
+                      e.target.style.background = 'rgba(0, 150, 150, 0.7)';
                       e.target.style.transform = 'scale(1.05)';
+                      e.target.style.borderColor = 'rgba(0, 200, 200, 0.8)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.25)';
+                      e.target.style.background = 'rgba(0, 150, 150, 0.5)';
                       e.target.style.transform = 'scale(1)';
+                      e.target.style.borderColor = 'rgba(0, 200, 200, 0.6)';
                     }
                   }}
                   title="Send Message"
