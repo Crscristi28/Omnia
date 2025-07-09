@@ -10,41 +10,41 @@ import { getTranslation } from '../../utils/translations.js';
 import sonarService from '../../services/sonar.service.js';
 
 // 🎨 SVG ICONS - BETTER CONTRAST
-const PlusIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <line x1="12" y1="5" x2="12" y2="19" stroke="#ffffff" strokeWidth="2.5"></line>
-    <line x1="5" y1="12" x2="19" y2="12" stroke="#ffffff" strokeWidth="2.5"></line>
+const PlusIcon = ({ size = 20, color = "#FFD700" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <line x1="12" y1="5" x2="12" y2="19" stroke={color} strokeWidth="2.5"></line>
+    <line x1="5" y1="12" x2="19" y2="12" stroke={color} strokeWidth="2.5"></line>
   </svg>
 );
 
-const ResearchIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <circle cx="11" cy="11" r="8" fill="none" stroke="#ffffff" strokeWidth="2.5"></circle>
-    <path d="M21 21L16.65 16.65" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round"></path>
-    <line x1="9" y1="11" x2="13" y2="11" stroke="#ffffff" strokeWidth="2.5"></line>
-    <line x1="9" y1="13" x2="13" y2="13" stroke="#ffffff" strokeWidth="2.5"></line>
+const ResearchIcon = ({ size = 20, color = "#FFD700" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <circle cx="11" cy="11" r="8" fill="none" stroke={color} strokeWidth="2.5"></circle>
+    <path d="M21 21L16.65 16.65" stroke={color} strokeWidth="2.5" strokeLinecap="round"></path>
+    <line x1="9" y1="11" x2="13" y2="11" stroke={color} strokeWidth="2.5"></line>
+    <line x1="9" y1="13" x2="13" y2="13" stroke={color} strokeWidth="2.5"></line>
   </svg>
 );
 
-const MikrofonIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3z" fill="#ffffff"></path>
-    <path d="M19 11c0 3.03-2.13 5.44-5 5.92V21h2v2H8v-2h2v-4.08C7.13 16.44 5 14.03 5 11" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round"></path>
+const MikrofonIcon = ({ size = 20, color = "#FFD700" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3z" fill={color}></path>
+    <path d="M19 11c0 3.03-2.13 5.44-5 5.92V21h2v2H8v-2h2v-4.08C7.13 16.44 5 14.03 5 11" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"></path>
   </svg>
 );
 
-const OmniaVoiceIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+const OmniaVoiceIcon = ({ size = 20, color = "#FFD700" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
     <circle cx="12" cy="12" r="10" fill="rgba(255, 255, 255, 0.2)"/>
-    <rect x="9" y="8" width="2" height="8" rx="1" fill="#ffffff"/>
-    <rect x="11" y="6" width="2" height="12" rx="1" fill="#ffffff"/>
-    <rect x="13" y="9" width="2" height="6" rx="1" fill="#ffffff"/>
+    <rect x="9" y="8" width="2" height="8" rx="1" fill={color}/>
+    <rect x="11" y="6" width="2" height="12" rx="1" fill={color}/>
+    <rect x="13" y="9" width="2" height="6" rx="1" fill={color}/>
   </svg>
 );
 
-const SendArrowIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
-    <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill="#ffffff"/>
+const SendArrowIcon = ({ size = 20, color = "#FFD700" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill={color}/>
   </svg>
 );
 
@@ -196,9 +196,7 @@ const InputBar = ({
     minWidth: isMobile ? 32 : 44, // ENSURE MINIMUM SIZE
     borderRadius: '8px',
     border: 'none',
-    background: isActive 
-      ? 'rgba(100, 150, 255, 0.7)' // STRONGER BLUE FOR ACTIVE
-      : 'rgba(100, 150, 255, 0.5)', // SATURATED BLUE BACKGROUND
+    background: 'transparent',
     color: '#e2e8f0', // BETTER CONTRAST COLOR
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
@@ -207,7 +205,9 @@ const InputBar = ({
     transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
     outline: 'none',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    padding: 0,
+    position: 'relative'
   });
 
   const handleButtonHover = (e, isEnter) => {
@@ -301,7 +301,17 @@ const InputBar = ({
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title="Multimodal Features"
               >
-                <PlusIcon size={isMobile ? 18 : 24} />
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <PlusIcon size={20} color="#FFD700" />
+                </div>
               </button>
 
               {/* 2. RESEARCH BUTTON */}
@@ -313,7 +323,17 @@ const InputBar = ({
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title="Deep Search"
               >
-                <ResearchIcon size={isMobile ? 18 : 24} />
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ResearchIcon size={20} color="#FFD700" />
+                </div>
               </button>
 
               {/* 3. MIKROFON BUTTON */}
@@ -325,7 +345,17 @@ const InputBar = ({
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title={isRecording ? 'Stop Recording' : 'Voice Input'}
               >
-                <MikrofonIcon size={isMobile ? 18 : 24} />
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <MikrofonIcon size={20} color="#FFD700" />
+                </div>
               </button>
 
               {/* 4. DYNAMIC BUTTON - Omnia Voice OR Send */}
@@ -335,24 +365,34 @@ const InputBar = ({
                   disabled={isLoading}
                   style={{
                     ...getSquareButtonStyle(),
-                    background: 'rgba(0, 200, 150, 0.6)', // STRONGER GREEN FOR SEND
+                    background: 'transparent',
                     color: '#e2e8f0'
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 200, 150, 0.8)';
+                      e.target.style.background = 'transparent';
                       e.target.style.transform = 'scale(1.05)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 200, 150, 0.6)';
+                      e.target.style.background = 'transparent';
                       e.target.style.transform = 'scale(1)';
                     }
                   }}
                   title="Send Message"
                 >
-                  <SendArrowIcon size={isMobile ? 18 : 24} />
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <SendArrowIcon size={20} color="#FFD700" />
+                  </div>
                 </button>
               ) : (
                 <button
@@ -363,7 +403,17 @@ const InputBar = ({
                   onMouseLeave={(e) => handleButtonHover(e, false)}
                   title="Voice Chat"
                 >
-                  <OmniaVoiceIcon size={isMobile ? 18 : 24} />
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <OmniaVoiceIcon size={20} color="#FFD700" />
+                  </div>
                 </button>
               )}
             </div>
