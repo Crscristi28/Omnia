@@ -34,7 +34,6 @@ import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import ChatSidebar from './components/ui/ChatSidebar.jsx';
-import NewChatButton from './components/ui/NewChatButton.jsx';
 
 // 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
 const welcomeTexts = {
@@ -235,10 +234,16 @@ function App() {
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
   
+  // 🆕 SMART SCROLL STATE - NEW!
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
+  const scrollTimeoutRef = useRef(null);
+  
   // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
+  const mainContentRef = useRef(null);
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -278,16 +283,69 @@ function App() {
     }
   }, []);
 
-  // Single scroll when new message added (UNCHANGED)
+  // 🆕 SMART SCROLL DETECTION - NEW!
   useEffect(() => {
-    if (!loading && !streaming && messages.length > 0) {
-      setTimeout(() => {
-        if (endOfMessagesRef.current) {
-          endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    const handleScroll = () => {
+      if (!mainContentRef.current) return;
+      
+      const scrollTop = mainContentRef.current.scrollTop;
+      const scrollHeight = mainContentRef.current.scrollHeight;
+      const clientHeight = mainContentRef.current.clientHeight;
+      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      
+      // Pokud uživatel scrolluje nahoru, označíme to
+      if (scrollTop < lastScrollPosition && !scrolledToBottom) {
+        setIsUserScrolling(true);
+        
+        // Clear existing timeout
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
         }
-      }, 200);
+        
+        // Reset after 3 seconds of no scrolling
+        scrollTimeoutRef.current = setTimeout(() => {
+          setIsUserScrolling(false);
+        }, 3000);
+      }
+      
+      // Pokud je uživatel dole, resetujeme flag
+      if (scrolledToBottom) {
+        setIsUserScrolling(false);
+      }
+      
+      setLastScrollPosition(scrollTop);
+    };
+    
+    const mainContent = mainContentRef.current;
+    if (mainContent) {
+      mainContent.addEventListener('scroll', handleScroll);
+      return () => mainContent.removeEventListener('scroll', handleScroll);
     }
-  }, [messages.length]);
+  }, [lastScrollPosition]);
+
+  // 🆕 SMART AUTO-SCROLL - REPLACED!
+  useEffect(() => {
+    // Nescrollujeme pokud:
+    // 1. Uživatel scrolluje nahoru
+    // 2. Není co scrollovat
+    
+    if (!isUserScrolling && messages.length > 0) {
+      // Scrollujeme jen když přibyla nová zpráva
+      setTimeout(() => {
+        if (endOfMessagesRef.current && mainContentRef.current) {
+          const scrollHeight = mainContentRef.current.scrollHeight;
+          const clientHeight = mainContentRef.current.clientHeight;
+          const scrollTop = mainContentRef.current.scrollTop;
+          const isNearBottom = scrollTop + clientHeight >= scrollHeight - 200;
+          
+          // Scrolluj jen pokud je uživatel blízko konce
+          if (isNearBottom) {
+            endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 100);
+    }
+  }, [messages.length, isUserScrolling]);
 
   const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX PART 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (REDESIGNED)
 // ✅ ADDED: Sidebar handlers
@@ -607,6 +665,10 @@ function App() {
 // 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse() + SOURCES INTEGRATION (UNCHANGED)
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
+    
+    // Reset user scrolling flag when sending message
+    setIsUserScrolling(false);
+    
     // Smart scroll to bottom when user sends message
     setTimeout(() => {
       if (endOfMessagesRef.current) {
@@ -743,15 +805,6 @@ function App() {
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
 
-// 🎨 CLEAN SVG IKONY pro fixed buttons
-const HamburgerIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="3" y1="6" x2="21" y2="6"></line>
-    <line x1="3" y1="12" x2="21" y2="12"></line>
-    <line x1="3" y1="18" x2="21" y2="18"></line>
-  </svg>
-);
-
 // 🎨 JSX RENDER
   return (
     <div style={{ 
@@ -778,14 +831,19 @@ const HamburgerIcon = ({ size = 20 }) => (
       {/* 📌 FIXED TOP BUTTONS - VŽDY VIDITELNÉ */}
       <div style={{
         position: 'fixed',
-        top: isMobile ? '1rem' : '1.5rem',
-        left: isMobile ? '1rem' : '2rem',
-        right: isMobile ? '1rem' : '2rem',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: isMobile ? '60px' : '70px',
+        background: 'rgba(0, 0, 0, 0.1)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        padding: isMobile ? '0 1rem' : '0 2rem',
         zIndex: 1000,
-        pointerEvents: 'none' // Allow clicks through to background
       }}>
         
         {/* HAMBURGER BUTTON - vlevo */}
@@ -797,9 +855,7 @@ const HamburgerIcon = ({ size = 20 }) => (
             height: isMobile ? 40 : 44,
             borderRadius: '12px',
             border: 'none',
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            background: 'transparent',
             color: 'rgba(255, 255, 255, 0.9)',
             cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
             display: 'flex',
@@ -808,48 +864,191 @@ const HamburgerIcon = ({ size = 20 }) => (
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             opacity: (loading || streaming) ? 0.5 : 1,
             outline: 'none',
-            pointerEvents: 'auto',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+            fontSize: isMobile ? '20px' : '24px',
+            filter: 'invert(1)',
           }}
           onMouseEnter={(e) => {
             if (!loading && !streaming) {
-              e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-              e.target.style.transform = 'scale(1.05)';
+              e.target.style.opacity = '0.7';
             }
           }}
           onMouseLeave={(e) => {
             if (!loading && !streaming) {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-              e.target.style.transform = 'scale(1)';
+              e.target.style.opacity = '1';
             }
           }}
           title="Chat History & Settings"
         >
-          <HamburgerIcon size={isMobile ? 18 : 20} />
+          ☰
         </button>
 
-        {/* NEW CHAT BUTTON - vpravo */}
-        <div style={{ pointerEvents: 'auto' }}>
-          <NewChatButton
-            onClick={handleNewChat}
-            disabled={loading || streaming}
-            size="default"
-          />
+        {/* MODEL SELECTOR - uprostřed */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowModelDropdown(!showModelDropdown)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: 'none',
+              background: 'transparent',
+              color: 'rgba(255, 255, 255, 0.9)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: isMobile ? '14px' : '16px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'transparent';
+            }}
+          >
+            <span>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : 'o3'}</span>
+            <span style={{ fontSize: '12px', opacity: 0.8 }}>▼</span>
+          </button>
+
+          {/* MODEL DROPDOWN */}
+          {showModelDropdown && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              marginTop: '8px',
+              background: 'rgba(26, 32, 44, 0.95)',
+              backdropFilter: 'blur(16px)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              minWidth: '180px',
+              overflow: 'hidden',
+              zIndex: 1001,
+            }}>
+              <button
+                onClick={() => { setModel('claude'); setShowModelDropdown(false); }}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                onMouseLeave={(e) => e.target.style.background = model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'}
+              >
+                <span>Omnia Claude</span>
+                <span style={{ opacity: 0.6, fontSize: '12px' }}>o1</span>
+              </button>
+              
+              <button
+                onClick={() => { setModel('gpt-4o'); setShowModelDropdown(false); }}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'}
+              >
+                <span>Omnia GPT</span>
+                <span style={{ opacity: 0.6, fontSize: '12px' }}>o2</span>
+              </button>
+              
+              <button
+                onClick={() => { setModel('sonar'); setShowModelDropdown(false); }}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'sonar' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                onMouseLeave={(e) => e.target.style.background = model === 'sonar' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'}
+              >
+                <span>Omnia Sonar</span>
+                <span style={{ opacity: 0.6, fontSize: '12px' }}>o3</span>
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* NEW CHAT BUTTON - vpravo */}
+        <button
+          onClick={handleNewChat}
+          disabled={loading || streaming}
+          style={{
+            width: isMobile ? 40 : 44,
+            height: isMobile ? 40 : 44,
+            borderRadius: '12px',
+            border: 'none',
+            background: 'transparent',
+            color: 'rgba(255, 255, 255, 0.9)',
+            cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            opacity: (loading || streaming) ? 0.5 : 1,
+            outline: 'none',
+            fontSize: isMobile ? '20px' : '24px',
+          }}
+          onMouseEnter={(e) => {
+            if (!loading && !streaming) {
+              e.target.style.opacity = '0.7';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading && !streaming) {
+              e.target.style.opacity = '1';
+            }
+          }}
+          title="New Chat"
+        >
+          💬
+        </button>
       </div>
 
       {/* 🎨 MAIN CONTENT AREA */}
-      <main style={{ 
-        flex: 1, 
-        overflowY: 'auto', 
-        overflowX: 'hidden',
-        padding: isMobile ? '1rem' : '2rem',
-        paddingTop: isMobile ? '5rem' : '6rem', // Space for fixed buttons
-        paddingBottom: '240px',
-        width: '100%',
-        WebkitOverflowScrolling: 'touch',
-        scrollBehavior: 'smooth'
-      }}>
+      <main 
+        ref={mainContentRef}
+        style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          overflowX: 'hidden',
+          padding: isMobile ? '1rem' : '2rem',
+          paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
+          paddingBottom: '240px',
+          width: '100%',
+          WebkitOverflowScrolling: 'touch',
+          scrollBehavior: 'smooth'
+        }}
+      >
         <div style={{ 
           maxWidth: '1000px', 
           margin: '0 auto',
@@ -1033,7 +1232,7 @@ const HamburgerIcon = ({ size = 20 }) => (
         </div>
       </main>
 
-      {/* 📝 INPUT BAR - přidán model prop */}
+      {/* 📝 INPUT BAR - WITHOUT model prop */}
       <InputBar
         input={input}
         setInput={setInput}
@@ -1044,8 +1243,6 @@ const HamburgerIcon = ({ size = 20 }) => (
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}
         uiLanguage={uiLanguage}
-        model={model}
-        setModel={setModel}
       />
 
       {/* 📋 CHAT SIDEBAR - NEW! */}
