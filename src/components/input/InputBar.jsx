@@ -208,16 +208,18 @@ const InputBar = ({
     fontWeight: 'bold',
     padding: 0,
     position: 'relative',
-    transition: 'none',
-    transform: 'none',
+    transition: 'none !important',
+    transform: 'none !important',
+    animation: 'none !important',
     boxSizing: 'border-box',
   });
 
-  // Remove transform/scale on hover, only color highlight if needed
+  // Remove transform/scale/transition/animation on hover, only color highlight if needed
   const handleButtonHover = (e, isEnter) => {
     if (isLoading) return;
     e.target.style.transition = 'none';
     e.target.style.transform = 'none';
+    e.target.style.animation = 'none';
     if (isEnter) {
       e.target.style.background = 'rgba(100, 150, 255, 0.13)';
     } else {
@@ -305,8 +307,9 @@ const InputBar = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
-                  transition: 'none',
-                  transform: 'none',
+                  transition: 'none !important',
+                  transform: 'none !important',
+                  animation: 'none !important',
                 }}
               >
                 <button
@@ -326,8 +329,9 @@ const InputBar = ({
                     backgroundColor: 'rgba(255, 255, 255, 0.07)',
                     borderRadius: '6px',
                     position: 'relative',
-                    transition: 'none',
-                    transform: 'none',
+                    transition: 'none !important',
+                    transform: 'none !important',
+                    animation: 'none !important',
                   }}>
                     <PlusIcon size={20} color="#FFD700" />
                   </div>
@@ -343,8 +347,9 @@ const InputBar = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
-                  transition: 'none',
-                  transform: 'none',
+                  transition: 'none !important',
+                  transform: 'none !important',
+                  animation: 'none !important',
                 }}
               >
                 <button
@@ -364,8 +369,9 @@ const InputBar = ({
                     backgroundColor: 'rgba(255, 255, 255, 0.07)',
                     borderRadius: '6px',
                     position: 'relative',
-                    transition: 'none',
-                    transform: 'none',
+                    transition: 'none !important',
+                    transform: 'none !important',
+                    animation: 'none !important',
                   }}>
                     <ResearchIcon size={20} color="#FFD700" />
                   </div>
@@ -381,8 +387,9 @@ const InputBar = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
-                  transition: 'none',
-                  transform: 'none',
+                  transition: 'none !important',
+                  transform: 'none !important',
+                  animation: 'none !important',
                 }}
               >
                 <button
@@ -402,8 +409,9 @@ const InputBar = ({
                     backgroundColor: 'rgba(255, 255, 255, 0.07)',
                     borderRadius: '6px',
                     position: 'relative',
-                    transition: 'none',
-                    transform: 'none',
+                    transition: 'none !important',
+                    transform: 'none !important',
+                    animation: 'none !important',
                   }}>
                     <MikrofonIcon size={20} color="#FFD700" />
                   </div>
@@ -420,8 +428,9 @@ const InputBar = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
-                    transition: 'none',
-                    transform: 'none',
+                    transition: 'none !important',
+                    transform: 'none !important',
+                    animation: 'none !important',
                   }}
                 >
                   <button
@@ -445,8 +454,9 @@ const InputBar = ({
                       backgroundColor: 'rgba(255, 255, 255, 0.07)',
                       borderRadius: '6px',
                       position: 'relative',
-                      transition: 'none',
-                      transform: 'none',
+                      transition: 'none !important',
+                      transform: 'none !important',
+                      animation: 'none !important',
                     }}>
                       <SendArrowIcon size={20} color="#FFD700" />
                     </div>
@@ -461,8 +471,9 @@ const InputBar = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
-                    transition: 'none',
-                    transform: 'none',
+                    transition: 'none !important',
+                    transform: 'none !important',
+                    animation: 'none !important',
                   }}
                 >
                   <button
@@ -482,8 +493,9 @@ const InputBar = ({
                       backgroundColor: 'rgba(255, 255, 255, 0.07)',
                       borderRadius: '6px',
                       position: 'relative',
-                      transition: 'none',
-                      transform: 'none',
+                      transition: 'none !important',
+                      transform: 'none !important',
+                      animation: 'none !important',
                     }}>
                       <OmniaVoiceIcon size={20} color="#FFD700" />
                     </div>
