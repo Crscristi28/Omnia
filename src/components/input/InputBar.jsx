@@ -1,53 +1,52 @@
-// 🚀 InputBar.jsx - ÚPLNĚ NOVÝ DESIGN S TRANSPARENTNÍM LAYEREM
-// ✅ Ikony na separátním layeru = 100% viditelné
-// ✅ Kulaté tlačítka 34x34px podle ui.md
-// ✅ Žádné skákání, čistý kód
+// 🚀 InputBar.jsx - PŘESNĚ PODLE UI.MD
+// ✅ Textarea nahoře, 4 kulatá tlačítka dole
+// ✅ Žádné experimenty, čistý jednoduchý kód
 
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
 
-// 🎨 SVG IKONY - BÍLÉ PRO MAXIMÁLNÍ KONTRAST
+// 🎨 SVG IKONY - JEDNODUCHÉ, BÍLÉ
 const PlusIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="12" y1="5" x2="12" y2="19" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="5" y1="12" x2="19" y2="12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2.5"/>
+    <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2.5"/>
   </svg>
 );
 
 const ResearchIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="11" cy="11" r="8" stroke="white" strokeWidth="2.5" fill="none"/>
-    <path d="M21 21L16.65 16.65" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="8" y1="9" x2="14" y2="9" stroke="white" strokeWidth="1.5"/>
-    <line x1="8" y1="11" x2="14" y2="11" stroke="white" strokeWidth="1.5"/>
-    <line x1="8" y1="13" x2="12" y2="13" stroke="white" strokeWidth="1.5"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+    <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="8" y1="9" x2="14" y2="9" stroke="currentColor" strokeWidth="1.5"/>
+    <line x1="8" y1="11" x2="14" y2="11" stroke="currentColor" strokeWidth="1.5"/>
+    <line x1="8" y1="13" x2="12" y2="13" stroke="currentColor" strokeWidth="1.5"/>
   </svg>
 );
 
 const MikrofonIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="9" y="3" width="6" height="11" rx="3" stroke="white" strokeWidth="2.5" fill="none"/>
-    <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="12" y1="18" x2="12" y2="22" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="8" y1="22" x2="16" y2="22" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" strokeWidth="2"/>
+    <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" strokeWidth="2"/>
+    <line x1="8" y1="22" x2="16" y2="22" stroke="currentColor" strokeWidth="2"/>
   </svg>
 );
 
 const OmniaVoiceIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="7" y="8" width="2" height="8" rx="1" fill="white"/>
-    <rect x="11" y="5" width="2" height="14" rx="1" fill="white"/>
-    <rect x="15" y="10" width="2" height="4" rx="1" fill="white"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <rect x="7" y="8" width="2" height="8" rx="1"/>
+    <rect x="11" y="5" width="2" height="14" rx="1"/>
+    <rect x="15" y="10" width="2" height="4" rx="1"/>
   </svg>
 );
 
 const SendArrowIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
   </svg>
 );
 
-// 🆕 PLUS MENU COMPONENT
+// PLUS MENU
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
@@ -125,7 +124,7 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
               color: '#e2e8f0',
               fontSize: '0.9rem',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'background 0.2s'
             }}
             onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
             onMouseLeave={(e) => e.target.style.background = 'transparent'}
@@ -168,13 +167,27 @@ const InputBar = ({
     console.log('🔍 Deep Search clicked - Coming Soon!');
   };
 
-  // 🔧 VELIKOSTI PODLE UI.MD
+  // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
   const buttonSize = isMobile ? 28 : 34;
   const iconSize = isMobile ? 16 : 18;
 
+  const buttonStyle = {
+    width: buttonSize,
+    height: buttonSize,
+    borderRadius: '50%',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'rgba(0, 0, 0, 0.2)',
+    color: 'rgba(255, 255, 255, 0.9)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  };
+
   return (
     <>
-      {/* 🎨 HLAVNÍ KONTEJNER */}
+      {/* HLAVNÍ KONTEJNER */}
       <div style={{
         position: 'fixed',
         bottom: 0,
@@ -188,10 +201,9 @@ const InputBar = ({
         <div style={{
           maxWidth: '900px',
           margin: '0 auto',
-          position: 'relative'
         }}>
           
-          {/* 💎 GLASS CONTAINER */}
+          {/* GLASS CONTAINER */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.06)',
             backdropFilter: 'blur(20px)',
@@ -199,14 +211,10 @@ const InputBar = ({
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'flex-end',
             padding: isMobile ? '0.6rem' : '1rem',
-            gap: isMobile ? '0.5rem' : '0.75rem'
           }}>
             
-            {/* TEXTAREA */}
+            {/* TEXTAREA NAHOŘE */}
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -215,8 +223,8 @@ const InputBar = ({
               disabled={isLoading}
               rows={1}
               style={{
-                flex: 1,
-                minHeight: isMobile ? '36px' : '40px',
+                width: '100%',
+                minHeight: isMobile ? '40px' : '48px',
                 maxHeight: '120px',
                 border: 'none',
                 outline: 'none',
@@ -227,150 +235,102 @@ const InputBar = ({
                 resize: 'none',
                 lineHeight: '1.5',
                 padding: '0.5rem',
+                marginBottom: '0.5rem',
               }}
             />
             
-            {/* 🎯 BUTTON CONTAINER - RELATIVNÍ POZICE */}
+            {/* 4 TLAČÍTKA DOLE */}
             <div style={{
               display: 'flex',
-              gap: isMobile ? '6px' : '8px',
-              alignItems: 'center',
-              position: 'relative',
-              height: buttonSize + 'px',
+              justifyContent: 'center',
+              gap: isMobile ? '8px' : '12px',
             }}>
-              
-              {/* 🌟 TRANSPARENTNÍ LAYER S IKONAMI - ABSOLUTNÍ POZICE */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                gap: isMobile ? '6px' : '8px',
-                alignItems: 'center',
-                pointerEvents: 'none', // Neklikat na ikony
-                zIndex: 1,
-              }}>
-                {/* Plus ikona */}
-                <div style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <PlusIcon size={iconSize} />
-                </div>
-                
-                {/* Research ikona */}
-                <div style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <ResearchIcon size={iconSize} />
-                </div>
-                
-                {/* Mikrofon ikona */}
-                <div style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: isRecording ? 1 : 0.8,
-                }}>
-                  <MikrofonIcon size={iconSize} />
-                </div>
-                
-                {/* Dynamic ikona */}
-                <div style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  {input.trim() ? <SendArrowIcon size={iconSize} /> : <OmniaVoiceIcon size={iconSize} />}
-                </div>
-              </div>
-              
-              {/* 🔲 PRŮHLEDNÁ TLAČÍTKA PRO KLIKÁNÍ - RELATIVNÍ POZICE */}
               
               {/* 1. PLUS BUTTON */}
               <button
                 onClick={() => setShowPlusMenu(true)}
                 disabled={isLoading}
                 style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  background: 'rgba(0, 0, 0, 0.12)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  ...buttonStyle,
                   opacity: isLoading ? 0.5 : 1,
-                  position: 'relative',
-                  zIndex: 2,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(0, 0, 0, 0.2)';
                 }}
                 title="Multimodal Features"
-              />
+              >
+                <PlusIcon size={iconSize} />
+              </button>
               
               {/* 2. RESEARCH BUTTON */}
               <button
                 onClick={handleDeepSearch}
                 disabled={isLoading || !input.trim()}
                 style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  background: 'rgba(0, 0, 0, 0.12)',
-                  cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+                  ...buttonStyle,
                   opacity: isLoading || !input.trim() ? 0.5 : 1,
-                  position: 'relative',
-                  zIndex: 2,
+                  cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading && input.trim()) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(0, 0, 0, 0.2)';
                 }}
                 title="Deep Search"
-              />
+              >
+                <ResearchIcon size={iconSize} />
+              </button>
               
               {/* 3. MIKROFON BUTTON */}
               <button
                 onClick={onSTT}
                 disabled={isLoading || isAudioPlaying}
                 style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  background: isRecording ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.12)',
-                  cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
+                  ...buttonStyle,
+                  background: isRecording ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.2)',
                   opacity: isLoading || isAudioPlaying ? 0.5 : 1,
-                  position: 'relative',
-                  zIndex: 2,
+                  cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading && !isAudioPlaying && !isRecording) {
+                    e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isRecording) {
+                    e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+                  }
                 }}
                 title={isRecording ? 'Stop Recording' : 'Voice Input'}
-              />
+              >
+                <MikrofonIcon size={iconSize} />
+              </button>
               
               {/* 4. DYNAMIC BUTTON */}
               <button
                 onClick={input.trim() ? onSend : onVoiceScreen}
                 disabled={isLoading}
                 style={{
-                  width: buttonSize,
-                  height: buttonSize,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  background: 'rgba(0, 0, 0, 0.12)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  ...buttonStyle,
                   opacity: isLoading ? 0.5 : 1,
-                  position: 'relative',
-                  zIndex: 2,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(0, 0, 0, 0.2)';
                 }}
                 title={input.trim() ? 'Send Message' : 'Voice Chat'}
-              />
+              >
+                {input.trim() ? <SendArrowIcon size={iconSize} /> : <OmniaVoiceIcon size={iconSize} />}
+              </button>
+              
             </div>
           </div>
         </div>
