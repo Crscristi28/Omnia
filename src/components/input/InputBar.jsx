@@ -233,7 +233,7 @@ const InputBar = ({
         paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1rem)' : '1.5rem',
         zIndex: 10,
         background: 'transparent',
-        pointerEvents: 'none'
+        pointerEvents: 'auto'
       }}>
         
         <div style={{
