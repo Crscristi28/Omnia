@@ -5,44 +5,44 @@
 import React, { useState } from 'react';
 import { getTranslation } from '../../utils/translations.js';
 
-// 🎨 SVG IKONY - JEDNODUCHÉ, BÍLÉ
+// 🎨 SVG IKONY - BÍLÉ PRO VIDITELNOST
 const PlusIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2.5"/>
-    <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2.5"/>
+    <line x1="12" y1="5" x2="12" y2="19" stroke="white" strokeWidth="2.5"/>
+    <line x1="5" y1="12" x2="19" y2="12" stroke="white" strokeWidth="2.5"/>
   </svg>
 );
 
 const ResearchIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
-    <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="8" y1="9" x2="14" y2="9" stroke="currentColor" strokeWidth="1.5"/>
-    <line x1="8" y1="11" x2="14" y2="11" stroke="currentColor" strokeWidth="1.5"/>
-    <line x1="8" y1="13" x2="12" y2="13" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="11" cy="11" r="8" stroke="white" strokeWidth="2"/>
+    <path d="M21 21L16.65 16.65" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="8" y1="9" x2="14" y2="9" stroke="white" strokeWidth="1.5"/>
+    <line x1="8" y1="11" x2="14" y2="11" stroke="white" strokeWidth="1.5"/>
+    <line x1="8" y1="13" x2="12" y2="13" stroke="white" strokeWidth="1.5"/>
   </svg>
 );
 
 const MikrofonIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" strokeWidth="2"/>
-    <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" strokeWidth="2"/>
-    <line x1="8" y1="22" x2="16" y2="22" stroke="currentColor" strokeWidth="2"/>
+    <rect x="9" y="3" width="6" height="11" rx="3" stroke="white" strokeWidth="2"/>
+    <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="12" y1="18" x2="12" y2="22" stroke="white" strokeWidth="2"/>
+    <line x1="8" y1="22" x2="16" y2="22" stroke="white" strokeWidth="2"/>
   </svg>
 );
 
 const OmniaVoiceIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <rect x="7" y="8" width="2" height="8" rx="1"/>
-    <rect x="11" y="5" width="2" height="14" rx="1"/>
-    <rect x="15" y="10" width="2" height="4" rx="1"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
+    <rect x="7" y="8" width="2" height="8" rx="1" fill="white"/>
+    <rect x="11" y="5" width="2" height="14" rx="1" fill="white"/>
+    <rect x="15" y="10" width="2" height="4" rx="1" fill="white"/>
   </svg>
 );
 
 const SendArrowIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
+    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
   </svg>
 );
 
