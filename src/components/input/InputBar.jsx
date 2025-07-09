@@ -33,33 +33,14 @@ const MikrofonIcon = ({ size = 20 }) => (
   </svg>
 );
 
-
-// Vertical Equalizer Icon (replaces OmniaVoiceIcon)
-const EqualizerIcon = ({ size = 20, color = "#ffffff", barCount = 4 }) => {
-  // Draw 4 vertical bars of varying heights, centered horizontally
-  // Heights: [60%, 100%, 80%, 50%] of the viewBox height
-  const barHeights = [0.6, 1.0, 0.8, 0.5];
-  const barWidth = 3;
-  const gap = 3;
-  const startX = 4;
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke={color} strokeWidth="2.2" style={{ position: 'relative', zIndex: 1 }}>
-      {barHeights.map((h, i) => (
-        <rect
-          key={i}
-          x={startX + i * (barWidth + gap)}
-          y={24 - 18 * h - 3}
-          width={barWidth}
-          height={18 * h}
-          rx="1.2"
-          fill={color}
-          opacity={0.92}
-        />
-      ))}
-    </svg>
-  );
-};
+const OmniaVoiceIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#e2e8f0" style={{ position: 'relative', zIndex: 1 }}>
+    <circle cx="12" cy="12" r="10" fill="rgba(226, 232, 240, 0.2)"/>
+    <rect x="9" y="8" width="2" height="8" rx="1" fill="#e2e8f0"/>
+    <rect x="11" y="6" width="2" height="12" rx="1" fill="#e2e8f0"/>
+    <rect x="13" y="9" width="2" height="6" rx="1" fill="#e2e8f0"/>
+  </svg>
+);
 
 const SendArrowIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="#e2e8f0" style={{ position: 'relative', zIndex: 1 }}>
@@ -208,17 +189,17 @@ const InputBar = ({
     }
   };
 
-// 🎨 UNIFIED SQUARE BUTTON STYLE - ENHANCED VISIBILITY & DEFINITION
+  // 🎨 UNIFIED SQUARE BUTTON STYLE - FIXED VISIBILITY
   const getSquareButtonStyle = (isActive = false) => ({
-    width: isMobile ? 32 : 44,
+    width: isMobile ? 32 : 44, // BIGGER BUTTONS
     height: isMobile ? 32 : 44,
-    minWidth: isMobile ? 32 : 44,
+    minWidth: isMobile ? 32 : 44, // ENSURE MINIMUM SIZE
     borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    background: isActive
-      ? 'rgba(255, 255, 255, 0.2)'
-      : 'rgba(255, 255, 255, 0.12)',
-    color: '#ffffff',
+    border: 'none',
+    background: isActive 
+      ? 'rgba(100, 150, 255, 0.7)' // STRONGER BLUE FOR ACTIVE
+      : 'rgba(100, 150, 255, 0.5)', // SATURATED BLUE BACKGROUND
+    color: '#e2e8f0', // BETTER CONTRAST COLOR
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -226,8 +207,7 @@ const InputBar = ({
     transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
     outline: 'none',
-    fontWeight: 'bold',
-    boxShadow: '0 2px 8px 0 rgba(0,0,0,0.10)'
+    fontWeight: 'bold'
   });
 
   const handleButtonHover = (e, isEnter) => {
@@ -241,41 +221,8 @@ const InputBar = ({
     }
   };
 
-  // --- Microphone TTS button in top-left ---
-  const micTTSButton = (
-    <button
-      onClick={onVoiceScreen}
-      disabled={isLoading}
-      style={{
-        position: 'fixed',
-        bottom: isMobile ? 'calc(1rem + 70px)' : 'calc(1.5rem + 80px)',
-        left: isMobile ? '1rem' : '2.5rem',
-        zIndex: 20,
-        width: isMobile ? 44 : 52,
-        height: isMobile ? 44 : 52,
-        minWidth: isMobile ? 44 : 52,
-        borderRadius: '50%',
-        border: '1px solid rgba(255,255,255,0.13)',
-        background: 'rgba(255,255,255,0.18)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 2px 12px 0 rgba(0,0,0,0.14)',
-        color: '#ffffff',
-        pointerEvents: isLoading ? 'none' : 'auto',
-        cursor: isLoading ? 'not-allowed' : 'pointer',
-        transition: 'all 0.18s',
-      }}
-      title="TTS Control"
-    >
-      <MikrofonIcon size={isMobile ? 22 : 28} />
-    </button>
-  );
-
   return (
     <>
-      {/* Top-left TTS microphone button */}
-      {micTTSButton}
       {/* 🎨 CRYSTAL GLASS INPUT CONTAINER */}
       <div style={{
         position: 'fixed',
@@ -369,7 +316,7 @@ const InputBar = ({
                 <ResearchIcon size={isMobile ? 18 : 24} />
               </button>
 
-            {/* 3. MIKROFON BUTTON */}
+              {/* 3. MIKROFON BUTTON */}
               <button
                 onClick={onSTT}
                 disabled={isLoading || isAudioPlaying}
@@ -378,10 +325,10 @@ const InputBar = ({
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title={isRecording ? 'Stop Recording' : 'Voice Input'}
               >
-                <MikrofonIcon size={isMobile ? 18 : 24} color="#ffffff" />
+                <MikrofonIcon size={isMobile ? 18 : 24} />
               </button>
 
-              {/* 4. DYNAMIC BUTTON - Equalizer OR Send */}
+              {/* 4. DYNAMIC BUTTON - Omnia Voice OR Send */}
               {input.trim() ? (
                 <button
                   onClick={onSend}
@@ -389,7 +336,7 @@ const InputBar = ({
                   style={{
                     ...getSquareButtonStyle(),
                     background: 'rgba(0, 200, 150, 0.6)', // STRONGER GREEN FOR SEND
-                    color: '#ffffff'
+                    color: '#e2e8f0'
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading) {
@@ -416,7 +363,7 @@ const InputBar = ({
                   onMouseLeave={(e) => handleButtonHover(e, false)}
                   title="Voice Chat"
                 >
-                  <EqualizerIcon size={isMobile ? 18 : 24} color="#ffffff" />
+                  <OmniaVoiceIcon size={isMobile ? 18 : 24} />
                 </button>
               )}
             </div>
