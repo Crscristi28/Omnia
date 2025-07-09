@@ -11,40 +11,40 @@ import sonarService from '../../services/sonar.service.js';
 
 // 🎨 SVG ICONS - BETTER CONTRAST
 const PlusIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="2.5" style={{ position: 'relative', zIndex: 1 }}>
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <line x1="12" y1="5" x2="12" y2="19" stroke="#ffffff" strokeWidth="2.5"></line>
+    <line x1="5" y1="12" x2="19" y2="12" stroke="#ffffff" strokeWidth="2.5"></line>
   </svg>
 );
 
 const ResearchIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="2.5" style={{ position: 'relative', zIndex: 1 }}>
-    <circle cx="11" cy="11" r="8"></circle>
-    <path d="21 21L16.65 16.65"></path>
-    <line x1="9" y1="11" x2="13" y2="11"></line>
-    <line x1="9" y1="13" x2="13" y2="13"></line>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <circle cx="11" cy="11" r="8" fill="none" stroke="#ffffff" strokeWidth="2.5"></circle>
+    <path d="M21 21L16.65 16.65" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round"></path>
+    <line x1="9" y1="11" x2="13" y2="11" stroke="#ffffff" strokeWidth="2.5"></line>
+    <line x1="9" y1="13" x2="13" y2="13" stroke="#ffffff" strokeWidth="2.5"></line>
   </svg>
 );
 
 const MikrofonIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="2.5" style={{ position: 'relative', zIndex: 1 }}>
-    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3z"></path>
-    <path d="M19 11c0 3.03-2.13 5.44-5 5.92V21h2v2H8v-2h2v-4.08C7.13 16.44 5 14.03 5 11"></path>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3s-3 1.34-3 3v6c0 1.66 1.34 3 3 3z" fill="#ffffff"></path>
+    <path d="M19 11c0 3.03-2.13 5.44-5 5.92V21h2v2H8v-2h2v-4.08C7.13 16.44 5 14.03 5 11" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round"></path>
   </svg>
 );
 
 const OmniaVoiceIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#e2e8f0" style={{ position: 'relative', zIndex: 1 }}>
-    <circle cx="12" cy="12" r="10" fill="rgba(226, 232, 240, 0.2)"/>
-    <rect x="9" y="8" width="2" height="8" rx="1" fill="#e2e8f0"/>
-    <rect x="11" y="6" width="2" height="12" rx="1" fill="#e2e8f0"/>
-    <rect x="13" y="9" width="2" height="6" rx="1" fill="#e2e8f0"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <circle cx="12" cy="12" r="10" fill="rgba(255, 255, 255, 0.2)"/>
+    <rect x="9" y="8" width="2" height="8" rx="1" fill="#ffffff"/>
+    <rect x="11" y="6" width="2" height="12" rx="1" fill="#ffffff"/>
+    <rect x="13" y="9" width="2" height="6" rx="1" fill="#ffffff"/>
   </svg>
 );
 
 const SendArrowIcon = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#e2e8f0" style={{ position: 'relative', zIndex: 1 }}>
-    <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z"/>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ffffff" style={{ position: 'relative', zIndex: 2, display: 'block' }}>
+    <path d="M4 20L20 12L4 4V10L16 12L4 14V20Z" fill="#ffffff"/>
   </svg>
 );
 
