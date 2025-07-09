@@ -246,7 +246,7 @@ const InputBar = ({
               gap: isMobile ? '8px' : '12px',
             }}>
               
-              {/* 1. PLUS BUTTON */}
+                            {/* 1. PLUS BUTTON */}
               <button
                 onClick={() => setShowPlusMenu(true)}
                 disabled={isLoading}
@@ -254,6 +254,7 @@ const InputBar = ({
                   ...buttonStyle,
                   opacity: isLoading ? 0.5 : 1,
                   cursor: isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
@@ -263,7 +264,7 @@ const InputBar = ({
                 }}
                 title="Multimodal Features"
               >
-                <PlusIcon size={iconSize} />
+                ➕
               </button>
               
               {/* 2. RESEARCH BUTTON */}
@@ -274,6 +275,7 @@ const InputBar = ({
                   ...buttonStyle,
                   opacity: isLoading || !input.trim() ? 0.5 : 1,
                   cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+                  fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading && input.trim()) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
@@ -283,7 +285,7 @@ const InputBar = ({
                 }}
                 title="Deep Search"
               >
-                <ResearchIcon size={iconSize} />
+                🌐
               </button>
               
               {/* 3. MIKROFON BUTTON */}
@@ -295,6 +297,7 @@ const InputBar = ({
                   background: isRecording ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.2)',
                   opacity: isLoading || isAudioPlaying ? 0.5 : 1,
                   cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
+                  fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading && !isAudioPlaying && !isRecording) {
@@ -308,7 +311,7 @@ const InputBar = ({
                 }}
                 title={isRecording ? 'Stop Recording' : 'Voice Input'}
               >
-                <MikrofonIcon size={iconSize} />
+                🎤︎︎
               </button>
               
               {/* 4. DYNAMIC BUTTON */}
@@ -319,6 +322,7 @@ const InputBar = ({
                   ...buttonStyle,
                   opacity: isLoading ? 0.5 : 1,
                   cursor: isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
@@ -328,7 +332,7 @@ const InputBar = ({
                 }}
                 title={input.trim() ? 'Send Message' : 'Voice Chat'}
               >
-                {input.trim() ? <SendArrowIcon size={iconSize} /> : <OmniaVoiceIcon size={iconSize} />}
+                {input.trim() ? '➤' : '🌀'}
               </button>
               
             </div>
