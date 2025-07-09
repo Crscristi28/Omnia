@@ -175,14 +175,14 @@ const InputBar = ({
     width: buttonSize,
     height: buttonSize,
     borderRadius: '50%',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    background: 'rgba(0, 0, 0, 0.2)',
+    border: 'none',
+    background: 'transparent',
     color: 'rgba(255, 255, 255, 0.9)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    transition: 'opacity 0.2s',
   };
 
   return (
@@ -257,10 +257,10 @@ const InputBar = ({
                   fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
-                  if (!isLoading) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                  if (!isLoading) e.target.style.opacity = '0.7';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+                  e.target.style.opacity = '1';
                 }}
                 title="Multimodal Features"
               >
@@ -278,10 +278,10 @@ const InputBar = ({
                   fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
-                  if (!isLoading && input.trim()) e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                  if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+                  e.target.style.opacity = '1';
                 }}
                 title="Deep Search"
               >
@@ -294,19 +294,19 @@ const InputBar = ({
                 disabled={isLoading || isAudioPlaying}
                 style={{
                   ...buttonStyle,
-                  background: isRecording ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.2)',
+                  background: isRecording ? 'rgba(255, 0, 0, 0.15)' : 'transparent',
                   opacity: isLoading || isAudioPlaying ? 0.5 : 1,
                   cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
                   fontSize: isMobile ? '16px' : '20px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading && !isAudioPlaying && !isRecording) {
-                    e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                    e.target.style.opacity = '0.7';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isRecording) {
-                    e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+                    e.target.style.opacity = '1';
                   }
                 }}
                 title={isRecording ? 'Stop Recording' : 'Voice Input'}
