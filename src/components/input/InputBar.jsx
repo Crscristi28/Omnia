@@ -168,8 +168,8 @@ const InputBar = ({
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
-  const buttonSize = isMobile ? 28 : 34;
-  const iconSize = isMobile ? 16 : 18;
+  const buttonSize = isMobile ? 36 : 44; // VĚTŠÍ TLAČÍTKA
+  const iconSize = isMobile ? 20 : 24; // VĚTŠÍ EMOJI
 
   const buttonStyle = {
     width: buttonSize,
@@ -254,7 +254,8 @@ const InputBar = ({
                   ...buttonStyle,
                   opacity: isLoading ? 0.5 : 1,
                   cursor: isLoading ? 'not-allowed' : 'pointer',
-                  fontSize: isMobile ? '16px' : '20px',
+                  fontSize: isMobile ? '20px' : '24px',
+                  filter: 'invert(1)', // BÍLÉ PLUS
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) e.target.style.opacity = '0.7';
@@ -275,7 +276,7 @@ const InputBar = ({
                   ...buttonStyle,
                   opacity: isLoading || !input.trim() ? 0.5 : 1,
                   cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-                  fontSize: isMobile ? '16px' : '20px',
+                  fontSize: isMobile ? '20px' : '24px',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
@@ -332,7 +333,7 @@ const InputBar = ({
                 }}
                 title={input.trim() ? 'Send Message' : 'Voice Chat'}
               >
-                {input.trim() ? '➤' : '🌀'}
+                {input.trim() ? '➤' : '💭'}
               </button>
               
             </div>
