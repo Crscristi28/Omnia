@@ -189,35 +189,39 @@ const InputBar = ({
     }
   };
 
-  // 🎨 UNIFIED SQUARE BUTTON STYLE - FIXED VISIBILITY
+  // 🎨 UNIFIED SQUARE BUTTON STYLE - FIXED VISIBILITY & NO SHIFTING
   const getSquareButtonStyle = (isActive = false) => ({
-    width: isMobile ? 32 : 44, // BIGGER BUTTONS
-    height: isMobile ? 32 : 44,
-    minWidth: isMobile ? 32 : 44, // ENSURE MINIMUM SIZE
+    width: isMobile ? 40 : 44,
+    height: isMobile ? 40 : 44,
+    minWidth: isMobile ? 40 : 44,
+    minHeight: isMobile ? 40 : 44,
     borderRadius: '8px',
     border: 'none',
     background: 'transparent',
-    color: '#e2e8f0', // BETTER CONTRAST COLOR
+    color: '#e2e8f0',
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
     outline: 'none',
     fontWeight: 'bold',
     padding: 0,
-    position: 'relative'
+    position: 'relative',
+    transition: 'none',
+    transform: 'none',
+    boxSizing: 'border-box',
   });
 
+  // Remove transform/scale on hover, only color highlight if needed
   const handleButtonHover = (e, isEnter) => {
     if (isLoading) return;
+    e.target.style.transition = 'none';
+    e.target.style.transform = 'none';
     if (isEnter) {
-      e.target.style.background = 'rgba(100, 150, 255, 0.8)'; // EVEN MORE SATURATED ON HOVER
-      e.target.style.transform = 'scale(1.05)';
+      e.target.style.background = 'rgba(100, 150, 255, 0.13)';
     } else {
-      e.target.style.background = 'rgba(100, 150, 255, 0.5)'; // BACK TO SATURATED BLUE
-      e.target.style.transform = 'scale(1)';
+      e.target.style.background = 'transparent';
     }
   };
 
@@ -293,128 +297,198 @@ const InputBar = ({
             }}>
               
               {/* 1. PLUS BUTTON */}
-              <button
-                onClick={() => setShowPlusMenu(true)}
-                disabled={isLoading}
-                style={getSquareButtonStyle()}
-                onMouseEnter={(e) => handleButtonHover(e, true)}
-                onMouseLeave={(e) => handleButtonHover(e, false)}
-                title="Multimodal Features"
-              >
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                  borderRadius: '6px',
+              <div
+                style={{
+                  width: isMobile ? 40 : 44,
+                  height: isMobile ? 40 : 44,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <PlusIcon size={20} color="#FFD700" />
-                </div>
-              </button>
-
-              {/* 2. RESEARCH BUTTON */}
-              <button
-                onClick={handleResearch}
-                disabled={isLoading || !input.trim()}
-                style={getSquareButtonStyle()}
-                onMouseEnter={(e) => handleButtonHover(e, true)}
-                onMouseLeave={(e) => handleButtonHover(e, false)}
-                title="Deep Search"
+                  justifyContent: 'center',
+                  position: 'relative',
+                  transition: 'none',
+                  transform: 'none',
+                }}
               >
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                  borderRadius: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <ResearchIcon size={20} color="#FFD700" />
-                </div>
-              </button>
-
-              {/* 3. MIKROFON BUTTON */}
-              <button
-                onClick={onSTT}
-                disabled={isLoading || isAudioPlaying}
-                style={getSquareButtonStyle(isRecording)}
-                onMouseEnter={(e) => handleButtonHover(e, true)}
-                onMouseLeave={(e) => handleButtonHover(e, false)}
-                title={isRecording ? 'Stop Recording' : 'Voice Input'}
-              >
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                  borderRadius: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <MikrofonIcon size={20} color="#FFD700" />
-                </div>
-              </button>
-
-              {/* 4. DYNAMIC BUTTON - Omnia Voice OR Send */}
-              {input.trim() ? (
                 <button
-                  onClick={onSend}
-                  disabled={isLoading}
-                  style={{
-                    ...getSquareButtonStyle(),
-                    background: 'transparent',
-                    color: '#e2e8f0'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'transparent';
-                      e.target.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isLoading) {
-                      e.target.style.background = 'transparent';
-                      e.target.style.transform = 'scale(1)';
-                    }
-                  }}
-                  title="Send Message"
-                >
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <SendArrowIcon size={20} color="#FFD700" />
-                  </div>
-                </button>
-              ) : (
-                <button
-                  onClick={onVoiceScreen}
+                  onClick={() => setShowPlusMenu(true)}
                   disabled={isLoading}
                   style={getSquareButtonStyle()}
                   onMouseEnter={(e) => handleButtonHover(e, true)}
                   onMouseLeave={(e) => handleButtonHover(e, false)}
-                  title="Voice Chat"
+                  title="Multimodal Features"
                 >
                   <div style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                    borderRadius: '6px',
+                    width: '40px',
+                    height: '40px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                    borderRadius: '6px',
+                    position: 'relative',
+                    transition: 'none',
+                    transform: 'none',
                   }}>
-                    <OmniaVoiceIcon size={20} color="#FFD700" />
+                    <PlusIcon size={20} color="#FFD700" />
                   </div>
                 </button>
+              </div>
+
+              {/* 2. RESEARCH BUTTON */}
+              <div
+                style={{
+                  width: isMobile ? 40 : 44,
+                  height: isMobile ? 40 : 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  transition: 'none',
+                  transform: 'none',
+                }}
+              >
+                <button
+                  onClick={handleResearch}
+                  disabled={isLoading || !input.trim()}
+                  style={getSquareButtonStyle()}
+                  onMouseEnter={(e) => handleButtonHover(e, true)}
+                  onMouseLeave={(e) => handleButtonHover(e, false)}
+                  title="Deep Search"
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                    borderRadius: '6px',
+                    position: 'relative',
+                    transition: 'none',
+                    transform: 'none',
+                  }}>
+                    <ResearchIcon size={20} color="#FFD700" />
+                  </div>
+                </button>
+              </div>
+
+              {/* 3. MIKROFON BUTTON */}
+              <div
+                style={{
+                  width: isMobile ? 40 : 44,
+                  height: isMobile ? 40 : 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  transition: 'none',
+                  transform: 'none',
+                }}
+              >
+                <button
+                  onClick={onSTT}
+                  disabled={isLoading || isAudioPlaying}
+                  style={getSquareButtonStyle(isRecording)}
+                  onMouseEnter={(e) => handleButtonHover(e, true)}
+                  onMouseLeave={(e) => handleButtonHover(e, false)}
+                  title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                    borderRadius: '6px',
+                    position: 'relative',
+                    transition: 'none',
+                    transform: 'none',
+                  }}>
+                    <MikrofonIcon size={20} color="#FFD700" />
+                  </div>
+                </button>
+              </div>
+
+              {/* 4. DYNAMIC BUTTON - Omnia Voice OR Send */}
+              {input.trim() ? (
+                <div
+                  style={{
+                    width: isMobile ? 40 : 44,
+                    height: isMobile ? 40 : 44,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    transition: 'none',
+                    transform: 'none',
+                  }}
+                >
+                  <button
+                    onClick={onSend}
+                    disabled={isLoading}
+                    style={{
+                      ...getSquareButtonStyle(),
+                      background: 'transparent',
+                      color: '#e2e8f0'
+                    }}
+                    onMouseEnter={(e) => handleButtonHover(e, true)}
+                    onMouseLeave={(e) => handleButtonHover(e, false)}
+                    title="Send Message"
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                      borderRadius: '6px',
+                      position: 'relative',
+                      transition: 'none',
+                      transform: 'none',
+                    }}>
+                      <SendArrowIcon size={20} color="#FFD700" />
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    width: isMobile ? 40 : 44,
+                    height: isMobile ? 40 : 44,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    transition: 'none',
+                    transform: 'none',
+                  }}
+                >
+                  <button
+                    onClick={onVoiceScreen}
+                    disabled={isLoading}
+                    style={getSquareButtonStyle()}
+                    onMouseEnter={(e) => handleButtonHover(e, true)}
+                    onMouseLeave={(e) => handleButtonHover(e, false)}
+                    title="Voice Chat"
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(255, 255, 255, 0.07)',
+                      borderRadius: '6px',
+                      position: 'relative',
+                      transition: 'none',
+                      transform: 'none',
+                    }}>
+                      <OmniaVoiceIcon size={20} color="#FFD700" />
+                    </div>
+                  </button>
+                </div>
               )}
             </div>
           </div>
