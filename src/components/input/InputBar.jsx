@@ -189,36 +189,33 @@ const InputBar = ({
     }
   };
 
-  // 🎨 UNIFIED CIRCULAR BUTTON STYLE - ENHANCED VISIBILITY
-  const getCircularButtonStyle = (isActive = false) => ({
+  // 🎨 UNIFIED SQUARE BUTTON STYLE - WHITE ICONS
+  const getSquareButtonStyle = (isActive = false) => ({
     width: isMobile ? 28 : 34,
     height: isMobile ? 28 : 34,
-    borderRadius: '50%', // CIRCULAR!
-    border: '2px solid rgba(255, 255, 255, 0.3)', // STRONGER BORDER
+    borderRadius: '8px', // SQUARE WITH ROUNDED CORNERS
+    border: 'none',
     background: isActive 
-      ? 'rgba(0, 150, 150, 0.4)' 
-      : 'rgba(0, 0, 0, 0.25)', // DARKER BACKGROUND
-    color: 'rgba(255, 255, 255, 0.95)',
+      ? 'rgba(255, 255, 255, 0.15)' 
+      : 'rgba(255, 255, 255, 0.1)', // LIGHT BACKGROUND
+    color: '#ffffff', // WHITE ICONS
     cursor: isLoading ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
     opacity: isLoading ? 0.5 : 1,
-    outline: 'none',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' // ADD SHADOW FOR VISIBILITY
+    outline: 'none'
   });
 
   const handleButtonHover = (e, isEnter) => {
     if (isLoading) return;
     if (isEnter) {
-      e.target.style.background = 'rgba(0, 0, 0, 0.35)'; // DARKER ON HOVER
+      e.target.style.background = 'rgba(255, 255, 255, 0.2)'; // LIGHTER ON HOVER
       e.target.style.transform = 'scale(1.05)';
-      e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
     } else {
-      e.target.style.background = 'rgba(0, 0, 0, 0.25)';
+      e.target.style.background = 'rgba(255, 255, 255, 0.1)';
       e.target.style.transform = 'scale(1)';
-      e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
     }
   };
 
@@ -297,7 +294,7 @@ const InputBar = ({
               <button
                 onClick={() => setShowPlusMenu(true)}
                 disabled={isLoading}
-                style={getCircularButtonStyle()}
+                style={getSquareButtonStyle()}
                 onMouseEnter={(e) => handleButtonHover(e, true)}
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title="Multimodal Features"
@@ -309,7 +306,7 @@ const InputBar = ({
               <button
                 onClick={handleResearch}
                 disabled={isLoading || !input.trim()}
-                style={getCircularButtonStyle()}
+                style={getSquareButtonStyle()}
                 onMouseEnter={(e) => handleButtonHover(e, true)}
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title="Deep Search"
@@ -321,7 +318,7 @@ const InputBar = ({
               <button
                 onClick={onSTT}
                 disabled={isLoading || isAudioPlaying}
-                style={getCircularButtonStyle(isRecording)}
+                style={getSquareButtonStyle(isRecording)}
                 onMouseEnter={(e) => handleButtonHover(e, true)}
                 onMouseLeave={(e) => handleButtonHover(e, false)}
                 title={isRecording ? 'Stop Recording' : 'Voice Input'}
@@ -335,23 +332,20 @@ const InputBar = ({
                   onClick={onSend}
                   disabled={isLoading}
                   style={{
-                    ...getCircularButtonStyle(),
-                    background: 'rgba(0, 150, 150, 0.5)', // STRONGER SEND BUTTON
-                    border: '2px solid rgba(0, 200, 200, 0.6)',
-                    boxShadow: '0 2px 12px rgba(0, 150, 150, 0.3)'
+                    ...getSquareButtonStyle(),
+                    background: 'rgba(0, 150, 150, 0.3)', // SEND BUTTON ACCENT
+                    color: '#ffffff'
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.7)';
+                      e.target.style.background = 'rgba(0, 150, 150, 0.5)';
                       e.target.style.transform = 'scale(1.05)';
-                      e.target.style.borderColor = 'rgba(0, 200, 200, 0.8)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isLoading) {
-                      e.target.style.background = 'rgba(0, 150, 150, 0.5)';
+                      e.target.style.background = 'rgba(0, 150, 150, 0.3)';
                       e.target.style.transform = 'scale(1)';
-                      e.target.style.borderColor = 'rgba(0, 200, 200, 0.6)';
                     }
                   }}
                   title="Send Message"
@@ -362,7 +356,7 @@ const InputBar = ({
                 <button
                   onClick={onVoiceScreen}
                   disabled={isLoading}
-                  style={getCircularButtonStyle()}
+                  style={getSquareButtonStyle()}
                   onMouseEnter={(e) => handleButtonHover(e, true)}
                   onMouseLeave={(e) => handleButtonHover(e, false)}
                   title="Voice Chat"
