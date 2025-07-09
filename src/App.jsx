@@ -856,7 +856,7 @@ function App() {
             borderRadius: '12px',
             border: 'none',
             background: 'transparent',
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: 'white',
             cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -865,7 +865,6 @@ function App() {
             opacity: (loading || streaming) ? 0.5 : 1,
             outline: 'none',
             fontSize: isMobile ? '20px' : '24px',
-            filter: 'invert(1)',
           }}
           onMouseEnter={(e) => {
             if (!loading && !streaming) {
@@ -879,7 +878,7 @@ function App() {
           }}
           title="Chat History & Settings"
         >
-          ☰
+          ≡
         </button>
 
         {/* MODEL SELECTOR - uprostřed */}
