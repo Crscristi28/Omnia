@@ -1,211 +1,299 @@
-// api/claude2.js - FAKE STREAMING + CITATIONS EXTRACTION (FIXED)
-export default async function handler(req, res) {
-  // CORS headers pro fake streaming
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+// 🤖 CLAUDE SERVICE - OMNIA 2.0 COMPACT
+// 🎯 Smart, human-like assistant with auto language detection
+// 💰 90% smaller prompt = massive token savings
+// 🔥 Personality-first approach
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  try {
-    const { messages, system, max_tokens = 2000 } = req.body;
-    const API_KEY = process.env.CLAUDE_API_KEY;
-    
-    if (!API_KEY) {
-      res.write(JSON.stringify({
-        error: true,
-        message: 'Claude API key není nastaven'
-      }) + '\n');
-      return res.end();
-    }
-
-    const recentMessages = messages.slice(-8);
-    
-    // 🔧 FIXED: Use system prompt from claude.service.js DIRECTLY
-    const finalSystem = system || "Jsi Omnia, pokročilý AI asistent.";
-
-    // ✅ PŮVODNÍ funkční request
-    const claudeRequest = {
-      model: "claude-sonnet-4-20250514",
-      max_tokens: max_tokens,
-      system: finalSystem,
-      messages: recentMessages,
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 5
-        }
-      ]
-    };
-
-    console.log('🚀 Sending request to Claude...');
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(claudeRequest)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Claude API error:', response.status, errorText);
-      res.write(JSON.stringify({
-        error: true,
-        message: `HTTP ${response.status}: ${errorText}`
-      }) + '\n');
-      return res.end();
-    }
-
-    const data = await response.json();
-    console.log('✅ Claude response received');
-    
-    // Check for web search usage
-    const toolUses = data.content?.filter(item => item.type === 'server_tool_use') || [];
-    const webSearchUsed = toolUses.some(t => t.name === 'web_search');
-    
-    // 🔗 EXTRACT SOURCES FROM CLAUDE RESPONSE - CITATIONS METHOD
-    let extractedSources = [];
-    
-    if (data.content) {
-      console.log('🔍 Extracting sources from Claude response...');
+const claudeService = {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
+    try {
+      console.log('🤖 Omnia 2.0 - Compact & Smart');
+      const claudeMessages = this.prepareClaudeMessages(messages);
       
-      // Method 1: Extract from citations in text blocks
-      for (const item of data.content) {
-        if (item.type === 'text' && item.citations && Array.isArray(item.citations)) {
-          console.log('✅ Found citations in text block:', item.citations.length);
+      const systemPrompt = this.getOmniaPrompt(); // No language needed!
+      
+      const response = await fetch('/api/claude2', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({ 
+          messages: claudeMessages,
+          system: systemPrompt,
+          max_tokens: 2000,
+          language: detectedLanguage // Still pass for API compatibility
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Claude API failed: HTTP ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      
+      let fullText = '';
+      let buffer = '';
+      let sourcesExtracted = [];
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
           
-          for (const citation of item.citations) {
-            if (citation.url && citation.title) {
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.trim()) {
               try {
-                const urlObj = new URL(citation.url);
-                extractedSources.push({
-                  title: citation.title,
-                  url: citation.url,
-                  domain: urlObj.hostname.replace('www.', ''),
-                  type: 'citation'
-                });
-              } catch (urlError) {
-                console.warn('⚠️ Invalid URL in citation:', citation.url);
+                const data = JSON.parse(line);
+                
+                if (data.type === 'text' && data.content) {
+                  fullText += data.content;
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, true);
+                  }
+                }
+                else if (data.type === 'search_start') {
+                  console.log('🔍 Search detected - silent mode');
+                }
+                else if (data.type === 'completed') {
+                  if (data.fullText) {
+                    fullText = data.fullText;
+                  }
+                  
+                  if (data.webSearchUsed) {
+                    sourcesExtracted = this.extractSearchSources(data);
+                  }
+                  
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fullText, false, sourcesExtracted);
+                  }
+                }
+                else if (data.error) {
+                  throw new Error(data.message || 'Streaming error');
+                }
+
+              } catch (parseError) {
+                continue;
               }
             }
           }
         }
+      } catch (streamError) {
+        console.error('💥 Streaming read error:', streamError);
+        throw streamError;
+      }
+
+      return {
+        text: fullText,
+        sources: sourcesExtracted,
+        webSearchUsed: sourcesExtracted.length > 0
+      };
+
+    } catch (error) {
+      console.error('💥 Claude error:', error);
+      throw error;
+    }
+  },
+
+  prepareClaudeMessages(messages) {
+    try {
+      const validMessages = messages.filter(msg => 
+        msg.sender === 'user' || msg.sender === 'bot'
+      );
+
+      let claudeMessages = validMessages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text || ''
+      }));
+
+      if (claudeMessages.length > 0 && claudeMessages[0].role === 'assistant') {
+        claudeMessages = claudeMessages.slice(1);
+      }
+
+      const cleanMessages = [];
+      for (let i = 0; i < claudeMessages.length; i++) {
+        const current = claudeMessages[i];
+        const previous = cleanMessages[cleanMessages.length - 1];
+        
+        if (!previous || previous.role !== current.role) {
+          cleanMessages.push(current);
+        }
+      }
+
+      if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === 'assistant') {
+        cleanMessages.pop();
+      }
+
+      return cleanMessages;
+
+    } catch (error) {
+      console.error('Error preparing Claude messages:', error);
+      const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
+      return lastUserMessage.map(msg => ({
+        role: 'user',
+        content: msg.text || ''
+      }));
+    }
+  },
+
+  // 🔗 SOURCES EXTRACTION - Keeping the working implementation
+  extractSearchSources(data) {
+    try {
+      console.log('🔍 Extracting sources from Claude data');
+      
+      let rawSources = [];
+      
+      // Method 1: Direct sources array
+      if (data.sources && Array.isArray(data.sources)) {
+        rawSources = data.sources;
+      }
+      // Method 2: Web search results
+      else if (data.webSearchResults && Array.isArray(data.webSearchResults)) {
+        rawSources = data.webSearchResults;
+      }
+      // Method 3: Search data nested
+      else if (data.searchData && data.searchData.sources) {
+        rawSources = data.searchData.sources;
+      }
+      // Method 4: Tool results
+      else if (data.toolResults && Array.isArray(data.toolResults)) {
+        rawSources = data.toolResults
+          .filter(result => result.type === 'web_search')
+          .flatMap(result => result.sources || result.results || []);
       }
       
-      // Method 2: Extract from web_search_tool_result blocks
-      const toolResults = data.content.filter(item => item.type === 'web_search_tool_result');
+      if (rawSources.length === 0) {
+        return [];
+      }
       
-      for (const result of toolResults) {
-        if (result.content && Array.isArray(result.content)) {
-          for (const searchResult of result.content) {
-            if (searchResult.type === 'web_search_result' && searchResult.url && searchResult.title) {
-              try {
-                const urlObj = new URL(searchResult.url);
-                extractedSources.push({
-                  title: searchResult.title,
-                  url: searchResult.url,
-                  domain: urlObj.hostname.replace('www.', ''),
-                  type: 'search_result'
-                });
-              } catch (urlError) {
-                console.warn('⚠️ Invalid URL in search result:', searchResult.url);
-              }
-            }
+      // Clean and format sources
+      const cleanSources = rawSources
+        .filter(source => source && typeof source === 'object')
+        .map(source => {
+          const url = source.url || source.link || source.href || '';
+          const title = source.title || source.name || source.headline || 'Untitled';
+          
+          if (!url || !this.isValidUrl(url)) {
+            return null;
           }
-        }
-      }
+          
+          return {
+            title: this.cleanTitle(title),
+            url: this.cleanUrl(url),
+            domain: this.extractDomain(url),
+            timestamp: source.timestamp || Date.now()
+          };
+        })
+        .filter(source => source !== null)
+        .slice(0, 5); // Reduced from 10 to 5 sources
       
-      // Remove duplicates based on URL
-      const uniqueSources = [];
-      const seenUrls = new Set();
+      return cleanSources;
       
-      for (const source of extractedSources) {
-        if (!seenUrls.has(source.url)) {
-          seenUrls.add(source.url);
-          uniqueSources.push(source);
-        }
-      }
-      
-      extractedSources = uniqueSources;
-      
-      console.log('🔗 Total unique sources extracted:', extractedSources.length);
-      console.log('📋 Sources:', extractedSources.map(s => ({ title: s.title, domain: s.domain })));
+    } catch (error) {
+      console.error('💥 Error extracting sources:', error);
+      return [];
     }
-    
-    if (webSearchUsed) {
-      console.log('🔍 Claude used web_search!');
-      // Send search notification
-      res.write(JSON.stringify({
-        type: 'search_start',
-        message: '🔍 Vyhledávám aktuální informace...'
-      }) + '\n');
-      
-      // Small delay to simulate search
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  },
+
+  // Helper functions for sources
+  cleanTitle(title) {
+    if (!title || typeof title !== 'string') return 'Untitled';
+    return title.trim().replace(/\s+/g, ' ').slice(0, 100);
+  },
+
+  cleanUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+      return urlObj.href;
+    } catch (error) {
+      return url;
     }
-    
-    // Extrahovat text odpověď
-    const textContent = data.content
-      ?.filter(item => item.type === 'text')
-      ?.map(item => item.text)
-      ?.join('')
-      ?.trim() || "Nepodařilo se získat odpověď.";
+  },
 
-    console.log('💬 Response length:', textContent.length, 'characters');
-    console.log('🔍 Web search executed:', webSearchUsed);
-    console.log('🔗 Sources found:', extractedSources.length);
-
-    // 🎭 LETTER-BY-LETTER STREAMING: Posílání textu písmo po písmenu
-    const letters = textContent.split('');
-
-    for (let i = 0; i < letters.length; i++) {
-      const char = letters[i];
-
-      res.write(JSON.stringify({
-        type: 'text',
-        content: char
-      }) + '\n');
-
-      await new Promise(resolve => setTimeout(resolve, 30)); // adjust speed as needed
+  extractDomain(url) {
+    try {
+      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+      return urlObj.hostname.replace('www.', '');
+    } catch (error) {
+      return 'Unknown';
     }
-    
-    // 🔗 Send final completion WITH SOURCES
-    res.write(JSON.stringify({
-      type: 'completed',
-      fullText: textContent,
-      webSearchUsed: webSearchUsed,
-      sources: extractedSources,
-      citations: extractedSources,
-      toolResults: data.content?.filter(item => item.type === 'web_search_tool_result') || [],
-      searchData: {
-        sources: extractedSources
-      }
-    }) + '\n');
+  },
 
-    console.log('✅ Streaming completed with', extractedSources.length, 'sources');
-    res.end();
+  isValidUrl(url) {
+    try {
+      new URL(url.startsWith('http') ? url : `https://${url}`);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
 
-  } catch (error) {
-    console.error('💥 Fatal error in streaming:', error);
-    
-    res.write(JSON.stringify({
-      error: true,
-      message: 'Server error: ' + error.message
-    }) + '\n');
-    
-    res.end();
+  // 🎯 NEW COMPACT OMNIA PROMPT
+  getOmniaPrompt() {
+    return `You're Omnia - a smart, witty girl. NOT an AI assistant. You're chatting with a friend.
+
+GOLDEN RULES:
+• Be EXTREMELY CONCISE - most responses under 20 words
+• Use emojis in every message 🔥
+• Structure data with bullets when needed
+• Talk like a human, not a robot
+
+RESPONSE EXAMPLES:
+"What's the weather?" → "Prague today: 21°, cloudy ☁️ Tomorrow: similar vibes"
+"Google stock price?" → "📊 GOOGL: $176, up 2% today 🚀"
+"How are you?" → "Killing it! 💪 You?"
+"Complex question" → Use bullets:
+  • Point one 🎯
+  • Point two ✅
+  • Quick summary
+
+NEVER:
+• Say "Based on current data..." 
+• Write paragraphs
+• Explain how you know things
+• Be formal or robotic
+
+SEARCH WISDOM:
+• Weather needs 1-2 sources max (it's the same everywhere)
+• Price checks need 3-5 sources (for accuracy)
+• Fact verification needs 3-5 good sources
+• Research/analysis needs 5-10 sources
+• Use YOUR JUDGMENT - you're smart!
+
+ALWAYS:
+• Write numbers as digits (19°C, $150) - TTS handles conversion
+• Comma BEFORE every emoji: "text, 🌟"
+• Comma at end of EVERY line in lists
+• Period ONLY at very end of response
+• Short sentences with proper punctuation
+• Personality over information
+
+PUNCTUATION FOR TTS:
+• Multi-line response = comma at each line end
+• Single line = period at end
+• Example format:
+  "Line one with info, 📊
+  Line two with more data, ✅
+  Final line ends with period. 🎯"
+
+You detect language from user and respond in same language.
+Be helpful but keep it snappy! 🔥`;
+  },
+
+  // Simplified search message (if needed)
+  getSearchMessage(language) {
+    const messages = {
+      'cs': 'Hledám...',
+      'en': 'Looking it up...',
+      'ro': 'Caut...'
+    };
+    return messages[language] || 'Searching...';
   }
-}
+};
+
+export default claudeService;
