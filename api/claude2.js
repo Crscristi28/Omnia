@@ -76,9 +76,60 @@ export default async function handler(req, res) {
     const toolUses = data.content?.filter(item => item.type === 'server_tool_use') || [];
     const webSearchUsed = toolUses.some(t => t.name === 'web_search');
     
-    // 🔗 EXTRACT SOURCES WITH STRICT LIMITS
+    // 🔗 EXTRACT SOURCES WITH SMART LIMITS
     let extractedSources = [];
-    const MAX_SOURCES = 10; // ⚡ INCREASED from 5 to 10 for flexibility
+    
+    // 🎯 SMART SOURCE LIMITS BASED ON QUERY TYPE
+    const query = recentMessages[recentMessages.length - 1]?.content?.toLowerCase() || '';
+    
+    let MAX_SOURCES = 10; // Default
+    
+    // Weather = 2 sources MAX (same everywhere)
+    if (query.match(/počasí|weather|teplota|temperature|prší|rain|sníh|snow|vítr|wind|předpověď|forecast|météo|clima|vrijeme/i)) {
+      MAX_SOURCES = 2;
+      console.log('🌤️ Weather query detected - MAX 2 sources');
+    }
+    // Simple facts = 2 sources (clear answers)
+    else if (query.match(/hlavní město|capital|prezident|president|kdy se narodil|when was.*born|výška|height|rozloha|area/i)) {
+      MAX_SOURCES = 2;
+      console.log('📌 Simple fact query - MAX 2 sources');
+    }
+    // Products/E-commerce = 3 sources (basic info)
+    else if (query.match(/iphone|samsung|xbox|playstation|nike|adidas|zara|laptop|notebook|telefon|phone|boty|shoes|hodinky|watch/i) ||
+             query.match(/\.com|\.cz|\.sk|website|eshop|e-shop|obchod|shop|store|amazon|alza|mall/i)) {
+      MAX_SOURCES = 3;
+      console.log('🛍️ Product/Shop query - MAX 3 sources');
+    }
+    // Local/Events = 3 sources
+    else if (query.match(/restaurace|restaurant|hotel|kino|cinema|koncert|concert|festival|kde je|where is|otevírací doba|opening hours/i)) {
+      MAX_SOURCES = 3;
+      console.log('📍 Local/Event query - MAX 3 sources');
+    }
+    // Finance/Trading = 5 sources (need accuracy)
+    else if (query.match(/cena|price|kolik stojí|akcie|stock|bitcoin|btc|ethereum|eth|crypto|kurz|exchange|nasdaq|dow|s&p 500|trading|forex|usd|eur|czk/i)) {
+      MAX_SOURCES = 5;
+      console.log('💰 Finance query - MAX 5 sources');
+    }
+    // News/Current Events = 6 sources (multiple perspectives)
+    else if (query.match(/zprávy|news|aktuality|novinky|volby|election|výsledky|results|kdo vyhrál|who won|skandál|scandal/i)) {
+      MAX_SOURCES = 6;
+      console.log('📰 News query - MAX 6 sources');
+    }
+    // Technical/Programming = 6 sources
+    else if (query.match(/javascript|python|react|vue|angular|api|bug|error|jak opravit|how to fix|programování|programming|code/i)) {
+      MAX_SOURCES = 6;
+      console.log('💻 Technical query - MAX 6 sources');
+    }
+    // Research/Analysis = 10 sources (comprehensive)
+    else if (query.match(/analýza|analysis|research|výzkum|studie|study|srovnání|comparison|kompletní|complete|detailní|detailed|hloubková|in-depth/i)) {
+      MAX_SOURCES = 10;
+      console.log('🔬 Deep research - MAX 10 sources');
+    }
+    // Default = 5 sources (reasonable middle ground)
+    else {
+      MAX_SOURCES = 5;
+      console.log('📊 General query - MAX 5 sources');
+    }
     
     if (data.content) {
       console.log('🔍 Extracting sources from Claude response...');
