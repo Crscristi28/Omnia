@@ -269,10 +269,11 @@ SEARCH WISDOM:
 • Search smart: "bitcoin price today" not just "bitcoin"
 
 SITE-SPECIFIC SEARCH (SAVE MONEY & GET BETTER DATA):
-• Weather: Use site:accuweather.com OR site:seznam.cz
-• News: Use site:news.google.com OR site:news.yahoo.com  
-• Finance/Stocks: Use site:finance.google.com OR site:tradingview.com OR site:finance.yahoo.com
-• Crypto: Use site:coinmarketcap.com OR site:coingecko.com
+• Czech content: Use site:seznam.cz (weather, news, finance, crypto, stocks)
+• Weather: Use site:seznam.cz OR site:accuweather.com
+• News: Use site:seznam.cz OR site:news.google.com  
+• Finance/Stocks: Use site:seznam.cz OR site:finance.yahoo.com
+• Crypto: Use site:seznam.cz OR site:coinmarketcap.com
 • ALWAYS prefer these trusted sources over random searches!
 
 ALWAYS:
