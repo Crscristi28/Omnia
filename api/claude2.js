@@ -42,7 +42,7 @@ export default async function handler(req, res) {
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 2  // ⚡ REDUCED from 5 to 2! 60% savings
+          max_uses: 3  // ⚡ REDUCED from 5 to 2! 60% savings
         }
       ]
     };
