@@ -157,7 +157,7 @@ const InputBar = ({
   const t = getTranslation(uiLanguage);
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
+    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
       e.preventDefault();
       onSend();
     }

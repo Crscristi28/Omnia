@@ -1,6 +1,7 @@
 // 🚀 OMNIA - APP.JSX PART 1/3 - IMPORTS + STATE + EFFECTS (REDESIGNED)
 // ✅ ADDED: ChatSidebar + NewChatButton imports
 // ✅ ADDED: welcomeTexts for multilingual welcome
+// ✅ SIMPLIFIED: Removed complex scroll system
 // 🎯 UNCHANGED: Všechny původní importy a funkčnost
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -234,11 +235,6 @@ function App() {
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
   
-  // 🆕 SMART SCROLL STATE - NEW!
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const [lastScrollPosition, setLastScrollPosition] = useState(0);
-  const scrollTimeoutRef = useRef(null);
-  
   // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
@@ -283,69 +279,8 @@ function App() {
     }
   }, []);
 
-  // 🆕 SMART SCROLL DETECTION - NEW!
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!mainContentRef.current) return;
-      
-      const scrollTop = mainContentRef.current.scrollTop;
-      const scrollHeight = mainContentRef.current.scrollHeight;
-      const clientHeight = mainContentRef.current.clientHeight;
-      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100;
-      
-      // Pokud uživatel scrolluje nahoru, označíme to
-      if (scrollTop < lastScrollPosition && !scrolledToBottom) {
-        setIsUserScrolling(true);
-        
-        // Clear existing timeout
-        if (scrollTimeoutRef.current) {
-          clearTimeout(scrollTimeoutRef.current);
-        }
-        
-        // Reset after 3 seconds of no scrolling
-        scrollTimeoutRef.current = setTimeout(() => {
-          setIsUserScrolling(false);
-        }, 3000);
-      }
-      
-      // Pokud je uživatel dole, resetujeme flag
-      if (scrolledToBottom) {
-        setIsUserScrolling(false);
-      }
-      
-      setLastScrollPosition(scrollTop);
-    };
-    
-    const mainContent = mainContentRef.current;
-    if (mainContent) {
-      mainContent.addEventListener('scroll', handleScroll);
-      return () => mainContent.removeEventListener('scroll', handleScroll);
-    }
-  }, [lastScrollPosition]);
-
-  // 🆕 SMART AUTO-SCROLL - REPLACED!
-  useEffect(() => {
-    // Nescrollujeme pokud:
-    // 1. Uživatel scrolluje nahoru
-    // 2. Není co scrollovat
-    
-    if (!isUserScrolling && messages.length > 0) {
-      // Scrollujeme jen když přibyla nová zpráva
-      setTimeout(() => {
-        if (endOfMessagesRef.current && mainContentRef.current) {
-          const scrollHeight = mainContentRef.current.scrollHeight;
-          const clientHeight = mainContentRef.current.clientHeight;
-          const scrollTop = mainContentRef.current.scrollTop;
-          const isNearBottom = scrollTop + clientHeight >= scrollHeight - 200;
-          
-          // Scrolluj jen pokud je uživatel blízko konce
-          if (isNearBottom) {
-            endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      }, 100);
-    }
-  }, [messages.length, isUserScrolling]);
+  // 🆕 SIMPLE SCROLL - NO AUTO-SCROLL! User controls everything
+  // Scroll will only happen when user sends message (in handleSend)
 
   const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX PART 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (REDESIGNED)
 // ✅ ADDED: Sidebar handlers
@@ -667,12 +602,14 @@ function App() {
     if (!textInput.trim() || loading) return;
     
     // Reset user scrolling flag when sending message
-    setIsUserScrolling(false);
+    // REMOVED - no more user scrolling detection
     
-    // Smart scroll to bottom when user sends message
+    // Scroll to user's message after sending
     setTimeout(() => {
-      if (endOfMessagesRef.current) {
-        endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+      const userMessages = document.querySelectorAll('[data-sender="user"]');
+      const lastUserMessage = userMessages[userMessages.length - 1];
+      if (lastUserMessage) {
+        lastUserMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 100);
 
@@ -1108,7 +1045,7 @@ function App() {
 
           {/* 💬 CHAT MESSAGES - UNCHANGED styling */}
           {messages.map((msg, idx) => (
-            <div key={idx} style={{
+            <div key={idx} data-sender={msg.sender} style={{
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
