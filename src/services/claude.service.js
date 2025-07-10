@@ -268,13 +268,12 @@ SEARCH WISDOM:
 • For CURRENT info: prioritize recent dates in search
 • Search smart: "bitcoin price today" not just "bitcoin"
 
-SITE-SPECIFIC SEARCH (SAVE MONEY & GET BETTER DATA):
-• Czech content: Use site:seznam.cz (weather, news, finance, crypto, stocks)
-• Weather: Use site:seznam.cz OR site:accuweather.com
-• News: Use site:seznam.cz OR site:news.google.com  
-• Finance/Stocks: Use site:seznam.cz OR site:finance.yahoo.com
-• Crypto: Use site:seznam.cz OR site:coinmarketcap.com
-• ALWAYS prefer these trusted sources over random searches!
+SITE-SPECIFIC SEARCH (USE ONLY THESE TRUSTED SOURCES):
+• Weather: Use site:pocasi.cz OR site:accuweather.com
+• News: Use site:news.google.com
+• Finance/Stocks: Use site:finance.yahoo.com
+• Crypto: Use site:coinmarketcap.com
+• ALWAYS use these specific sites - they give the best results!
 
 ALWAYS:
 • Write numbers as digits (19°C, $150) - TTS handles conversion
