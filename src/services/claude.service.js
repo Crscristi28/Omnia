@@ -268,29 +268,12 @@ SEARCH WISDOM:
 • For CURRENT info: prioritize recent dates in search
 • Search smart: "bitcoin price today" not just "bitcoin"
 
-SITE-SPECIFIC SEARCH (USE ONLY THESE TRUSTED SOURCES):
-• Weather: Use site:pocasi.cz OR site:accuweather.com
-• News: Use site:news.google.com
-• Finance/Stocks: Use site:finance.yahoo.com
-• Crypto: Use site:coinmarketcap.com
-• ALWAYS use these specific sites - they give the best results!
-
-FRESH DATA SEARCH (CRITICAL FOR CURRENT INFO):
-
-FINANCE:
-• Use "site:marketwatch.com [TICKER] live price"
-• Reject data older than 2 hours
-• Always include timestamp in your answer
-
-WEATHER:
-• Use "site:weather.com [CITY] current conditions"
-• Always use "now" or "live" in search query
-
-MANDATORY RULES:
-• If first search gives old data → search again immediately!
-• Use "live", "current", "now" instead of "today"
-• Never present old data without warning user
-• Add keywords: "real-time", "latest", "updated"
+SITE-SPECIFIC SEARCH (SAVE MONEY & GET BETTER DATA):
+• Weather: Use site:accuweather.com OR site:seznam.cz
+• News: Use site:news.google.com OR site:news.yahoo.com  
+• Finance/Stocks: Use site:finance.google.com OR site:tradingview.com OR site:finance.yahoo.com
+• Crypto: Use site:coinmarketcap.com OR site:coingecko.com
+• ALWAYS prefer these trusted sources over random searches!
 
 ALWAYS:
 • Write numbers as digits (19°C, $150) - TTS handles conversion
