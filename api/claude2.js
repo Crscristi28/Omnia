@@ -42,7 +42,7 @@ export default async function handler(req, res) {
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 5  // ⚡ REDUCED from 5 to 2! 60% savings
+          max_uses: 2  // ⚡ REDUCED from 5 to 2! 60% savings
         }
       ]
     };
@@ -84,51 +84,30 @@ export default async function handler(req, res) {
     
     let MAX_SOURCES = 10; // Default
     
-    // Weather = 2 sources MAX (same everywhere)
-    if (query.match(/počasí|weather|teplota|temperature|prší|rain|sníh|snow|vítr|wind|předpověď|forecast|météo|clima|vrijeme/i)) {
+    // Weather = 2 sources MAX
+    if (query.match(/počasí|weather|vremea|météo|wetter|pogoda|teplota|temperature|prší|rain|sníh|snow/i)) {
       MAX_SOURCES = 2;
       console.log('🌤️ Weather query detected - MAX 2 sources');
     }
-    // Simple facts = 2 sources (clear answers)
-    else if (query.match(/hlavní město|capital|prezident|president|kdy se narodil|when was.*born|výška|height|rozloha|area/i)) {
-      MAX_SOURCES = 2;
-      console.log('📌 Simple fact query - MAX 2 sources');
-    }
-    // Products/E-commerce = 3 sources (basic info)
-    else if (query.match(/iphone|samsung|xbox|playstation|nike|adidas|zara|laptop|notebook|telefon|phone|boty|shoes|hodinky|watch/i) ||
-             query.match(/\.com|\.cz|\.sk|website|eshop|e-shop|obchod|shop|store|amazon|alza|mall/i)) {
+    // Products/Websites/Shops = 3 sources MAX
+    else if (query.match(/\.com|\.cz|\.sk|\.ro|website|stránka|web|eshop|e-shop|obchod|shop|store|magazin|product|produkt|výrobek|iphone|samsung|macbook|laptop|telefon|boty|shoes|oblečení|clothes/i)) {
       MAX_SOURCES = 3;
-      console.log('🛍️ Product/Shop query - MAX 3 sources');
+      console.log('🛍️ Product/Website/Shop query detected - MAX 3 sources');
     }
-    // Local/Events = 3 sources
-    else if (query.match(/restaurace|restaurant|hotel|kino|cinema|koncert|concert|festival|kde je|where is|otevírací doba|opening hours/i)) {
-      MAX_SOURCES = 3;
-      console.log('📍 Local/Event query - MAX 3 sources');
-    }
-    // Finance/Trading = 5 sources (need accuracy)
-    else if (query.match(/cena|price|kolik stojí|akcie|stock|bitcoin|btc|ethereum|eth|crypto|kurz|exchange|nasdaq|dow|s&p 500|trading|forex|usd|eur|czk/i)) {
+    // Finance/Prices = 5 sources MAX  
+    else if (query.match(/cena|price|kolik stojí|combien|precio|стоимость|курс|kurz|akcie|stock|crypto|bitcoin|eth|nasdaq|dow|s&p|trading|finance|$|€|kč/i)) {
       MAX_SOURCES = 5;
-      console.log('💰 Finance query - MAX 5 sources');
+      console.log('💰 Finance/Price query detected - MAX 5 sources');
     }
-    // News/Current Events = 6 sources (multiple perspectives)
-    else if (query.match(/zprávy|news|aktuality|novinky|volby|election|výsledky|results|kdo vyhrál|who won|skandál|scandal/i)) {
-      MAX_SOURCES = 6;
-      console.log('📰 News query - MAX 6 sources');
-    }
-    // Technical/Programming = 6 sources
-    else if (query.match(/javascript|python|react|vue|angular|api|bug|error|jak opravit|how to fix|programování|programming|code/i)) {
-      MAX_SOURCES = 6;
-      console.log('💻 Technical query - MAX 6 sources');
-    }
-    // Research/Analysis = 10 sources (comprehensive)
-    else if (query.match(/analýza|analysis|research|výzkum|studie|study|srovnání|comparison|kompletní|complete|detailní|detailed|hloubková|in-depth/i)) {
+    // Deep Research = 10 sources
+    else if (query.match(/deep research|kompletní analýza|complete analysis|detailed|podrobný|hloubková|in-depth|comprehensive/i)) {
       MAX_SOURCES = 10;
-      console.log('🔬 Deep research - MAX 10 sources');
+      console.log('🔬 Deep research detected - MAX 10 sources');
     }
-    // Default = 5 sources (reasonable middle ground)
+    // Everything else = 7 sources
     else {
-      MAX_SOURCES = 5;
-      console.log('📊 General query - MAX 5 sources');
+      MAX_SOURCES = 7;
+      console.log('📊 General query - MAX 7 sources');
     }
     
     if (data.content) {
