@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.end();
     }
 
-    const recentMessages = messages.slice(-8);
+    const recentMessages = messages.slice(-2);  // Ultra minimal for testing phase (maximum cost savings)
     
     // 🔧 FIXED: Use system prompt from claude.service.js DIRECTLY
     const finalSystem = system || "Jsi Omnia, pokročilý AI asistent.";
