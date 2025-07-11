@@ -13,7 +13,7 @@ const claudeMessages = this.prepareClaudeMessages(messages);
   const systemPrompt = this.getOmniaPrompt(); // No language needed!
   
   const response = await fetch('/api/claude2', {
-    method: 'POST',
+    method: 'POST', 
     headers: { 
       'Content-Type': 'application/json; charset=utf-8'
     },
