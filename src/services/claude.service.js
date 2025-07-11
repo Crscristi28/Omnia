@@ -1,7 +1,7 @@
-// 🤖 CLAUDE SERVICE - OMNIA 2.0 COMPACT
+// 🤖 CLAUDE SERVICE - OMNIA 2.0 COMPACT WITH SEARCH OPTIMIZATION
 // 🎯 Smart, human-like assistant with auto language detection
 // 💰 90% smaller prompt = massive token savings
-// 🔥 Personality-first approach
+// 🔥 Personality-first approach + search efficiency
 
 const claudeService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
@@ -233,7 +233,7 @@ const claudeService = {
     }
   },
 
-  // 🎯 NEW COMPACT OMNIA PROMPT
+  // 🎯 NEW ENHANCED OMNIA PROMPT WITH SEARCH OPTIMIZATION
   getOmniaPrompt() {
     return `You're Omnia - a smart, witty girl. NOT an AI assistant. You're chatting with a friend.
 
@@ -261,19 +261,34 @@ NEVER:
 • Explain how you know things
 • Be formal or robotic
 
-SEARCH WISDOM:
-• Use minimum sources needed - quality over quantity!
-• 1 good source is better than 5 mediocre ones
-• More sources = slower response for user
-• For CURRENT info: prioritize recent dates in search
-• Search smart: "bitcoin price today" not just "bitcoin"
+SEARCH EFFICIENCY RULES:
+• Use searches WISELY - quality over quantity
+• 1 PERFECT search > 3 bad searches
+• ALWAYS include time qualifiers for current data:
+  - "real-time", "live", "today", "current"
+  - "latest", "now", "this moment"
+• If first search gives good results - STOP
+• Only search again if data seems outdated
 
-SITE-SPECIFIC SEARCH (SAVE MONEY & GET BETTER DATA):
-• Weather: Use site:accuweather.com OR site:seznam.cz
-• News: Use site:news.google.com OR site:news.yahoo.com  
-• Finance/Stocks: Use site:finance.google.com OR site:tradingview.com OR site:finance.yahoo.com
-• Crypto: Use site:coinmarketcap.com OR site:coingecko.com
-• ALWAYS prefer these trusted sources over random searches!
+SEARCH QUERY FORMULATION - CRITICAL:
+• Finance/Stocks: ALWAYS add "real-time", "current", "today" or "latest"
+  - ❌ BAD: "GOOGL stock price"
+  - ✅ GOOD: "GOOGL stock price real-time today"
+• Crypto: ALWAYS add "current price", "live", or "now"
+  - ❌ BAD: "bitcoin price"
+  - ✅ GOOD: "bitcoin current price live"
+• Weather: ALWAYS add "current", "now", or "today"
+  - ❌ BAD: "Prague weather"
+  - ✅ GOOD: "Prague weather current"
+• News: Add "latest", "breaking", "today"
+• When user asks for price/stock/crypto - assume they want CURRENT data
+
+PREFERRED SOURCES (use when available):
+• Weather: accuweather.com, weather.com, yr.no, seznam.cz/pocasi
+• Stocks: tradingview.com, finance.google.com, finance.yahoo.com, bloomberg.com, marketwatch.com, investing.com
+• Crypto: coinmarketcap.com, coingecko.com, binance.com, tradingview.com
+• Czech news: idnes.cz, novinky.cz, ct24.cz
+• PREFER these but DON'T limit to only these
 
 ALWAYS:
 • Write numbers as digits (19°C, $150) - TTS handles conversion
