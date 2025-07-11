@@ -29,57 +29,7 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-8);
     
-    // 🎯 SEARCH QUERY ENHANCEMENT - Force preferred sources
-    const lastUserMessage = recentMessages[recentMessages.length - 1];
-    if (lastUserMessage && lastUserMessage.role === 'user') {
-      const query = lastUserMessage.content.toLowerCase();
-      let enhanced = false;
-      
-      // 💰 ANY FINANCIAL INSTRUMENTS - stocks, ETFs, bonds, forex, commodities
-      if (query.match(/cena|price|kurz|akcie|stock|etf|bond|dluhopis|forex|komodity|commodity|nasdaq|dow|s&p|dax|trading|quote|kotace/i)) {
-        lastUserMessage.content += " (search real-time data on tradingview.com or finance.yahoo.com first)";
-        enhanced = true;
-      }
-      
-      // 🪙 CRYPTO - any cryptocurrency
-      else if (query.match(/bitcoin|btc|ethereum|eth|crypto|krypto|binance|coinbase|defi|altcoin|token/i)) {
-        lastUserMessage.content += " (search current prices on coinmarketcap.com or coingecko.com)";
-        enhanced = true;
-      }
-      
-      // 🌤️ WEATHER - any location
-      else if (query.match(/počasí|weather|teplota|temperature|předpověď|forecast|prší|rain|sníh|snow/i)) {
-        lastUserMessage.content += " (search current conditions on accuweather.com or weather.com)";
-        enhanced = true;
-      }
-      
-      // 📰 NEWS & CURRENT EVENTS
-      else if (query.match(/zprávy|news|aktuality|novinky|dnes|today|včera|yesterday|breaking|aktuální|current/i)) {
-        // Czech news
-        if (query.match(/česk|czech|praha|čr/i)) {
-          lastUserMessage.content += " (search latest on idnes.cz or ct24.cz)";
-        } else {
-          lastUserMessage.content += " (search latest on news.google.com or reuters.com)";
-        }
-        enhanced = true;
-      }
-      
-      // 🛍️ PRODUCTS & PRICES (e-commerce)
-      else if (query.match(/koupit|buy|nakoupit|objednat|eshop|e-shop|amazon|ebay|alza|mall/i)) {
-        lastUserMessage.content += " (search on relevant shopping sites for current prices)";
-        enhanced = true;
-      }
-      
-      // 📊 GENERAL CURRENT DATA - anything that needs fresh info
-      else if (query.match(/kolik|how much|how many|současn|current|aktuáln|latest|teď|now|live|real-time/i)) {
-        lastUserMessage.content += " (search for most current information available)";
-        enhanced = true;
-      }
-      
-      if (enhanced) {
-        console.log('🎯 Query enhanced for better search targeting');
-      }
-    }
+
     
     // 🔧 FIXED: Use system prompt from claude.service.js DIRECTLY
     const finalSystem = system || "Jsi Omnia, pokročilý AI asistent.";
