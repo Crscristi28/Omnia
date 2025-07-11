@@ -94,7 +94,7 @@ export default async function handler(req, res) {
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 3  // ⚡ INCREASED from 2 to 3 for better accuracy
+          max_uses: 5  // ⚡ INCREASED from 2 to 3 for better accuracy
         }
       ]
     };
