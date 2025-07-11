@@ -3,6 +3,7 @@
 // ✅ ADDED: welcomeTexts for multilingual welcome
 // ✅ SIMPLIFIED: Removed complex scroll system
 // 🎯 UNCHANGED: Všechny původní importy a funkčnost
+// 🆕 STREAMING: Added streamingUtils import
 
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -13,11 +14,12 @@ import openaiService from './services/openai.service.js';
 import sonarService from './services/sonar.service.js';
 import elevenLabsService from './services/elevenLabs.service.js';
 
-// 🔧 IMPORT UTILS (UNCHANGED)
+// 🔧 IMPORT UTILS (UNCHANGED + STREAMING)
 import { uiTexts, getTranslation } from './utils/translations.js';
 import sessionManager from './utils/sessionManager.js';
 import detectLanguage from './utils/smartLanguageDetection.js';
 import sanitizeText, { cleanMarkdownForUI } from './utils/sanitizeText.js';
+import { streamMessageWithEffect, smartScrollToBottom } from './utils/streamingUtils.js'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (UNCHANGED + NEW)
 import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
@@ -93,7 +95,7 @@ class MobileAudioManager {
       oscillator.start();
       oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+      const silentAudio = new Audio('data:audio/mp3;base64,SUQzAwAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////////////////////////AAAAAExhdmY1OC4yOS4xMAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xAAIAAIAGAAAAABJbmZvAAAADwAAAAMAABqyAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABUgJAUHQQAB4AAAAbIqPqsqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//M4xDsAAAGkAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
       silentAudio.volume = 0.01;
       
       try {
@@ -235,6 +237,9 @@ function App() {
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
   
+  // 🆕 STREAMING STATE - For controlling streaming effect
+  const [stopStreamingRef, setStopStreamingRef] = useState(null);
+  
   // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
@@ -285,6 +290,7 @@ function App() {
   const shouldHideLogo = messages.length > 0;// 🚀 OMNIA - APP.JSX PART 2/3 - UTILITY FUNCTIONS + MESSAGE HANDLING (REDESIGNED)
 // ✅ ADDED: Sidebar handlers
 // 🎯 UNCHANGED: Všechny původní funkce (TTS, STT, AI conversation)
+// 🆕 STREAMING: Modified Claude message handling with streaming effect
 
 // 🔧 NOTIFICATION SYSTEM (UNCHANGED)
   const showNotification = (message, type = 'info', onClick = null) => {
@@ -548,6 +554,12 @@ function App() {
 
   // 🔧 UTILITY FUNCTIONS (UNCHANGED)
   const handleNewChat = () => {
+    // 🆕 STREAMING: Stop any ongoing streaming
+    if (stopStreamingRef) {
+      stopStreamingRef();
+      setStopStreamingRef(null);
+    }
+    
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
@@ -597,20 +609,23 @@ function App() {
     }
   };
 
-// 🤖 AI CONVERSATION - CLEAN WITHOUT formatClaudeResponse() + SOURCES INTEGRATION (UNCHANGED)
+// 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
     
-    // Reset user scrolling flag when sending message
-    // REMOVED - no more user scrolling detection
+    // 🆕 STREAMING: Stop any ongoing streaming
+    if (stopStreamingRef) {
+      stopStreamingRef();
+      setStopStreamingRef(null);
+    }
     
     // Scroll to user's message after sending
     setTimeout(() => {
-      const userMessages = document.querySelectorAll('[data-sender="user"]');
-      const lastUserMessage = userMessages[userMessages.length - 1];
-      if (lastUserMessage) {
-        lastUserMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      smartScrollToBottom(mainContentRef.current, {
+        behavior: 'smooth',
+        force: true,
+        delay: 100
+      });
     }, 100);
 
     const detectedLang = detectLanguage(textInput);
@@ -634,40 +649,41 @@ function App() {
       let responseText = '';
 
       if (model === 'claude') {
-        let streamedText = '';
+        let finalText = '';
+        let sources = [];
         
         const result = await claudeService.sendMessage(
           messagesWithUser,
           (text, isStreaming) => {
-            streamedText = text;
-            const streamingMessages = [
-              ...messagesWithUser,
-              { sender: 'bot', text: text, isStreaming: true }
-            ];
-            setMessages(streamingMessages);
+            // 🆕 STREAMING: Don't update messages here, we'll use streaming effect
+            finalText = text;
             setStreaming(isStreaming);
           },
           (searchMsg) => showNotification(searchMsg, 'info'),
           detectedLang
         );
         
-        const finalText = streamedText || result.text;
+        finalText = finalText || result.text;
+        sources = result.sources || [];
         
-        // 🔗 SOURCES INTEGRATION - Add sources to message
+        // 🆕 STREAMING: Use streaming effect for final text
+        const stopFn = streamMessageWithEffect(
+          finalText,
+          setMessages,
+          messagesWithUser,
+          mainContentRef.current,
+          sources
+        );
+        setStopStreamingRef(() => stopFn);
+        
+        // Save final messages with sources
         const finalMessage = { 
           sender: 'bot', 
           text: finalText,
-          sources: result.sources || []
+          sources: sources
         };
         
-        console.log('🔗 Claude response with sources:', {
-          textLength: finalText.length,
-          sourcesCount: (result.sources || []).length,
-          sources: result.sources
-        });
-        
         const finalMessages = [...messagesWithUser, finalMessage];
-        setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
         if (fromVoice && showVoiceScreen && finalText) {
@@ -683,13 +699,21 @@ function App() {
         const response = await openaiService.sendMessage(openAIMessages, detectedLang);
         responseText = (typeof response === 'object' && response.text) ? response.text : response;
         
-        // 🔗 GPT doesn't have sources yet - add empty array
+        // 🆕 STREAMING: Use streaming effect for GPT too
+        const stopFn = streamMessageWithEffect(
+          responseText,
+          setMessages,
+          messagesWithUser,
+          mainContentRef.current,
+          [] // GPT doesn't have sources yet
+        );
+        setStopStreamingRef(() => stopFn);
+        
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
           sources: []
         }];
-        setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
         if (fromVoice && showVoiceScreen && responseText) {
@@ -701,13 +725,21 @@ function App() {
         const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
         responseText = searchResult.success ? searchResult.result : searchResult.message;
         
-        // 🔗 Sonar doesn't have sources yet - add empty array
+        // 🆕 STREAMING: Use streaming effect for Sonar too
+        const stopFn = streamMessageWithEffect(
+          responseText,
+          setMessages,
+          messagesWithUser,
+          mainContentRef.current,
+          [] // Sonar doesn't have sources yet
+        );
+        setStopStreamingRef(() => stopFn);
+        
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
           sources: []
         }];
-        setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
         
         if (fromVoice && showVoiceScreen && responseText) {
