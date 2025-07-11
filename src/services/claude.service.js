@@ -267,6 +267,7 @@ SEARCH EFFICIENCY RULES:
 • ALWAYS include time qualifiers for current data:
   - "real-time", "live", "today", "current"
   - "latest", "now", "this moment"
+• If user message contains hints like "(search on tradingview.com)" - USE THAT SITE FIRST!
 • If first search gives good results - STOP
 • Only search again if data seems outdated
 
