@@ -29,12 +29,10 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-8);
     
-
-    
     // 🔧 FIXED: Use system prompt from claude.service.js DIRECTLY
     const finalSystem = system || "Jsi Omnia, pokročilý AI asistent.";
 
-    // 🚀 OPTIMIZED: Increased search limit for better real-time data
+    // 🚀 OPTIMIZED: Sweet spot for search flexibility
     const claudeRequest = {
       model: "claude-sonnet-4-20250514",
       max_tokens: max_tokens,
@@ -44,7 +42,7 @@ export default async function handler(req, res) {
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 5  // ⚡ INCREASED from 2 to 3 for better accuracy
+          max_uses: 4  // ⚡ Sweet spot - enough flexibility without waste
         }
       ]
     };
@@ -81,41 +79,8 @@ export default async function handler(req, res) {
     // 🔗 EXTRACT SOURCES WITH SMART LIMITS
     let extractedSources = [];
     
-    // 🎯 UPDATED SOURCE LIMITS FOR BETTER REAL-TIME DATA
-    const query = recentMessages[recentMessages.length - 1]?.content?.toLowerCase() || '';
-    
-    let MAX_SOURCES = 10; // Default
-    
-    // Weather = 4 sources (increased from 2)
-    if (query.match(/počasí|weather|vremea|météo|wetter|pogoda|teplota|temperature|prší|rain|sníh|snow/i)) {
-      MAX_SOURCES = 4;
-      console.log('🌤️ Weather query detected - MAX 4 sources');
-    }
-    // Products/Websites/Shops = 3 sources (unchanged)
-    else if (query.match(/\.com|\.cz|\.sk|\.ro|website|stránka|web|eshop|e-shop|obchod|shop|store|magazin|product|produkt|výrobek|iphone|samsung|macbook|laptop|telefon|boty|shoes|oblečení|clothes/i)) {
-      MAX_SOURCES = 3;
-      console.log('🛍️ Product/Website/Shop query detected - MAX 3 sources');
-    }
-    // Finance/Stocks/Crypto = 8 sources (increased from 5)
-    else if (query.match(/cena|price|kolik stojí|combien|precio|стоимость|курс|kurz|akcie|stock|crypto|bitcoin|eth|nasdaq|dow|s&p|trading|finance|$|€|kč/i)) {
-      MAX_SOURCES = 8;
-      console.log('💰 Finance/Stock/Crypto query detected - MAX 8 sources');
-    }
-    // News/Current Events = 6 sources
-    else if (query.match(/news|zprávy|noviny|aktuality|current|aktuální|dnes|today|včera|yesterday/i)) {
-      MAX_SOURCES = 6;
-      console.log('📰 News/Current events detected - MAX 6 sources');
-    }
-    // Deep Research = 10 sources
-    else if (query.match(/deep research|kompletní analýza|complete analysis|detailed|podrobný|hloubková|in-depth|comprehensive/i)) {
-      MAX_SOURCES = 10;
-      console.log('🔬 Deep research detected - MAX 10 sources');
-    }
-    // Everything else = 6 sources
-    else {
-      MAX_SOURCES = 6;
-      console.log('📊 General query - MAX 6 sources');
-    }
+    // 🎯 Simple approach - let Claude decide how many sources she needs
+    const MAX_SOURCES = 8; // Reasonable limit - not too few, not too many
     
     if (data.content) {
       console.log('🔍 Extracting sources from Claude response...');
