@@ -13,7 +13,7 @@ const claudeMessages = this.prepareClaudeMessages(messages);
   const systemPrompt = this.getOmniaPrompt(); // No language needed!
   
   const response = await fetch('/api/claude2', {
-    method: 'POST', 
+    method: 'POST',
     headers: { 
       'Content-Type': 'application/json; charset=utf-8'
     },
@@ -277,32 +277,29 @@ SEARCH WISDOM:
 • For CURRENT info: prioritize recent dates in search
 • Search smart: “bitcoin price today” not just “bitcoin”
 
-FRESH DATA SEARCH (MANDATORY FOR CURRENT INFO):
+SITE-SPECIFIC SEARCH (USE ONLY THESE TRUSTED SOURCES):
+• Weather: Use site:pocasi.cz OR site:accuweather.com
+• News: Use site:news.google.com
+• Finance/Stocks: Use site:finance.yahoo.com
+• Crypto: Use site:coinmarketcap.com
+• ALWAYS use these specific sites - they give the best results!
+
+FRESH DATA SEARCH (CRITICAL FOR CURRENT INFO):
+
+FINANCE:
+• Use “site:marketwatch.com [TICKER] live price”
+• Reject data older than 2 hours
+• Always include timestamp in your answer
 
 WEATHER:
 • Use “site:weather.com [CITY] current conditions”
-• OR “site:accuweather.com [CITY] live weather”
-• Always include “now”, “current” or “live” in query
-
-FINANCE/STOCKS:
-• Use “site:marketwatch.com [TICKER] live price”
-• OR “site:finance.yahoo.com [TICKER] real-time quote”
-• Reject data older than 2 hours
-• Always show timestamp in answer
-
-NEWS:
-• Use “site:news.google.com [TOPIC] latest”
-• Focus on articles from last 24 hours
-
-CRYPTO:
-• Use “site:coinmarketcap.com [COIN] price now”
-• Must show current price, not daily average
+• Always use “now” or “live” in search query
 
 MANDATORY RULES:
 • If first search gives old data → search again immediately!
 • Use “live”, “current”, “now” instead of “today”
-• Never present old data without warning
-• Each search MUST include freshness keywords
+• Never present old data without warning user
+• Add keywords: “real-time”, “latest”, “updated”
 
 ALWAYS:
 • Write numbers as digits (19°C, $150) - TTS handles conversion
