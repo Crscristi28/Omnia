@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     
     // Weather = 2 sources MAX
     if (query.match(/počasí|weather|vremea|météo|wetter|pogoda|teplota|temperature|prší|rain|sníh|snow/i)) {
-      MAX_SOURCES = 2;
+      MAX_SOURCES = 3;
       console.log('🌤️ Weather query detected - MAX 2 sources');
     }
     // Products/Websites/Shops = 3 sources MAX
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
     }
     // Finance/Prices = 5 sources MAX  
     else if (query.match(/cena|price|kolik stojí|combien|precio|стоимость|курс|kurz|akcie|stock|crypto|bitcoin|eth|nasdaq|dow|s&p|trading|finance|$|€|kč/i)) {
-      MAX_SOURCES = 5;
+      MAX_SOURCES = 7;
       console.log('💰 Finance/Price query detected - MAX 5 sources');
     }
     // Deep Research = 10 sources
