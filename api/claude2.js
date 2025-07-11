@@ -174,18 +174,17 @@ export default async function handler(req, res) {
     console.log('🔍 Web search executed:', webSearchUsed);
     console.log('🔗 Sources found:', extractedSources.length);
 
-    // 🎭 LETTER-BY-LETTER STREAMING: Posílání textu písmo po písmenu
-    const letters = textContent.split('');
-
-    for (let i = 0; i < letters.length; i++) {
-      const char = letters[i];
-
+    // 🚀 FAST STREAMING: Send by words instead of letters
+    const words = textContent.split(' ');
+    
+    for (const word of words) {
       res.write(JSON.stringify({
         type: 'text',
-        content: char
+        content: word + ' '
       }) + '\n');
-
-      await new Promise(resolve => setTimeout(resolve, 30)); // adjust speed as needed
+      
+      // Minimal delay for streaming effect
+      await new Promise(resolve => setTimeout(resolve, 5));
     }
     
     // 🔗 Send final completion WITH SOURCES
