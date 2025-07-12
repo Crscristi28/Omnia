@@ -7,34 +7,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-// 🔧 IMPORT SERVICES (UNCHANGED)
-import claudeService from './services/claude.service.js';
-import openaiService from './services/openai.service.js';
-import sonarService from './services/sonar.service.js';
-import elevenLabsService from './services/elevenLabs.service.js';
+// 🔧 IMPORT SERVICES (MODULAR)
+import { claudeService, openaiService, sonarService } from './services/ai';
+import { elevenLabsService } from './services/voice';
 
-// 🔧 IMPORT UTILS (UNCHANGED)
-import { uiTexts, getTranslation } from './utils/translations.js';
-import sessionManager from './utils/sessionManager.js';
-import detectLanguage from './utils/smartLanguageDetection.js';
-import sanitizeText, { cleanMarkdownForUI } from './utils/sanitizeText.js';
+// 🔧 IMPORT UTILS (MODULAR)
+import { uiTexts, getTranslation, detectLanguage, sanitizeText, cleanMarkdownForUI } from './utils/text';
+import { sessionManager } from './services/storage';
 
-// 🔧 IMPORT UI COMPONENTS (UNCHANGED + NEW)
-import SettingsDropdown from './components/ui/SettingsDropdown.jsx';
-import { OmniaLogo, MiniOmniaLogo, ChatOmniaLogo } from './components/ui/OmniaLogos.jsx';
-import TypewriterText from './components/ui/TypewriterText.jsx';
-import VoiceButton from './components/ui/VoiceButton.jsx';
-import CopyButton from './components/ui/CopyButton.jsx';
-import VoiceScreen from './components/voice/VoiceScreen.jsx';
+// 🔧 IMPORT UI COMPONENTS (MODULAR)
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, TypewriterText, VoiceButton, CopyButton } from './components/ui';
+import { VoiceScreen } from './components/chat';
 
-// 🆕 IMPORT INPUT BAR (UNCHANGED)
-import InputBar from './components/input/InputBar.jsx';
+// 🆕 IMPORT INPUT BAR (MODULAR)
+import { InputBar } from './components/input';
 
 // 🔗 IMPORT SOURCES COMPONENTS (UNCHANGED)
 import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
-import ChatSidebar from './components/ui/ChatSidebar.jsx';
+import { ChatSidebar } from './components/layout';
 
 // 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
 const welcomeTexts = {

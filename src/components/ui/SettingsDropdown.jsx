@@ -2,7 +2,7 @@
 // ⚙️ Settings dropdown component - language selector & new chat
 
 import React from 'react';
-import sessionManager from '../../utils/sessionManager.js';
+import { sessionManager } from '../../services/storage';
 
 const SettingsDropdown = ({ 
   isOpen, 

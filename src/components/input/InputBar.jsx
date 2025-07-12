@@ -3,7 +3,7 @@
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
 import React, { useState } from 'react';
-import { getTranslation } from '../../utils/translations.js';
+import { getTranslation } from '../../utils/text';
 
 // 🎨 SVG IKONY - BÍLÉ PRO VIDITELNOST
 const PlusIcon = ({ size = 18 }) => (

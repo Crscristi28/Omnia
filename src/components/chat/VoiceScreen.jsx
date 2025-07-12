@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SimpleVoiceRecorder from './SimpleVoiceRecorder.jsx';
 import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
-import detectLanguage from '../../utils/smartLanguageDetection.js';
+import { detectLanguage } from '../../utils/text';
 import TypewriterText from '../ui/TypewriterText.jsx';
 
 const VoiceScreen = ({ 

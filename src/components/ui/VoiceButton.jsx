@@ -3,9 +3,8 @@
 // ✅ FIXED: Uses sanitizeText from utils (not local copy) for emoji fixes
 
 import React, { useState, useRef, useEffect } from 'react';
-import detectLanguage from '../../utils/smartLanguageDetection.js';
-import elevenLabsService from '../../services/elevenLabs.service.js';
-import sanitizeText from '../../utils/sanitizeText.js';  // 🔧 FIXED: Import from utils with emoji support
+import { detectLanguage, sanitizeText } from '../../utils/text';
+import { elevenLabsService } from '../../services/voice';
 
 // 🆕 CONFIG - ElevenLabs vs Google TTS
 const USE_ELEVENLABS = true;
