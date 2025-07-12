@@ -1,6 +1,6 @@
 // src/components/input/MultilineInput.jsx
 import React from 'react';
-import { getTranslation } from '../../utils/translations.js';
+import { getTranslation } from '../../utils/text';
 
 const MultilineInput = ({
   value,

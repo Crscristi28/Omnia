@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run proxy\" \"vite\"",
+    "dev:frontend": "vite",
+    "dev:proxy": "node src/proxy-server.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -23,6 +25,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.0",
     "dotenv": "^16.5.0",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
