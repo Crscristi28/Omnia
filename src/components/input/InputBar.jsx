@@ -2,17 +2,17 @@
 // ✅ Textarea nahoře, 4 kulatá tlačítka dole
 // ✅ Vylepšený glass morphism pro dark mode
 // ✅ Modulární Send/Voice Chat, SVG ikony s emoji fallback
-// ✅ Production-ready, responzivní s rozšířeným debugem
+// ✅ Production-ready, responzivní s debugem
 
 import React, { useState, useEffect } from 'react';
 import { getTranslation } from '../../utils/translations.js';
 
-// 🎨 SVG IKONY S FALLBACK NA EMOJI A ROZŠÍŘENÝ DEBUG
+// 🎨 SVG IKONY S FALLBACK NA EMOJI A DEBUG
 const PlusIcon = ({ size = 18, isDarkMode }) => {
-  console.log('PlusIcon rendered, isDarkMode:', isDarkMode, 'Computed style:', window.getComputedStyle(document.documentElement).getPropertyValue('--dark-mode')); // Debug
+  console.log('PlusIcon rendered, isDarkMode:', isDarkMode); // Debug
   return isDarkMode ? (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#fff', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Žlutý rámeček a pozadí pro debug */}
-      <path d="M12 5V19M5 12H19" />
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#00ff00', stroke: '#00ff00', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Zelená barva pro test */}
+      <path d="M12 5V19M5 12H19" strokeWidth="2" />
     </svg>
   ) : (
     <span role="img" aria-label="Add">➕</span>
@@ -22,9 +22,9 @@ const PlusIcon = ({ size = 18, isDarkMode }) => {
 const ResearchIcon = ({ size = 18, isDarkMode }) => {
   console.log('ResearchIcon rendered, isDarkMode:', isDarkMode); // Debug
   return isDarkMode ? (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#fff', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Žlutý rámeček a pozadí */}
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#00ff00', stroke: '#00ff00', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Zelená barva */}
       <circle cx="11" cy="11" r="8" />
-      <path d="M21 21L16.65 16.65" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+      <path d="M21 21L16.65 16.65" strokeWidth="2" />
     </svg>
   ) : (
     <span role="img" aria-label="Research">🌐</span>
@@ -34,11 +34,11 @@ const ResearchIcon = ({ size = 18, isDarkMode }) => {
 const MicrophoneIcon = ({ size = 18, isDarkMode }) => {
   console.log('MicrophoneIcon rendered, isDarkMode:', isDarkMode); // Debug
   return isDarkMode ? (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#fff', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Žlutý rámeček a pozadí */}
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#00ff00', stroke: '#00ff00', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Zelená barva */}
       <rect x="9" y="3" width="6" height="11" rx="3" />
-      <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" />
-      <line x1="12" y1="18" x2="12" y2="22" />
-      <line x1="8" y1="22" x2="16" y2="22" />
+      <path d="M5 10V11V18" strokeWidth="2" />
+      <line x1="12" y1="18" x2="12" y2="22" strokeWidth="2" />
+      <line x1="8" y1="22" x2="16" y2="22" strokeWidth="2" />
     </svg>
   ) : (
     <span role="img" aria-label="Microphone">🎤</span>
@@ -47,7 +47,7 @@ const MicrophoneIcon = ({ size = 18, isDarkMode }) => {
 
 const VoiceIcon = ({ size = 18, isDarkMode }) => (
   isDarkMode ? (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#fff', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Žlutý rámeček a pozadí */}
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#00ff00', stroke: '#00ff00', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Zelená barva */}
       <rect x="7" y="8" width="2" height="8" rx="1" />
       <rect x="11" y="5" width="2" height="14" rx="1" />
       <rect x="15" y="10" width="2" height="4" rx="1" />
@@ -59,8 +59,8 @@ const VoiceIcon = ({ size = 18, isDarkMode }) => (
 
 const SendArrowIcon = ({ size = 18, isDarkMode }) => (
   isDarkMode ? (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#fff', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Žlutý rámeček a pozadí */}
-      <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ border: '2px solid yellow', fill: '#00ff00', stroke: '#00ff00', background: 'rgba(0, 0, 0, 0.1)' }}> {/* Zelená barva */}
+      <path d="M2 21L12 12L2 3" strokeWidth="2" />
     </svg>
   ) : (
     <span role="img" aria-label="Send">➤</span>
@@ -109,14 +109,14 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
         borderRadius: '16px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
         zIndex: 1001,
         minWidth: '280px',
         overflow: 'hidden'
       }}>
         <div style={{
           padding: '1rem',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.4)',
           textAlign: 'center',
           color: '#ffffff',
           fontWeight: '600'
@@ -209,14 +209,14 @@ const InputBar = ({
     height: buttonSize,
     borderRadius: '50%',
     border: 'none',
-    background: isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.1)', // Silnější kontrast
+    background: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.1)', // Silnější kontrast
     color: isDarkMode ? '#fff' : '#000',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
     transition: 'opacity 0.2s, background 0.2s',
-    boxShadow: isDarkMode ? '0 6px 16px rgba(0, 0, 0, 0.7)' : '0 4px 12px rgba(0, 0, 0, 0.2)', // Výraznější stín
+    boxShadow: isDarkMode ? '0 6px 16px rgba(0, 0, 0, 0.7)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
   };
 
   return (
@@ -236,11 +236,11 @@ const InputBar = ({
           margin: '0 auto',
         }}>
           <div style={{
-            background: isDarkMode ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)', // Silnější glass efekt
+            background: isDarkMode ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)', // Silnější glass efekt
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px',
-            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.4)' : '1px solid rgba(0, 0, 0, 0.2)',
+            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(0, 0, 0, 0.2)',
             boxShadow: isDarkMode ? '0 12px 40px rgba(0, 0, 0, 0.9)' : '0 12px 40px rgba(0, 0, 0, 0.3)',
             padding: isMobile ? '0.6rem' : '1rem',
           }}>
