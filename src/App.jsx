@@ -846,7 +846,7 @@ function App() {
                        flex items-center gap-1.5 font-medium transition-all duration-200 outline-none
                        hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
           >
-            <span>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : 'o3'}</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : 'o3'}</span>
             <ChevronDown size={14} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.9)' }} />
           </button>
 
