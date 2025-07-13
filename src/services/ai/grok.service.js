@@ -232,6 +232,8 @@ When asked about current events, prices, weather, news, or anything time-sensiti
 
 When multiple search results are available, synthesize information from ALL sources, not just one.
 
+CRITICAL: When you receive search results, you MUST use information from ALL sources provided (all 10 sources), not just 2-3. Cross-reference data from multiple sources for the most accurate and current information.
+
 Be helpful but keep it snappy! 🔥`;
   }
 };
