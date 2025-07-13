@@ -21,11 +21,11 @@ export const ThemeProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    // Apply dark mode background
+    // Apply theme to document
     if (isDark) {
-      document.body.style.backgroundColor = '#000000';
+      document.documentElement.classList.add('dark');
     } else {
-      document.body.style.backgroundColor = '';
+      document.documentElement.classList.remove('dark');
     }
     
     // Save to localStorage
