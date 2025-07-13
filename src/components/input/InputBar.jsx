@@ -3,7 +3,7 @@
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
 import React, { useState } from 'react';
-import { Plus, Globe, Mic, Send, MessageCircle, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
+import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 
 // Using Lucide React icons instead of custom SVG components
@@ -206,8 +206,14 @@ const InputBar = ({
                   disabled={isLoading || !input.trim()}
                   style={{
                     ...buttonStyle,
+                    width: 'auto',
+                    paddingLeft: isMobile ? '12px' : '16px',
+                    paddingRight: isMobile ? '12px' : '16px',
                     opacity: isLoading || !input.trim() ? 0.5 : 1,
                     cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
@@ -217,7 +223,8 @@ const InputBar = ({
                   }}
                   title="Deep Search"
                 >
-                  <Globe size={iconSize} strokeWidth={2} />
+                  <Search size={iconSize} strokeWidth={2} />
+                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>Research</span>
                 </button>
               </div>
               
@@ -270,7 +277,7 @@ const InputBar = ({
                 >
                   {input.trim() ? 
                     <Send size={iconSize} strokeWidth={2} /> : 
-                    <MessageCircle size={iconSize} strokeWidth={2} />
+                    <AudioWaveform size={iconSize} strokeWidth={2} />
                   }
                 </button>
               </div>
