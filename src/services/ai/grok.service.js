@@ -23,7 +23,12 @@ const grokService = {
           search_parameters: {
             mode: "auto",  // Let Grok decide when to search
             return_citations: true,
-            max_search_results: 10
+            max_search_results: 10,
+            sources: [
+              {"type": "web"},
+              {"type": "x"},
+              {"type": "news"}
+            ]
           }
         })
       });
