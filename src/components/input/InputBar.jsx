@@ -2,14 +2,14 @@
 // ✅ Textarea nahoře, 4 kulatá tlačítka dole
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 
 // Using Lucide React icons instead of custom SVG components
 
 // PLUS MENU
-const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
+const PlusMenu = ({ isOpen, onClose, buttonRef, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
   const menuItems = [
@@ -27,19 +27,61 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
     }
   };
 
+  // Calculate position
+  const buttonRect = buttonRef?.current?.getBoundingClientRect();
+  const menuStyle = buttonRect ? {
+    position: 'fixed',
+    bottom: `${window.innerHeight - buttonRect.top + 8}px`,
+    left: `${buttonRect.left}px`,
+    zIndex: 1002,
+  } : {
+    position: 'fixed',
+    bottom: '140px',
+    left: '20px',
+    zIndex: 1002,
+  };
+
   return (
     <>
       {/* Backdrop overlay */}
       <div 
-        className="fixed inset-0 bg-black/50 z-[1000] backdrop-blur-sm"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)',
+        }}
         onClick={onClose}
       />
       
       {/* Menu container */}
-      <div className="fixed bottom-[140px] left-5 z-[1002] min-w-[280px] overflow-hidden rounded-2xl bg-gray-900/98 shadow-[0_20px_50px_rgba(0,0,0,0.7)] backdrop-blur-xl border border-white/20">
+      <div style={{
+        ...menuStyle,
+        minWidth: '220px',
+        maxWidth: '280px',
+        borderRadius: '12px',
+        backgroundColor: 'rgba(55, 65, 81, 0.95)', // dark gray
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        overflow: 'hidden',
+      }}>
         {/* Header */}
-        <div className="p-4 border-b border-white/20 text-center text-white font-semibold bg-gray-800/50">
-          <Sparkles className="w-5 h-5 inline-block mr-2 text-blue-400" strokeWidth={2} />
+        <div style={{
+          padding: '12px 16px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          textAlign: 'center',
+          color: 'white',
+          fontWeight: '600',
+          fontSize: '14px',
+          backgroundColor: 'rgba(75, 85, 99, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+        }}>
+          <Sparkles style={{ width: '16px', height: '16px', color: '#60A5FA' }} strokeWidth={2} />
           {uiLanguage === 'cs' ? 'Multimodální funkce' : 
            uiLanguage === 'en' ? 'Multimodal features' : 
            'Funcții multimodale'}
@@ -55,11 +97,38 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
                 console.log(`${item.key} clicked - Coming Soon!`);
                 onClose();
               }}
-              className="flex items-center gap-4 w-full p-4 border-none bg-transparent text-white text-sm cursor-pointer transition-all duration-200 hover:bg-white/10 hover:text-blue-300"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
+                background: 'transparent',
+                color: 'white',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = '#60A5FA';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'white';
+              }}
             >
-              <IconComponent className="w-5 h-5 text-blue-400" strokeWidth={2} />
-              <span className="font-medium">{getLabel(item)}</span>
-              <span className="ml-auto text-xs text-gray-400 italic font-normal">
+              <IconComponent style={{ width: '18px', height: '18px', color: '#60A5FA' }} strokeWidth={2} />
+              <span style={{ fontWeight: '500' }}>{getLabel(item)}</span>
+              <span style={{
+                marginLeft: 'auto',
+                fontSize: '12px',
+                color: 'rgba(156, 163, 175, 1)',
+                fontStyle: 'italic',
+                fontWeight: '400',
+              }}>
                 Soon
               </span>
             </button>
@@ -82,6 +151,7 @@ const InputBar = ({
   uiLanguage = 'cs'
 }) => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const plusButtonRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
@@ -182,6 +252,7 @@ const InputBar = ({
               }}>
                 {/* 1. PLUS BUTTON */}
                 <button
+                  ref={plusButtonRef}
                   onClick={() => setShowPlusMenu(!showPlusMenu)}
                   disabled={isLoading}
                   style={{
@@ -291,6 +362,7 @@ const InputBar = ({
       <PlusMenu 
         isOpen={showPlusMenu}
         onClose={() => setShowPlusMenu(false)}
+        buttonRef={plusButtonRef}
         uiLanguage={uiLanguage}
       />
     </>
