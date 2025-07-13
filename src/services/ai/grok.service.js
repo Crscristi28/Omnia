@@ -21,7 +21,7 @@ const grokService = {
           max_tokens: 2000,
           language: detectedLanguage,
           search_parameters: {
-            mode: "auto",
+            mode: "on",  // Force search ON
             return_citations: true,
             max_search_results: 10
           }
@@ -176,93 +176,6 @@ const grokService = {
         role: 'user',
         content: msg.text || ''
       }));
-    }
-  },
-
-  // 🔗 SOURCES EXTRACTION FROM GROK CITATIONS
-  extractGrokSources(data) {
-    try {
-      console.log('🔍 Extracting sources from Grok data');
-      
-      let rawSources = [];
-      
-      // Method 1: Direct citations array
-      if (data.citations && Array.isArray(data.citations)) {
-        rawSources = data.citations;
-      }
-      // Method 2: Sources in response
-      else if (data.sources && Array.isArray(data.sources)) {
-        rawSources = data.sources;
-      }
-      // Method 3: Search results
-      else if (data.search_results && Array.isArray(data.search_results)) {
-        rawSources = data.search_results;
-      }
-      
-      if (rawSources.length === 0) {
-        return [];
-      }
-      
-      // Clean and format sources
-      const cleanSources = rawSources
-        .filter(source => source && typeof source === 'object')
-        .map(source => {
-          const url = source.url || source.link || source.href || '';
-          const title = source.title || source.name || source.snippet || 'Untitled';
-          
-          if (!url || !this.isValidUrl(url)) {
-            return null;
-          }
-          
-          return {
-            title: this.cleanTitle(title),
-            url: this.cleanUrl(url),
-            domain: this.extractDomain(url),
-            timestamp: source.timestamp || Date.now()
-          };
-        })
-        .filter(source => source !== null)
-        .slice(0, 8); // Limit to 8 sources
-      
-      return cleanSources;
-      
-    } catch (error) {
-      console.error('💥 Error extracting Grok sources:', error);
-      return [];
-    }
-  },
-
-  // Helper functions for sources
-  cleanTitle(title) {
-    if (!title || typeof title !== 'string') return 'Untitled';
-    return title.trim().replace(/\s+/g, ' ').slice(0, 100);
-  },
-
-  cleanUrl(url) {
-    if (!url || typeof url !== 'string') return '';
-    try {
-      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-      return urlObj.href;
-    } catch (error) {
-      return url;
-    }
-  },
-
-  extractDomain(url) {
-    try {
-      const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-      return urlObj.hostname.replace('www.', '');
-    } catch (error) {
-      return 'Unknown';
-    }
-  },
-
-  isValidUrl(url) {
-    try {
-      new URL(url.startsWith('http') ? url : `https://${url}`);
-      return true;
-    } catch (error) {
-      return false;
     }
   },
 
