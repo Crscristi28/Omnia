@@ -10,7 +10,7 @@ import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
-import { claudeService, openaiService, sonarService } from './services/ai';
+import { claudeService, openaiService, sonarService, grokService } from './services/ai';
 import { elevenLabsService } from './services/voice';
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
@@ -740,6 +740,40 @@ function App() {
           await processVoiceResponse(responseText, detectedLang);
         }
       }
+      else if (model === 'grok-3') {
+        const result = await grokService.sendMessage(
+          messagesWithUser,
+          (text, isStreaming) => {
+            setStreaming(isStreaming);
+          },
+          (searchMsg) => showNotification(searchMsg, 'info'),
+          detectedLang
+        );
+        
+        responseText = result.text;
+        
+        // 🆕 STREAMING: Use streaming effect for Grok too
+        const stopFn = streamMessageWithEffect(
+          responseText,
+          setMessages,
+          messagesWithUser,
+          mainContentRef.current,
+          [] // Grok doesn't have sources yet
+        );
+        setStopStreamingRef(() => stopFn);
+        
+        const finalMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: responseText,
+          sources: []
+        }];
+        sessionManager.saveMessages(finalMessages);
+        
+        if (fromVoice && showVoiceScreen && responseText) {
+          console.log('🎵 Grok response complete, processing voice...');
+          await processVoiceResponse(responseText, detectedLang);
+        }
+      }
 
     } catch (err) {
       console.error('💥 API call error:', err);
@@ -846,7 +880,7 @@ function App() {
                        flex items-center gap-1.5 font-medium transition-all duration-200 outline-none
                        hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
           >
-            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : 'o3'}</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'sonar' ? 'o3' : 'o4'}</span>
             <ChevronDown size={14} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.9)' }} />
           </button>
 
@@ -974,6 +1008,42 @@ function App() {
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
                 }}>o3</span>
+              </button>
+              
+              <button
+                onClick={() => { setModel('grok-3'); setShowModelDropdown(false); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'grok-3' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                  if (model !== 'grok-3') {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (model !== 'grok-3') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
+              >
+                <span style={{ fontWeight: '500' }}>Omnia X</span>
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '12px',
+                  color: 'rgba(156, 163, 175, 1)',
+                  fontWeight: '400',
+                }}>o4</span>
               </button>
             </div>
           )}
