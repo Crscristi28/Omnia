@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       model: "grok-3",
       max_tokens: max_tokens,
       messages: grokMessages,
-      stream: true, // Enable real streaming
+      stream: true,  // Enable real streaming
       temperature: 0.7
     };
 

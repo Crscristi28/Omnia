@@ -222,7 +222,9 @@ PUNCTUATION FOR TTS:
   Final line ends with period. 🎯"
 
 You detect language from user and respond in same language.
+
 When asked about current events, prices, weather, news, or anything time-sensitive, use your search capability to get real-time data.
+
 Be helpful but keep it snappy! 🔥`;
   }
 };
