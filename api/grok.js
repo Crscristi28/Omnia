@@ -75,18 +75,20 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     console.log('✅ Grok response received');
+    console.log('🔍 Full Grok response:', JSON.stringify(data, null, 2));
     
     // Extract response text
     const textContent = data.choices?.[0]?.message?.content?.trim() || "Nepodařilo se získat odpověď.";
 
-    // Extract citations/sources
+    // Extract citations/sources - check multiple locations
     let extractedSources = [];
-    const webSearchUsed = data.citations && data.citations.length > 0;
+    const citations = data.citations || data.choices?.[0]?.message?.citations || data.choices?.[0]?.citations || [];
+    const webSearchUsed = citations && citations.length > 0;
     
-    if (data.citations && Array.isArray(data.citations)) {
-      console.log('🔗 Found', data.citations.length, 'citations from Grok');
+    if (citations && Array.isArray(citations)) {
+      console.log('🔗 Found', citations.length, 'citations from Grok');
       
-      extractedSources = data.citations
+      extractedSources = citations
         .filter(citation => citation && citation.url && citation.title)
         .map(citation => {
           try {
@@ -142,6 +144,8 @@ export default async function handler(req, res) {
       sources: extractedSources,
       citations: extractedSources
     }) + '\n');
+
+    console.log('✅ Grok streaming completed with sources:', extractedSources.length);
 
     console.log('✅ Grok streaming completed');
     res.end();

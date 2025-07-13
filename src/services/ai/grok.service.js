@@ -71,7 +71,29 @@ const grokService = {
                     fullText = data.fullText;
                   }
                   
-                  if (data.sources && Array.isArray(data.sources)) {
+                  // Check both sources and citations
+                  if (data.citations && Array.isArray(data.citations)) {
+                    sourcesExtracted = data.citations.map(citation => {
+                      const url = citation.url || '';
+                      let domain = 'Unknown';
+                      try {
+                        if (url) {
+                          const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+                          domain = urlObj.hostname.replace('www.', '');
+                        }
+                      } catch (e) {
+                        // Keep default domain
+                      }
+                      
+                      return {
+                        title: citation.title || 'Web Result',
+                        url: url,
+                        snippet: citation.snippet || '',
+                        domain: domain,
+                        timestamp: Date.now()
+                      };
+                    });
+                  } else if (data.sources && Array.isArray(data.sources)) {
                     sourcesExtracted = data.sources;
                   }
                   
