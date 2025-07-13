@@ -6,6 +6,7 @@
 // 🆕 STREAMING: Added streamingUtils import
 
 import React, { useState, useRef, useEffect } from 'react';
+import { MessageCircle, Menu } from 'lucide-react';
 import './App.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
@@ -834,7 +835,7 @@ function App() {
           }}
           title="Chat History & Settings"
         >
-          ≡
+          <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
         </button>
 
         {/* MODEL SELECTOR - uprostřed */}
@@ -985,7 +986,7 @@ function App() {
           }}
           title="New Chat"
         >
-          💬
+          <MessageCircle size={isMobile ? 20 : 24} strokeWidth={2} />
         </button>
       </div>
 

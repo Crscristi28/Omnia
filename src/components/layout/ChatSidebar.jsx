@@ -3,6 +3,7 @@
 // 🚀 Animované slide-in/out, responsive
 
 import React from 'react';
+import { MessageCircle, Check, X } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 
 const ChatSidebar = ({ 
@@ -27,9 +28,9 @@ const ChatSidebar = ({
 
   // 🌍 LANGUAGE OPTIONS
   const languageOptions = [
-    { code: 'cs', label: 'Čeština', flag: '🇨🇿' },
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'ro', label: 'Română', flag: '🇷🇴' }
+    { code: 'cs', label: 'Čeština', flag: 'CZ' },
+    { code: 'en', label: 'English', flag: 'EN' },
+    { code: 'ro', label: 'Română', flag: 'RO' }
   ];
 
   const handleLanguageChange = (langCode) => {
@@ -139,7 +140,7 @@ const ChatSidebar = ({
                 e.target.style.background = 'transparent';
               }}
             >
-              ×
+              <X size={16} strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -214,9 +215,11 @@ const ChatSidebar = ({
                   >
                     <span style={{ 
                       fontSize: '0.8rem',
-                      opacity: 0.7
+                      opacity: 0.7,
+                      display: 'flex',
+                      alignItems: 'center'
                     }}>
-                      💬
+                      <MessageCircle size={14} strokeWidth={2} />
                     </span>
                     <span style={{
                       overflow: 'hidden',
@@ -298,14 +301,26 @@ const ChatSidebar = ({
                     }
                   }}
                 >
-                  <span style={{ fontSize: '1.1rem' }}>{lang.flag}</span>
+                  <span style={{ 
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    minWidth: '26px',
+                    textAlign: 'center'
+                  }}>
+                    {lang.flag}
+                  </span>
                   <span style={{ flex: 1 }}>{lang.label}</span>
                   {uiLanguage === lang.code && (
                     <span style={{ 
                       fontSize: '0.8rem',
-                      color: 'rgba(255, 255, 255, 0.6)'
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      display: 'flex',
+                      alignItems: 'center'
                     }}>
-                      ✓
+                      <Check size={14} strokeWidth={2} />
                     </span>
                   )}
                 </button>
