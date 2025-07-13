@@ -1025,12 +1025,14 @@ function App() {
             }}>
               
               {/* OMNIA LOGO */}
-              <OmniaLogo 
-                size={isMobile ? 120 : 160} 
-                animate={streaming || loading}
-                isListening={isListening || isRecordingSTT}
-                shouldHide={false}
-              />
+              <div className="drop-shadow-2xl shadow-white/20">
+                <OmniaLogo 
+                  size={isMobile ? 80 : 100} 
+                  animate={streaming || loading}
+                  isListening={isListening || isRecordingSTT}
+                  shouldHide={false}
+                />
+              </div>
               
               {/* 🌍 MULTILINGUAL WELCOME TEXT */}
               <div style={{
@@ -1039,8 +1041,8 @@ function App() {
                 alignItems: 'center',
                 gap: '1rem'
               }}>
-                <h1 style={{ 
-                  fontSize: isMobile ? '3rem' : '4rem', 
+                <h1 className="text-shadow-lg shadow-white/30 drop-shadow-lg" style={{ 
+                  fontSize: isMobile ? '2rem' : '2.5rem', 
                   fontWeight: '700', 
                   margin: 0, 
                   color: '#ffffff',
@@ -1049,8 +1051,8 @@ function App() {
                   {welcomeTexts[uiLanguage]?.hello || welcomeTexts.cs.hello}
                 </h1>
                 
-                <p style={{
-                  fontSize: isMobile ? '1.2rem' : '1.5rem',
+                <p className="text-shadow shadow-white/20 drop-shadow" style={{
+                  fontSize: isMobile ? '1rem' : '1.2rem',
                   fontWeight: '400',
                   margin: 0,
                   color: 'rgba(255, 255, 255, 0.8)',
