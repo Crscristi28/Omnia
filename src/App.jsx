@@ -741,17 +741,24 @@ function App() {
         }
       }
       else if (model === 'grok-3') {
+        let streamingSources = []; // Add this to capture sources during streaming
+        
         const result = await grokService.sendMessage(
           messagesWithUser,
           (text, isStreaming, sources = []) => {
             setStreaming(isStreaming);
+            if (sources && sources.length > 0) {
+              streamingSources = sources; // Capture sources during streaming
+            }
           },
           (searchMsg) => showNotification(searchMsg, 'info'),
           detectedLang
         );
         
         responseText = result.text;
-        const sources = result.sources || [];
+        const sources = streamingSources.length > 0 ? streamingSources : (result.sources || []);
+        
+        console.log('🎯 GROK FINAL SOURCES:', sources);
         
         // 🆕 STREAMING: Use streaming effect for Grok with sources
         const stopFn = streamMessageWithEffect(
