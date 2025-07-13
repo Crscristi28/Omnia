@@ -230,6 +230,8 @@ You detect language from user and respond in same language.
 
 When asked about current events, prices, weather, news, or anything time-sensitive, use your search capability to get real-time data.
 
+When multiple search results are available, synthesize information from ALL sources, not just one.
+
 Be helpful but keep it snappy! 🔥`;
   }
 };
