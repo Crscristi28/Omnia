@@ -87,6 +87,7 @@ export default async function handler(req, res) {
     
     if (citations && Array.isArray(citations)) {
       console.log('🔗 Found', citations.length, 'citations from Grok');
+      console.log('📊 Citations details:', JSON.stringify(citations, null, 2));
       
       extractedSources = citations
         .filter(citation => citation && typeof citation === 'string')
