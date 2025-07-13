@@ -847,42 +847,133 @@ function App() {
                        hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
           >
             <span>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : 'o3'}</span>
-            <ChevronDown size={14} strokeWidth={2} style={{ opacity: 0.8 }} />
+            <ChevronDown size={14} strokeWidth={2} className="opacity-80 text-white" />
           </button>
 
           {/* MODEL DROPDOWN */}
           {showModelDropdown && (
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 
-                           bg-gray-800/95 backdrop-blur-2xl rounded-xl border border-white/10 
-                           shadow-2xl min-w-[180px] overflow-hidden z-[1001]">
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              marginTop: '8px',
+              minWidth: '220px',
+              maxWidth: '280px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(55, 65, 81, 0.95)',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              overflow: 'hidden',
+              zIndex: 1001,
+            }}>
               <button
                 onClick={() => { setModel('claude'); setShowModelDropdown(false); }}
-                className={`w-full px-4 py-3 border-none text-white/90 cursor-pointer 
-                           flex items-center justify-between text-sm transition-colors duration-200
-                           hover:bg-white/5 ${model === 'claude' ? 'bg-white/10' : 'bg-transparent'}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                  if (model !== 'claude') {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (model !== 'claude') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
-                <span>Omnia Claude</span>
-                <span className="opacity-60 text-xs">o1</span>
+                <span style={{ fontWeight: '500' }}>Omnia Claude</span>
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '12px',
+                  color: 'rgba(156, 163, 175, 1)',
+                  fontWeight: '400',
+                }}>o1</span>
               </button>
               
               <button
                 onClick={() => { setModel('gpt-4o'); setShowModelDropdown(false); }}
-                className={`w-full px-4 py-3 border-none text-white/90 cursor-pointer 
-                           flex items-center justify-between text-sm transition-colors duration-200
-                           hover:bg-white/5 ${model === 'gpt-4o' ? 'bg-white/10' : 'bg-transparent'}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                  if (model !== 'gpt-4o') {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (model !== 'gpt-4o') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
-                <span>Omnia GPT</span>
-                <span className="opacity-60 text-xs">o2</span>
+                <span style={{ fontWeight: '500' }}>Omnia GPT</span>
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '12px',
+                  color: 'rgba(156, 163, 175, 1)',
+                  fontWeight: '400',
+                }}>o2</span>
               </button>
               
               <button
                 onClick={() => { setModel('sonar'); setShowModelDropdown(false); }}
-                className={`w-full px-4 py-3 border-none text-white/90 cursor-pointer 
-                           flex items-center justify-between text-sm transition-colors duration-200
-                           hover:bg-white/5 ${model === 'sonar' ? 'bg-white/10' : 'bg-transparent'}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'sonar' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                  if (model !== 'sonar') {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (model !== 'sonar') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
-                <span>Omnia Sonar</span>
-                <span className="opacity-60 text-xs">o3</span>
+                <span style={{ fontWeight: '500' }}>Omnia Sonar</span>
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '12px',
+                  color: 'rgba(156, 163, 175, 1)',
+                  fontWeight: '400',
+                }}>o3</span>
               </button>
             </div>
           )}
