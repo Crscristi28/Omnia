@@ -3,8 +3,9 @@
 // 🚀 Animované slide-in/out, responsive
 
 import React from 'react';
-import { MessageCircle, Check, X } from 'lucide-react';
+import { MessageCircle, Check, X, Sun, Moon } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ChatSidebar = ({ 
   isOpen, 
@@ -17,6 +18,7 @@ const ChatSidebar = ({
   currentChatId = null
 }) => {
   const t = getTranslation(uiLanguage);
+  const { isDark, toggleTheme } = useTheme();
   const isMobile = window.innerWidth <= 768;
 
   // 📱 CLOSE ON OVERLAY CLICK
@@ -76,7 +78,9 @@ const ChatSidebar = ({
           bottom: 0,
           width: isMobile ? '85%' : '320px',
           maxWidth: isMobile ? '300px' : '320px',
-          background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+          background: isDark 
+            ? 'linear-gradient(135deg, rgba(26, 32, 44, 0.95), rgba(45, 55, 72, 0.95))'
+            : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: 'none',
@@ -325,6 +329,61 @@ const ChatSidebar = ({
                   )}
                 </button>
               ))}
+            </div>
+
+            {/* 🌙 DARK MODE TOGGLE */}
+            <div style={{ padding: '1rem 0 0', marginTop: '1rem' }}>
+              <div style={{
+                padding: '0.5rem 0.75rem 0.25rem',
+                fontSize: '0.8rem',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontWeight: '500'
+              }}>
+                {uiLanguage === 'cs' ? 'Vzhled' : 
+                 uiLanguage === 'en' ? 'Appearance' : 
+                 'Aspect'}
+              </div>
+              
+              <button
+                onClick={toggleTheme}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 0.75rem',
+                  margin: '0.125rem 0',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                }}
+              >
+                <span style={{ 
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'rgba(255, 255, 255, 0.7)'
+                }}>
+                  {isDark ? <Moon size={14} strokeWidth={2} /> : <Sun size={14} strokeWidth={2} />}
+                </span>
+                <span style={{ flex: 1 }}>
+                  {isDark 
+                    ? (uiLanguage === 'cs' ? 'Tmavý režim' : uiLanguage === 'en' ? 'Dark mode' : 'Mod întunecat')
+                    : (uiLanguage === 'cs' ? 'Světlý režim' : uiLanguage === 'en' ? 'Light mode' : 'Mod luminos')
+                  }
+                </span>
+              </button>
             </div>
           </div>
         </div>

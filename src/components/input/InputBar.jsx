@@ -5,6 +5,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Using Lucide React icons instead of custom SVG components
 
@@ -152,6 +153,7 @@ const InputBar = ({
 }) => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const plusButtonRef = useRef(null);
+  const { isDark } = useTheme();
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
@@ -204,12 +206,16 @@ const InputBar = ({
           
           {/* GLASS CONTAINER */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.06)',
+            background: isDark 
+              ? 'linear-gradient(135deg, rgba(26, 32, 44, 0.95), rgba(45, 55, 72, 0.95))'
+              : 'rgba(255, 255, 255, 0.06)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+            boxShadow: isDark 
+              ? '0 8px 32px rgba(0,0,0,0.4)'
+              : '0 12px 40px rgba(0, 0, 0, 0.4)',
             padding: isMobile ? '0.6rem' : '1rem',
           }}>
             
