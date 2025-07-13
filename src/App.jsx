@@ -743,7 +743,7 @@ function App() {
       else if (model === 'grok-3') {
         const result = await grokService.sendMessage(
           messagesWithUser,
-          (text, isStreaming) => {
+          (text, isStreaming, sources = []) => {
             setStreaming(isStreaming);
           },
           (searchMsg) => showNotification(searchMsg, 'info'),
@@ -751,21 +751,22 @@ function App() {
         );
         
         responseText = result.text;
+        const sources = result.sources || [];
         
-        // 🆕 STREAMING: Use streaming effect for Grok too
+        // 🆕 STREAMING: Use streaming effect for Grok with sources
         const stopFn = streamMessageWithEffect(
           responseText,
           setMessages,
           messagesWithUser,
           mainContentRef.current,
-          [] // Grok doesn't have sources yet
+          sources
         );
         setStopStreamingRef(() => stopFn);
         
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
-          sources: []
+          sources: sources
         }];
         sessionManager.saveMessages(finalMessages);
         

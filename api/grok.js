@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, system, max_tokens = 2000 } = req.body;
+    const { messages, system, max_tokens = 2000, search_parameters } = req.body;
     const API_KEY = process.env.GROK_API_KEY;
     
     if (!API_KEY) {
@@ -46,6 +46,12 @@ export default async function handler(req, res) {
       temperature: 0.7
     };
 
+    // Add search parameters if provided
+    if (search_parameters) {
+      grokRequest.search_parameters = search_parameters;
+      console.log('🔍 Grok search enabled with parameters:', search_parameters);
+    }
+
     console.log('🚀 Sending request to Grok-3...');
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
@@ -73,7 +79,47 @@ export default async function handler(req, res) {
     // Extract response text
     const textContent = data.choices?.[0]?.message?.content?.trim() || "Nepodařilo se získat odpověď.";
 
+    // Extract citations/sources
+    let extractedSources = [];
+    const webSearchUsed = data.citations && data.citations.length > 0;
+    
+    if (data.citations && Array.isArray(data.citations)) {
+      console.log('🔗 Found', data.citations.length, 'citations from Grok');
+      
+      extractedSources = data.citations
+        .filter(citation => citation && citation.url && citation.title)
+        .map(citation => {
+          try {
+            const urlObj = new URL(citation.url);
+            return {
+              title: citation.title.trim().slice(0, 100),
+              url: citation.url,
+              domain: urlObj.hostname.replace('www.', ''),
+              timestamp: Date.now()
+            };
+          } catch (urlError) {
+            console.warn('⚠️ Invalid URL in Grok citation:', citation.url);
+            return null;
+          }
+        })
+        .filter(source => source !== null)
+        .slice(0, 10); // Limit to 10 sources
+    }
+
     console.log('💬 Response length:', textContent.length, 'characters');
+    console.log('🔍 Web search used:', webSearchUsed);
+    console.log('🔗 Sources found:', extractedSources.length);
+
+    if (webSearchUsed) {
+      // Send search notification
+      res.write(JSON.stringify({
+        type: 'search_start',
+        message: '🔍 Vyhledávám aktuální informace...'
+      }) + '\n');
+      
+      // Small delay to simulate search
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 
     // 🚀 FAST STREAMING: Send by words instead of letters
     const words = textContent.split(' ');
@@ -88,12 +134,13 @@ export default async function handler(req, res) {
       await new Promise(resolve => setTimeout(resolve, 5));
     }
     
-    // Send final completion
+    // Send final completion with sources
     res.write(JSON.stringify({
       type: 'completed',
       fullText: textContent,
-      webSearchUsed: false,
-      sources: []
+      webSearchUsed: webSearchUsed,
+      sources: extractedSources,
+      citations: extractedSources
     }) + '\n');
 
     console.log('✅ Grok streaming completed');
