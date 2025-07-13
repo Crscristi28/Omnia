@@ -73,26 +73,36 @@ const grokService = {
                   
                   // Check both sources and citations
                   if (data.citations && Array.isArray(data.citations)) {
-                    sourcesExtracted = data.citations.map(citation => {
-                      const url = citation.url || '';
-                      let domain = 'Unknown';
-                      try {
-                        if (url) {
-                          const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+                    sourcesExtracted = data.citations
+                      .filter(citation => citation && typeof citation === 'string')
+                      .map((url, index) => {
+                        let domain = 'Unknown';
+                        let title = 'Web Result';
+                        
+                        try {
+                          const urlObj = new URL(url);
                           domain = urlObj.hostname.replace('www.', '');
+                          
+                          // Generate title from domain
+                          if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
+                          else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
+                          else if (domain.includes('chmi')) title = 'ČHMÚ - ' + domain;
+                          else if (domain.includes('weather')) title = 'Weather - ' + domain;
+                          else if (domain.includes('news')) title = 'News - ' + domain;
+                          else if (domain.includes('finance')) title = 'Finance - ' + domain;
+                          else title = domain;
+                        } catch (e) {
+                          // Keep default values
                         }
-                      } catch (e) {
-                        // Keep default domain
-                      }
-                      
-                      return {
-                        title: citation.title || 'Web Result',
-                        url: url,
-                        snippet: citation.snippet || '',
-                        domain: domain,
-                        timestamp: Date.now()
-                      };
-                    });
+                        
+                        return {
+                          title: title,
+                          url: url,
+                          snippet: `Zdroj ${index + 1}`,
+                          domain: domain,
+                          timestamp: Date.now()
+                        };
+                      });
                   } else if (data.sources && Array.isArray(data.sources)) {
                     sourcesExtracted = data.sources;
                   }

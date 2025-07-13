@@ -89,18 +89,33 @@ export default async function handler(req, res) {
       console.log('🔗 Found', citations.length, 'citations from Grok');
       
       extractedSources = citations
-        .filter(citation => citation && citation.url && citation.title)
-        .map(citation => {
+        .filter(citation => citation && typeof citation === 'string')
+        .map((url, index) => {
           try {
-            const urlObj = new URL(citation.url);
+            const urlObj = new URL(url);
+            const domain = urlObj.hostname.replace('www.', '');
+            
+            // Extract title from URL/domain
+            let title = domain;
+            if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
+            else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
+            else if (domain.includes('chmi')) title = 'ČHMÚ - ' + domain;
+            else if (domain.includes('weather')) title = 'Weather - ' + domain;
+            else if (domain.includes('news')) title = 'News - ' + domain;
+            else if (domain.includes('finance')) title = 'Finance - ' + domain;
+            else if (domain.includes('yahoo')) title = 'Yahoo - ' + domain;
+            else if (domain.includes('bloomberg')) title = 'Bloomberg - ' + domain;
+            else if (domain.includes('reuters')) title = 'Reuters - ' + domain;
+            
             return {
-              title: citation.title.trim().slice(0, 100),
-              url: citation.url,
-              domain: urlObj.hostname.replace('www.', ''),
+              title: title,
+              url: url,
+              snippet: `Zdroj ${index + 1}`,
+              domain: domain,
               timestamp: Date.now()
             };
           } catch (urlError) {
-            console.warn('⚠️ Invalid URL in Grok citation:', citation.url);
+            console.warn('⚠️ Invalid URL in Grok citation:', url);
             return null;
           }
         })
