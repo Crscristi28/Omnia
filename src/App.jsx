@@ -769,7 +769,7 @@ function App() {
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      height: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
       background: isListening 
@@ -780,7 +780,8 @@ function App() {
       width: '100vw',
       margin: 0,
       padding: 0,
-      transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+      transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+      overflow: 'hidden'
     }}>
       
       {/* 📌 FIXED TOP BUTTONS - VŽDY VIDITELNÉ */}
@@ -997,7 +998,7 @@ function App() {
           overflowX: 'hidden',
           padding: isMobile ? '1rem' : '2rem',
           paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
-          paddingBottom: '240px',
+          paddingBottom: '160px',
           width: '100%',
           WebkitOverflowScrolling: 'touch',
           scrollBehavior: 'smooth'
@@ -1234,9 +1235,9 @@ function App() {
       {/* 🎨 STYLES - UNCHANGED + nové animace */}
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
-        body { margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden !important; position: fixed !important; top: 0 !important; left: 0 !important; }
-        #root { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; position: fixed !important; top: 0 !important; left: 0 !important; }
+        html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
+        body { margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden !important; }
+        #root { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; display: flex; flex-direction: column; }
         body > * { margin: 0 !important; }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
