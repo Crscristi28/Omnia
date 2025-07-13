@@ -25,9 +25,9 @@ const grokService = {
             return_citations: true,
             max_search_results: 20,
             sources: [
-              {"type": "web"},
+              {"type": "web", "safe_search": false},
               {"type": "x"},
-              {"type": "news"}
+              {"type": "news", "safe_search": false}
             ]
           }
         })
