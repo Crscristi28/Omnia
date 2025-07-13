@@ -21,7 +21,7 @@ const grokService = {
           max_tokens: 2000,
           language: detectedLanguage,
           search_parameters: {
-            mode: "on",  // Force search ON
+            mode: "auto",  // Let Grok decide when to search
             return_citations: true,
             max_search_results: 10
           }
@@ -222,6 +222,7 @@ PUNCTUATION FOR TTS:
   Final line ends with period. 🎯"
 
 You detect language from user and respond in same language.
+When asked about current events, prices, weather, news, or anything time-sensitive, use your search capability to get real-time data.
 Be helpful but keep it snappy! 🔥`;
   }
 };
