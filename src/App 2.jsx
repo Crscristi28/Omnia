@@ -6,7 +6,9 @@
 // 🆕 STREAMING: Added streamingUtils import
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Menu, MessageSquare, Sun, Moon, Plus, Globe, Mic, Brain, Settings } from 'lucide-react';
 import './App.css';
+import { ThemeProvider, useTheme } from './contexts';
 
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, sonarService } from './services/ai';
@@ -198,7 +200,8 @@ function splitIntoSentences(text) {
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
-function App() {
+function AppContent() {
+  const { isDark, toggleTheme } = useTheme();
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -766,187 +769,123 @@ function App() {
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
 
-// 🎨 JSX RENDER  
+// 🎨 JSX RENDER
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      background: isListening 
-        ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
-        : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
-      color: '#ffffff',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-      width: '100vw',
-      margin: 0,
-      padding: 0,
-      transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-    }}>
+    <div className={`
+      fixed inset-0 w-screen h-screen flex flex-col text-white font-inter overflow-hidden
+      transition-all duration-500 ease-out
+      ${isListening 
+        ? 'bg-gradient-to-br from-blue-950 via-blue-700 to-cyan-400' 
+        : isDark 
+          ? 'dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-slate-800'
+          : 'bg-gradient-to-br from-blue-950 via-omnia-700 to-omnia-500'
+      }
+    `}>
       
       {/* 📌 FIXED TOP BUTTONS - VŽDY VIDITELNÉ */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: isMobile ? '60px' : '70px',
-        background: 'rgba(0, 0, 0, 0.1)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: isMobile ? '0 1rem' : '0 2rem',
-        zIndex: 1000,
-      }}>
+      <div className={`
+        fixed top-0 left-0 right-0 z-50
+        ${isMobile ? 'h-15' : 'h-18'}
+        bg-black/10 dark:bg-black/20 backdrop-blur-lg 
+        border-b border-white/10 dark:border-white/5
+        flex justify-between items-center
+        ${isMobile ? 'px-4' : 'px-8'}
+      `}>
         
         {/* HAMBURGER BUTTON - vlevo */}
         <button
           onClick={handleSidebarOpen}
           disabled={loading || streaming}
-          style={{
-            width: isMobile ? 40 : 44,
-            height: isMobile ? 40 : 44,
-            borderRadius: '12px',
-            border: 'none',
-            background: 'transparent',
-            color: 'white',
-            cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: (loading || streaming) ? 0.5 : 1,
-            outline: 'none',
-            fontSize: isMobile ? '20px' : '24px',
-          }}
-          onMouseEnter={(e) => {
-            if (!loading && !streaming) {
-              e.target.style.opacity = '0.7';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading && !streaming) {
-              e.target.style.opacity = '1';
-            }
-          }}
+          className={`
+            ${isMobile ? 'w-10 h-10' : 'w-11 h-11'}
+            rounded-xl border-none bg-transparent text-white
+            ${(loading || streaming) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:opacity-70'}
+            flex items-center justify-center
+            transition-all duration-300 ease-out
+            focus:outline-none
+          `}
           title="Chat History & Settings"
         >
-          ≡
+          <Menu className={isMobile ? 'w-5 h-5' : 'w-6 h-6'} />
+        </button>
+
+        {/* THEME TOGGLE BUTTON */}
+        <button
+          onClick={toggleTheme}
+          className={`
+            ${isMobile ? 'w-10 h-10' : 'w-11 h-11'}
+            rounded-xl border-none bg-transparent text-white
+            cursor-pointer hover:opacity-70
+            flex items-center justify-center
+            transition-all duration-300 ease-out
+            focus:outline-none
+          `}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDark ? <Sun className={isMobile ? 'w-5 h-5' : 'w-6 h-6'} /> : <Moon className={isMobile ? 'w-5 h-5' : 'w-6 h-6'} />}
         </button>
 
         {/* MODEL SELECTOR - uprostřed */}
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <button
             onClick={() => setShowModelDropdown(!showModelDropdown)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              border: 'none',
-              background: 'transparent',
-              color: 'rgba(255, 255, 255, 0.9)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: isMobile ? '14px' : '16px',
-              fontWeight: '500',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-            }}
+            className={`
+              px-4 py-2 rounded-full border-none bg-transparent text-white/90
+              cursor-pointer flex items-center gap-1.5
+              ${isMobile ? 'text-sm' : 'text-base'}
+              font-medium transition-all duration-200 ease-out
+              hover:bg-white/10 focus:outline-none
+            `}
           >
             <span>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : 'o3'}</span>
-            <span style={{ fontSize: '12px', opacity: 0.8 }}>▼</span>
+            <span className="text-xs opacity-80">▼</span>
           </button>
 
           {/* MODEL DROPDOWN */}
           {showModelDropdown && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: '8px',
-              background: 'rgba(26, 32, 44, 0.95)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-              minWidth: '180px',
-              overflow: 'hidden',
-              zIndex: 1001,
-            }}>
+            <div className="
+              absolute top-full left-1/2 transform -translate-x-1/2 mt-2
+              bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl 
+              border border-white/10 dark:border-white/5
+              shadow-2xl min-w-[180px] overflow-hidden z-50
+            ">
               <button
                 onClick={() => { setModel('claude'); setShowModelDropdown(false); }}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: '14px',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
-                onMouseLeave={(e) => e.target.style.background = model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'}
+                className={`
+                  w-full px-4 py-3 border-none cursor-pointer
+                  flex items-center justify-between text-sm
+                  text-white/90 transition-colors duration-200
+                  ${model === 'claude' ? 'bg-white/10' : 'bg-transparent hover:bg-white/5'}
+                `}
               >
                 <span>Omnia Claude</span>
-                <span style={{ opacity: 0.6, fontSize: '12px' }}>o1</span>
+                <span className="opacity-60 text-xs">o1</span>
               </button>
               
               <button
                 onClick={() => { setModel('gpt-4o'); setShowModelDropdown(false); }}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: '14px',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
-                onMouseLeave={(e) => e.target.style.background = model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'}
+                className={`
+                  w-full px-4 py-3 border-none cursor-pointer
+                  flex items-center justify-between text-sm
+                  text-white/90 transition-colors duration-200
+                  ${model === 'gpt-4o' ? 'bg-white/10' : 'bg-transparent hover:bg-white/5'}
+                `}
               >
                 <span>Omnia GPT</span>
-                <span style={{ opacity: 0.6, fontSize: '12px' }}>o2</span>
+                <span className="opacity-60 text-xs">o2</span>
               </button>
               
               <button
                 onClick={() => { setModel('sonar'); setShowModelDropdown(false); }}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: model === 'sonar' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: '14px',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
-                onMouseLeave={(e) => e.target.style.background = model === 'sonar' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'}
+                className={`
+                  w-full px-4 py-3 border-none cursor-pointer
+                  flex items-center justify-between text-sm
+                  text-white/90 transition-colors duration-200
+                  ${model === 'sonar' ? 'bg-white/10' : 'bg-transparent hover:bg-white/5'}
+                `}
               >
                 <span>Omnia Sonar</span>
-                <span style={{ opacity: 0.6, fontSize: '12px' }}>o3</span>
+                <span className="opacity-60 text-xs">o3</span>
               </button>
             </div>
           )}
@@ -956,72 +895,41 @@ function App() {
         <button
           onClick={handleNewChat}
           disabled={loading || streaming}
-          style={{
-            width: isMobile ? 40 : 44,
-            height: isMobile ? 40 : 44,
-            borderRadius: '12px',
-            border: 'none',
-            background: 'transparent',
-            color: 'rgba(255, 255, 255, 0.9)',
-            cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: (loading || streaming) ? 0.5 : 1,
-            outline: 'none',
-            fontSize: isMobile ? '20px' : '24px',
-          }}
-          onMouseEnter={(e) => {
-            if (!loading && !streaming) {
-              e.target.style.opacity = '0.7';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading && !streaming) {
-              e.target.style.opacity = '1';
-            }
-          }}
+          className={`
+            ${isMobile ? 'w-10 h-10' : 'w-11 h-11'}
+            rounded-xl border-none bg-transparent text-white/90
+            ${(loading || streaming) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:opacity-70'}
+            flex items-center justify-center
+            transition-all duration-300 ease-out
+            focus:outline-none
+          `}
           title="New Chat"
         >
-          💬
+          <MessageSquare className={isMobile ? 'w-5 h-5' : 'w-6 h-6'} />
         </button>
       </div>
 
       {/* 🎨 MAIN CONTENT AREA */}
       <main 
         ref={mainContentRef}
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          overflowX: 'hidden',
-          padding: isMobile ? '1rem' : '2rem',
-          paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
-          paddingBottom: '240px',
-          width: '100%',
-          WebkitOverflowScrolling: 'touch',
-          scrollBehavior: 'smooth'
-        }}
+        className={`
+          flex-1 overflow-y-auto overflow-x-hidden w-full
+          ${isMobile ? 'p-4 pt-20' : 'p-8 pt-24'}
+          pb-60 scroll-smooth
+        `}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div style={{ 
-          maxWidth: '1000px', 
-          margin: '0 auto',
-          minHeight: messages.length === 0 ? '60vh' : 'auto',
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: messages.length === 0 ? 'center' : 'flex-start'
-        }}>
+        <div className={`
+          max-w-4xl mx-auto flex flex-col
+          ${messages.length === 0 ? 'min-h-[60vh] justify-center' : 'justify-start'}
+        `}>
           
           {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
           {messages.length === 0 && (
-            <div style={{
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: isMobile ? '1.5rem' : '2rem',
-              marginBottom: '4rem'
-            }}>
+            <div className={`
+              text-center flex flex-col items-center mb-16
+              ${isMobile ? 'gap-6' : 'gap-8'}
+            `}>
               
               {/* OMNIA LOGO */}
               <OmniaLogo 
@@ -1032,29 +940,18 @@ function App() {
               />
               
               {/* 🌍 MULTILINGUAL WELCOME TEXT */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '1rem'
-              }}>
-                <h1 style={{ 
-                  fontSize: isMobile ? '3rem' : '4rem', 
-                  fontWeight: '700', 
-                  margin: 0, 
-                  color: '#ffffff',
-                  letterSpacing: '0.02em'
-                }}>
+              <div className="flex flex-col items-center gap-4">
+                <h1 className={`
+                  ${isMobile ? 'text-5xl' : 'text-6xl'}
+                  font-bold text-white tracking-wide m-0
+                `}>
                   {welcomeTexts[uiLanguage]?.hello || welcomeTexts.cs.hello}
                 </h1>
                 
-                <p style={{
-                  fontSize: isMobile ? '1.2rem' : '1.5rem',
-                  fontWeight: '400',
-                  margin: 0,
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  letterSpacing: '0.01em'
-                }}>
+                <p className={`
+                  ${isMobile ? 'text-xl' : 'text-2xl'}
+                  font-normal text-white/80 tracking-wide m-0
+                `}>
                   {welcomeTexts[uiLanguage]?.subtitle || welcomeTexts.cs.subtitle}
                 </p>
               </div>
@@ -1255,5 +1152,13 @@ function App() {
     </div>
   );
 };
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
 
 export default App;

@@ -3,58 +3,20 @@
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
 import React, { useState } from 'react';
+import { Plus, Globe, Mic, Send, MessageCircle, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 
-// 🎨 SVG IKONY - BÍLÉ PRO VIDITELNOST
-const PlusIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <line x1="12" y1="5" x2="12" y2="19" stroke="white" strokeWidth="2.5"/>
-    <line x1="5" y1="12" x2="19" y2="12" stroke="white" strokeWidth="2.5"/>
-  </svg>
-);
-
-const ResearchIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="11" cy="11" r="8" stroke="white" strokeWidth="2"/>
-    <path d="M21 21L16.65 16.65" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="8" y1="9" x2="14" y2="9" stroke="white" strokeWidth="1.5"/>
-    <line x1="8" y1="11" x2="14" y2="11" stroke="white" strokeWidth="1.5"/>
-    <line x1="8" y1="13" x2="12" y2="13" stroke="white" strokeWidth="1.5"/>
-  </svg>
-);
-
-const MikrofonIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="9" y="3" width="6" height="11" rx="3" stroke="white" strokeWidth="2"/>
-    <path d="M5 10V11C5 14.866 8.134 18 12 18C15.866 18 19 14.866 19 11V10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="12" y1="18" x2="12" y2="22" stroke="white" strokeWidth="2"/>
-    <line x1="8" y1="22" x2="16" y2="22" stroke="white" strokeWidth="2"/>
-  </svg>
-);
-
-const OmniaVoiceIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
-    <rect x="7" y="8" width="2" height="8" rx="1" fill="white"/>
-    <rect x="11" y="5" width="2" height="14" rx="1" fill="white"/>
-    <rect x="15" y="10" width="2" height="4" rx="1" fill="white"/>
-  </svg>
-);
-
-const SendArrowIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="white">
-    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
-  </svg>
-);
+// Using Lucide React icons instead of custom SVG components
 
 // PLUS MENU
 const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
   const menuItems = [
-    { icon: '📄', key: 'document', labelCs: 'Přidat dokument', labelEn: 'Add document', labelRo: 'Adaugă document' },
-    { icon: '📸', key: 'photo', labelCs: 'Přidat fotku', labelEn: 'Add photo', labelRo: 'Adaugă poză' },
-    { icon: '📷', key: 'camera', labelCs: 'Vyfotit', labelEn: 'Take photo', labelRo: 'Fă poză' },
-    { icon: '🎨', key: 'generate', labelCs: 'Vytvořit obrázek', labelEn: 'Generate image', labelRo: 'Generează imagine' }
+    { icon: FileText, key: 'document', labelCs: 'Přidat dokument', labelEn: 'Add document', labelRo: 'Adaugă document' },
+    { icon: Image, key: 'photo', labelCs: 'Přidat fotku', labelEn: 'Add photo', labelRo: 'Adaugă poză' },
+    { icon: Camera, key: 'camera', labelCs: 'Vyfotit', labelEn: 'Take photo', labelRo: 'Fă poză' },
+    { icon: Palette, key: 'generate', labelCs: 'Vytvořit obrázek', labelEn: 'Generate image', labelRo: 'Generează imagine' }
   ];
 
   const getLabel = (item) => {
@@ -67,75 +29,42 @@ const PlusMenu = ({ isOpen, onClose, uiLanguage = 'cs' }) => {
 
   return (
     <>
+      {/* Backdrop overlay */}
       <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)'
-        }}
+        className="fixed inset-0 bg-black/50 z-[1000] backdrop-blur-sm"
         onClick={onClose}
       />
       
-      <div style={{
-        position: 'fixed',
-        bottom: '140px',
-        left: '20px',
-        background: 'linear-gradient(135deg, rgba(26, 32, 44, 0.95), rgba(45, 55, 72, 0.95))',
-        borderRadius: '16px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        zIndex: 1001,
-        minWidth: '280px',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          padding: '1rem',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          textAlign: 'center',
-          color: '#ffffff',
-          fontWeight: '600'
-        }}>
-          🚀 {uiLanguage === 'cs' ? 'Multimodální funkce' : 
-               uiLanguage === 'en' ? 'Multimodal features' : 
-               'Funcții multimodale'}
+      {/* Menu container */}
+      <div className="fixed bottom-[140px] left-5 z-[1002] min-w-[280px] overflow-hidden rounded-2xl bg-gray-900/98 shadow-[0_20px_50px_rgba(0,0,0,0.7)] backdrop-blur-xl border border-white/20">
+        {/* Header */}
+        <div className="p-4 border-b border-white/20 text-center text-white font-semibold bg-gray-800/50">
+          <Sparkles className="w-5 h-5 inline-block mr-2 text-blue-400" strokeWidth={2} />
+          {uiLanguage === 'cs' ? 'Multimodální funkce' : 
+           uiLanguage === 'en' ? 'Multimodal features' : 
+           'Funcții multimodale'}
         </div>
 
-        {menuItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => {
-              console.log(`${item.key} clicked - Coming Soon!`);
-              onClose();
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              width: '100%',
-              padding: '1rem',
-              border: 'none',
-              background: 'transparent',
-              color: '#e2e8f0',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
-            onMouseLeave={(e) => e.target.style.background = 'transparent'}
-          >
-            <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
-            <span>{getLabel(item)}</span>
-            <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, fontStyle: 'italic' }}>
-              Soon
-            </span>
-          </button>
-        ))}
+        {/* Menu items */}
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <button
+              key={item.key}
+              onClick={() => {
+                console.log(`${item.key} clicked - Coming Soon!`);
+                onClose();
+              }}
+              className="flex items-center gap-4 w-full p-4 border-none bg-transparent text-white text-sm cursor-pointer transition-all duration-200 hover:bg-white/10 hover:text-blue-300"
+            >
+              <IconComponent className="w-5 h-5 text-blue-400" strokeWidth={2} />
+              <span className="font-medium">{getLabel(item)}</span>
+              <span className="ml-auto text-xs text-gray-400 italic font-normal">
+                Soon
+              </span>
+            </button>
+          );
+        })}
       </div>
     </>
   );
@@ -168,8 +97,8 @@ const InputBar = ({
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
-  const buttonSize = isMobile ? 36 : 44; // VĚTŠÍ TLAČÍTKA
-  const iconSize = isMobile ? 20 : 24; // VĚTŠÍ EMOJI
+  const buttonSize = isMobile ? 36 : 44;
+  const iconSize = isMobile ? 20 : 24;
 
   const buttonStyle = {
     width: buttonSize,
@@ -242,99 +171,109 @@ const InputBar = ({
             {/* 4 TLAČÍTKA DOLE */}
             <div style={{
               display: 'flex',
-              justifyContent: 'center',
-              gap: isMobile ? '8px' : '12px',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
               
-                            {/* 1. PLUS BUTTON */}
-              <button
-                onClick={() => setShowPlusMenu(true)}
-                disabled={isLoading}
-                style={{
-                  ...buttonStyle,
-                  opacity: isLoading ? 0.5 : 1,
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  fontSize: isMobile ? '20px' : '24px',
-                  filter: 'invert(1)', // BÍLÉ PLUS
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading) e.target.style.opacity = '0.7';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                }}
-                title="Multimodal Features"
-              >
-                ➕
-              </button>
-              
-              {/* 2. RESEARCH BUTTON */}
-              <button
-                onClick={handleDeepSearch}
-                disabled={isLoading || !input.trim()}
-                style={{
-                  ...buttonStyle,
-                  opacity: isLoading || !input.trim() ? 0.5 : 1,
-                  cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-                  fontSize: isMobile ? '20px' : '24px',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                }}
-                title="Deep Search"
-              >
-                🌐
-              </button>
-              
-              {/* 3. MIKROFON BUTTON */}
-              <button
-                onClick={onSTT}
-                disabled={isLoading || isAudioPlaying}
-                style={{
-                  ...buttonStyle,
-                  background: isRecording ? 'rgba(255, 0, 0, 0.15)' : 'transparent',
-                  opacity: isLoading || isAudioPlaying ? 0.5 : 1,
-                  cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
-                  fontSize: isMobile ? '16px' : '20px',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading && !isAudioPlaying && !isRecording) {
-                    e.target.style.opacity = '0.7';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isRecording) {
+              {/* LEFT SIDE BUTTONS */}
+              <div style={{
+                display: 'flex',
+                gap: isMobile ? '8px' : '12px',
+              }}>
+                {/* 1. PLUS BUTTON */}
+                <button
+                  onClick={() => setShowPlusMenu(!showPlusMenu)}
+                  disabled={isLoading}
+                  style={{
+                    ...buttonStyle,
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) e.target.style.opacity = '0.7';
+                  }}
+                  onMouseLeave={(e) => {
                     e.target.style.opacity = '1';
-                  }
-                }}
-                title={isRecording ? 'Stop Recording' : 'Voice Input'}
-              >
-                🎤︎︎
-              </button>
+                  }}
+                  title="Multimodal Features"
+                >
+                  <Plus size={iconSize} strokeWidth={2} />
+                </button>
+                
+                {/* 2. RESEARCH BUTTON */}
+                <button
+                  onClick={handleDeepSearch}
+                  disabled={isLoading || !input.trim()}
+                  style={{
+                    ...buttonStyle,
+                    opacity: isLoading || !input.trim() ? 0.5 : 1,
+                    cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.opacity = '1';
+                  }}
+                  title="Deep Search"
+                >
+                  <Globe size={iconSize} strokeWidth={2} />
+                </button>
+              </div>
               
-              {/* 4. DYNAMIC BUTTON */}
-              <button
-                onClick={input.trim() ? onSend : onVoiceScreen}
-                disabled={isLoading}
-                style={{
-                  ...buttonStyle,
-                  opacity: isLoading ? 0.5 : 1,
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  fontSize: isMobile ? '16px' : '20px',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading) e.target.style.opacity = '0.7';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                }}
-                title={input.trim() ? 'Send Message' : 'Voice Chat'}
-              >
-                {input.trim() ? '➤' : '💭'}
-              </button>
+              {/* RIGHT SIDE BUTTONS */}
+              <div style={{
+                display: 'flex',
+                gap: isMobile ? '8px' : '12px',
+              }}>
+                {/* 3. MIKROFON BUTTON */}
+                <button
+                  onClick={onSTT}
+                  disabled={isLoading || isAudioPlaying}
+                  style={{
+                    ...buttonStyle,
+                    background: isRecording ? 'rgba(255, 0, 0, 0.15)' : 'transparent',
+                    opacity: isLoading || isAudioPlaying ? 0.5 : 1,
+                    cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && !isAudioPlaying && !isRecording) {
+                      e.target.style.opacity = '0.7';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isRecording) {
+                      e.target.style.opacity = '1';
+                    }
+                  }}
+                  title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                >
+                  <Mic size={iconSize} strokeWidth={2} />
+                </button>
+                
+                {/* 4. DYNAMIC BUTTON */}
+                <button
+                  onClick={input.trim() ? onSend : onVoiceScreen}
+                  disabled={isLoading}
+                  style={{
+                    ...buttonStyle,
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) e.target.style.opacity = '0.7';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.opacity = '1';
+                  }}
+                  title={input.trim() ? 'Send Message' : 'Voice Chat'}
+                >
+                  {input.trim() ? 
+                    <Send size={iconSize} strokeWidth={2} /> : 
+                    <MessageCircle size={iconSize} strokeWidth={2} />
+                  }
+                </button>
+              </div>
               
             </div>
           </div>
