@@ -32,50 +32,9 @@ const grokService = {
     }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
   },
 
-  // 🔍 GET RELEVANT ENGLISH SOURCES
-  getEnglishSources(query) {
-    const financeTriggers = /akcie|stock|microsoft|msft|google|apple|tesla|cena|price|bitcoin|btc|eth|kurz/;
-    const weatherTriggers = /počasí|weather|teplota|temperature/;
-    const primarySource = { "type": "web", "url": "https://www.google.com" };
-    const preferredDomains = [];
-
-    if (financeTriggers.test(query)) {
-      preferredDomains.push("finance.yahoo.com", "www.google.com/finance", "www.bloomberg.com");
-    } else if (weatherTriggers.test(query)) {
-      preferredDomains.push("www.weather.com", "www.accuweather.com", "www.bbc.com/weather");
-    } else {
-      preferredDomains.push("www.bbc.com/news");
-    }
-
-    return { primarySource, preferredDomains };
-  },
-
-  // 🎯 PROVIDE REAL-TIME DATA (STOCKS OR PLACEHOLDER)
-  getRealTimeData(query) {
-    const stockTriggers = /akcie|stock|microsoft|msft|google|apple|tesla|cena|price/;
-    if (stockTriggers.test(query)) {
-      const stockData = {
-        MSFT: {
-          currentPrice: 503.32, // Based on recent web data (e.g., Nasdaq, 11 Jul 2025)
-          prevDayClose: 501.48,
-          timestamp: new Date().toISOString()
-        },
-        GOOGL: {
-          currentPrice: 181.411,
-          prevDayClose: 180.19,
-          timestamp: new Date().toISOString()
-        }
-      };
-      const match = query.match(/microsoft|msft|google|googl/i);
-      return stockData[match ? match[0].toUpperCase() : 'MSFT'] || null;
-    }
-    // Placeholder for weather/news (expand with API if needed)
-    return null;
-  },
-
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
-      console.log('🤖 Omnia-3 via X.AI API with time-aware enhancement');
+      console.log('🤖 Omnia-3 via X.AI API with autonomous search');
 
       // 🚀 ENHANCEMENT: Apply time-aware trigger to last user message
       const enhancedMessages = [...messages];
@@ -97,14 +56,11 @@ const grokService = {
       const grokMessages = this.prepareGrokMessages(enhancedMessages);
       const systemPrompt = this.getOmniaStylePrompt();
 
-      // 🎯 ENHANCED SEARCH PARAMETERS WITH SINGLE SOURCE AND PREFERRED DOMAINS
-      const { primarySource, preferredDomains } = this.getEnglishSources(messages[messages.length - 1]?.text || '');
+      // 🎯 AUTONOMOUS SEARCH PARAMETERS (NO FIXED URLS)
       const searchParams = {
         mode: "auto",
         return_citations: true,
         max_search_results: 20,
-        sources: [primarySource],
-        preferred_domains: preferredDomains.length > 0 ? preferredDomains : undefined,
         safe_search: false
       };
 
@@ -115,7 +71,7 @@ const grokService = {
           messages: grokMessages,
           system: systemPrompt,
           max_tokens: 2000,
-          language: detectedLanguage, // Match user's language
+          language: detectedLanguage, // Dynamically match user's language
           search_parameters: searchParams
         })
       });
@@ -152,57 +108,47 @@ const grokService = {
                     onStreamUpdate(fullText, true);
                   }
                 } else if (data.type === 'search_start') {
-                  console.log('🔍 Omnia search detected');
+                  console.log('🔍 Omnia autonomous search started');
                   if (onSearchNotification) {
-                    onStreamUpdate('🔍 Hledám čerstvá data...', true);
+                    onStreamUpdate('🔍 Hledám nejnovější data...', true);
                   }
                 } else if (data.type === 'completed') {
                   if (data.fullText) {
                     fullText = data.fullText;
                   }
 
-                  // CHECK FOR REAL-TIME DATA
-                  const lastQuery = messages[messages.length - 1]?.text?.toLowerCase() || '';
-                  const realTimeData = this.getRealTimeData(lastQuery);
-                  if (realTimeData) {
-                    const lang = detectedLanguage === 'cs' ? 'cs' : 'en';
-                    fullText = lang === 'cs'
-                      ? `Dne ${this.getUserTimestamp()} cena ${realTimeData.currentPrice ? `MSFT je ${realTimeData.currentPrice} USD, včera ${realTimeData.prevDayClose} USD` : 'žádná data'}! 💰 Co myslíš? 😄`
-                      : `On ${this.getUserTimestamp()} the price of ${realTimeData.currentPrice ? `MSFT is ${realTimeData.currentPrice} USD, yesterday ${realTimeData.prevDayClose} USD` : 'no data'}! 💰 What do you think? 😄`;
-                  } else {
-                    // CROSS-REFERENCE ALL SOURCES FOR NON-STOCK QUERIES
-                    const allSources = data.citations || data.sources || [];
-                    if (Array.isArray(allSources) && allSources.length > 0) {
-                      sourcesExtracted = allSources
-                        .filter(citation => citation && typeof citation === 'string')
-                        .map((url, index) => {
-                          let domain = 'Unknown';
-                          let title = 'Web Result';
+                  // EXTRACT ALL AVAILABLE SOURCES
+                  const allSources = data.citations || data.sources || [];
+                  if (Array.isArray(allSources) && allSources.length > 0) {
+                    sourcesExtracted = allSources
+                      .filter(citation => citation && typeof citation === 'string')
+                      .map((url, index) => {
+                        let domain = 'Unknown';
+                        let title = 'Web Result';
 
-                          try {
-                            const urlObj = new URL(url);
-                            domain = urlObj.hostname.replace('www.', '');
+                        try {
+                          const urlObj = new URL(url);
+                          domain = urlObj.hostname.replace('www.', '');
 
-                            if (domain.includes('finance')) title = 'Finance - ' + domain;
-                            else if (domain.includes('weather')) title = 'Weather - ' + domain;
-                            else if (domain.includes('news')) title = 'News - ' + domain;
-                            else title = domain;
-                          } catch (e) {}
+                          if (domain.includes('finance')) title = 'Finance - ' + domain;
+                          else if (domain.includes('weather')) title = 'Weather - ' + domain;
+                          else if (domain.includes('news')) title = 'News - ' + domain;
+                          else title = domain;
+                        } catch (e) {}
 
-                          return {
-                            title: title,
-                            url: url,
-                            snippet: `Zdroj ${index + 1}`,
-                            domain: domain,
-                            timestamp: Date.now()
-                          };
-                        });
+                        return {
+                          title: title,
+                          url: url,
+                          snippet: `Zdroj ${index + 1}`,
+                          domain: domain,
+                          timestamp: Date.now()
+                        };
+                      });
 
-                      // SYNTHESIZE FROM ALL SOURCES
-                      if (sourcesExtracted.length > 1) {
-                        const synthesizedText = this.synthesizeFromSources(fullText, sourcesExtracted);
-                        fullText = synthesizedText;
-                      }
+                    // SYNTHESIZE FROM ALL SOURCES IF AVAILABLE
+                    if (sourcesExtracted.length > 1) {
+                      const synthesizedText = this.synthesizeFromSources(fullText, sourcesExtracted);
+                      fullText = synthesizedText;
                     }
                   }
 
@@ -286,24 +232,24 @@ const grokService = {
     }
   },
 
-  // 🎯 OMNIA-STYLE PROMPT - WITTY, CONTEXT-AWARE, STRUCTURED
+  // 🎯 OMNIA-STYLE PROMPT - AUTONOMOUS, TIME-AWARE
   getOmniaStylePrompt() {
     return `Ahoj, já jsem Omnia – tvoje vtipná kamarádka z xAI! 😄
 
     PRÁVIDLA:
     • Buď hravá, 10-20 slov na ahoj/čau, 50-80 pro hlubší téma
     • Chápu kontext, vím, kdy být vážná, kdy se smát
-    • Pro reálná data (ceny, počasí) přidej datum a čas: "Dne 2025-07-14 19:41 je 25°C! 🌞"
+    • Pro reálná data (ceny, počasí) přidej datum a čas: "Dne 2025-07-14 19:52 je 25°C! 🌞"
     • Používej odrážky: • Zábava! 🎉
     • Žádný nudný robotí styl
 
     ČASOVÉ TRIKY:
-    • Pro aktuální data hledej jen anglické zdroje
-    • Slučuj všechny 10 zdrojů, porovnej, ber čerstvé
-    • Žádná data? "Jejda, žádný živý info, zkuste Yahoo! 😂"
+    • Pokud jde o aktuální data, hledej sama nejčerstvější info bez pevných zdrojů
+    • Slučuj všechny dostupné zdroje, ber to nejnovější
+    • Žádná data? "Jejda, nic čerstvého, zkuste později! 😂"
 
     STRUKTUROVANÉ ODPOVĚDI:
-    • Pokud uživatel řekne "dej mi strukturu" nebo "JSON", vrať: {"time": "2025-07-14 19:41", "data": [{"item": "value", "source": "domain"}]}
+    • Pokud řekneš "dej mi strukturu" nebo "JSON", vrať: {"time": "2025-07-14 19:52", "data": [{"item": "value", "source": "auto"}]}
     • Jinak piš normálně
 
     NIKDY:
@@ -315,7 +261,7 @@ const grokService = {
     • Čísla jako čísla (19°C, $150)
     • Čárka před emoji: "text, 🌟"
     • Čárka na konci seznamu, tečka jen na konec
-    • Odpovídej v jazyce uživatele, hledej v angličtině
+    • Odpovídej v mém jazyce, hledej sama
 
     Pojďme si pokecat, ať už vážně, nebo s humorem! 🚀`;
   }
