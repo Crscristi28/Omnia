@@ -1,4 +1,4 @@
-// api/grok.js - GROK-3 API ENDPOINT WITH STREAMING
+// api/grok.js - GROK-3 API ENDPOINT WITH STREAMING + TIME AWARENESS + GLOBAL SOURCES
 export default async function handler(req, res) {
   // CORS headers for streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, system, max_tokens = 2000, search_parameters } = req.body;
+    const { messages, system, max_tokens = 2000, search_parameters, language = 'cs' } = req.body;
     const API_KEY = process.env.GROK_API_KEY;
     
     if (!API_KEY) {
@@ -29,13 +29,74 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-6); // Keep more context for Grok
     
+    // 🎯 TIME-AWARENESS DETECTION
+    const needsTimeAwareness = (messages) => {
+      const lastMessage = messages[messages.length - 1]?.content || '';
+      const patterns = [
+        /cena|price|kurz|kolik stojí/i,           // Finance
+        /počasí|weather|teplota|déšť/i,           // Weather  
+        /zprávy|news|aktuální|latest/i,           // News
+        /bitcoin|btc|eth|crypto|akcie|stock/i,    // Crypto/Stocks
+        /otevírací doba|opening hours/i,          // Business hours
+        /výsledky|results|skóre|score/i           // Sports results
+      ];
+      return patterns.some(pattern => pattern.test(lastMessage));
+    };
+
+    // 🌍 QUERY TRANSLATION FOR GLOBAL SOURCES
+    const translateQueryToEnglish = (query) => {
+      const translations = {
+        'jaká je cena': 'what is the price of',
+        'kurz': 'exchange rate of',
+        'počasí': 'weather in',
+        'akcie': 'stock price of',
+        'bitcoin': 'bitcoin price',
+        'ethereum': 'ethereum price',
+        'dolar': 'USD exchange rate',
+        'euro': 'EUR exchange rate',
+        'zprávy': 'latest news about',
+        'výsledky': 'latest results for',
+        'kolik stojí': 'what is the price of'
+      };
+      
+      let englishQuery = query;
+      for (const [czech, english] of Object.entries(translations)) {
+        englishQuery = englishQuery.replace(new RegExp(czech, 'gi'), english);
+      }
+      return englishQuery;
+    };
+
+    // 🕐 GET LANGUAGE-SPECIFIC TIME FORMAT
+    const getTimeFormat = (language) => {
+      const formats = {
+        'cs': 'Je [current time] [timezone], [date]',
+        'en': 'It is [current time] [timezone], [date]',
+        'ro': 'Este [current time] [timezone], [date]'
+      };
+      return formats[language] || formats['cs'];
+    };
+
+    // 🔧 ENHANCE MESSAGES FOR TIME-AWARENESS + GLOBAL SOURCES
+    const enhancedMessages = [...recentMessages];
+    if (needsTimeAwareness(recentMessages)) {
+      const lastMessage = enhancedMessages[enhancedMessages.length - 1];
+      const originalQuery = lastMessage.content;
+      const englishQuery = translateQueryToEnglish(originalQuery);
+      const timeFormat = getTimeFormat(language);
+      
+      console.log('🕐 Time-awareness triggered for query:', originalQuery.substring(0, 50));
+      console.log('🌍 Translated to English:', englishQuery.substring(0, 50));
+      
+      lastMessage.content = `User asked "${originalQuery}" in ${language}. Start response with current time acknowledgment like "${timeFormat}" then search for "${englishQuery}" using global English sources for most current data. Respond in ${language} with this professional time-aware format.`;
+    }
+    
     // Prepare messages with system prompt
     const grokMessages = [
       {
         role: 'system',
         content: system || "Jsi Omnia, pokročilý AI asistent."
       },
-      ...recentMessages
+      ...enhancedMessages
     ];
 
     const grokRequest = {
@@ -80,6 +141,21 @@ export default async function handler(req, res) {
     // Extract response text
     const textContent = data.choices?.[0]?.message?.content?.trim() || "Nepodařilo se získat odpověď.";
 
+    // 🎯 VALIDATE TIME-AWARE RESPONSE
+    const hasTimestamp = /\d{1,2}:\d{2}|AM|PM|CEST|CET|UTC|\d{1,2}\.\s?\d{1,2}\.\s?\d{4}|dneska|today|teď|now|je\s+\d{1,2}:/i.test(textContent);
+    const hasDateFormat = /\d{1,2}\.\s?\d{1,2}\.\s?\d{4}|\d{4}-\d{2}-\d{2}/i.test(textContent);
+    
+    if (needsTimeAwareness(recentMessages)) {
+      console.log('🕐 Time-awareness validation:');
+      console.log('  - Has timestamp:', hasTimestamp ? 'SUCCESS ✅' : 'FAILED ❌');
+      console.log('  - Has date:', hasDateFormat ? 'SUCCESS ✅' : 'FAILED ❌');
+      
+      if (!hasTimestamp || !hasDateFormat) {
+        console.warn('⚠️ Response missing proper time/date format for time-sensitive query');
+        console.warn('⚠️ Response preview:', textContent.substring(0, 100));
+      }
+    }
+
     // Extract citations/sources - check multiple locations
     let extractedSources = [];
     const citations = data.citations || data.choices?.[0]?.message?.citations || data.choices?.[0]?.citations || [];
@@ -98,15 +174,18 @@ export default async function handler(req, res) {
             
             // Extract title from URL/domain
             let title = domain;
-            if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
-            else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
-            else if (domain.includes('chmi')) title = 'ČHMÚ - ' + domain;
+            if (domain.includes('finance.yahoo')) title = 'Yahoo Finance';
+            else if (domain.includes('marketwatch')) title = 'MarketWatch';
+            else if (domain.includes('bloomberg')) title = 'Bloomberg';
+            else if (domain.includes('reuters')) title = 'Reuters';
             else if (domain.includes('weather')) title = 'Weather - ' + domain;
+            else if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
+            else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
+            else if (domain.includes('chmi')) title = 'ČHMÚ';
             else if (domain.includes('news')) title = 'News - ' + domain;
-            else if (domain.includes('finance')) title = 'Finance - ' + domain;
-            else if (domain.includes('yahoo')) title = 'Yahoo - ' + domain;
-            else if (domain.includes('bloomberg')) title = 'Bloomberg - ' + domain;
-            else if (domain.includes('reuters')) title = 'Reuters - ' + domain;
+            else if (domain.includes('coinmarketcap')) title = 'CoinMarketCap';
+            else if (domain.includes('coingecko')) title = 'CoinGecko';
+            else title = domain;
             
             return {
               title: title,
@@ -158,11 +237,15 @@ export default async function handler(req, res) {
       fullText: textContent,
       webSearchUsed: webSearchUsed,
       sources: extractedSources,
-      citations: extractedSources
+      citations: extractedSources,
+      timeAware: needsTimeAwareness(recentMessages),
+      hasTimestamp: hasTimestamp,
+      hasDateFormat: hasDateFormat,
+      language: language
     }) + '\n');
 
     console.log('✅ Grok streaming completed with sources:', extractedSources.length);
-
+    console.log('✅ Time-aware features:', { timeAware: needsTimeAwareness(recentMessages), hasTimestamp, hasDateFormat });
     console.log('✅ Grok streaming completed');
     res.end();
 
