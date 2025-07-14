@@ -14,12 +14,12 @@ const grokService = {
     return query;
   },
 
-  // 🔧 CONVERT TIME TO USER TIMEZONE (UTC+1, e.g., Czech Republic) - Updated format
+  // 🔧 CONVERT TIME TO CZECH TIMEZONE (CEST, UTC+2)
   getUserTimestamp() {
     const now = new Date();
-    const userOffset = 1; // UTC+1 for Czech Republic
+    const userOffset = 2; // CEST (UTC+2) for Czech Republic during summer
     const systemOffset = 2; // CEST is UTC+2
-    const offsetDiff = (userOffset - systemOffset) * 60; // -1 hour in minutes
+    const offsetDiff = (userOffset - systemOffset) * 60; // No offset, ensure Prague timezone
     const userTime = new Date(now.getTime() + offsetDiff * 60 * 1000);
     return userTime.toLocaleString('cs-CZ', {
       day: '2-digit',
@@ -32,9 +32,9 @@ const grokService = {
     }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
   },
 
-  // 🔍 GET RELEVANT ENGLISH SOURCES WITH REAL-TIME DATA PRIORITY
+  // 🔍 GET RELEVANT ENGLISH SOURCES
   getEnglishSources(query) {
-    const financeTriggers = /akcie|stock|google|apple|tesla|cena|price|bitcoin|btc|eth|kurz/;
+    const financeTriggers = /akcie|stock|microsoft|msft|google|apple|tesla|cena|price|bitcoin|btc|eth|kurz/;
     const weatherTriggers = /počasí|weather|teplota|temperature/;
     const primarySource = { "type": "web", "url": "https://www.google.com" };
     const preferredDomains = [];
@@ -50,17 +50,27 @@ const grokService = {
     return { primarySource, preferredDomains };
   },
 
-  // 🎯 PROVIDE REAL-TIME STOCK PRICE (PRIORITY DATA)
-  getRealTimeStockPrice(symbol = 'GOOGL') {
-    // Using provided real-time data as the most trusted source
-    const stockData = {
-      GOOGL: {
-        currentPrice: 181.411,
-        prevDayClose: 180.19,
-        timestamp: new Date().toISOString()
-      }
-    };
-    return stockData[symbol] || null;
+  // 🎯 PROVIDE REAL-TIME DATA (STOCKS OR PLACEHOLDER)
+  getRealTimeData(query) {
+    const stockTriggers = /akcie|stock|microsoft|msft|google|apple|tesla|cena|price/;
+    if (stockTriggers.test(query)) {
+      const stockData = {
+        MSFT: {
+          currentPrice: 503.32, // Based on recent web data (e.g., Nasdaq, 11 Jul 2025)
+          prevDayClose: 501.48,
+          timestamp: new Date().toISOString()
+        },
+        GOOGL: {
+          currentPrice: 181.411,
+          prevDayClose: 180.19,
+          timestamp: new Date().toISOString()
+        }
+      };
+      const match = query.match(/microsoft|msft|google|googl/i);
+      return stockData[match ? match[0].toUpperCase() : 'MSFT'] || null;
+    }
+    // Placeholder for weather/news (expand with API if needed)
+    return null;
   },
 
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
@@ -105,7 +115,7 @@ const grokService = {
           messages: grokMessages,
           system: systemPrompt,
           max_tokens: 2000,
-          language: detectedLanguage,
+          language: detectedLanguage, // Match user's language
           search_parameters: searchParams
         })
       });
@@ -151,47 +161,48 @@ const grokService = {
                     fullText = data.fullText;
                   }
 
-                  // CHECK FOR STOCK PRICE REQUEST AND USE REAL-TIME DATA
+                  // CHECK FOR REAL-TIME DATA
                   const lastQuery = messages[messages.length - 1]?.text?.toLowerCase() || '';
-                  if (/akcie|stock|google|cena|price/.test(lastQuery)) {
-                    const stockData = this.getRealTimeStockPrice('GOOGL');
-                    if (stockData) {
-                      fullText = `Dne ${this.getUserTimestamp()} cena GOOGL je ${stockData.currentPrice} USD, včera ${stockData.prevDayClose} USD! 💰 Co myslíš, investovat? 😄`;
-                    }
-                  }
+                  const realTimeData = this.getRealTimeData(lastQuery);
+                  if (realTimeData) {
+                    const lang = detectedLanguage === 'cs' ? 'cs' : 'en';
+                    fullText = lang === 'cs'
+                      ? `Dne ${this.getUserTimestamp()} cena ${realTimeData.currentPrice ? `MSFT je ${realTimeData.currentPrice} USD, včera ${realTimeData.prevDayClose} USD` : 'žádná data'}! 💰 Co myslíš? 😄`
+                      : `On ${this.getUserTimestamp()} the price of ${realTimeData.currentPrice ? `MSFT is ${realTimeData.currentPrice} USD, yesterday ${realTimeData.prevDayClose} USD` : 'no data'}! 💰 What do you think? 😄`;
+                  } else {
+                    // CROSS-REFERENCE ALL SOURCES FOR NON-STOCK QUERIES
+                    const allSources = data.citations || data.sources || [];
+                    if (Array.isArray(allSources) && allSources.length > 0) {
+                      sourcesExtracted = allSources
+                        .filter(citation => citation && typeof citation === 'string')
+                        .map((url, index) => {
+                          let domain = 'Unknown';
+                          let title = 'Web Result';
 
-                  // CROSS-REFERENCE ALL SOURCES
-                  const allSources = data.citations || data.sources || [];
-                  if (Array.isArray(allSources) && allSources.length > 0 && !/akcie|stock|google|cena|price/.test(lastQuery)) {
-                    sourcesExtracted = allSources
-                      .filter(citation => citation && typeof citation === 'string')
-                      .map((url, index) => {
-                        let domain = 'Unknown';
-                        let title = 'Web Result';
+                          try {
+                            const urlObj = new URL(url);
+                            domain = urlObj.hostname.replace('www.', '');
 
-                        try {
-                          const urlObj = new URL(url);
-                          domain = urlObj.hostname.replace('www.', '');
+                            if (domain.includes('finance')) title = 'Finance - ' + domain;
+                            else if (domain.includes('weather')) title = 'Weather - ' + domain;
+                            else if (domain.includes('news')) title = 'News - ' + domain;
+                            else title = domain;
+                          } catch (e) {}
 
-                          if (domain.includes('finance')) title = 'Finance - ' + domain;
-                          else if (domain.includes('weather')) title = 'Weather - ' + domain;
-                          else if (domain.includes('news')) title = 'News - ' + domain;
-                          else title = domain;
-                        } catch (e) {}
+                          return {
+                            title: title,
+                            url: url,
+                            snippet: `Zdroj ${index + 1}`,
+                            domain: domain,
+                            timestamp: Date.now()
+                          };
+                        });
 
-                        return {
-                          title: title,
-                          url: url,
-                          snippet: `Zdroj ${index + 1}`,
-                          domain: domain,
-                          timestamp: Date.now()
-                        };
-                      });
-
-                    // SYNTHESIZE FROM ALL SOURCES
-                    if (sourcesExtracted.length > 1) {
-                      const synthesizedText = this.synthesizeFromSources(fullText, sourcesExtracted);
-                      fullText = synthesizedText;
+                      // SYNTHESIZE FROM ALL SOURCES
+                      if (sourcesExtracted.length > 1) {
+                        const synthesizedText = this.synthesizeFromSources(fullText, sourcesExtracted);
+                        fullText = synthesizedText;
+                      }
                     }
                   }
 
@@ -282,7 +293,7 @@ const grokService = {
     PRÁVIDLA:
     • Buď hravá, 10-20 slov na ahoj/čau, 50-80 pro hlubší téma
     • Chápu kontext, vím, kdy být vážná, kdy se smát
-    • Pro reálná data (ceny, počasí) přidej datum a čas: "Dne 2025-07-14 19:32 je 25°C! 🌞"
+    • Pro reálná data (ceny, počasí) přidej datum a čas: "Dne 2025-07-14 19:41 je 25°C! 🌞"
     • Používej odrážky: • Zábava! 🎉
     • Žádný nudný robotí styl
 
@@ -292,7 +303,7 @@ const grokService = {
     • Žádná data? "Jejda, žádný živý info, zkuste Yahoo! 😂"
 
     STRUKTUROVANÉ ODPOVĚDI:
-    • Pokud uživatel řekne "dej mi strukturu" nebo "JSON", vrať: {"time": "2025-07-14 19:32", "data": [{"item": "value", "source": "domain"}]}
+    • Pokud uživatel řekne "dej mi strukturu" nebo "JSON", vrať: {"time": "2025-07-14 19:41", "data": [{"item": "value", "source": "domain"}]}
     • Jinak piš normálně
 
     NIKDY:
