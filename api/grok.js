@@ -1,4 +1,4 @@
-// api/grok.js - GROK-3 API ENDPOINT WITH STREAMING + TIME AWARENESS
+// api/grok.js - GROK-3 API ENDPOINT WITH STREAMING
 export default async function handler(req, res) {
   // CORS headers for streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,36 +29,13 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-6); // Keep more context for Grok
     
-    // 🎯 TIME-AWARENESS DETECTION
-    const needsTimeAwareness = (messages) => {
-      const lastMessage = messages[messages.length - 1]?.content || '';
-      const patterns = [
-        /cena|price|kurz|kolik stojí/i,           // Finance
-        /počasí|weather|teplota|déšť/i,           // Weather  
-        /zprávy|news|aktuální|latest/i,           // News
-        /bitcoin|btc|eth|crypto|akcie|stock/i,    // Crypto/Stocks
-        /otevírací doba|opening hours/i,          // Business hours
-        /výsledky|results|skóre|score/i           // Sports results
-      ];
-      return patterns.some(pattern => pattern.test(lastMessage));
-    };
-
-    // 🔧 ENHANCE MESSAGES FOR TIME-AWARENESS
-    const enhancedMessages = [...recentMessages];
-    if (needsTimeAwareness(recentMessages)) {
-      const lastMessage = enhancedMessages[enhancedMessages.length - 1];
-      console.log('🕐 Time-awareness triggered for query:', lastMessage.content.substring(0, 50));
-      
-      lastMessage.content = `User asked for ${lastMessage.content}. I need to use the actual time and date for this before I give an answer. Based on that timestamp I must tell the real time data. ${lastMessage.content}`;
-    }
-    
     // Prepare messages with system prompt
     const grokMessages = [
       {
         role: 'system',
         content: system || "Jsi Omnia, pokročilý AI asistent."
       },
-      ...enhancedMessages
+      ...recentMessages
     ];
 
     const grokRequest = {
@@ -102,15 +79,6 @@ export default async function handler(req, res) {
     
     // Extract response text
     const textContent = data.choices?.[0]?.message?.content?.trim() || "Nepodařilo se získat odpověď.";
-
-    // 🎯 VALIDATE TIME-AWARE RESPONSE
-    const hasTimestamp = /\d{1,2}\.\d{1,2}\.\d{4}|\d{4}-\d{2}-\d{2}|dneska|today|teď|now|\d{1,2}:\d{2}|AM|PM/i.test(textContent);
-    if (needsTimeAwareness(recentMessages)) {
-      console.log('🕐 Time-awareness validation:', hasTimestamp ? 'SUCCESS ✅' : 'FAILED ❌');
-      if (!hasTimestamp) {
-        console.warn('⚠️ Response missing timestamp for time-sensitive query');
-      }
-    }
 
     // Extract citations/sources - check multiple locations
     let extractedSources = [];
@@ -190,12 +158,11 @@ export default async function handler(req, res) {
       fullText: textContent,
       webSearchUsed: webSearchUsed,
       sources: extractedSources,
-      citations: extractedSources,
-      timeAware: needsTimeAwareness(recentMessages),
-      hasTimestamp: hasTimestamp
+      citations: extractedSources
     }) + '\n');
 
     console.log('✅ Grok streaming completed with sources:', extractedSources.length);
+
     console.log('✅ Grok streaming completed');
     res.end();
 
