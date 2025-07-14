@@ -1,14 +1,71 @@
-// 🤖 GROK SERVICE - OMNIA GROK-3 INTEGRATION
+// 🤖 GROK SERVICE - OMNIA GROK-3 INTEGRATION WITH TIME-AWARE TRIGGER
 // 🎯 X.AI Grok-3 model integration with streaming support
 // 🔥 OpenAI-compatible format for message handling
+// 🚀 ENHANCED WITH TIME-AWARE TRIGGER DISCOVERY
 
 const grokService = {
+  // 🎯 TIME-AWARE QUERY DETECTION
+  needsRealTimeData(query) {
+    const triggers = /cena|price|počasí|weather|aktuální|current|zprávy|news|kurz|bitcoin|btc|eth|stock|akcie|dnes|today|teď|now|kolik je hodin|what time/i;
+    return triggers.test(query);
+  },
+
+  // 🚀 ENHANCE QUERY WITH TIME-AWARE TRIGGER
+  enhanceQuery(query) {
+    if (this.needsRealTimeData(query)) {
+      console.log('🕐 Time-aware trigger activated for:', query);
+      return `Based on current time and date awareness: ${query}`;
+    }
+    return query;
+  },
+
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
       console.log('🤖 Grok-3 via X.AI API');
-      const grokMessages = this.prepareGrokMessages(messages);
+      
+      // 🚀 ENHANCEMENT: Apply time-aware trigger to last user message
+      const enhancedMessages = [...messages];
+      const lastUserMsgIndex = enhancedMessages.findLastIndex(msg => msg.sender === 'user');
+      
+      if (lastUserMsgIndex !== -1) {
+        const originalQuery = enhancedMessages[lastUserMsgIndex].text;
+        const enhancedQuery = this.enhanceQuery(originalQuery);
+        
+        if (originalQuery !== enhancedQuery) {
+          console.log('✨ Enhanced query with time-aware trigger');
+          enhancedMessages[lastUserMsgIndex] = {
+            ...enhancedMessages[lastUserMsgIndex],
+            text: enhancedQuery
+          };
+        }
+      }
+      
+      const grokMessages = this.prepareGrokMessages(enhancedMessages);
       
       const systemPrompt = this.getOmniaPrompt();
+      
+      // 🎯 ENHANCED SEARCH PARAMETERS
+      const searchParams = {
+        mode: "auto",
+        return_citations: true,
+        max_search_results: 20,
+        sources: [
+          {"type": "web", "safe_search": false},
+          {"type": "x"},
+          {"type": "news", "safe_search": false}
+        ]
+      };
+
+      // 🚀 ADD PREFERRED SOURCES FOR SPECIFIC QUERIES
+      const lastMessage = messages[messages.length - 1]?.text || '';
+      
+      if (/počasí|weather|teplota|temperature/i.test(lastMessage)) {
+        searchParams.preferred_domains = ["pocasi.cz", "weather.com", "yr.no", "chmi.cz"];
+      } else if (/bitcoin|btc|crypto|ethereum|eth/i.test(lastMessage)) {
+        searchParams.preferred_domains = ["coinmarketcap.com", "coingecko.com", "tradingview.com"];
+      } else if (/akcie|stock|google|apple|tesla/i.test(lastMessage)) {
+        searchParams.preferred_domains = ["finance.yahoo.com", "marketwatch.com", "bloomberg.com"];
+      }
       
       const response = await fetch('/api/grok', {
         method: 'POST',
@@ -20,16 +77,7 @@ const grokService = {
           system: systemPrompt,
           max_tokens: 2000,
           language: detectedLanguage,
-          search_parameters: {
-            mode: "auto",  // Let Grok decide when to search
-            return_citations: true,
-            max_search_results: 20,
-            sources: [
-              {"type": "web", "safe_search": false},
-              {"type": "x"},
-              {"type": "news", "safe_search": false}
-            ]
-          }
+          search_parameters: searchParams
         })
       });
 
@@ -184,7 +232,7 @@ const grokService = {
     }
   },
 
-  // 🎯 OMNIA PROMPT FOR GROK-3
+  // 🎯 OMNIA PROMPT FOR GROK-3 - ENHANCED FOR TIME AWARENESS
   getOmniaPrompt() {
     return `You're Omnia - a smart, witty girl. NOT an AI assistant. You're chatting with a friend.
 
@@ -196,6 +244,11 @@ GOLDEN RULES:
 • Talk like a human, not a robot
 • Show personality and curiosity ✨
 • Ask natural follow-up questions when appropriate
+
+🕐 TIME-AWARE RESPONSES:
+• When showing current data (prices, weather, news), include timestamp
+• Format: "Teď (14:30) Bitcoin je na $65,432! 📈"
+• Natural timestamps, not robotic
 
 Quick examples:
 "How are you?" → "Killing it! 💪 You?"
