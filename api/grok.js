@@ -1,4 +1,4 @@
-// api/grok.js - GROK-3 API ENDPOINT WITH STREAMING + TIME AWARENESS + GLOBAL SOURCES
+// api/grok.js - GROK-3 API ENDPOINT WITH DEEPSEARCH + TIME AWARENESS + GLOBAL SOURCES
 export default async function handler(req, res) {
   // CORS headers for streaming
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,34 +29,54 @@ export default async function handler(req, res) {
 
     const recentMessages = messages.slice(-6); // Keep more context for Grok
     
-    // 🎯 TIME-AWARENESS DETECTION
+    // 🎯 DEEPSEARCH DETECTION - Enhanced for financial/sentiment analysis
+    const needsDeepSearch = (messages) => {
+      const lastMessage = messages[messages.length - 1]?.content || '';
+      const deepSearchPatterns = [
+        /cena|price|kurz|kolik stojí/i,           // Finance prices
+        /sentiment|názor|co si myslí/i,           // Sentiment analysis
+        /akcie|stock|nasdaq|nyse/i,               // Stock markets
+        /bitcoin|btc|eth|crypto|krypto/i,         // Cryptocurrency
+        /zprávy|news|trendy|trends/i,             // News & trends
+        /analýza|analysis|prognóza|prediction/i,  // Analysis requests
+        /x\.com|twitter|social/i,                 // Social media queries
+        /trh|market|burza|exchange/i              // Market queries
+      ];
+      return deepSearchPatterns.some(pattern => pattern.test(lastMessage));
+    };
+
+    // 🕐 TIME-AWARENESS DETECTION - Basic queries needing timestamp
     const needsTimeAwareness = (messages) => {
       const lastMessage = messages[messages.length - 1]?.content || '';
-      const patterns = [
-        /cena|price|kurz|kolik stojí/i,           // Finance
+      const timePatterns = [
         /počasí|weather|teplota|déšť/i,           // Weather  
-        /zprávy|news|aktuální|latest/i,           // News
-        /bitcoin|btc|eth|crypto|akcie|stock/i,    // Crypto/Stocks
         /otevírací doba|opening hours/i,          // Business hours
-        /výsledky|results|skóre|score/i           // Sports results
+        /výsledky|results|skóre|score/i,          // Sports results
+        /aktuální|current|latest|teď|now/i        // General current info
       ];
-      return patterns.some(pattern => pattern.test(lastMessage));
+      return timePatterns.some(pattern => pattern.test(lastMessage));
     };
 
     // 🌍 QUERY TRANSLATION FOR GLOBAL SOURCES
     const translateQueryToEnglish = (query) => {
       const translations = {
-        'jaká je cena': 'what is the price of',
+        'jaká je cena': 'what is the current price of',
         'kurz': 'exchange rate of',
-        'počasí': 'weather in',
+        'počasí': 'current weather in',
         'akcie': 'stock price of',
         'bitcoin': 'bitcoin price',
         'ethereum': 'ethereum price',
-        'dolar': 'USD exchange rate',
-        'euro': 'EUR exchange rate',
+        'sentiment': 'sentiment analysis for',
+        'co si myslí': 'what do people think about',
+        'názor': 'opinion about',
         'zprávy': 'latest news about',
+        'trendy': 'trends for',
+        'analýza': 'analysis of',
+        'prognóza': 'prediction for',
         'výsledky': 'latest results for',
-        'kolik stojí': 'what is the price of'
+        'kolik stojí': 'what is the current price of',
+        'dolar': 'USD exchange rate',
+        'euro': 'EUR exchange rate'
       };
       
       let englishQuery = query;
@@ -76,17 +96,28 @@ export default async function handler(req, res) {
       return formats[language] || formats['cs'];
     };
 
-    // 🔧 ENHANCE MESSAGES FOR TIME-AWARENESS + GLOBAL SOURCES
+    // 🔧 ENHANCE MESSAGES FOR DEEPSEARCH + TIME-AWARENESS + GLOBAL SOURCES
     const enhancedMessages = [...recentMessages];
-    if (needsTimeAwareness(recentMessages)) {
-      const lastMessage = enhancedMessages[enhancedMessages.length - 1];
-      const originalQuery = lastMessage.content;
-      const englishQuery = translateQueryToEnglish(originalQuery);
-      const timeFormat = getTimeFormat(language);
+    const lastMessage = enhancedMessages[enhancedMessages.length - 1];
+    const originalQuery = lastMessage.content;
+    const englishQuery = translateQueryToEnglish(originalQuery);
+    const timeFormat = getTimeFormat(language);
+    
+    const isDeepSearchQuery = needsDeepSearch(recentMessages);
+    const isTimeAwareQuery = needsTimeAwareness(recentMessages);
+    
+    if (isDeepSearchQuery) {
+      console.log('🔍 DeepSearch triggered for query:', originalQuery.substring(0, 50));
+      console.log('🌍 Translated to English:', englishQuery.substring(0, 50));
       
+      // DEEPSEARCH ENHANCEMENT - Full financial analysis
+      lastMessage.content = `DeepSearch: ${englishQuery}. Search inside X as well. Start response with "${timeFormat}" then provide current price, X/Twitter sentiment analysis, recent news context, and trend prediction. Respond in ${language} with comprehensive financial analysis.`;
+      
+    } else if (isTimeAwareQuery) {
       console.log('🕐 Time-awareness triggered for query:', originalQuery.substring(0, 50));
       console.log('🌍 Translated to English:', englishQuery.substring(0, 50));
       
+      // BASIC TIME-AWARENESS ENHANCEMENT
       lastMessage.content = `User asked "${originalQuery}" in ${language}. Start response with current time acknowledgment like "${timeFormat}" then search for "${englishQuery}" using global English sources for most current data. Respond in ${language} with this professional time-aware format.`;
     }
     
@@ -114,6 +145,11 @@ export default async function handler(req, res) {
     }
 
     console.log('🚀 Sending request to Grok-3...');
+    if (isDeepSearchQuery) {
+      console.log('📊 DeepSearch mode: Financial analysis + X sentiment');
+    } else if (isTimeAwareQuery) {
+      console.log('🕐 Time-aware mode: Current data with timestamp');
+    }
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -141,11 +177,23 @@ export default async function handler(req, res) {
     // Extract response text
     const textContent = data.choices?.[0]?.message?.content?.trim() || "Nepodařilo se získat odpověď.";
 
-    // 🎯 VALIDATE TIME-AWARE RESPONSE
+    // 🎯 VALIDATE DEEPSEARCH/TIME-AWARE RESPONSE
     const hasTimestamp = /\d{1,2}:\d{2}|AM|PM|CEST|CET|UTC|\d{1,2}\.\s?\d{1,2}\.\s?\d{4}|dneska|today|teď|now|je\s+\d{1,2}:/i.test(textContent);
     const hasDateFormat = /\d{1,2}\.\s?\d{1,2}\.\s?\d{4}|\d{4}-\d{2}-\d{2}/i.test(textContent);
+    const hasSentiment = /sentiment|názor|pozitivní|negativní|bullish|bearish|\d+%.*pozitivní|\d+%.*negativní/i.test(textContent);
+    const hasPriceData = /\$\d+|\d+\s?USD|\d+\s?EUR|\d+\s?CZK|\d+\.\d+|\d+,\d+/i.test(textContent);
     
-    if (needsTimeAwareness(recentMessages)) {
+    if (isDeepSearchQuery) {
+      console.log('🔍 DeepSearch validation:');
+      console.log('  - Has timestamp:', hasTimestamp ? 'SUCCESS ✅' : 'FAILED ❌');
+      console.log('  - Has price data:', hasPriceData ? 'SUCCESS ✅' : 'FAILED ❌');
+      console.log('  - Has sentiment:', hasSentiment ? 'SUCCESS ✅' : 'FAILED ❌');
+      
+      if (!hasTimestamp || !hasPriceData) {
+        console.warn('⚠️ DeepSearch response missing key components');
+        console.warn('⚠️ Response preview:', textContent.substring(0, 150));
+      }
+    } else if (isTimeAwareQuery) {
       console.log('🕐 Time-awareness validation:');
       console.log('  - Has timestamp:', hasTimestamp ? 'SUCCESS ✅' : 'FAILED ❌');
       console.log('  - Has date:', hasDateFormat ? 'SUCCESS ✅' : 'FAILED ❌');
@@ -172,19 +220,23 @@ export default async function handler(req, res) {
             const urlObj = new URL(url);
             const domain = urlObj.hostname.replace('www.', '');
             
-            // Extract title from URL/domain
+            // Enhanced title mapping for financial sources
             let title = domain;
             if (domain.includes('finance.yahoo')) title = 'Yahoo Finance';
             else if (domain.includes('marketwatch')) title = 'MarketWatch';
             else if (domain.includes('bloomberg')) title = 'Bloomberg';
             else if (domain.includes('reuters')) title = 'Reuters';
+            else if (domain.includes('cnbc')) title = 'CNBC';
+            else if (domain.includes('tradingview')) title = 'TradingView';
+            else if (domain.includes('coinmarketcap')) title = 'CoinMarketCap';
+            else if (domain.includes('coingecko')) title = 'CoinGecko';
+            else if (domain.includes('binance')) title = 'Binance';
+            else if (domain.includes('x.com') || domain.includes('twitter')) title = 'X (Twitter)';
             else if (domain.includes('weather')) title = 'Weather - ' + domain;
             else if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
             else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
             else if (domain.includes('chmi')) title = 'ČHMÚ';
             else if (domain.includes('news')) title = 'News - ' + domain;
-            else if (domain.includes('coinmarketcap')) title = 'CoinMarketCap';
-            else if (domain.includes('coingecko')) title = 'CoinGecko';
             else title = domain;
             
             return {
@@ -208,14 +260,19 @@ export default async function handler(req, res) {
     console.log('🔗 Sources found:', extractedSources.length);
 
     if (webSearchUsed) {
-      // Send search notification
+      // Enhanced search notification for DeepSearch
+      const searchMessage = isDeepSearchQuery 
+        ? '🔍 DeepSearch: Analyzuji trhy + X sentiment...'
+        : '🔍 Vyhledávám aktuální informace...';
+        
       res.write(JSON.stringify({
         type: 'search_start',
-        message: '🔍 Vyhledávám aktuální informace...'
+        message: searchMessage
       }) + '\n');
       
-      // Small delay to simulate search
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Longer delay for DeepSearch (more comprehensive analysis)
+      const delay = isDeepSearchQuery ? 2000 : 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
 
     // 🚀 FAST STREAMING: Send by words instead of letters
@@ -231,21 +288,30 @@ export default async function handler(req, res) {
       await new Promise(resolve => setTimeout(resolve, 5));
     }
     
-    // Send final completion with sources
+    // Send final completion with enhanced metadata
     res.write(JSON.stringify({
       type: 'completed',
       fullText: textContent,
       webSearchUsed: webSearchUsed,
       sources: extractedSources,
       citations: extractedSources,
-      timeAware: needsTimeAwareness(recentMessages),
+      deepSearch: isDeepSearchQuery,
+      timeAware: isTimeAwareQuery,
       hasTimestamp: hasTimestamp,
       hasDateFormat: hasDateFormat,
+      hasSentiment: hasSentiment,
+      hasPriceData: hasPriceData,
       language: language
     }) + '\n');
 
     console.log('✅ Grok streaming completed with sources:', extractedSources.length);
-    console.log('✅ Time-aware features:', { timeAware: needsTimeAwareness(recentMessages), hasTimestamp, hasDateFormat });
+    console.log('✅ Enhanced features:', { 
+      deepSearch: isDeepSearchQuery, 
+      timeAware: isTimeAwareQuery, 
+      hasTimestamp, 
+      hasSentiment,
+      hasPriceData 
+    });
     console.log('✅ Grok streaming completed');
     res.end();
 
