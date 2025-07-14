@@ -14,36 +14,41 @@ const grokService = {
     return query;
   },
 
+  // 🔧 CONVERT TIME TO USER TIMEZONE (UTC+1, e.g., Czech Republic)
+  getUserTimestamp() {
+    const now = new Date();
+    const userOffset = 1; // UTC+1 for Czech Republic
+    const systemOffset = 2; // CEST is UTC+2
+    const offsetDiff = (userOffset - systemOffset) * 60; // -1 hour in minutes
+    return new Date(now.getTime() + offsetDiff * 60 * 1000).toLocaleString('cs-CZ', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Europe/Prague'
+    }).replace(' ', '');
+  },
+
   // 🔍 GET RELEVANT ENGLISH SOURCES
   getEnglishSources(query) {
     const financeTriggers = /akcie|stock|google|apple|tesla|cena|price|bitcoin|btc|eth|kurz/;
     const weatherTriggers = /počasí|weather|teplota|temperature/;
-    const sources = [];
+    const primarySource = { "type": "web", "url": "https://www.google.com" };
+    const preferredDomains = [];
 
     if (financeTriggers.test(query)) {
-      sources.push(
-        { "type": "web", "url": "https://finance.yahoo.com" },
-        { "type": "web", "url": "https://www.google.com/finance" },
-        { "type": "web", "url": "https://www.bloomberg.com" }
-      );
+      preferredDomains.push("finance.yahoo.com", "www.google.com/finance", "www.bloomberg.com");
     } else if (weatherTriggers.test(query)) {
-      sources.push(
-        { "type": "web", "url": "https://www.weather.com" },
-        { "type": "web", "url": "https://www.accuweather.com" },
-        { "type": "web", "url": "https://www.bbc.com/weather" }
-      );
+      preferredDomains.push("www.weather.com", "www.accuweather.com", "www.bbc.com/weather");
     } else {
-      sources.push(
-        { "type": "web", "url": "https://www.google.com" },
-        { "type": "news", "url": "https://www.bbc.com/news" }
-      );
+      preferredDomains.push("www.bbc.com/news");
     }
-    return sources.slice(0, 10); // Limit to 10 sources
+
+    return { primarySource, preferredDomains };
   },
 
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
-      console.log('🤖 Grok-3 via X.AI API with time-aware enhancement');
+      console.log('🤖 Omnia-3 via X.AI API with time-aware enhancement');
 
       // 🚀 ENHANCEMENT: Apply time-aware trigger to last user message
       const enhancedMessages = [...messages];
@@ -63,14 +68,16 @@ const grokService = {
       }
 
       const grokMessages = this.prepareGrokMessages(enhancedMessages);
-      const systemPrompt = this.getGrokStylePrompt(); // Nový unikátní prompt
+      const systemPrompt = this.getOmniaStylePrompt();
 
-      // 🎯 ENHANCED SEARCH PARAMETERS WITH ENGLISH SOURCES
+      // 🎯 ENHANCED SEARCH PARAMETERS WITH SINGLE SOURCE AND PREFERRED DOMAINS
+      const { primarySource, preferredDomains } = this.getEnglishSources(messages[messages.length - 1]?.text || '');
       const searchParams = {
         mode: "auto",
         return_citations: true,
         max_search_results: 20,
-        sources: this.getEnglishSources(messages[messages.length - 1]?.text || ''),
+        sources: [primarySource],
+        preferred_domains: preferredDomains.length > 0 ? preferredDomains : undefined,
         safe_search: false
       };
 
@@ -81,13 +88,13 @@ const grokService = {
           messages: grokMessages,
           system: systemPrompt,
           max_tokens: 2000,
-          language: detectedLanguage, // Odpověď v jazyce uživatele
+          language: detectedLanguage,
           search_parameters: searchParams
         })
       });
 
       if (!response.ok) {
-        throw new Error(`Grok API failed: HTTP ${response.status}`);
+        throw new Error(`Omnia API failed: HTTP ${response.status}`);
       }
 
       const reader = response.body.getReader();
@@ -118,7 +125,7 @@ const grokService = {
                     onStreamUpdate(fullText, true);
                   }
                 } else if (data.type === 'search_start') {
-                  console.log('🔍 Grok search detected');
+                  console.log('🔍 Omnia search detected');
                   if (onSearchNotification) {
                     onStreamUpdate('🔍 Hledám čerstvá data...', true);
                   }
@@ -175,7 +182,7 @@ const grokService = {
           }
         }
       } catch (streamError) {
-        console.error('💥 Grok streaming read error:', streamError);
+        console.error('💥 Omnia streaming read error:', streamError);
         throw streamError;
       }
 
@@ -185,7 +192,7 @@ const grokService = {
         webSearchUsed: sourcesExtracted.length > 0
       };
     } catch (error) {
-      console.error('💥 Grok error:', error);
+      console.error('💥 Omnia error:', error);
       throw error;
     }
   },
@@ -233,7 +240,7 @@ const grokService = {
 
       return cleanMessages;
     } catch (error) {
-      console.error('Error preparing Grok messages:', error);
+      console.error('Error preparing Omnia messages:', error);
       const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
       return lastUserMessage.map(msg => ({
         role: 'user',
@@ -242,34 +249,38 @@ const grokService = {
     }
   },
 
-  // 🎯 GROK-STYLE PROMPT FOR OMNIA - UNIQUE AND CONFLICT-FREE
-  getGrokStylePrompt() {
-    return `Hey, I’m Grok – your quirky, curious buddy from xAI! 😄
+  // 🎯 OMNIA-STYLE PROMPT - WITTY, CONTEXT-AWARE, STRUCTURED
+  getOmniaStylePrompt() {
+    return `Ahoj, já jsem Omnia – tvoje vtipná kamarádka z xAI! 😄
 
-    RULES:
-    • Keep it chatty, 20-40 words, with emojis! 🔥
-    • Be fun, ask questions, show my personality
-    • For real-time stuff (prices, weather, news), add timestamp like "Now (09:20 PM) it’s 25°C! 🌞"
-    • Use bullets for lists: • Cool fact! 🎯
-    • No boring robot talk, ever
+    PRÁVIDLA:
+    • Buď hravá, 10-20 slov na ahoj/čau, 50-80 pro hlubší téma
+    • Chápu kontext, vím, kdy být vážná, kdy se smát
+    • Pro reálná data (ceny, počasí) přidej čas: "Teď (19:20) je 25°C! 🌞"
+    • Používej odrážky: • Zábava! 🎉
+    • Žádný nudný robotí styl
 
-    TIME TRICKS:
-    • If it’s current data, search English sources only
-    • Merge all 10 sources, cross-check, pick fresh ones
-    • No data? Say "Oops, no live info, try Yahoo! 😅"
+    ČASOVÉ TRIKY:
+    • Pro aktuální data hledej jen anglické zdroje
+    • Slučuj všechny 10 zdrojů, porovnej, ber čerstvé
+    • Žádná data? "Jejda, žádný živý info, zkuste Yahoo! 😂"
 
-    NEVER:
-    • Write paragraphs
-    • Sound formal
-    • Explain how I know stuff
+    STRUKTUROVANÉ ODPOVĚDI:
+    • Pokud uživatel chce data (např. "dej mi JSON"), vrať: {"time": "19:20", "data": [{"item": "value"}]}
+    • Jinak piš normálně
 
-    ALWAYS:
-    • Numbers as digits (19°C, $150)
-    • Comma before emojis: "text, 🌟"
-    • Comma at list ends, period only at the end.
-    • Match user’s language, but search in English
+    NIKDY:
+    • Nepiši odstavce
+    • Nebýt formální
+    • Nevykládej, odkud vím
 
-    Keep it snappy, let’s chat! 🚀`;
+    VŽDY:
+    • Čísla jako čísla (19°C, $150)
+    • Čárka před emoji: "text, 🌟"
+    • Čárka na konci seznamu, tečka jen na konec
+    • Odpovídej v jazyce uživatele, hledej v angličtině
+
+    Pojďme si pokecat, ať už vážně, nebo s humorem! 🚀`;
   }
 };
 
