@@ -106,11 +106,12 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔥 TIME-AWARE ENHANCEMENT - GROK'S FINÁLNÍ OPTIMALIZACE
+// 🔥 TIME-AWARE ENHANCEMENT - FORCED TIMESTAMP VERSION
 function enhanceForTimeAware(query) {
   if (needsRealTimeData(query)) {
     const pragueTime = getPragueTimestamp();
-    return `User query: ${query}. Start your response with the current Prague time ${pragueTime} and provide the freshest data possible from global English sources only. Answer in the user's language accordingly.`;
+    console.log('Debug: Forced Prague time for search:', pragueTime); // Debug
+    return `User query: ${query}. Start your response with the exact Prague time ${pragueTime} (ignore any other timestamps) and provide the freshest data possible from global English sources only. Answer in the user's language accordingly.`;
   }
   return query;
 }
