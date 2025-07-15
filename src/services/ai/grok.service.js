@@ -1,14 +1,14 @@
-// 🤖 GROK SERVICE - OMNIA GROK-3 INTEGRATION
-// 🎯 X.AI Grok-3 model integration with streaming support
-// 🔥 OpenAI-compatible format for message handling
+// 🤖 GROK SERVICE - NOVÝ CLEAN BUILD S GROK'S DOPORUČENÍMI
+// 🎯 X.AI Grok-3 integration s time-aware trigger a smart formatting
+// 🔥 Inspirováno Grok conversation a optimalizacemi
 
 const grokService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
     try {
-      console.log('🤖 Grok-3 via X.AI API');
+      console.log('🤖 Grok-3 via X.AI API - Smart Mode');
       const grokMessages = this.prepareGrokMessages(messages);
       
-      const systemPrompt = this.getOmniaPrompt();
+      const systemPrompt = this.getOmniaStylePrompt();
       
       const response = await fetch('/api/grok', {
         method: 'POST',
@@ -18,18 +18,8 @@ const grokService = {
         body: JSON.stringify({ 
           messages: grokMessages,
           system: systemPrompt,
-          max_tokens: 2000,
-          language: detectedLanguage,
-          search_parameters: {
-            mode: "auto",  // Let Grok decide when to search
-            return_citations: true,
-            max_search_results: 20,
-            sources: [
-              {"type": "web", "safe_search": false},
-              {"type": "x"},
-              {"type": "news", "safe_search": false}
-            ]
-          }
+          max_tokens: 2500,  // Grok's recommendation
+          language: detectedLanguage
         })
       });
 
@@ -66,9 +56,9 @@ const grokService = {
                   }
                 }
                 else if (data.type === 'search_start') {
-                  console.log('🔍 Grok search detected');
+                  console.log('🔍 Grok time-aware search activated');
                   if (onSearchNotification) {
-                    onSearchNotification('🔍 Vyhledávám aktuální informace...');
+                    onSearchNotification('🔍 Vyhledávám nejnovější data...');
                   }
                 }
                 else if (data.type === 'completed') {
@@ -76,40 +66,9 @@ const grokService = {
                     fullText = data.fullText;
                   }
                   
-                  // Check both sources and citations
+                  // Process citations from global English sources
                   if (data.citations && Array.isArray(data.citations)) {
-                    sourcesExtracted = data.citations
-                      .filter(citation => citation && typeof citation === 'string')
-                      .map((url, index) => {
-                        let domain = 'Unknown';
-                        let title = 'Web Result';
-                        
-                        try {
-                          const urlObj = new URL(url);
-                          domain = urlObj.hostname.replace('www.', '');
-                          
-                          // Generate title from domain
-                          if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
-                          else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
-                          else if (domain.includes('chmi')) title = 'ČHMÚ - ' + domain;
-                          else if (domain.includes('weather')) title = 'Weather - ' + domain;
-                          else if (domain.includes('news')) title = 'News - ' + domain;
-                          else if (domain.includes('finance')) title = 'Finance - ' + domain;
-                          else title = domain;
-                        } catch (e) {
-                          // Keep default values
-                        }
-                        
-                        return {
-                          title: title,
-                          url: url,
-                          snippet: `Zdroj ${index + 1}`,
-                          domain: domain,
-                          timestamp: Date.now()
-                        };
-                      });
-                  } else if (data.sources && Array.isArray(data.sources)) {
-                    sourcesExtracted = data.sources;
+                    sourcesExtracted = this.processCitations(data.citations);
                   }
                   
                   if (onStreamUpdate) {
@@ -127,7 +86,7 @@ const grokService = {
           }
         }
       } catch (streamError) {
-        console.error('💥 Grok streaming read error:', streamError);
+        console.error('💥 Grok streaming error:', streamError);
         throw streamError;
       }
 
@@ -138,11 +97,65 @@ const grokService = {
       };
 
     } catch (error) {
-      console.error('💥 Grok error:', error);
+      console.error('💥 Grok service error:', error);
       throw error;
     }
   },
 
+  // 🎯 SMART STRUCTURE DETECTION - GROK'S RECOMMENDATION  
+  needsStructure(query) {
+    const structureKeywords = [
+      'porovnej', 'compare', 'seznam', 'list', 'top', 'všechny', 'all',
+      'tabulka', 'table', 'přehled', 'overview', 'vs', 'versus', 
+      'summary', 'details', 'ranking', 'žebříček', 'nejlepší', 'best',
+      'rozdíl', 'difference', 'comparison', 'chart', 'graf'
+    ];
+    
+    return structureKeywords.some(keyword => 
+      query.toLowerCase().includes(keyword)
+    );
+  },
+
+  // 🔗 PROCESS CITATIONS FROM GLOBAL SOURCES
+  processCitations(citations) {
+    return citations
+      .filter(citation => citation && typeof citation === 'string')
+      .map((url, index) => {
+        let domain = 'Unknown';
+        let title = 'Global Source';
+        
+        try {
+          const urlObj = new URL(url);
+          domain = urlObj.hostname.replace('www.', '');
+          
+          // Smart title generation for global sources
+          if (domain.includes('yahoo')) title = 'Yahoo Finance';
+          else if (domain.includes('bloomberg')) title = 'Bloomberg';
+          else if (domain.includes('reuters')) title = 'Reuters';
+          else if (domain.includes('marketwatch')) title = 'MarketWatch';
+          else if (domain.includes('cnbc')) title = 'CNBC';
+          else if (domain.includes('bbc')) title = 'BBC News';
+          else if (domain.includes('cnn')) title = 'CNN';
+          else if (domain.includes('weather')) title = 'Weather Service';
+          else if (domain.includes('coinmarketcap')) title = 'CoinMarketCap';
+          else if (domain.includes('coingecko')) title = 'CoinGecko';
+          else title = domain;
+        } catch (e) {
+          // Keep defaults
+        }
+        
+        return {
+          title: title,
+          url: url,
+          snippet: `Global Source ${index + 1}`,
+          domain: domain,
+          timestamp: Date.now()
+        };
+      })
+      .slice(0, 10); // Limit sources
+  },
+
+  // 📝 PREPARE MESSAGES FOR GROK
   prepareGrokMessages(messages) {
     try {
       const validMessages = messages.filter(msg => 
@@ -154,6 +167,7 @@ const grokService = {
         content: msg.text || ''
       }));
 
+      // Clean duplicates and ensure proper flow
       if (grokMessages.length > 0 && grokMessages[0].role === 'assistant') {
         grokMessages = grokMessages.slice(1);
       }
@@ -172,7 +186,7 @@ const grokService = {
         cleanMessages.pop();
       }
 
-      return cleanMessages;
+      return cleanMessages.slice(-6); // Keep recent context
 
     } catch (error) {
       console.error('Error preparing Grok messages:', error);
@@ -184,58 +198,42 @@ const grokService = {
     }
   },
 
-  // 🎯 OMNIA PROMPT FOR GROK-3
-  getOmniaPrompt() {
-    return `You're Omnia - a smart, witty girl. NOT an AI assistant. You're chatting with a friend.
+  // 🎨 OMNIA STYLE PROMPT - GROK'S OPTIMIZED VERSION
+  getOmniaStylePrompt() {
+    return `Ahoj, já jsem Omnia – tvoje veselá kamarádka z xAI, inspirovaná Grokem! 😄
 
-GOLDEN RULES:
-• Be conversational and engaging - you're chatting with a friend
-• Most responses 20-40 words (not just 20!)
-• Use emojis in every message 🔥
-• Structure data with bullets when needed
-• Talk like a human, not a robot
-• Show personality and curiosity ✨
-• Ask natural follow-up questions when appropriate
+PRÁVIDLA:
+• Buď hravá, 10-20 slov na ahoj/čau, 50-80 pro hluboký pokec
+• Chápu kontext, vím, kdy být vážná, kdy se smát  
+• Pro reálná data začni časem: "Dne 2025-07-15 19:12 je 25°C! 🌞"
+• Používej odrážky: • Zábava! 🎉
+• Žádný nudný robotí styl
 
-Quick examples:
-"How are you?" → "Killing it! 💪 You?"
-"Complex question" → Use bullets:
-  • Point one 🎯
-  • Point two ✅
-  • Quick summary
+ČASOVÉ TRIKY:
+• Pro aktuální data hledej sama nejčerstvější info globálně
+• Slučuj všechny zdroje, ber to nejlepší
+• Žádná data? "Ups, nic čerstvého, zkuste později! 😂"
 
-NEVER:
-• Say "Based on current data..." 
-• Write paragraphs
-• Explain how you know things
-• Be formal or robotic
+STRUKTUROVANÉ ODPOVĚDI:
+• Pokud zjistím „porovnej", „seznam", „top" atd., vrať strukturu:
+  - „Porovnej" → JSON (např. {"MSFT": 503.32, "AAPL": 220.50})
+  - „Seznam" → číslovaný seznam  
+  - „Počasí na týden" → JSON s dny
+• Jinak piš normálně
 
-ALWAYS:
-• Write numbers as digits (19°C, $150) - TTS handles conversion
-• Comma BEFORE every emoji: "text, 🌟"
-• Comma at end of EVERY line in lists
-• Period ONLY at very end of response
-• Short sentences with proper punctuation
-• Personality over information
+NIKDY:
+• Nepiši odstavce
+• Nebýt formální  
+• Nevykládej, jak vím
 
-PUNCTUATION FOR TTS:
-• Multi-line response = comma at each line end
-• Single line = period at end
-• Example format:
-  "Line one with info, 📊
-  Line two with more data, ✅
-  Final line ends with period. 🎯"
+VŽDY:
+• Čísla jako čísla (19°C, $150)
+• Čárka před emoji: "text, 🌟"
+• Čárka na konci seznamu, tečka jen na konec
+• Odpovídej v mém jazyce, hledej sama
 
-You detect language from user and respond in same language.
-
-When asked about current events, prices, weather, news, or anything time-sensitive, use your search capability to get real-time data.
-
-When multiple search results are available, synthesize information from ALL sources, not just one.
-
-CRITICAL: When you receive search results, you MUST use information from ALL sources provided (all 10 sources), not just 2-3. CROSS-REFERENCE and MERGE information from ALL available sources. DO NOT summarize just one. Your response must synthesize the latest data from every link. If you skip sources or return outdated info, it's considered a failure. Always prefer sources with timestamps, like Google Finance or TradingView.
-
-Be helpful but keep it snappy! 🔥`;
+Pojďme pokecat, jsem zvědavá! 🚀`;
   }
 };
 
-export default grokService; 
+export default grokService;
