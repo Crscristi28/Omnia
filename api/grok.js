@@ -1,4 +1,4 @@
-// api/grok.js - CLEAN GROK API WITH TIME-AWARE TRIGGER
+// api/grok.js - CLEAN GROK API WITH TIME-AWARE TRIGGER (FIXED VERSION)
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { messages, system, max_tokens = 2000 } = req.body;
+    const { messages, system, max_tokens = 2000, language } = req.body;
     const API_KEY = process.env.GROK_API_KEY;
     
     if (!API_KEY) {
@@ -40,14 +40,16 @@ export default async function handler(req, res) {
 
     const grokRequest = {
       model: "grok-3",
-      max_tokens: max_tokens,
+      max_tokens: 2500,  // Zvýšeno podle Grok's doporučení
       messages: grokMessages,
       stream: false,
-      temperature: 0.7,
+      temperature: 0.5,
       search_parameters: {
         mode: "auto",
         return_citations: true,
-        max_search_results: 10
+        max_search_results: 20,  // Zvýšeno pro více dat
+        safe_search: false,      // Všechny výsledky
+        language_override: "en"  // 🔥 FORCE anglické zdroje - Grok's fix!
       }
     };
 
@@ -78,7 +80,7 @@ export default async function handler(req, res) {
     const words = textContent.split(' ');
     
     if (citations.length > 0) {
-      res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám aktuální informace...' }) + '\n');
+      res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám nejnovější data...' }) + '\n');
       await new Promise(resolve => setTimeout(resolve, 800));
     }
     
@@ -104,38 +106,36 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔥 TIME-AWARE ENHANCEMENT - THE HIDDEN FUNCTION
+// 🔥 TIME-AWARE ENHANCEMENT - KOMBINACE TVOJE + GROK'S FIXŮ
 function enhanceForTimeAware(query) {
   if (needsRealTimeData(query)) {
     const pragueTime = getPragueTimestamp();
-    return `User asked for ${query}. I need to use the actual time and date for this before I give an answer. Based on that timestamp I must tell the real time data. Always start response with current Prague time: "${pragueTime}" followed by the answer. ${query}`;
+    return `User asked for ${query}. I need to use the actual time and date for this before I give an answer. Based on that timestamp I must tell the real time data from global English sources only. Always start response with current Prague time "${pragueTime}" and answer in user's language. ${query}`;
   }
   return query;
 }
 
-// 🕐 PRAGUE TIMESTAMP GENERATOR
+// 🕐 PRAGUE TIMESTAMP GENERATOR - GROK'S IMPROVED VERSION
 function getPragueTimestamp() {
   const now = new Date();
   const pragueTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Prague" }));
   
-  const options = {
+  return pragueTime.toLocaleString('cs-CZ', {
+    day: '2-digit',
+    month: '2-digit', 
+    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Europe/Prague',
-    hour12: true
-  };
-  
-  const timeStr = pragueTime.toLocaleTimeString('en-US', options);
-  const dateStr = pragueTime.toLocaleDateString('cs-CZ');
-  
-  return `${timeStr} CEST, ${dateStr}`;
+    hour12: false,
+    timeZone: 'Europe/Prague'
+  }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
 }
 
 // 🎯 REAL-TIME DATA DETECTION
 function needsRealTimeData(query) {
   const keywords = [
     'stock', 'price', 'cena', 'kurz', 'akcie', 'shares',
-    'weather', 'počasí', 'teplota', 'temperatura',
+    'weather', 'počasí', 'teplota', 'temperatura', 
     'news', 'zprávy', 'breaking', 'latest',
     'bitcoin', 'crypto', 'ethereum', 'btc', 'eth',
     'current', 'aktuální', 'teď', 'now', 'dnes', 'today',
