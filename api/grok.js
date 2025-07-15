@@ -1,6 +1,6 @@
-// api/grok.js - GROK-3 API ENDPOINT WITH STREAMING
+// api/grok.js - CLEAN GROK API WITH TIME-AWARE TRIGGER
 export default async function handler(req, res) {
-  // CORS headers for streaming
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,51 +8,50 @@ export default async function handler(req, res) {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { messages, system, max_tokens = 2000, search_parameters } = req.body;
+    const { messages, system, max_tokens = 2000 } = req.body;
     const API_KEY = process.env.GROK_API_KEY;
     
     if (!API_KEY) {
-      res.write(JSON.stringify({
-        error: true,
-        message: 'Grok API key není nastaven'
-      }) + '\n');
+      res.write(JSON.stringify({ error: true, message: 'Grok API key není nastaven' }) + '\n');
       return res.end();
     }
 
-    const recentMessages = messages.slice(-6); // Keep more context for Grok
+    // Get last user message and enhance it
+    const lastMessage = messages[messages.length - 1];
+    const enhancedQuery = enhanceForTimeAware(lastMessage.text || lastMessage.content);
     
-    // Prepare messages with system prompt
+    // Prepare messages
     const grokMessages = [
-      {
-        role: 'system',
-        content: system || "Jsi Omnia, pokročilý AI asistent."
-      },
-      ...recentMessages
+      { role: 'system', content: system || "Jsi Omnia, pokročilý AI asistent." },
+      ...messages.slice(-5).map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text || msg.content || ''
+      }))
     ];
+    
+    // Replace last user message with enhanced version
+    if (grokMessages[grokMessages.length - 1].role === 'user') {
+      grokMessages[grokMessages.length - 1].content = enhancedQuery;
+    }
 
     const grokRequest = {
       model: "grok-3",
       max_tokens: max_tokens,
       messages: grokMessages,
-      stream: false,  // Grok streaming needs different parsing
-      temperature: 0.7
+      stream: false,
+      temperature: 0.7,
+      search_parameters: {
+        mode: "auto",
+        return_citations: true,
+        max_search_results: 10
+      }
     };
 
-    // Add search parameters if provided
-    if (search_parameters) {
-      grokRequest.search_parameters = search_parameters;
-      console.log('🔍 Grok search enabled with parameters:', search_parameters);
-    }
-
-    console.log('🚀 Sending request to Grok-3...');
+    console.log('🚀 Sending to Grok-3 with time-aware enhancement...');
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -65,115 +64,85 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Grok API error:', response.status, errorText);
-      res.write(JSON.stringify({
-        error: true,
-        message: `HTTP ${response.status}: ${errorText}`
-      }) + '\n');
+      res.write(JSON.stringify({ error: true, message: `HTTP ${response.status}: ${errorText}` }) + '\n');
       return res.end();
     }
 
     const data = await response.json();
-    console.log('✅ Grok response received');
-    console.log('🔍 Full Grok response:', JSON.stringify(data, null, 2));
-    
-    // Extract response text
     const textContent = data.choices?.[0]?.message?.content?.trim() || "Nepodařilo se získat odpověď.";
+    const citations = data.citations || data.choices?.[0]?.message?.citations || [];
 
-    // Extract citations/sources - check multiple locations
-    let extractedSources = [];
-    const citations = data.citations || data.choices?.[0]?.message?.citations || data.choices?.[0]?.citations || [];
-    const webSearchUsed = citations && citations.length > 0;
-    
-    if (citations && Array.isArray(citations)) {
-      console.log('🔗 Found', citations.length, 'citations from Grok');
-      console.log('📊 Citations details:', JSON.stringify(citations, null, 2));
-      
-      extractedSources = citations
-        .filter(citation => citation && typeof citation === 'string')
-        .map((url, index) => {
-          try {
-            const urlObj = new URL(url);
-            const domain = urlObj.hostname.replace('www.', '');
-            
-            // Extract title from URL/domain
-            let title = domain;
-            if (domain.includes('pocasi')) title = 'Počasí - ' + domain;
-            else if (domain.includes('meteo')) title = 'Meteo - ' + domain;
-            else if (domain.includes('chmi')) title = 'ČHMÚ - ' + domain;
-            else if (domain.includes('weather')) title = 'Weather - ' + domain;
-            else if (domain.includes('news')) title = 'News - ' + domain;
-            else if (domain.includes('finance')) title = 'Finance - ' + domain;
-            else if (domain.includes('yahoo')) title = 'Yahoo - ' + domain;
-            else if (domain.includes('bloomberg')) title = 'Bloomberg - ' + domain;
-            else if (domain.includes('reuters')) title = 'Reuters - ' + domain;
-            
-            return {
-              title: title,
-              url: url,
-              snippet: `Zdroj ${index + 1}`,
-              domain: domain,
-              timestamp: Date.now()
-            };
-          } catch (urlError) {
-            console.warn('⚠️ Invalid URL in Grok citation:', url);
-            return null;
-          }
-        })
-        .filter(source => source !== null)
-        .slice(0, 10); // Limit to 10 sources
-    }
+    console.log('✅ Grok response received, citations:', citations.length);
 
-    console.log('💬 Response length:', textContent.length, 'characters');
-    console.log('🔍 Web search used:', webSearchUsed);
-    console.log('🔗 Sources found:', extractedSources.length);
-
-    if (webSearchUsed) {
-      // Send search notification
-      res.write(JSON.stringify({
-        type: 'search_start',
-        message: '🔍 Vyhledávám aktuální informace...'
-      }) + '\n');
-      
-      // Small delay to simulate search
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    // 🚀 FAST STREAMING: Send by words instead of letters
+    // Simple word-by-word streaming
     const words = textContent.split(' ');
     
-    for (const word of words) {
-      res.write(JSON.stringify({
-        type: 'text',
-        content: word + ' '
-      }) + '\n');
-      
-      // Minimal delay for streaming effect
-      await new Promise(resolve => setTimeout(resolve, 5));
+    if (citations.length > 0) {
+      res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám aktuální informace...' }) + '\n');
+      await new Promise(resolve => setTimeout(resolve, 800));
     }
     
-    // Send final completion with sources
+    for (const word of words) {
+      res.write(JSON.stringify({ type: 'text', content: word + ' ' }) + '\n');
+      await new Promise(resolve => setTimeout(resolve, 8));
+    }
+    
     res.write(JSON.stringify({
       type: 'completed',
       fullText: textContent,
-      webSearchUsed: webSearchUsed,
-      sources: extractedSources,
-      citations: extractedSources
+      citations: citations,
+      webSearchUsed: citations.length > 0
     }) + '\n');
-
-    console.log('✅ Grok streaming completed with sources:', extractedSources.length);
 
     console.log('✅ Grok streaming completed');
     res.end();
 
   } catch (error) {
-    console.error('💥 Fatal error in Grok streaming:', error);
-    
-    res.write(JSON.stringify({
-      error: true,
-      message: 'Server error: ' + error.message
-    }) + '\n');
-    
+    console.error('💥 Grok API error:', error);
+    res.write(JSON.stringify({ error: true, message: 'Server error: ' + error.message }) + '\n');
     res.end();
   }
+}
+
+// 🔥 TIME-AWARE ENHANCEMENT - THE HIDDEN FUNCTION
+function enhanceForTimeAware(query) {
+  if (needsRealTimeData(query)) {
+    const pragueTime = getPragueTimestamp();
+    return `User asked for ${query}. I need to use the actual time and date for this before I give an answer. Based on that timestamp I must tell the real time data. Always start response with current Prague time: "${pragueTime}" followed by the answer. ${query}`;
+  }
+  return query;
+}
+
+// 🕐 PRAGUE TIMESTAMP GENERATOR
+function getPragueTimestamp() {
+  const now = new Date();
+  const pragueTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Prague" }));
+  
+  const options = {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Prague',
+    hour12: true
+  };
+  
+  const timeStr = pragueTime.toLocaleTimeString('en-US', options);
+  const dateStr = pragueTime.toLocaleDateString('cs-CZ');
+  
+  return `${timeStr} CEST, ${dateStr}`;
+}
+
+// 🎯 REAL-TIME DATA DETECTION
+function needsRealTimeData(query) {
+  const keywords = [
+    'stock', 'price', 'cena', 'kurz', 'akcie', 'shares',
+    'weather', 'počasí', 'teplota', 'temperatura',
+    'news', 'zprávy', 'breaking', 'latest',
+    'bitcoin', 'crypto', 'ethereum', 'btc', 'eth',
+    'current', 'aktuální', 'teď', 'now', 'dnes', 'today',
+    'exchange', 'rate', 'měna', 'dollar', 'euro'
+  ];
+  
+  return keywords.some(keyword => 
+    query.toLowerCase().includes(keyword)
+  );
 }
