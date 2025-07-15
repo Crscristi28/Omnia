@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     }
 
     const grokRequest = {
-      model: "grok-4",
+      model: "grok-3",
       max_tokens: 2500,  // Zvýšeno podle Grok's doporučení
       messages: grokMessages,
       stream: false,
@@ -106,20 +106,21 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔥 TIME-AWARE ENHANCEMENT - GROK'S FINÁLNÍ OPTIMALIZACE
+// 🔥 TIME-AWARE ENHANCEMENT - FIXED TIMESTAMP + CURRENT PRICE
 function enhanceForTimeAware(query) {
   if (needsRealTimeData(query)) {
     const pragueTime = getPragueTimestamp();
-    return `User query: ${query}. Start your response with the current Prague time ${pragueTime} and provide the freshest data possible from global English sources only. For stock prices, use CURRENT PRICE (the large number), NOT previous close or historical data. Answer in the user's language accordingly.`;
+    console.log('Debug: Forced Prague time for search:', pragueTime); // Debug
+    return `User query: ${query}. Start your response with exact Prague time ${pragueTime} (ignore other timestamps). For stock prices, use CURRENT PRICE (the large number), NOT previous close or historical data. Provide freshest data from global English sources. Answer in user's language.`;
   }
   return query;
 }
 
-// 🕐 PRAGUE TIMESTAMP GENERATOR - FIXED VERSION
+// 🕐 PRAGUE TIMESTAMP GENERATOR - NEW TIMEZONE APPROACH
 function getPragueTimestamp() {
   const now = new Date();
   
-  return now.toLocaleString('cs-CZ', {
+  return now.toLocaleString('en-US', {
     day: '2-digit',
     month: '2-digit', 
     year: 'numeric',
@@ -127,7 +128,7 @@ function getPragueTimestamp() {
     minute: '2-digit',
     hour12: false,
     timeZone: 'Europe/Prague'
-  }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
+  }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2'); // Format: YYYY-MM-DD HH:mm
 }
 
 // 🎯 REAL-TIME DATA DETECTION
