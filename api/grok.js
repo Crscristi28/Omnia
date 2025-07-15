@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     }
 
     const grokRequest = {
-      model: "grok-3",
+      model: "grok-4",
       max_tokens: 2500,  // Zvýšeno podle Grok's doporučení
       messages: grokMessages,
       stream: false,
