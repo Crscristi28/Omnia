@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { messages, system, max_tokens = 2000 } = req.body;
+    const { messages, system, max_tokens = 2000, language } = req.body;
     const API_KEY = process.env.GROK_API_KEY;
     
     if (!API_KEY) {
@@ -115,12 +115,11 @@ function enhanceForTimeAware(query) {
   return query;
 }
 
-// 🕐 PRAGUE TIMESTAMP GENERATOR - GROK'S IMPROVED VERSION
+// 🕐 PRAGUE TIMESTAMP GENERATOR - FIXED VERSION
 function getPragueTimestamp() {
   const now = new Date();
-  const pragueTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Prague" }));
   
-  return pragueTime.toLocaleString('cs-CZ', {
+  return now.toLocaleString('cs-CZ', {
     day: '2-digit',
     month: '2-digit', 
     year: 'numeric',
