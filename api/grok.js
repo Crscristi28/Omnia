@@ -106,11 +106,11 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔥 TIME-AWARE ENHANCEMENT - KOMBINACE TVOJE + GROK'S FIXŮ
+// 🔥 TIME-AWARE ENHANCEMENT - GROK'S FINÁLNÍ OPTIMALIZACE
 function enhanceForTimeAware(query) {
   if (needsRealTimeData(query)) {
     const pragueTime = getPragueTimestamp();
-    return `User asked for ${query}. I need to use the actual time and date for this before I give an answer. Based on that timestamp I must tell the real time data from global English sources only. Always start response with current Prague time "${pragueTime}" and answer in user's language. ${query}`;
+    return `User query: ${query}. Start your response with the current Prague time ${pragueTime} and provide the freshest data possible from global English sources only. Answer in the user's language accordingly.`;
   }
   return query;
 }
