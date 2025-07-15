@@ -106,12 +106,11 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔥 TIME-AWARE ENHANCEMENT - FORCED TIMESTAMP VERSION
+// 🔥 TIME-AWARE ENHANCEMENT - GROK'S FINÁLNÍ OPTIMALIZACE
 function enhanceForTimeAware(query) {
   if (needsRealTimeData(query)) {
     const pragueTime = getPragueTimestamp();
-    console.log('Debug: Forced Prague time for search:', pragueTime); // Debug
-    return `User query: ${query}. Start your response with the exact Prague time ${pragueTime} (ignore any other timestamps) and provide the freshest data possible from global English sources only. Answer in the user's language accordingly.`;
+    return `User query: ${query}. Start your response with the current Prague time ${pragueTime} and provide the freshest data possible from global English sources only. For stock prices, use CURRENT PRICE (the large number), NOT previous close or historical data. Answer in the user's language accordingly.`;
   }
   return query;
 }
@@ -127,7 +126,7 @@ function getPragueTimestamp() {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    timeZone: 'Czech Republic/Prague'
+    timeZone: 'Europe/Czech Republic'
   }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
 }
 
