@@ -126,7 +126,7 @@ function getPragueTimestamp() {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    timeZone: 'Europe/Czech Republic'
+    timeZone: 'Czech Republic'
   }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
 }
 
