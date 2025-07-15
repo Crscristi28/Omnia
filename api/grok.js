@@ -116,19 +116,21 @@ function enhanceForTimeAware(query) {
   return query;
 }
 
-// 🕐 PRAGUE TIMESTAMP GENERATOR - NEW TIMEZONE APPROACH
+// 🕐 PRAGUE TIMESTAMP GENERATOR - MANUAL UTC+2 APPROACH
 function getPragueTimestamp() {
   const now = new Date();
   
-  return now.toLocaleString('en-US', {
-    day: '2-digit',
-    month: '2-digit', 
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Europe/Prague'
-  }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2'); // Format: YYYY-MM-DD HH:mm
+  // Manual UTC+2 calculation for summer time
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const pragueTime = new Date(utc + (2 * 3600000)); // UTC+2
+  
+  const year = pragueTime.getFullYear();
+  const month = String(pragueTime.getMonth() + 1).padStart(2, '0');
+  const day = String(pragueTime.getDate()).padStart(2, '0');
+  const hours = String(pragueTime.getHours()).padStart(2, '0');
+  const minutes = String(pragueTime.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 // 🎯 REAL-TIME DATA DETECTION
