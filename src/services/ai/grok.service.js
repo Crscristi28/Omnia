@@ -3,7 +3,7 @@
 // 🔥 Inspirováno Grok conversation a optimalizacemi
 
 const grokService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage) {
     try {
       console.log('🤖 Grok-3 via X.AI API - Smart Mode');
       const grokMessages = this.prepareGrokMessages(messages);
