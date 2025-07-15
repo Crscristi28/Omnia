@@ -106,29 +106,29 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔥 TIME-AWARE ENHANCEMENT - FORCED TIMESTAMP VERSION
+// 🔥 TIME-AWARE ENHANCEMENT - FIXED TIMESTAMP + CURRENT PRICE
 function enhanceForTimeAware(query) {
   if (needsRealTimeData(query)) {
     const pragueTime = getPragueTimestamp();
     console.log('Debug: Forced Prague time for search:', pragueTime); // Debug
-    return `User query: ${query}. Start your response with the exact Prague time ${pragueTime} (ignore any other timestamps) and provide the freshest data possible from global English sources only. Answer in the user's language accordingly.`;
+    return `User query: ${query}. Start your response with exact Prague time ${pragueTime} (ignore other timestamps). For stock prices, use CURRENT PRICE (the large number), NOT previous close or historical data. Provide freshest data from global English sources. Answer in user's language.`;
   }
   return query;
 }
 
-// 🕐 PRAGUE TIMESTAMP GENERATOR - FIXED VERSION
+// 🕐 PRAGUE TIMESTAMP GENERATOR - SIMPLE FIX
 function getPragueTimestamp() {
   const now = new Date();
   
-  return now.toLocaleString('cs-CZ', {
+  return now.toLocaleString('en-US', {
     day: '2-digit',
     month: '2-digit', 
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    timeZone: 'Europe/Prague'
-  }).replace(/(\d+)\.(\d+)\.(\d+)/, '$3-$2-$1'); // Format: YYYY-MM-DD HH:mm
+    timeZone: 'Czech Republic/Prague'
+  }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2'); // Format: YYYY-MM-DD HH:mm
 }
 
 // 🎯 REAL-TIME DATA DETECTION
