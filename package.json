@@ -13,6 +13,7 @@
     "proxy": "node src/proxy-server.js"
   },
   "dependencies": {
+    "@google-cloud/vertexai": "^1.10.0",
     "@heroicons/react": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
