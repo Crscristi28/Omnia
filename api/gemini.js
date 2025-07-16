@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       model: 'gemini-2.5-flash',
       systemInstruction: system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.",
       tools: [{
-        googleSearchRetrieval: {
+        google_search: {
           disableAttribution: false
         }
       }]
