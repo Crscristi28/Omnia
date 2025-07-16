@@ -16,17 +16,33 @@ export default async function handler(req, res) {
   try {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
-    // Check only for project ID
-    if (!process.env.GOOGLE_CLOUD_PROJECT_ID) {
-      res.write(JSON.stringify({ error: true, message: 'Google Cloud Project ID není nastaveno' }) + '\n');
+    // Check for required environment variables
+    if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      res.write(JSON.stringify({ error: true, message: 'Google Cloud credentials nejsou kompletní' }) + '\n');
       return res.end();
     }
 
-    // Initialize Vertex AI - it will auto-authenticate on Vercel
+    // Build credentials from individual env variables
+    const credentials = {
+      type: 'service_account',
+      project_id: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      private_key: process.env.GOOGLE_PRIVATE_KEY,
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      client_id: '115325967154899084408',
+      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+      token_uri: 'https://oauth2.googleapis.com/token',
+      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)}`
+    };
+
+    // Initialize Vertex AI with credentials
     const vertexAI = new VertexAI({
       project: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      location: 'us-central1'
-      // NO credentials, authClient, or googleAuthOptions needed!
+      location: 'us-central1',
+      googleAuthOptions: {
+        credentials: credentials,
+        scopes: ['https://www.googleapis.com/auth/cloud-platform']
+      }
     });
 
     // Get last user message and enhance it for search
