@@ -17,34 +17,19 @@ export default async function handler(req, res) {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
     // Check for required environment variables
-    if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_CREDENTIALS_BASE64) {
-      res.write(JSON.stringify({ error: true, message: 'Google Cloud credentials nejsou kompletní' }) + '\n');
+    if (!process.env.GOOGLE_CLOUD_PROJECT_ID) {
+      res.write(JSON.stringify({ error: true, message: 'Google Cloud Project ID není nastaveno' }) + '\n');
       return res.end();
     }
 
-    // Decode Base64 credentials
-    console.log('🔍 Decoding Base64 credentials...');
-    const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8'));
-    console.log('✅ Credentials decoded, client_email:', credentials.client_email);
-
-    // Create explicit GoogleAuth client
-    console.log('🔑 Creating GoogleAuth client...');
-    const { GoogleAuth } = await import('google-auth-library');
-    const auth = new GoogleAuth({
-      credentials: credentials,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform']
-    });
-    
-    console.log('🔐 Getting auth client...');
-    const authClient = await auth.getClient();
-    console.log('✅ Auth client created successfully');
-
-    // Initialize Vertex AI with credentials directly
+    // Initialize Vertex AI with service account file
+    console.log('🔑 Loading service account from file...');
     const vertexAI = new VertexAI({
       project: process.env.GOOGLE_CLOUD_PROJECT_ID,
       location: 'us-central1',
-      credentials: credentials
+      keyFilename: './service-account-key.json'
     });
+    console.log('✅ Vertex AI initialized with service account file');
 
     // Get last user message and enhance it for search
     const lastMessage = messages[messages.length - 1];
