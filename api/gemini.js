@@ -35,14 +35,20 @@ export default async function handler(req, res) {
       client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)}`
     };
 
-    // Initialize Vertex AI with credentials
+    // Create explicit GoogleAuth client
+    const { GoogleAuth } = await import('google-auth-library');
+    const auth = new GoogleAuth({
+      credentials: credentials,
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    });
+    
+    const authClient = await auth.getClient();
+
+    // Initialize Vertex AI with explicit auth client
     const vertexAI = new VertexAI({
       project: process.env.GOOGLE_CLOUD_PROJECT_ID,
       location: 'us-central1',
-      googleAuthOptions: {
-        credentials: credentials,
-        scopes: ['https://www.googleapis.com/auth/cloud-platform']
-      }
+      authClient: authClient
     });
 
     // Get last user message and enhance it for search
