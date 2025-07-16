@@ -49,10 +49,12 @@ export default async function handler(req, res) {
     const enhancedQuery = enhanceForSearch(lastMessage.text || lastMessage.content);
     
     // Prepare messages for Gemini (without system instruction in contents)
-    const geminiMessages = messages.slice(-5).map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text || msg.content || '' }]
-    }));
+    const geminiMessages = messages.slice(-5)
+      .filter(msg => msg.text || msg.content) // Filter out empty messages
+      .map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text || msg.content || '' }]
+      }));
     
     // Replace last user message with enhanced version
     if (geminiMessages[geminiMessages.length - 1].role === 'user') {
@@ -69,6 +71,7 @@ export default async function handler(req, res) {
     });
 
     console.log('🚀 Sending to Gemini 2.5 Flash with Google Search grounding...');
+    console.log('📝 Messages being sent:', JSON.stringify(geminiMessages, null, 2));
 
     // Generate response
     const result = await generativeModel.generateContent({
@@ -82,7 +85,14 @@ export default async function handler(req, res) {
     });
 
     const response = result.response;
-    const textContent = response.candidates[0].content.parts[0].text;
+    
+    // Better error handling for response
+    if (!response.candidates || !response.candidates[0] || !response.candidates[0].content || !response.candidates[0].content.parts || !response.candidates[0].content.parts[0]) {
+      console.error('💥 Invalid response structure:', JSON.stringify(response, null, 2));
+      throw new Error('Gemini vrátil prázdnou odpověď');
+    }
+    
+    const textContent = response.candidates[0].content.parts[0].text || '';
     
     // Extract grounding metadata (sources)
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
