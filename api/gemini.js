@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     const credentials = {
       type: 'service_account',
       project_id: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      private_key: process.env.GOOGLE_PRIVATE_KEY,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       client_id: '115325967154899084408',
       auth_uri: 'https://accounts.google.com/o/oauth2/auth',
