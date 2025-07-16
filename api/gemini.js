@@ -25,6 +25,9 @@ export default async function handler(req, res) {
     // Parse credentials from environment variable
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     
+    // IMPORTANT: Remove GOOGLE_APPLICATION_CREDENTIALS from env to prevent SDK from using it
+    delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    
     // Initialize Vertex AI with explicit auth client
     const { GoogleAuth } = await import('google-auth-library');
     const auth = new GoogleAuth({
@@ -32,12 +35,13 @@ export default async function handler(req, res) {
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
     });
     
-    const authClient = await auth.getClient();
-    
     const vertexAI = new VertexAI({
       project: process.env.GOOGLE_CLOUD_PROJECT_ID,
       location: 'us-central1',
-      authClient: authClient
+      googleAuthOptions: {
+        credentials: credentials,
+        scopes: ['https://www.googleapis.com/auth/cloud-platform']
+      }
     });
 
     // Get last user message and enhance it for search
