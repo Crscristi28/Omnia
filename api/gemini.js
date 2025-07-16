@@ -39,11 +39,11 @@ export default async function handler(req, res) {
     const authClient = await auth.getClient();
     console.log('✅ Auth client created successfully');
 
-    // Initialize Vertex AI with explicit auth client
+    // Initialize Vertex AI with credentials directly
     const vertexAI = new VertexAI({
       project: process.env.GOOGLE_CLOUD_PROJECT_ID,
       location: 'us-central1',
-      authClient: authClient
+      credentials: credentials
     });
 
     // Get last user message and enhance it for search
