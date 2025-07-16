@@ -13,38 +13,20 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Save original env variable
-  const originalCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
   try {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
-    // Check for required environment variables
-    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS || !process.env.GOOGLE_CLOUD_PROJECT_ID) {
-      res.write(JSON.stringify({ error: true, message: 'Google Cloud credentials nejsou nastaveny' }) + '\n');
+    // Check only for project ID
+    if (!process.env.GOOGLE_CLOUD_PROJECT_ID) {
+      res.write(JSON.stringify({ error: true, message: 'Google Cloud Project ID není nastaveno' }) + '\n');
       return res.end();
     }
 
-    // Parse credentials from environment variable
-    const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-    
-    // Temporarily remove to prevent SDK from using it as file path
-    delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    
-    // Initialize Vertex AI with explicit auth client
-    const { GoogleAuth } = await import('google-auth-library');
-    const auth = new GoogleAuth({
-      credentials: credentials,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform']
-    });
-    
+    // Initialize Vertex AI - it will auto-authenticate on Vercel
     const vertexAI = new VertexAI({
       project: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      location: 'us-central1',
-      googleAuthOptions: {
-        credentials: credentials,
-        scopes: ['https://www.googleapis.com/auth/cloud-platform']
-      }
+      location: 'us-central1'
+      // NO credentials, authClient, or googleAuthOptions needed!
     });
 
     // Get last user message and enhance it for search
@@ -130,11 +112,6 @@ export default async function handler(req, res) {
     console.error('💥 Gemini API error:', error);
     res.write(JSON.stringify({ error: true, message: 'Server error: ' + error.message }) + '\n');
     res.end();
-  } finally {
-    // Restore original env variable
-    if (originalCredentials) {
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = originalCredentials;
-    }
   }
 }
 
