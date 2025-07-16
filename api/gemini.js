@@ -17,23 +17,13 @@ export default async function handler(req, res) {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
     // Check for required environment variables
-    if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+    if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_CREDENTIALS_BASE64) {
       res.write(JSON.stringify({ error: true, message: 'Google Cloud credentials nejsou kompletní' }) + '\n');
       return res.end();
     }
 
-    // Build credentials from individual env variables
-    const credentials = {
-      type: 'service_account',
-      project_id: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      client_id: '115325967154899084408',
-      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-      token_uri: 'https://oauth2.googleapis.com/token',
-      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)}`
-    };
+    // Decode Base64 credentials
+    const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8'));
 
     // Create explicit GoogleAuth client
     const { GoogleAuth } = await import('google-auth-library');
