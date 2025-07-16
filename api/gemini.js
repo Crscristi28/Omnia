@@ -13,6 +13,9 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // Save original env variable
+  const originalCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
   try {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
@@ -25,7 +28,7 @@ export default async function handler(req, res) {
     // Parse credentials from environment variable
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     
-    // IMPORTANT: Remove GOOGLE_APPLICATION_CREDENTIALS from env to prevent SDK from using it
+    // Temporarily remove to prevent SDK from using it as file path
     delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
     
     // Initialize Vertex AI with explicit auth client
@@ -127,6 +130,11 @@ export default async function handler(req, res) {
     console.error('💥 Gemini API error:', error);
     res.write(JSON.stringify({ error: true, message: 'Server error: ' + error.message }) + '\n');
     res.end();
+  } finally {
+    // Restore original env variable
+    if (originalCredentials) {
+      process.env.GOOGLE_APPLICATION_CREDENTIALS = originalCredentials;
+    }
   }
 }
 
