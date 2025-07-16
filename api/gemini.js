@@ -81,8 +81,8 @@ export default async function handler(req, res) {
       }
     });
 
-    const response = await result.response;
-    const textContent = response.text();
+    const response = result.response;
+    const textContent = response.candidates[0].content.parts[0].text;
     
     // Extract grounding metadata (sources)
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
