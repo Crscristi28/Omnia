@@ -23,16 +23,21 @@ export default async function handler(req, res) {
     }
 
     // Decode Base64 credentials
+    console.log('🔍 Decoding Base64 credentials...');
     const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8'));
+    console.log('✅ Credentials decoded, client_email:', credentials.client_email);
 
     // Create explicit GoogleAuth client
+    console.log('🔑 Creating GoogleAuth client...');
     const { GoogleAuth } = await import('google-auth-library');
     const auth = new GoogleAuth({
       credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
     });
     
+    console.log('🔐 Getting auth client...');
     const authClient = await auth.getClient();
+    console.log('✅ Auth client created successfully');
 
     // Initialize Vertex AI with explicit auth client
     const vertexAI = new VertexAI({
