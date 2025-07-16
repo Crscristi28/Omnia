@@ -10,7 +10,7 @@ import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
-import { claudeService, openaiService, sonarService, grokService } from './services/ai';
+import { claudeService, openaiService, sonarService, grokService, geminiService } from './services/ai';
 import { elevenLabsService } from './services/voice';
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
@@ -782,6 +782,49 @@ function App() {
           await processVoiceResponse(responseText, detectedLang);
         }
       }
+      
+      else if (model === 'gemini-2.5-flash') {
+        let streamingSources = []; // Add this to capture sources during streaming
+        
+        const result = await geminiService.sendMessage(
+          messagesWithUser,
+          (text, isStreaming, sources = []) => {
+            setStreaming(isStreaming);
+            if (sources && sources.length > 0) {
+              streamingSources = sources; // Capture sources during streaming
+            }
+          },
+          (searchMsg) => showNotification(searchMsg, 'info'),
+          detectedLang
+        );
+        
+        responseText = result.text;
+        const sources = streamingSources.length > 0 ? streamingSources : (result.sources || []);
+        
+        console.log('🎯 GEMINI FINAL SOURCES:', sources);
+        
+        // 🆕 STREAMING: Use streaming effect for Gemini with sources
+        const stopFn = streamMessageWithEffect(
+          responseText,
+          setMessages,
+          messagesWithUser,
+          mainContentRef.current,
+          sources
+        );
+        setStopStreamingRef(() => stopFn);
+        
+        const finalMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: responseText,
+          sources: sources
+        }];
+        sessionManager.saveMessages(finalMessages);
+        
+        if (fromVoice && showVoiceScreen && responseText) {
+          console.log('🎵 Gemini response complete, processing voice...');
+          await processVoiceResponse(responseText, detectedLang);
+        }
+      }
 
     } catch (err) {
       console.error('💥 API call error:', err);
@@ -888,7 +931,7 @@ function App() {
                        flex items-center gap-1.5 font-medium transition-all duration-200 outline-none
                        hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
           >
-            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'sonar' ? 'o3' : 'o4'}</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'sonar' ? 'o3' : model === 'grok-3' ? 'o4' : 'o5'}</span>
             <ChevronDown size={14} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.9)' }} />
           </button>
 
@@ -1052,6 +1095,42 @@ function App() {
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
                 }}>o4</span>
+              </button>
+              
+              <button
+                onClick={() => { setModel('gemini-2.5-flash'); setShowModelDropdown(false); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: 'none',
+                  background: model === 'gemini-2.5-flash' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                  if (model !== 'gemini-2.5-flash') {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (model !== 'gemini-2.5-flash') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
+              >
+                <span style={{ fontWeight: '500' }}>Omnia G</span>
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '12px',
+                  color: 'rgba(156, 163, 175, 1)',
+                  fontWeight: '400',
+                }}>o5</span>
               </button>
             </div>
           )}
