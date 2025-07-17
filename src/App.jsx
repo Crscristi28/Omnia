@@ -203,7 +203,10 @@ function App() {
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState('claude');
+  const [model, setModel] = useState(() => {
+    const savedModel = sessionManager.getSelectedModel();
+    return savedModel || 'gemini-2.5-flash'; // Gemini as default
+  });
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -241,6 +244,11 @@ function App() {
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+
+  // 💾 SAVE SELECTED MODEL TO LOCALSTORAGE
+  useEffect(() => {
+    sessionManager.saveSelectedModel(model);
+  }, [model]);
 
   // 🆕 AUDIO INITIALIZATION (UNCHANGED)
   useEffect(() => {

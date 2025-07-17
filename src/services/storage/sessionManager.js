@@ -59,6 +59,15 @@ const sessionManager = {
 
   getVoiceMode() {
     return localStorage.getItem('omnia-voice-mode') === 'true';
+  },
+
+  // Save selected AI model
+  saveSelectedModel(model) {
+    localStorage.setItem('omnia-selected-model', model);
+  },
+
+  getSelectedModel() {
+    return localStorage.getItem('omnia-selected-model');
   }
 };
 
