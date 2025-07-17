@@ -139,7 +139,6 @@ function enhanceForSearch(query) {
     const currentTime = new Date().toLocaleString('cs-CZ', { timeZone: 'Europe/Prague' });
     return `${query}
 
-DŮLEŽITÉ: Pokud potřebuješ aktuální informace, nejdřív je vyhledej přes Google Search a pak poskytni kompletní odpověď. Neodpovídej částečně - počkej až budeš mít všechny informace a pak dej kompletní odpověď v jazyce uživatele.
 
 Aktuální čas: ${currentTime}`;
   }
