@@ -90,7 +90,7 @@ export default async function handler(req, res) {
       throw new Error('Gemini vrátil prázdnou odpověď');
     }
     
-    const textContent = response.candidates[0].content.parts[0].text || '';
+    let textContent = response.candidates[0].content.parts[0].text || '';
     
     // Extract grounding metadata (sources)
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
@@ -98,25 +98,50 @@ export default async function handler(req, res) {
 
     console.log('✅ Gemini response received, sources:', sources.length);
 
-    // Simple word-by-word streaming
-    const words = textContent.split(' ');
-    
+    // Check if response is JSON structured
+    let isStructuredResponse = false;
+    let structuredData = null;
+    try {
+      if (textContent.trim().startsWith('{') && textContent.trim().endsWith('}')) {
+        structuredData = JSON.parse(textContent);
+        isStructuredResponse = true;
+        console.log('🎯 Detected structured JSON response');
+      }
+    } catch (e) {
+      // Not JSON, continue with regular text streaming
+    }
+
+    // Handle structured vs regular streaming
     if (sources.length > 0) {
       res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
       await new Promise(resolve => setTimeout(resolve, 800));
     }
     
-    for (const word of words) {
-      res.write(JSON.stringify({ type: 'text', content: word + ' ' }) + '\n');
-      await new Promise(resolve => setTimeout(resolve, 12));
+    if (isStructuredResponse) {
+      // Send structured response directly
+      res.write(JSON.stringify({
+        type: 'completed',
+        fullText: textContent,
+        structured: structuredData,
+        sources: sources,
+        webSearchUsed: sources.length > 0
+      }) + '\n');
+    } else {
+      // Regular word-by-word streaming
+      const words = textContent.split(' ');
+      
+      for (const word of words) {
+        res.write(JSON.stringify({ type: 'text', content: word + ' ' }) + '\n');
+        await new Promise(resolve => setTimeout(resolve, 12));
+      }
+      
+      res.write(JSON.stringify({
+        type: 'completed',
+        fullText: textContent,
+        sources: sources,
+        webSearchUsed: sources.length > 0
+      }) + '\n');
     }
-    
-    res.write(JSON.stringify({
-      type: 'completed',
-      fullText: textContent,
-      sources: sources,
-      webSearchUsed: sources.length > 0
-    }) + '\n');
 
     console.log('✅ Gemini streaming completed');
     res.end();
