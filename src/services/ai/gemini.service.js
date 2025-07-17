@@ -56,7 +56,10 @@ const geminiService = {
                   }
                 }
                 else if (data.type === 'search_start') {
-                  console.log('🔍 Google Search detected - silent mode');
+                  console.log('🔍 Google Search detected');
+                  if (onSearchNotification) {
+                    onSearchNotification(this.getSearchMessage(detectedLanguage));
+                  }
                 }
                 else if (data.type === 'completed') {
                   if (data.fullText) {

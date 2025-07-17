@@ -1346,7 +1346,7 @@ function App() {
           ))}
           
           {/* ⏳ LOADING INDICATOR - UNCHANGED */}
-          {(loading || streaming) && (
+          {loading && !streaming && (
             <div style={{ 
               display: 'flex', 
               justifyContent: 'flex-start', 
