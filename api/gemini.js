@@ -42,9 +42,8 @@ export default async function handler(req, res) {
     });
     console.log('✅ Vertex AI initialized with workaround credentials');
 
-    // Get last user message and enhance it for search
+    // Get last user message
     const lastMessage = messages[messages.length - 1];
-    const enhancedQuery = enhanceForSearch(lastMessage.text || lastMessage.content);
     
     // Prepare messages for Gemini (without system instruction in contents)
     const geminiMessages = messages.slice(-5)
@@ -54,15 +53,16 @@ export default async function handler(req, res) {
         parts: [{ text: msg.text || msg.content || '' }]
       }));
     
-    // Replace last user message with enhanced version
-    if (geminiMessages[geminiMessages.length - 1].role === 'user') {
-      geminiMessages[geminiMessages.length - 1].parts[0].text = enhancedQuery;
-    }
+    // Messages are ready as-is without enhancement
+
+    // Build system instruction with language support
+    const baseSystem = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
+    const languageInstruction = language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá';
 
     // Initialize model with proper system instruction and Google Search grounding
     const generativeModel = vertexAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      systemInstruction: system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.",
+      systemInstruction: baseSystem + languageInstruction,
       tools: [{
         google_search: {}
       }]
@@ -133,31 +133,6 @@ export default async function handler(req, res) {
   }
 }
 
-// 🔍 SEARCH ENHANCEMENT
-function enhanceForSearch(query) {
-  if (needsCurrentData(query)) {
-    const currentTime = new Date().toLocaleString('cs-CZ', { timeZone: 'Europe/Prague' });
-    return `${query}
-
-
-Aktuální čas: ${currentTime}`;
-  }
-  return query;
-}
-
-// 🎯 CURRENT DATA DETECTION
-function needsCurrentData(query) {
-  const keywords = [
-    'aktuální', 'current', 'nejnovější', 'latest', 'teď', 'now', 'dnes', 'today',
-    'cena', 'price', 'kurz', 'stock', 'akcie', 'shares', 'bitcoin', 'crypto',
-    'počasí', 'weather', 'zprávy', 'news', 'breaking', 'exchange', 'rate',
-    'dollar', 'euro', 'koruna', 'ethereum', 'btc', 'eth', 'teplota'
-  ];
-  
-  return keywords.some(keyword => 
-    query.toLowerCase().includes(keyword)
-  );
-}
 
 // 🌐 EXTRACT SOURCES FROM GROUNDING METADATA
 function extractSources(groundingMetadata) {
