@@ -1349,7 +1349,7 @@ function App() {
           ))}
           
           {/* ⏳ LOADING INDICATOR - UNCHANGED */}
-          {loading && !streaming && (
+          {(loading || streaming) && (
             <div style={{ 
               display: 'flex', 
               justifyContent: 'flex-start', 
@@ -1381,7 +1381,25 @@ function App() {
                     color: streaming ? '#00ffff' : '#a0aec0', 
                     fontWeight: '500' 
                   }}>
-                    {streaming ? t('omniaStreaming') : (isSearching ? t('searching') : t('thinking'))}
+                    {streaming ? (
+                      <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <span style={{ 
+                          animation: 'pulse 1.4s ease-in-out infinite',
+                          fontSize: '24px',
+                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                        }}>●</span>
+                        <span style={{ 
+                          animation: 'pulse 1.4s ease-in-out 0.2s infinite',
+                          fontSize: '24px',
+                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                        }}>●</span>
+                        <span style={{ 
+                          animation: 'pulse 1.4s ease-in-out 0.4s infinite',
+                          fontSize: '24px',
+                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                        }}>●</span>
+                      </span>
+                    ) : (isSearching ? t('searching') : t('thinking'))}
                   </span>
                 </div>
               </div>
@@ -1448,6 +1466,7 @@ function App() {
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px) translateZ(0); } 100% { opacity: 1; transform: translateY(0) translateZ(0); } }
         @keyframes omnia-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1) translateZ(0); } 50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); transform: scale(1.05) translateZ(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
         @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
         
         * { -webkit-tap-highlight-color: transparent; }
