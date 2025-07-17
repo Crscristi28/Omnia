@@ -810,7 +810,10 @@ function App() {
               streamingSources = sources; // Capture sources during streaming
             }
           },
-          (searchMsg) => showNotification(searchMsg, 'info'),
+          () => {
+            setIsSearching(true);
+            setTimeout(() => setIsSearching(false), 3000);
+          },
           detectedLang
         );
         
