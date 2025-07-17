@@ -209,6 +209,7 @@ function App() {
   });
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
   // 🎤 VOICE STATE (UNCHANGED)
@@ -293,8 +294,15 @@ function App() {
 // 🎯 UNCHANGED: Všechny původní funkce (TTS, STT, AI conversation)
 // 🆕 STREAMING: Modified Claude message handling with streaming effect
 
-// 🔧 NOTIFICATION SYSTEM (UNCHANGED)
+// 🔧 NOTIFICATION SYSTEM (ENHANCED)
   const showNotification = (message, type = 'info', onClick = null) => {
+    // Detect search messages and update state
+    const searchKeywords = ['hledá', 'searching', 'caută', 'google', 'search'];
+    if (searchKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+      setIsSearching(true);
+      // Reset search state when search is done
+      setTimeout(() => setIsSearching(false), 3000);
+    }
     const notification = document.createElement('div');
     
     const baseStyle = `
@@ -840,6 +848,7 @@ function App() {
     } finally {
       setLoading(false);
       setStreaming(false);
+      setIsSearching(false);
     }
   };
 
@@ -1281,15 +1290,14 @@ function App() {
                 </div>
               ) : (
                 <div style={{
+                  width: '100%',
                   padding: isMobile ? '1.2rem' : '1.6rem',
+                  paddingLeft: isMobile ? '1rem' : '1.2rem',
                   fontSize: isMobile ? '1rem' : '0.95rem',
                   lineHeight: '1.6',
                   whiteSpace: 'pre-wrap',
                   color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
-                  borderLeft: isMobile ? 'none' : `3px solid ${msg.isStreaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
-                  paddingLeft: '1.8rem',
-                  textAlign: 'left',
-                  marginBottom: '2rem'
+                  textAlign: 'left'
                 }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
@@ -1343,16 +1351,17 @@ function App() {
               display: 'flex', 
               justifyContent: 'flex-start', 
               marginBottom: '2rem', 
-              animation: 'fadeInUp 0.4s ease-out'
+              animation: 'fadeInUp 0.4s ease-out',
+              width: '100%'
             }}>
               <div style={{
+                width: '100%',
                 padding: isMobile ? '1.2rem' : '1.6rem',
+                paddingLeft: isMobile ? '1rem' : '1.2rem',
                 fontSize: isMobile ? '1rem' : '0.95rem', 
                 color: '#ffffff',
                 background: 'rgba(255, 255, 255, 0.03)',
-                borderLeft: isMobile ? 'none' : `3px solid ${streaming ? '#00ffff' : 'rgba(100, 50, 255, 0.6)'}`,
-                borderRadius: '0 12px 12px 0',
-                paddingLeft: '1.8rem', 
+                borderRadius: '12px',
                 backdropFilter: 'blur(10px)',
                 textAlign: 'left'
               }}>
@@ -1369,7 +1378,7 @@ function App() {
                     color: streaming ? '#00ffff' : '#a0aec0', 
                     fontWeight: '500' 
                   }}>
-                    {streaming ? t('omniaStreaming') : t('omniaPreparingResponse')}
+                    {streaming ? t('omniaStreaming') : (isSearching ? t('searching') : t('thinking'))}
                   </span>
                 </div>
               </div>
