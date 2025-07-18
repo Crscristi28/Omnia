@@ -13,12 +13,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const GOOGLE_API_KEY = process.env.GOOGLE_TTS_API_KEY;
+  const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
   
   if (!GOOGLE_API_KEY) {
     return res.status(500).json({ 
       success: false,
-      error: 'Google TTS API key not configured' 
+      error: 'Google API key not configured' 
     });
   }
 

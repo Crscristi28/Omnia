@@ -235,8 +235,8 @@ const SimpleVoiceRecorder = ({
           const arrayBuffer = await audioBlob.arrayBuffer();
           console.log('📤 Sending to ElevenLabs STT API...');
           
-          // 🔧 CRITICAL: ElevenLabs STT
-          const response = await fetch('/api/elevenlabs-stt', {
+          // 🔧 Try ElevenLabs STT first (primary)
+          let response = await fetch('/api/elevenlabs-stt', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/octet-stream',
@@ -244,12 +244,29 @@ const SimpleVoiceRecorder = ({
             body: arrayBuffer
           });
 
+          let data;
+          let usedService = 'ElevenLabs';
+
+          // 🔧 If ElevenLabs fails, try Google STT as fallback
           if (!response.ok) {
-            throw new Error(`ElevenLabs STT failed: HTTP ${response.status}`);
+            console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
+            
+            response = await fetch('/api/google-stt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/octet-stream',
+              },
+              body: arrayBuffer
+            });
+            usedService = 'Google';
           }
 
-          const data = await response.json();
-          console.log('✅ ElevenLabs STT response:', data);
+          if (!response.ok) {
+            throw new Error(`STT failed: HTTP ${response.status}`);
+          }
+
+          data = await response.json();
+          console.log(`✅ ${usedService} STT response:`, data);
           
           if (data.success && data.text && data.text.trim()) {
             const transcribedText = data.text.trim();

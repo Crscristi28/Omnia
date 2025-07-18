@@ -524,7 +524,8 @@ function App() {
       
       const arrayBuffer = await audioBlob.arrayBuffer();
       
-      const response = await fetch('/api/elevenlabs-stt', {
+      // 🔧 Try ElevenLabs STT first (primary)
+      let response = await fetch('/api/elevenlabs-stt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -532,16 +533,34 @@ function App() {
         body: arrayBuffer
       });
 
+      let data;
+      let usedService = 'ElevenLabs';
+
+      // 🔧 If ElevenLabs fails, try Google STT as fallback
+      if (!response.ok) {
+        console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
+        showNotification('Zkouším Google STT...', 'info');
+        
+        response = await fetch('/api/google-stt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+          },
+          body: arrayBuffer
+        });
+        usedService = 'Google';
+      }
+
       if (!response.ok) {
         throw new Error(`Speech-to-Text failed: HTTP ${response.status}`);
       }
 
-      const data = await response.json();
+      data = await response.json();
       
       if (data.success && data.text && data.text.trim()) {
         const transcribedText = data.text.trim();
         setInput(transcribedText);
-        showNotification('Text převeden! Zkontrolujte a odešlete.', 'success');
+        showNotification(`Text převeden pomocí ${usedService}! Zkontrolujte a odešlete.`, 'success');
       } else {
         throw new Error('Nepodařilo se rozpoznat řeč');
       }
