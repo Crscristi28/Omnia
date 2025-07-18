@@ -65,10 +65,10 @@ export default async function handler(req, res) {
     // Use the complete system prompt sent from frontend
     const systemInstruction = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
     
-    // Add language instruction only if system prompt doesn't already include it
-    const finalSystemInstruction = system 
-      ? systemInstruction  // Use complete prompt from frontend
-      : systemInstruction + (language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá');
+    // Always add language instruction when language is detected
+    const languageInstruction = language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá';
+    
+    const finalSystemInstruction = systemInstruction + languageInstruction;
 
     // Initialize model with proper system instruction and Google Search grounding
     const generativeModel = vertexAI.getGenerativeModel({
