@@ -19,8 +19,6 @@ export default async function handler(req, res) {
   try {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
-    console.log('🎯 Received system prompt length:', system ? system.length : 'undefined/null');
-    console.log('🎯 Received system prompt preview:', system ? system.substring(0, 100) + '...' : 'NO SYSTEM PROMPT');
     
     // Check for required environment variables
     if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
@@ -56,7 +54,13 @@ export default async function handler(req, res) {
         parts: [{ text: msg.text || msg.content || '' }]
       }));
     
-    // Messages are ready as-is without enhancement
+    // Enhance last user message with timestamp if needed
+    if (geminiMessages.length > 0 && geminiMessages[geminiMessages.length - 1].role === 'user') {
+      const lastMessage = geminiMessages[geminiMessages.length - 1];
+      const originalText = lastMessage.parts[0].text;
+      const enhancedText = enhanceForSearch(originalText);
+      lastMessage.parts[0].text = enhancedText;
+    }
 
     // Use the complete system prompt sent from frontend
     const systemInstruction = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
@@ -76,10 +80,6 @@ export default async function handler(req, res) {
     });
 
     console.log('🚀 Sending to Gemini 2.5 Flash with Google Search grounding...');
-    console.log('📝 Messages being sent:', JSON.stringify(geminiMessages, null, 2));
-    console.log('🎯 System prompt being used (length):', finalSystemInstruction.length);
-    console.log('🎯 System prompt preview:', finalSystemInstruction.substring(0, 300) + '...');
-    console.log('🎯 Contains CRITICAL COMPLETION RULES:', finalSystemInstruction.includes('CRITICAL COMPLETION RULES'));
 
     // Generate response
     const result = await generativeModel.generateContent({
@@ -101,8 +101,6 @@ export default async function handler(req, res) {
     }
     
     let textContent = response.candidates[0].content.parts[0].text || '';
-    console.log('📝 Raw text content length:', textContent.length);
-    console.log('📝 Text preview:', textContent.substring(0, 100) + '...');
     
     // Extract grounding metadata (sources)
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
@@ -170,6 +168,36 @@ export default async function handler(req, res) {
   }
 }
 
+
+// 🔍 ENHANCE SEARCH WITH TIMESTAMP
+function enhanceForSearch(query) {
+  if (needsCurrentData(query)) {
+    const currentTime = new Date().toLocaleString('cs-CZ', { 
+      timeZone: 'Europe/Prague',
+      year: 'numeric',
+      month: 'numeric', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return `${query}\n\nAktuální čas: ${currentTime}`;
+  }
+  return query;
+}
+
+// 🎯 CURRENT DATA DETECTION
+function needsCurrentData(query) {
+  const keywords = [
+    'aktuální', 'current', 'nejnovější', 'latest', 'teď', 'now', 'dnes', 'today',
+    'cena', 'price', 'kurz', 'stock', 'akcie', 'shares', 'bitcoin', 'crypto',
+    'počasí', 'weather', 'zprávy', 'news', 'breaking', 'exchange', 'rate',
+    'dollar', 'euro', 'koruna', 'ethereum', 'btc', 'eth', 'teplota'
+  ];
+  
+  return keywords.some(keyword => 
+    query.toLowerCase().includes(keyword)
+  );
+}
 
 // 🌐 EXTRACT SOURCES FROM GROUNDING METADATA
 function extractSources(groundingMetadata) {
