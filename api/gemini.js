@@ -70,7 +70,9 @@ export default async function handler(req, res) {
 
     console.log('🚀 Sending to Gemini 2.5 Flash with Google Search grounding...');
     console.log('📝 Messages being sent:', JSON.stringify(geminiMessages, null, 2));
-    console.log('🎯 System prompt being used:', baseSystem.substring(0, 200) + '...');
+    console.log('🎯 System prompt being used (length):', baseSystem.length);
+    console.log('🎯 System prompt preview:', baseSystem.substring(0, 300) + '...');
+    console.log('🎯 Contains CRITICAL COMPLETION RULES:', baseSystem.includes('CRITICAL COMPLETION RULES'));
 
     // Generate response
     const result = await generativeModel.generateContent({
