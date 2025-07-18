@@ -70,6 +70,7 @@ export default async function handler(req, res) {
 
     console.log('🚀 Sending to Gemini 2.5 Flash with Google Search grounding...');
     console.log('📝 Messages being sent:', JSON.stringify(geminiMessages, null, 2));
+    console.log('🎯 System prompt being used:', baseSystem.substring(0, 200) + '...');
 
     // Generate response
     const result = await generativeModel.generateContent({
