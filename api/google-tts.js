@@ -32,18 +32,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🎵 UPGRADED LANGUAGE MAPPING - RYCHLEJŠÍ A ŽIVĚJŠÍ HLASY
+    // 🎵 UPGRADED TO STUDIO VOICES - NEJREALISTIČTĚJŠÍ HLASY 2025
     const languageMapping = {
-      // Core jazyky s nejlepšími WaveNet hlasy
-      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Wavenet-A', name: 'Czech (Fast & Clear)' },
-      'en': { code: 'en-US', voice: 'en-US-Wavenet-D', name: 'English (Energetic)' },
-      'ro': { code: 'ro-RO', voice: 'ro-RO-Wavenet-A', name: 'Romanian (Natural)' },
+      // Core jazyky s nejnovějšími Studio hlasy (ultra-realistic)
+      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Studio-A', name: 'Czech (Studio Ultra-Realistic)' },
+      'en': { code: 'en-US', voice: 'en-US-Studio-D', name: 'English (Studio Expressive)' },
+      'ro': { code: 'ro-RO', voice: 'ro-RO-Studio-A', name: 'Romanian (Studio Natural)' },
       
-      // European Languages s živějšími hlasy
-      'de': { code: 'de-DE', voice: 'de-DE-Neural2-C', name: 'German (Dynamic)' },
-      'es': { code: 'es-ES', voice: 'es-ES-Neural2-C', name: 'Spanish (Expressive)' },
-      'fr': { code: 'fr-FR', voice: 'fr-FR-Neural2-C', name: 'French (Energetic)' },
-      'it': { code: 'it-IT', voice: 'it-IT-Neural2-C', name: 'Italian (Vivid)' },
+      // European Languages s nejnovějšími Studio hlasy
+      'de': { code: 'de-DE', voice: 'de-DE-Studio-C', name: 'German (Studio Dynamic)' },
+      'es': { code: 'es-ES', voice: 'es-ES-Studio-C', name: 'Spanish (Studio Expressive)' },
+      'fr': { code: 'fr-FR', voice: 'fr-FR-Studio-C', name: 'French (Studio Energetic)' },
+      'it': { code: 'it-IT', voice: 'it-IT-Studio-C', name: 'Italian (Studio Vivid)' },
       'pl': { code: 'pl-PL', voice: 'pl-PL-Neural2-A', name: 'Polish' },
       'pt': { code: 'pt-PT', voice: 'pt-PT-Neural2-A', name: 'Portuguese' },
       'nl': { code: 'nl-NL', voice: 'nl-NL-Neural2-A', name: 'Dutch' },
@@ -73,9 +73,9 @@ export default async function handler(req, res) {
       'hr': { code: 'hr-HR', voice: 'hr-HR-Neural2-A', name: 'Croatian' },
       'sr': { code: 'sr-RS', voice: 'sr-RS-Neural2-A', name: 'Serbian' },
       
-      // Alternative variants
-      'en-gb': { code: 'en-GB', voice: 'en-GB-Neural2-C', name: 'English (UK)' },
-      'en-au': { code: 'en-AU', voice: 'en-AU-Neural2-C', name: 'English (Australia)' },
+      // Alternative variants with Studio voices
+      'en-gb': { code: 'en-GB', voice: 'en-GB-Studio-C', name: 'English UK (Studio)' },
+      'en-au': { code: 'en-AU', voice: 'en-AU-Studio-C', name: 'English AU (Studio)' },
       'es-mx': { code: 'es-MX', voice: 'es-MX-Neural2-A', name: 'Spanish (Mexico)' },
       'pt-br': { code: 'pt-BR', voice: 'pt-BR-Neural2-A', name: 'Portuguese (Brazil)' }
     };
@@ -129,10 +129,49 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error('Google TTS API error:', data);
       
-      // Fallback with Standard voice if premium fails
-      if (selectedVoice.includes('Wavenet') || selectedVoice.includes('Neural2')) {
+      // Fallback with Neural2 if Studio fails, then Standard if Neural2 fails
+      if (selectedVoice.includes('Studio')) {
+        console.log('🔄 Studio failed, trying Neural2 fallback...');
+        const fallbackVoice = selectedVoice.replace('Studio', 'Neural2');
+        
+        const fallbackResponse = await fetch(
+          `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: { text },
+              voice: { 
+                languageCode: langConfig.code,
+                name: fallbackVoice
+              },
+              audioConfig
+            })
+          }
+        );
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          if (fallbackData.audioContent) {
+            const audioBuffer = Buffer.from(fallbackData.audioContent, 'base64');
+            res.setHeader('Content-Type', 'audio/mpeg');
+            res.setHeader('Content-Length', audioBuffer.length);
+            res.status(200).send(audioBuffer);
+            
+            console.log('✅ Neural2 fallback success:', { 
+              language: langConfig.name, 
+              voice: fallbackVoice,
+              audioSize: audioBuffer.length 
+            });
+            return;
+          }
+        }
+      }
+      
+      // Final fallback with Standard voice if all premium fails
+      if (selectedVoice.includes('Studio') || selectedVoice.includes('Wavenet') || selectedVoice.includes('Neural2')) {
         console.log('🔄 Fallback to Standard voice...');
-        const fallbackVoice = selectedVoice.replace('Wavenet', 'Standard').replace('Neural2', 'Standard');
+        const fallbackVoice = selectedVoice.replace('Studio', 'Standard').replace('Wavenet', 'Standard').replace('Neural2', 'Standard');
         
         const fallbackResponse = await fetch(
           `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
