@@ -55,12 +55,20 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
           console.log('✅ VoiceButton: ElevenLabs SUCCESS with emoji fixes');
         } catch (error) {
           console.error('❌ VoiceButton: ElevenLabs failed, using Google:', error);
-          // Fallback to Google TTS (with old preprocessing for compatibility)
+          // 🔧 SAME EMOJI TREATMENT: Use sanitizeText for Google TTS too
+          const sanitizedText = sanitizeText(text, langToUse);
+          
+          console.log('🎵 Google TTS with emoji-enhanced sanitization:', {
+            original: text.substring(0, 50) + '...',
+            sanitized: sanitizedText.substring(0, 50) + '...',
+            language: langToUse
+          });
+          
           const response = await fetch('/api/google-tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json; charset=utf-8' },
             body: JSON.stringify({ 
-              text: text, // Google TTS keeps original text
+              text: sanitizedText, // Now using same sanitization as ElevenLabs
               language: langToUse,
               voice: 'natural'
             })
@@ -69,12 +77,20 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
           audioBlob = await response.blob();
         }
       } else {
-        // Google TTS - original text (has own preprocessing)
+        // 🔧 SAME EMOJI TREATMENT: Google TTS with sanitization like ElevenLabs
+        const sanitizedText = sanitizeText(text, langToUse);
+        
+        console.log('🎵 Google TTS Primary with emoji-enhanced sanitization:', {
+          original: text.substring(0, 50) + '...',
+          sanitized: sanitizedText.substring(0, 50) + '...',
+          language: langToUse
+        });
+        
         const response = await fetch('/api/google-tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({ 
-            text: text,
+            text: sanitizedText, // Same sanitization as ElevenLabs
             language: langToUse,
             voice: 'natural'
           })
