@@ -32,10 +32,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🎵 VERIFIED STUDIO VOICES - Jen ověřené dostupné hlasy
+    // 🎵 CHIRP 3: HD VOICES - NEJVYŠŠÍ LIGA GOOGLE TTS 2025
     const languageMapping = {
-      // Ověřené Studio hlasy podle Google dokumentace
-      'en': { code: 'en-US', voice: 'en-US-Studio-M', name: 'English (Studio Professional)' },
+      // Chirp 3: HD voices - ultra-realistic generative AI voices
+      'en': { code: 'en-US', voice: 'en-US-Chirp3-HD-Achernar', name: 'English (Chirp3 HD Ultra-Realistic)' },
+      
+      // Fallback na Studio/Neural2 pro ostatní jazyky
       'en-gb': { code: 'en-GB', voice: 'en-GB-Studio-B', name: 'English UK (Studio)' },
       'es': { code: 'es-ES', voice: 'es-ES-Studio-C', name: 'Spanish (Studio)' },
       'de': { code: 'de-DE', voice: 'de-DE-Studio-B', name: 'German (Studio)' },
@@ -130,6 +132,45 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error('Google TTS API error:', data);
       
+      // Enhanced fallback chain: Chirp3-HD → Studio → Neural2 → Standard
+      if (selectedVoice.includes('Chirp3-HD')) {
+        console.log('🔄 Chirp3-HD failed, trying Studio fallback...');
+        const fallbackVoice = selectedVoice.replace('Chirp3-HD-Achernar', 'Studio-M');
+        
+        const fallbackResponse = await fetch(
+          `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: { text },
+              voice: { 
+                languageCode: langConfig.code,
+                name: fallbackVoice
+              },
+              audioConfig
+            })
+          }
+        );
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          if (fallbackData.audioContent) {
+            const audioBuffer = Buffer.from(fallbackData.audioContent, 'base64');
+            res.setHeader('Content-Type', 'audio/mpeg');
+            res.setHeader('Content-Length', audioBuffer.length);
+            res.status(200).send(audioBuffer);
+            
+            console.log('✅ Studio fallback success:', { 
+              language: langConfig.name, 
+              voice: fallbackVoice,
+              audioSize: audioBuffer.length 
+            });
+            return;
+          }
+        }
+      }
+      
       // Fallback with Neural2 if Studio fails, then Standard if Neural2 fails
       if (selectedVoice.includes('Studio')) {
         console.log('🔄 Studio failed, trying Neural2 fallback...');
@@ -170,9 +211,9 @@ export default async function handler(req, res) {
       }
       
       // Final fallback with Standard voice if all premium fails
-      if (selectedVoice.includes('Studio') || selectedVoice.includes('Wavenet') || selectedVoice.includes('Neural2')) {
+      if (selectedVoice.includes('Chirp3-HD') || selectedVoice.includes('Studio') || selectedVoice.includes('Wavenet') || selectedVoice.includes('Neural2')) {
         console.log('🔄 Fallback to Standard voice...');
-        const fallbackVoice = selectedVoice.replace('Studio', 'Standard').replace('Wavenet', 'Standard').replace('Neural2', 'Standard');
+        const fallbackVoice = selectedVoice.replace('Chirp3-HD-Achernar', 'Standard-A').replace('Studio', 'Standard').replace('Wavenet', 'Standard').replace('Neural2', 'Standard');
         
         const fallbackResponse = await fetch(
           `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`,
@@ -223,10 +264,10 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=1800'); // 30min cache
     res.status(200).send(audioBuffer);
 
-    console.log('✅ STUDIO TTS SUCCESS:', { 
+    console.log('✅ CHIRP3-HD TTS SUCCESS:', { 
       language: langConfig.name,
       voice: selectedVoice, 
-      voiceType: selectedVoice.includes('Studio') ? 'STUDIO' : selectedVoice.includes('Neural2') ? 'NEURAL2' : 'WAVENET',
+      voiceType: selectedVoice.includes('Chirp3-HD') ? 'CHIRP3-HD' : selectedVoice.includes('Studio') ? 'STUDIO' : selectedVoice.includes('Neural2') ? 'NEURAL2' : 'WAVENET',
       speed: 'Optimized (1.15x)',
       pitch: 'Pleasant (+0.4)',
       volume: 'Clear (+2.5dB)',
