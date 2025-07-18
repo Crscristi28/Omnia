@@ -19,6 +19,9 @@ export default async function handler(req, res) {
   try {
     const { messages, system, max_tokens = 2000, language } = req.body;
     
+    console.log('🎯 Received system prompt length:', system ? system.length : 'undefined/null');
+    console.log('🎯 Received system prompt preview:', system ? system.substring(0, 100) + '...' : 'NO SYSTEM PROMPT');
+    
     // Check for required environment variables
     if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       res.write(JSON.stringify({ error: true, message: 'Google Cloud credentials nejsou kompletní' }) + '\n');
