@@ -690,7 +690,8 @@ function App() {
         const finalMessage = { 
           sender: 'bot', 
           text: finalText,
-          sources: sources
+          sources: sources,
+          isStreaming: false
         };
         
         const finalMessages = [...messagesWithUser, finalMessage];
@@ -722,7 +723,8 @@ function App() {
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
-          sources: []
+          sources: [],
+          isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
         
@@ -748,7 +750,8 @@ function App() {
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
-          sources: []
+          sources: [],
+          isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
         
@@ -790,7 +793,8 @@ function App() {
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
-          sources: sources
+          sources: sources,
+          isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
         
@@ -836,7 +840,8 @@ function App() {
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
-          sources: sources
+          sources: sources,
+          isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
         
