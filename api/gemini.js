@@ -58,14 +58,18 @@ export default async function handler(req, res) {
     
     // Messages are ready as-is without enhancement
 
-    // Build system instruction with language support
-    const baseSystem = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
-    const languageInstruction = language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá';
+    // Use the complete system prompt sent from frontend
+    const systemInstruction = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
+    
+    // Add language instruction only if system prompt doesn't already include it
+    const finalSystemInstruction = system 
+      ? systemInstruction  // Use complete prompt from frontend
+      : systemInstruction + (language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá');
 
     // Initialize model with proper system instruction and Google Search grounding
     const generativeModel = vertexAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      systemInstruction: baseSystem + languageInstruction,
+      systemInstruction: finalSystemInstruction,
       tools: [{
         google_search: {}
       }]
@@ -73,9 +77,9 @@ export default async function handler(req, res) {
 
     console.log('🚀 Sending to Gemini 2.5 Flash with Google Search grounding...');
     console.log('📝 Messages being sent:', JSON.stringify(geminiMessages, null, 2));
-    console.log('🎯 System prompt being used (length):', baseSystem.length);
-    console.log('🎯 System prompt preview:', baseSystem.substring(0, 300) + '...');
-    console.log('🎯 Contains CRITICAL COMPLETION RULES:', baseSystem.includes('CRITICAL COMPLETION RULES'));
+    console.log('🎯 System prompt being used (length):', finalSystemInstruction.length);
+    console.log('🎯 System prompt preview:', finalSystemInstruction.substring(0, 300) + '...');
+    console.log('🎯 Contains CRITICAL COMPLETION RULES:', finalSystemInstruction.includes('CRITICAL COMPLETION RULES'));
 
     // Generate response
     const result = await generativeModel.generateContent({
