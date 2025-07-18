@@ -92,6 +92,8 @@ export default async function handler(req, res) {
     }
     
     let textContent = response.candidates[0].content.parts[0].text || '';
+    console.log('📝 Raw text content length:', textContent.length);
+    console.log('📝 Text preview:', textContent.substring(0, 100) + '...');
     
     // Extract grounding metadata (sources)
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
