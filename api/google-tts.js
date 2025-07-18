@@ -83,9 +83,10 @@ export default async function handler(req, res) {
     // Get language config (fallback to detected language, NOT always Czech!)
     const langConfig = languageMapping[language.toLowerCase()] || languageMapping['en'];
     
-    console.log('🎵 FAST TTS request:', { 
+    console.log('🎵 STUDIO TTS request:', { 
       inputLanguage: language,
       detectedConfig: langConfig,
+      selectedVoice: langConfig.voice,
       textLength: text.length 
     });
 
@@ -222,9 +223,10 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=1800'); // 30min cache
     res.status(200).send(audioBuffer);
 
-    console.log('✅ OPTIMIZED TTS SUCCESS:', { 
+    console.log('✅ STUDIO TTS SUCCESS:', { 
       language: langConfig.name,
       voice: selectedVoice, 
+      voiceType: selectedVoice.includes('Studio') ? 'STUDIO' : selectedVoice.includes('Neural2') ? 'NEURAL2' : 'WAVENET',
       speed: 'Optimized (1.15x)',
       pitch: 'Pleasant (+0.4)',
       volume: 'Clear (+2.5dB)',
