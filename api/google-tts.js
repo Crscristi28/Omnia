@@ -101,14 +101,26 @@ export default async function handler(req, res) {
       selectedVoice = `${voicePrefix}-${voice}`;
     }
 
-    // 🎵 OPTIMÁLNÍ RYCHLOST - Živě ale příjemně
-    const audioConfig = {
-      audioEncoding: 'MP3',
-      speakingRate: 1.15,  // 15% rychleji - příjemná rychlost
-      pitch: 0.4,          // Mírně vyšší, ale ne moc
-      volumeGainDb: 2.5,   // Hlasitější, ale ne příliš
-      effectsProfileId: ['headphone-class-device'] // Kvalitní ale ne agresivní
-    };
+    // 🎵 ADAPTIVE AUDIO CONFIG - Chirp3-HD vs ostatní hlasy
+    let audioConfig;
+    
+    if (selectedVoice.includes('Chirp3-HD')) {
+      // Chirp3-HD hlasy nepodporují pitch/volume parametry
+      audioConfig = {
+        audioEncoding: 'MP3',
+        speakingRate: 1.15,  // Pouze rychlost podporována
+        effectsProfileId: ['headphone-class-device']
+      };
+    } else {
+      // Standardní config pro ostatní hlasy  
+      audioConfig = {
+        audioEncoding: 'MP3',
+        speakingRate: 1.15,  // 15% rychleji - příjemná rychlost
+        pitch: 0.4,          // Mírně vyšší, ale ne moc
+        volumeGainDb: 2.5,   // Hlasitější, ale ne příliš
+        effectsProfileId: ['headphone-class-device'] // Kvalitní ale ne agresivní
+      };
+    }
 
     // Google TTS API call
     const response = await fetch(
