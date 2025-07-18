@@ -7,6 +7,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import './App.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
@@ -1339,10 +1340,67 @@ function App() {
                     )}
                   </div>
                   
-                  <TypewriterText 
-                    text={cleanMarkdownForUI(typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.text || ''))} 
-                    isStreaming={msg.isStreaming}
-                  />
+                  {msg.isStreaming ? (
+                    <TypewriterText 
+                      text={msg.text || ''} 
+                      isStreaming={true}
+                    />
+                  ) : (
+                    <ReactMarkdown 
+                      components={{
+                        // Vlastní styly pro různé elementy
+                        strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
+                        ul: ({children}) => <ul style={{marginLeft: '20px', marginTop: '8px', marginBottom: '8px'}}>{children}</ul>,
+                        li: ({children}) => <li style={{marginBottom: '4px'}}>{children}</li>,
+                        code: ({inline, children}) => 
+                          inline ? (
+                            <code style={{
+                              background: 'rgba(255, 255, 255, 0.1)', 
+                              padding: '2px 6px', 
+                              borderRadius: '4px',
+                              fontSize: '0.9em'
+                            }}>
+                              {children}
+                            </code>
+                          ) : (
+                            <pre style={{
+                              background: 'rgba(0, 0, 0, 0.2)', 
+                              padding: '12px', 
+                              borderRadius: '6px',
+                              overflowX: 'auto',
+                              marginTop: '8px',
+                              marginBottom: '8px'
+                            }}>
+                              <code>{children}</code>
+                            </pre>
+                          ),
+                        p: ({children}) => <p style={{margin: '8px 0', lineHeight: '1.6'}}>{children}</p>,
+                        h1: ({children}) => <h1 style={{fontSize: '1.4em', fontWeight: '600', margin: '16px 0 8px 0', color: '#FFD700'}}>{children}</h1>,
+                        h2: ({children}) => <h2 style={{fontSize: '1.2em', fontWeight: '600', margin: '12px 0 6px 0', color: '#FFD700'}}>{children}</h2>,
+                        h3: ({children}) => <h3 style={{fontSize: '1.1em', fontWeight: '600', margin: '10px 0 5px 0', color: '#FFD700'}}>{children}</h3>,
+                        em: ({children}) => <em style={{fontStyle: 'italic', color: '#E0E0E0'}}>{children}</em>,
+                        a: ({href, children}) => (
+                          <a href={href} style={{color: '#00ffff', textDecoration: 'underline'}} target="_blank" rel="noopener noreferrer">
+                            {children}
+                          </a>
+                        ),
+                        blockquote: ({children}) => (
+                          <blockquote style={{
+                            borderLeft: '3px solid rgba(255, 255, 255, 0.3)', 
+                            paddingLeft: '12px', 
+                            marginLeft: '0', 
+                            marginTop: '8px', 
+                            marginBottom: '8px', 
+                            opacity: '0.9'
+                          }}>
+                            {children}
+                          </blockquote>
+                        ),
+                      }}
+                    >
+                      {msg.text || ''}
+                    </ReactMarkdown>
+                  )}
                 </div>
               )}
             </div>
