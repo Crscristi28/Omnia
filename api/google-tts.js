@@ -32,18 +32,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🎵 UPGRADED TO STUDIO VOICES - NEJREALISTIČTĚJŠÍ HLASY 2025
+    // 🎵 VERIFIED STUDIO VOICES - Jen ověřené dostupné hlasy
     const languageMapping = {
-      // Core jazyky s nejnovějšími Studio hlasy (ultra-realistic)
-      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Studio-A', name: 'Czech (Studio Ultra-Realistic)' },
-      'en': { code: 'en-US', voice: 'en-US-Studio-D', name: 'English (Studio Expressive)' },
-      'ro': { code: 'ro-RO', voice: 'ro-RO-Studio-A', name: 'Romanian (Studio Natural)' },
+      // Ověřené Studio hlasy podle Google dokumentace
+      'en': { code: 'en-US', voice: 'en-US-Studio-M', name: 'English (Studio Professional)' },
+      'en-gb': { code: 'en-GB', voice: 'en-GB-Studio-B', name: 'English UK (Studio)' },
+      'es': { code: 'es-ES', voice: 'es-ES-Studio-C', name: 'Spanish (Studio)' },
+      'de': { code: 'de-DE', voice: 'de-DE-Studio-B', name: 'German (Studio)' },
+      'fr': { code: 'fr-FR', voice: 'fr-FR-Studio-A', name: 'French (Studio)' },
       
-      // European Languages s nejnovějšími Studio hlasy
-      'de': { code: 'de-DE', voice: 'de-DE-Studio-C', name: 'German (Studio Dynamic)' },
-      'es': { code: 'es-ES', voice: 'es-ES-Studio-C', name: 'Spanish (Studio Expressive)' },
-      'fr': { code: 'fr-FR', voice: 'fr-FR-Studio-C', name: 'French (Studio Energetic)' },
-      'it': { code: 'it-IT', voice: 'it-IT-Studio-C', name: 'Italian (Studio Vivid)' },
+      // Fallback na nejlepší Neural2 pro ostatní jazyky
+      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Neural2-A', name: 'Czech (Neural2 Premium)' },
+      'ro': { code: 'ro-RO', voice: 'ro-RO-Neural2-A', name: 'Romanian (Neural2)' },
+      'it': { code: 'it-IT', voice: 'it-IT-Neural2-C', name: 'Italian (Neural2)' },
       'pl': { code: 'pl-PL', voice: 'pl-PL-Neural2-A', name: 'Polish' },
       'pt': { code: 'pt-PT', voice: 'pt-PT-Neural2-A', name: 'Portuguese' },
       'nl': { code: 'nl-NL', voice: 'nl-NL-Neural2-A', name: 'Dutch' },
@@ -73,9 +74,8 @@ export default async function handler(req, res) {
       'hr': { code: 'hr-HR', voice: 'hr-HR-Neural2-A', name: 'Croatian' },
       'sr': { code: 'sr-RS', voice: 'sr-RS-Neural2-A', name: 'Serbian' },
       
-      // Alternative variants with Studio voices
-      'en-gb': { code: 'en-GB', voice: 'en-GB-Studio-C', name: 'English UK (Studio)' },
-      'en-au': { code: 'en-AU', voice: 'en-AU-Studio-C', name: 'English AU (Studio)' },
+      // Alternative variants 
+      'en-au': { code: 'en-AU', voice: 'en-AU-Neural2-C', name: 'English AU (Neural2)' },
       'es-mx': { code: 'es-MX', voice: 'es-MX-Neural2-A', name: 'Spanish (Mexico)' },
       'pt-br': { code: 'pt-BR', voice: 'pt-BR-Neural2-A', name: 'Portuguese (Brazil)' }
     };
