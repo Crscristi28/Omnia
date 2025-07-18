@@ -15,7 +15,7 @@ import { claudeService, openaiService, sonarService, grokService, geminiService 
 import { elevenLabsService } from './services/voice';
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
-import { uiTexts, getTranslation, detectLanguage, sanitizeText, cleanMarkdownForUI } from './utils/text';
+import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
