@@ -200,6 +200,27 @@ function splitIntoSentences(text) {
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
+// 🔧 MARKDOWN CLEANUP - Remove excessive spacing in lists
+function cleanMarkdownLists(text) {
+  if (!text) return text;
+  
+  // Fix excessive spacing in lists (multiple newlines between items)
+  // Pattern: bullet/number followed by content, then 2+ newlines before next bullet
+  let cleaned = text
+    // Remove multiple blank lines between list items
+    .replace(/^(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*]\s+[^\n]+)\n{2,}(?=\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n')
+    // Remove multiple blank lines between numbered items
+    .replace(/^(\s*\d+[\.)]\s+[^\n]+)\n{2,}(?=\s*\d+[\).])/gm, '$1\n')
+    // Remove excessive indentation (more than 4 spaces converted to 2)
+    .replace(/^(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*])\s{5,}/gm, '  $1 ')
+    // Clean up sub-lists with excessive spacing
+    .replace(/\n{2,}(\s{2,}[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/g, '\n$1')
+    // Remove trailing spaces on lines
+    .replace(/ +$/gm, '');
+    
+  return cleaned;
+}
+
 function App() {
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
@@ -1422,7 +1443,7 @@ function App() {
                         ),
                       }}
                     >
-                      {msg.text || ''}
+                      {cleanMarkdownLists(msg.text) || ''}
                     </ReactMarkdown>
                   )}
                 </div>
