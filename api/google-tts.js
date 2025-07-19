@@ -43,19 +43,19 @@ export default async function handler(req, res) {
       'de': { code: 'de-DE', voice: 'de-DE-Studio-B', name: 'German (Studio)' },
       'fr': { code: 'fr-FR', voice: 'fr-FR-Studio-A', name: 'French (Studio)' },
       
-      // Fallback na nejlepší Neural2 pro ostatní jazyky
-      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Neural2-A', name: 'Czech (Neural2 Premium)' },
-      'ro': { code: 'ro-RO', voice: 'ro-RO-Neural2-A', name: 'Romanian (Neural2)' },
-      'it': { code: 'it-IT', voice: 'it-IT-Neural2-C', name: 'Italian (Neural2)' },
-      'pl': { code: 'pl-PL', voice: 'pl-PL-Neural2-A', name: 'Polish' },
-      'pt': { code: 'pt-PT', voice: 'pt-PT-Neural2-A', name: 'Portuguese' },
-      'nl': { code: 'nl-NL', voice: 'nl-NL-Neural2-A', name: 'Dutch' },
-      'sv': { code: 'sv-SE', voice: 'sv-SE-Neural2-A', name: 'Swedish' },
-      'da': { code: 'da-DK', voice: 'da-DK-Neural2-A', name: 'Danish' },
-      'no': { code: 'nb-NO', voice: 'nb-NO-Neural2-A', name: 'Norwegian' },
-      'fi': { code: 'fi-FI', voice: 'fi-FI-Neural2-A', name: 'Finnish' },
-      'hu': { code: 'hu-HU', voice: 'hu-HU-Neural2-A', name: 'Hungarian' },
-      'sk': { code: 'sk-SK', voice: 'sk-SK-Neural2-A', name: 'Slovak' },
+      // Fallback na nejlepší Wavenet pro ostatní jazyky
+      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Wavenet-A', name: 'Czech (Wavenet Premium)' },
+      'ro': { code: 'ro-RO', voice: 'ro-RO-Wavenet-A', name: 'Romanian (Wavenet)' },
+      'it': { code: 'it-IT', voice: 'it-IT-Wavenet-C', name: 'Italian (Wavenet)' },
+      'pl': { code: 'pl-PL', voice: 'pl-PL-Wavenet-A', name: 'Polish' },
+      'pt': { code: 'pt-PT', voice: 'pt-PT-Wavenet-A', name: 'Portuguese' },
+      'nl': { code: 'nl-NL', voice: 'nl-NL-Wavenet-A', name: 'Dutch' },
+      'sv': { code: 'sv-SE', voice: 'sv-SE-Wavenet-A', name: 'Swedish' },
+      'da': { code: 'da-DK', voice: 'da-DK-Wavenet-A', name: 'Danish' },
+      'no': { code: 'nb-NO', voice: 'nb-NO-Wavenet-A', name: 'Norwegian' },
+      'fi': { code: 'fi-FI', voice: 'fi-FI-Wavenet-A', name: 'Finnish' },
+      'hu': { code: 'hu-HU', voice: 'hu-HU-Wavenet-A', name: 'Hungarian' },
+      'sk': { code: 'sk-SK', voice: 'sk-SK-Wavenet-A', name: 'Slovak' },
       
       // Asian Languages
       'ja': { code: 'ja-JP', voice: 'ja-JP-Neural2-B', name: 'Japanese' },

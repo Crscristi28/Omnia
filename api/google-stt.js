@@ -95,11 +95,20 @@ export default async function handler(req) {
     const audioEncoding = detectGoogleAudioEncoding(audioBuffer);
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
 
+    // 🔧 Detect sample rate from encoding type (iOS PWA uses 44100, others 16000)
+    const sampleRate = (audioEncoding === 'MP4') ? 44100 : 16000;
+    
+    console.log('🎵 Audio analysis:', {
+      encoding: audioEncoding,
+      sampleRate: sampleRate,
+      audioSize: audioBuffer.byteLength
+    });
+
     // 🔧 Google STT request with optimized settings
     const sttRequest = {
       config: {
         encoding: audioEncoding,
-        sampleRateHertz: 16000, // Standard rate for good quality
+        sampleRateHertz: sampleRate, // Dynamic rate based on device
         languageCode: 'cs-CZ', // Default to Czech, auto-detect will override
         alternativeLanguageCodes: ['en-US', 'ro-RO'], // Support other languages
         enableAutomaticPunctuation: true,
@@ -258,8 +267,13 @@ function detectGoogleAudioEncoding(audioBuffer) {
     return 'LINEAR16';
   }
   
-  // Default fallback
-  return 'WEBM_OPUS';
+  // 🔧 Try to detect OGG Opus (alternative WebM format)
+  if (uint8Array[0] === 0x4F && uint8Array[1] === 0x67 && uint8Array[2] === 0x67 && uint8Array[3] === 0x53) {
+    return 'OGG_OPUS';
+  }
+  
+  // Default fallback - prefer LINEAR16 for better compatibility
+  return 'LINEAR16';
 }
 
 // 🔧 Enhanced language detection combining text analysis (SAME AS ELEVENLABS)
