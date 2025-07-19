@@ -206,18 +206,25 @@ function cleanMarkdownLists(text) {
   
   // Fix excessive spacing in lists (multiple newlines between items)
   let cleaned = text
-    // Remove multiple blank lines anywhere in the text (3+ newlines become 2)
+    // First pass: normalize all multiple newlines to max 2
     .replace(/\n{3,}/g, '\n\n')
-    // Remove blank lines between any list items (bullet or numbered)
-    .replace(/^(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*]\s+.+)\n{2,}(?=\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n')
-    // Remove blank lines between numbered items
-    .replace(/^(\s*\d+[\.)]\s+.+)\n{2,}(?=\s*\d+[\).])/gm, '$1\n')
-    // Remove blank lines before sublist items (indented bullets)
-    .replace(/\n{2,}(\s+[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/g, '\n$1')
-    // Remove blank lines after sublist items when returning to parent level
-    .replace(/^(\s{2,}[•○▪▫◦‣⁃◘◈◉●∙·\-\*].+)\n{2,}(?=\s{0,1}[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n')
-    // Clean up headers followed by lists
-    .replace(/^(#{1,6}.+)\n{2,}(?=[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n\n')
+    // Fix list items with extra blank lines between them
+    .replace(/(\*\s+[^\n]+)\n\n+(?=\*\s+)/g, '$1\n')
+    // Fix bullet points (various styles)
+    .replace(/(•\s+[^\n]+)\n\n+(?=•\s+)/g, '$1\n')
+    .replace(/(○\s+[^\n]+)\n\n+(?=○\s+)/g, '$1\n')
+    .replace(/(▪\s+[^\n]+)\n\n+(?=▪\s+)/g, '$1\n')
+    .replace(/(◦\s+[^\n]+)\n\n+(?=◦\s+)/g, '$1\n')
+    // Fix numbered lists
+    .replace(/(\d+\.\s+[^\n]+)\n\n+(?=\d+\.\s+)/g, '$1\n')
+    .replace(/(\d+\)\s+[^\n]+)\n\n+(?=\d+\)\s+)/g, '$1\n')
+    // Fix indented sublists (any amount of spaces)
+    .replace(/\n\n+(\s+[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/g, '\n$1')
+    .replace(/\n\n+(\s+\d+[\.)]\s+)/g, '\n$1')
+    // Remove excessive spaces at start of lines (normalize indentation)
+    .replace(/^(\s{4,})([•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '  $2')
+    // Clean up weird bold formatting in lists
+    .replace(/\*\*(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*]\s*)\*\*/g, '$1')
     // Remove trailing spaces
     .replace(/ +$/gm, '');
     
@@ -1398,8 +1405,17 @@ function App() {
                       components={{
                         // Vlastní styly pro různé elementy
                         strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
-                        ul: ({children}) => <ul style={{marginLeft: '20px', marginTop: '8px', marginBottom: '8px'}}>{children}</ul>,
-                        li: ({children}) => <li style={{marginBottom: '4px'}}>{children}</li>,
+                        ul: ({children}) => <ul style={{
+                          marginLeft: isMobile ? '15px' : '20px', 
+                          marginTop: '8px', 
+                          marginBottom: '8px',
+                          paddingLeft: '5px'
+                        }}>{children}</ul>,
+                        li: ({children}) => <li style={{
+                          marginBottom: '4px',
+                          paddingLeft: '3px',
+                          lineHeight: '1.6'
+                        }}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (
                             <code style={{
