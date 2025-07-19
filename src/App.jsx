@@ -208,23 +208,23 @@ function cleanMarkdownLists(text) {
   let cleaned = text
     // First pass: normalize all multiple newlines to max 2
     .replace(/\n{3,}/g, '\n\n')
-    // Fix list items with extra blank lines between them
-    .replace(/(\*\s+[^\n]+)\n\n+(?=\*\s+)/g, '$1\n')
-    // Fix bullet points (various styles)
-    .replace(/(•\s+[^\n]+)\n\n+(?=•\s+)/g, '$1\n')
-    .replace(/(○\s+[^\n]+)\n\n+(?=○\s+)/g, '$1\n')
-    .replace(/(▪\s+[^\n]+)\n\n+(?=▪\s+)/g, '$1\n')
-    .replace(/(◦\s+[^\n]+)\n\n+(?=◦\s+)/g, '$1\n')
+    // Remove ALL blank lines between any list items (more aggressive)
+    .replace(/(\*\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
+    .replace(/(•\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
+    .replace(/(○\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
+    .replace(/(▪\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
+    .replace(/(◦\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
     // Fix numbered lists
-    .replace(/(\d+\.\s+[^\n]+)\n\n+(?=\d+\.\s+)/g, '$1\n')
-    .replace(/(\d+\)\s+[^\n]+)\n\n+(?=\d+\)\s+)/g, '$1\n')
-    // Fix indented sublists (any amount of spaces)
-    .replace(/\n\n+(\s+[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/g, '\n$1')
-    .replace(/\n\n+(\s+\d+[\.)]\s+)/g, '\n$1')
-    // Remove excessive spaces at start of lines (normalize indentation)
-    .replace(/^(\s{4,})([•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '  $2')
-    // Clean up weird bold formatting in lists
-    .replace(/\*\*(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*]\s*)\*\*/g, '$1')
+    .replace(/(\d+\.\s+.*?)\n\n+(?=\s*\d+\.)/gs, '$1\n')
+    .replace(/(\d+\)\s+.*?)\n\n+(?=\s*\d+\))/gs, '$1\n')
+    // Remove blank lines before ANY list item (including first one after text)
+    .replace(/([^\n])\n\n+(\s*[\*•○▪◦])/g, '$1\n$2')
+    .replace(/([^\n])\n\n+(\s*\d+[\).])/g, '$1\n$2')
+    // Fix indented sublists
+    .replace(/\n\n+(\s+[\*•○▪◦])/g, '\n$1')
+    .replace(/\n\n+(\s+\d+[\).])/g, '\n$1')
+    // Clean up spaces at start of lines
+    .replace(/^(\s{4,})([\*•○▪◦])/gm, '  $2')
     // Remove trailing spaces
     .replace(/ +$/gm, '');
     
