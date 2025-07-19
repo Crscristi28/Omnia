@@ -1401,23 +1401,15 @@ function App() {
                         // Vlastní styly pro různé elementy
                         strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
                         ul: ({children}) => <ul style={{
-                          marginLeft: isMobile ? '0px !important' : '20px', 
-                          marginTop: isMobile ? '0px !important' : '8px', 
-                          marginBottom: isMobile ? '0px !important' : '8px',
-                          paddingLeft: isMobile ? '16px !important' : '5px',
-                          listStylePosition: 'outside',
-                          padding: isMobile ? '0 0 0 16px !important' : undefined,
-                          margin: isMobile ? '0 !important' : undefined
+                          marginLeft: isMobile ? '10px' : '20px', 
+                          marginTop: isMobile ? '4px' : '8px', 
+                          marginBottom: isMobile ? '4px' : '8px',
+                          paddingLeft: '5px'
                         }}>{children}</ul>,
                         li: ({children}) => <li style={{
-                          marginBottom: isMobile ? '0px !important' : '4px',
-                          marginTop: isMobile ? '0px !important' : 'auto',
-                          paddingBottom: isMobile ? '0px !important' : undefined,
-                          paddingTop: isMobile ? '0px !important' : undefined,
-                          paddingLeft: isMobile ? '4px !important' : '3px',
-                          lineHeight: isMobile ? '1.2 !important' : '1.6',
-                          margin: isMobile ? '0 0 0 0 !important' : undefined,
-                          display: isMobile ? 'list-item !important' : undefined
+                          marginBottom: isMobile ? '0px' : '4px',
+                          paddingLeft: '3px',
+                          lineHeight: isMobile ? '1.4' : '1.6'
                         }}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (
