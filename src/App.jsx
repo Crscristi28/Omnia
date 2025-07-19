@@ -213,16 +213,16 @@ function cleanMarkdownLists(text) {
     
   if (isMobile) {
     // MOBILE: Ultra tight lists - NO spaces between bullets
+    // Simple approach: just replace double newlines with single between common patterns
     cleaned = cleaned
-      // Remove ALL blank lines between list items
-      .replace(/([\*•○▪◦\-]\s+[^\n]+)\n+(?=\s*[\*•○▪◦\-])/g, '$1\n')
-      .replace(/(\d+[\.)]\s+[^\n]+)\n+(?=\s*\d+[\).])/g, '$1\n')
-      // Remove multiple newlines but keep one before new sections
-      .replace(/\n{3,}/g, '\n\n')
-      // Keep space after headers before lists
-      .replace(/(#{1,6}[^\n]+|[^\n]+:)\n+(?=[\*•○▪◦\-])/g, '$1\n\n')
-      // Remove extra spaces between any bullets
-      .replace(/([\*•○▪◦\-][^\n]+)\n\n+(?=[\*•○▪◦\-])/g, '$1\n');
+      // Between any bullet points (including *, •, -, etc)
+      .replace(/\n\n+(?=[\*•○▪◦\-])/g, '\n')
+      // Between numbered items
+      .replace(/\n\n+(?=\d+[\).])/g, '\n')
+      // But keep double newline after headers/titles (ending with :)
+      .replace(/(:)\n(?=[\*•○▪◦\-])/g, '$1\n\n')
+      // Max 2 newlines anywhere else
+      .replace(/\n{3,}/g, '\n\n');
   } else {
     // DESKTOP: Keep some spacing
     cleaned = cleaned
