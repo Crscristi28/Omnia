@@ -95,13 +95,16 @@ export default async function handler(req) {
     const audioEncoding = detectGoogleAudioEncoding(audioBuffer);
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
 
-    // 🔧 Detect sample rate from encoding type (iOS PWA uses 44100, others 16000)
-    const sampleRate = (audioEncoding === 'MP4') ? 44100 : 16000;
+    // 🔧 Detect sample rate from audio size and type (iOS PWA typically has larger files at 44100, others 16000)
+    const uint8Array = new Uint8Array(audioBuffer.slice(0, 12));
+    const isMP4 = uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70;
+    const sampleRate = isMP4 ? 44100 : 16000;
     
     console.log('🎵 Audio analysis:', {
       encoding: audioEncoding,
       sampleRate: sampleRate,
-      audioSize: audioBuffer.byteLength
+      audioSize: audioBuffer.byteLength,
+      isMP4: isMP4
     });
 
     // 🔧 Google STT request with optimized settings
@@ -257,9 +260,9 @@ function detectGoogleAudioEncoding(audioBuffer) {
     return 'WEBM_OPUS';
   }
   
-  // Check for MP4 signature
+  // Check for MP4 signature - but Google STT doesn't support MP4, convert to LINEAR16
   if (uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70) {
-    return 'MP4';
+    return 'LINEAR16';  // Use LINEAR16 for MP4 files
   }
   
   // Check for WAV signature
