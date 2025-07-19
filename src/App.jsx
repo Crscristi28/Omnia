@@ -1384,7 +1384,7 @@ function App() {
                   paddingLeft: isMobile ? '1rem' : '1.2rem',
                   fontSize: isMobile ? '1rem' : '0.95rem',
                   lineHeight: '1.6',
-                  whiteSpace: 'pre-wrap',
+                  whiteSpace: isMobile ? 'normal' : 'pre-wrap',
                   color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
                   textAlign: 'left'
                 }}>
