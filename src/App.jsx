@@ -205,17 +205,20 @@ function cleanMarkdownLists(text) {
   if (!text) return text;
   
   // Fix excessive spacing in lists (multiple newlines between items)
-  // Pattern: bullet/number followed by content, then 2+ newlines before next bullet
   let cleaned = text
-    // Remove multiple blank lines between list items
-    .replace(/^(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*]\s+[^\n]+)\n{2,}(?=\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n')
-    // Remove multiple blank lines between numbered items
-    .replace(/^(\s*\d+[\.)]\s+[^\n]+)\n{2,}(?=\s*\d+[\).])/gm, '$1\n')
-    // Remove excessive indentation (more than 4 spaces converted to 2)
-    .replace(/^(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*])\s{5,}/gm, '  $1 ')
-    // Clean up sub-lists with excessive spacing
-    .replace(/\n{2,}(\s{2,}[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/g, '\n$1')
-    // Remove trailing spaces on lines
+    // Remove multiple blank lines anywhere in the text (3+ newlines become 2)
+    .replace(/\n{3,}/g, '\n\n')
+    // Remove blank lines between any list items (bullet or numbered)
+    .replace(/^(\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*]\s+.+)\n{2,}(?=\s*[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n')
+    // Remove blank lines between numbered items
+    .replace(/^(\s*\d+[\.)]\s+.+)\n{2,}(?=\s*\d+[\).])/gm, '$1\n')
+    // Remove blank lines before sublist items (indented bullets)
+    .replace(/\n{2,}(\s+[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/g, '\n$1')
+    // Remove blank lines after sublist items when returning to parent level
+    .replace(/^(\s{2,}[•○▪▫◦‣⁃◘◈◉●∙·\-\*].+)\n{2,}(?=\s{0,1}[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n')
+    // Clean up headers followed by lists
+    .replace(/^(#{1,6}.+)\n{2,}(?=[•○▪▫◦‣⁃◘◈◉●∙·\-\*])/gm, '$1\n\n')
+    // Remove trailing spaces
     .replace(/ +$/gm, '');
     
   return cleaned;
