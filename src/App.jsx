@@ -206,38 +206,29 @@ function cleanMarkdownLists(text) {
   
   const isMobile = window.innerWidth <= 768;
   
-  // Fix excessive spacing in lists
+  // BRUTALLY aggressive cleanup - remove ALL extra newlines between bullets
   let cleaned = text
     // Remove backslashes that might appear in text
-    .replace(/\\/g, '');
-    
-  if (isMobile) {
-    // MOBILE: Ultra tight lists - NO spaces between bullets
-    cleaned = cleaned
-      // Remove ALL blank lines between list items
-      .replace(/([\*•○▪◦\-]\s+[^\n]+)\n+(?=\s*[\*•○▪◦\-])/g, '$1\n')
-      .replace(/(\d+[\.)]\s+[^\n]+)\n+(?=\s*\d+[\).])/g, '$1\n')
-      // Remove multiple newlines but keep one before new sections
-      .replace(/\n{3,}/g, '\n\n')
-      // Keep space after headers before lists
-      .replace(/(#{1,6}[^\n]+|[^\n]+:)\n+(?=[\*•○▪◦\-])/g, '$1\n\n')
-      // Remove extra spaces between any bullets
-      .replace(/([\*•○▪◦\-][^\n]+)\n\n+(?=[\*•○▪◦\-])/g, '$1\n');
-  } else {
-    // DESKTOP: Keep some spacing
-    cleaned = cleaned
-      .replace(/\n{2,}/g, '\n\n')
-      .replace(/([\*•○▪◦\-]\s+[^\n]+)\n\n+(?=[\*•○▪◦\-])/g, '$1\n')
-      .replace(/(\d+[\.)]\s+[^\n]+)\n\n+(?=\d+[\).])/g, '$1\n')
-      .replace(/([^\n])\n\n+(?=[\*•○▪◦\-])/g, '$1\n\n')
-      .replace(/([^\n])\n\n+(?=\d+[\).])/g, '$1\n\n')
-      .replace(/\n{3,}/g, '\n\n');
-  }
+    .replace(/\\/g, '')
+    // ULTRA AGGRESSIVE: Remove ALL multiple newlines between bullets
+    .replace(/([\*•○▪◦\-]\s+[^\n]+)\n{2,}(?=\s*[\*•○▪◦\-])/g, '$1\n')
+    .replace(/(\d+[\.)]\s+[^\n]+)\n{2,}(?=\s*\d+[\).])/g, '$1\n')
+    // Even remove single extra newlines if there are spaces
+    .replace(/([\*•○▪◦\-]\s+[^\n]+)\n\s*\n+(?=\s*[\*•○▪◦\-])/g, '$1\n')
+    // Remove any whitespace-only lines between bullets
+    .replace(/([\*•○▪◦\-][^\n]+)\n\s*\n(?=[\*•○▪◦\-])/g, '$1\n')
+    // Clean up any 3+ newlines anywhere
+    .replace(/\n{3,}/g, '\n\n')
+    // Keep space after headers
+    .replace(/(#{1,6}[^\n]+|[^\n]+:)\n+(?=[\*•○▪◦\-])/g, '$1\n\n');
   
-  // Common cleanup
+  // Final cleanup
   cleaned = cleaned
     .replace(/\n+(\s+[\*•○▪◦\-])/g, '\n$1')
     .replace(/ +$/gm, '');
+  
+  console.log('🔧 Mobile detection:', isMobile ? 'MOBILE' : 'DESKTOP');
+  console.log('🔧 Cleaned text preview:', cleaned.substring(0, 200));
     
   return cleaned;
 }
