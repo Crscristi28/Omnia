@@ -1401,17 +1401,23 @@ function App() {
                         // Vlastní styly pro různé elementy
                         strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
                         ul: ({children}) => <ul style={{
-                          marginLeft: isMobile ? '0px' : '20px', 
-                          marginTop: isMobile ? '0px' : '8px', 
-                          marginBottom: isMobile ? '0px' : '8px',
-                          paddingLeft: isMobile ? '16px' : '5px',
-                          listStylePosition: 'outside'
+                          marginLeft: isMobile ? '0px !important' : '20px', 
+                          marginTop: isMobile ? '0px !important' : '8px', 
+                          marginBottom: isMobile ? '0px !important' : '8px',
+                          paddingLeft: isMobile ? '16px !important' : '5px',
+                          listStylePosition: 'outside',
+                          padding: isMobile ? '0 0 0 16px !important' : undefined,
+                          margin: isMobile ? '0 !important' : undefined
                         }}>{children}</ul>,
                         li: ({children}) => <li style={{
-                          marginBottom: isMobile ? '-2px' : '4px',
-                          paddingLeft: isMobile ? '4px' : '3px',
-                          lineHeight: isMobile ? '1.3' : '1.6',
-                          marginTop: isMobile ? '0px' : 'auto'
+                          marginBottom: isMobile ? '0px !important' : '4px',
+                          marginTop: isMobile ? '0px !important' : 'auto',
+                          paddingBottom: isMobile ? '0px !important' : undefined,
+                          paddingTop: isMobile ? '0px !important' : undefined,
+                          paddingLeft: isMobile ? '4px !important' : '3px',
+                          lineHeight: isMobile ? '1.2 !important' : '1.6',
+                          margin: isMobile ? '0 0 0 0 !important' : undefined,
+                          display: isMobile ? 'list-item !important' : undefined
                         }}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (
