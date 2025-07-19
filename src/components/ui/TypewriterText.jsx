@@ -76,7 +76,7 @@ function TypewriterText({ text, isStreaming = false }) {
   }, [charIndex, chars, text, isStreaming, displayedText]);
 
   return (
-    <div style={{ whiteSpace: isMobile ? 'pre-line' : 'pre-wrap' }}>
+    <div style={{ whiteSpace: 'pre-wrap' }}>
       <ReactMarkdown
         components={{
           // Custom rendering for markdown elements - SAME AS APP.JSX
