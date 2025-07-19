@@ -29,7 +29,6 @@ const SimpleVoiceRecorder = ({
   const MIN_RECORDING_TIME = 2000;    // 2 seconds minimum  
   const MAX_RECORDING_TIME = 30000;   // 30 seconds maximum
   
-  const isIOSPWA = window.navigator.standalone;
 
   // 🎵 AUDIO LEVEL MONITORING
   const startAudioLevelMonitoring = (stream) => {
@@ -102,7 +101,7 @@ const SimpleVoiceRecorder = ({
       
       const constraints = {
         audio: {
-          sampleRate: isIOSPWA ? 44100 : 16000,
+          sampleRate: 16000, // Standard rate for Google STT compatibility
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -144,7 +143,7 @@ const SimpleVoiceRecorder = ({
 
       const constraints = {
         audio: {
-          sampleRate: isIOSPWA ? 44100 : 16000,
+          sampleRate: 16000, // Standard rate for Google STT compatibility
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -158,8 +157,9 @@ const SimpleVoiceRecorder = ({
       // Start audio level monitoring
       startAudioLevelMonitoring(stream);
 
+      // 🔧 Force WEBM for better Google STT compatibility
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: isIOSPWA ? 'audio/mp4' : 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm;codecs=opus'
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -215,7 +215,7 @@ const SimpleVoiceRecorder = ({
           }
 
           const audioBlob = new Blob(audioChunksRef.current, { 
-            type: isIOSPWA ? 'audio/mp4' : 'audio/webm' 
+            type: 'audio/webm' 
           });
           
           if (audioBlob.size < 1000) {

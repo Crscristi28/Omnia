@@ -95,16 +95,13 @@ export default async function handler(req) {
     const audioEncoding = detectGoogleAudioEncoding(audioBuffer);
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
 
-    // 🔧 Detect sample rate from audio size and type (iOS PWA typically has larger files at 44100, others 16000)
-    const uint8Array = new Uint8Array(audioBuffer.slice(0, 12));
-    const isMP4 = uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70;
-    const sampleRate = isMP4 ? 44100 : 16000;
+    // 🔧 Use consistent 16000 Hz for Google STT (recorder now uses consistent rate)
+    const sampleRate = 16000;
     
     console.log('🎵 Audio analysis:', {
       encoding: audioEncoding,
       sampleRate: sampleRate,
-      audioSize: audioBuffer.byteLength,
-      isMP4: isMP4
+      audioSize: audioBuffer.byteLength
     });
 
     // 🔧 Google STT request with optimized settings
