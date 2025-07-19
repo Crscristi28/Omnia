@@ -4,10 +4,37 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
+// 🔧 MARKDOWN CLEANUP - Same as App.jsx
+function cleanMarkdownLists(text) {
+  if (!text) return text;
+  
+  // Fix excessive spacing in lists (multiple newlines between items)
+  let cleaned = text
+    // Remove backslashes that might appear in text
+    .replace(/\\/g, '')
+    // Aggressive: reduce any 2+ newlines to just 1 newline between list items
+    .replace(/\n{2,}/g, '\n\n')
+    // Then specifically between list items, make it single newline
+    .replace(/([\*•○▪◦]\s+[^\n]+)\n\n+(?=[\*•○▪◦])/g, '$1\n')
+    .replace(/(\d+[\.)]\s+[^\n]+)\n\n+(?=\d+[\).])/g, '$1\n')
+    // Between paragraphs and lists
+    .replace(/([^\n])\n\n+(?=[\*•○▪◦])/g, '$1\n\n')
+    .replace(/([^\n])\n\n+(?=\d+[\).])/g, '$1\n\n')
+    // Clean up any remaining triple+ newlines
+    .replace(/\n{3,}/g, '\n\n')
+    // Fix indented items
+    .replace(/\n+(\s+[\*•○▪◦])/g, '\n$1')
+    // Remove trailing spaces
+    .replace(/ +$/gm, '');
+    
+  return cleaned;
+}
+
 function TypewriterText({ text, isStreaming = false }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
   const chars = useMemo(() => Array.from(text), [text]);
+  const isMobile = window.innerWidth <= 768;
 
   useEffect(() => {
     if (text.length < displayedText.length) {
@@ -36,11 +63,20 @@ function TypewriterText({ text, isStreaming = false }) {
     <div style={{ whiteSpace: 'pre-wrap' }}>
       <ReactMarkdown
         components={{
-          // Custom rendering for markdown elements
-          p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>,
-          ul: ({ children }) => <ul style={{ marginLeft: '1.5em', marginTop: '0.5em', marginBottom: '0.5em' }}>{children}</ul>,
-          li: ({ children }) => <li style={{ marginBottom: '0.25em' }}>{children}</li>,
-          strong: ({ children }) => <strong style={{ fontWeight: '600' }}>{children}</strong>,
+          // Custom rendering for markdown elements - SAME AS APP.JSX
+          strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
+          ul: ({children}) => <ul style={{
+            marginLeft: isMobile ? '10px' : '20px', 
+            marginTop: isMobile ? '4px' : '8px', 
+            marginBottom: isMobile ? '4px' : '8px',
+            paddingLeft: '5px'
+          }}>{children}</ul>,
+          li: ({children}) => <li style={{
+            marginBottom: isMobile ? '0px' : '4px',
+            paddingLeft: '3px',
+            lineHeight: isMobile ? '1.4' : '1.6'
+          }}>{children}</li>,
+          p: ({ children }) => <p style={{ margin: '8px 0', lineHeight: '1.6' }}>{children}</p>,
           em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
           code: ({ inline, children }) => 
             inline ? (
@@ -71,7 +107,7 @@ function TypewriterText({ text, isStreaming = false }) {
           blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid rgba(255, 255, 255, 0.3)', paddingLeft: '1em', marginLeft: '0', marginTop: '0.5em', marginBottom: '0.5em', opacity: '0.8' }}>{children}</blockquote>,
         }}
       >
-        {displayedText}
+        {cleanMarkdownLists(displayedText)}
       </ReactMarkdown>
       {isStreaming && (
         <span style={{ 
