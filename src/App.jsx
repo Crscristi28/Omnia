@@ -1401,15 +1401,17 @@ function App() {
                         // Vlastní styly pro různé elementy
                         strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
                         ul: ({children}) => <ul style={{
-                          marginLeft: isMobile ? '10px' : '20px', 
-                          marginTop: isMobile ? '4px' : '8px', 
-                          marginBottom: isMobile ? '4px' : '8px',
-                          paddingLeft: '5px'
+                          marginLeft: isMobile ? '0px' : '20px', 
+                          marginTop: isMobile ? '0px' : '8px', 
+                          marginBottom: isMobile ? '0px' : '8px',
+                          paddingLeft: isMobile ? '16px' : '5px',
+                          listStylePosition: 'outside'
                         }}>{children}</ul>,
                         li: ({children}) => <li style={{
-                          marginBottom: isMobile ? '0px' : '4px',
-                          paddingLeft: '3px',
-                          lineHeight: isMobile ? '1.4' : '1.6'
+                          marginBottom: isMobile ? '-2px' : '4px',
+                          paddingLeft: isMobile ? '4px' : '3px',
+                          lineHeight: isMobile ? '1.3' : '1.6',
+                          marginTop: isMobile ? '0px' : 'auto'
                         }}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (
