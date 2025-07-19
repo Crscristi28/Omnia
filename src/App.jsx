@@ -1,4 +1,5 @@
 // 🚀 OMNIA - APP.JSX PART 1/3 - IMPORTS + STATE + EFFECTS (REDESIGNED)
+// 🔄 Force redeploy: 2025-01-19 23:17
 // ✅ ADDED: ChatSidebar + NewChatButton imports
 // ✅ ADDED: welcomeTexts for multilingual welcome
 // ✅ SIMPLIFIED: Removed complex scroll system
