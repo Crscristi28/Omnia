@@ -79,10 +79,10 @@ export default async function handler(req, res) {
       }]
     });
 
-    console.log('🚀 Sending to Gemini 2.5 Flash with Google Search grounding...');
+    console.log('🚀 Sending to Gemini 2.5 Flash with streaming and Google Search grounding...');
 
-    // Generate response
-    const result = await generativeModel.generateContent({
+    // Generate response with streaming
+    const result = await generativeModel.generateContentStream({
       contents: geminiMessages,
       generationConfig: {
         maxOutputTokens: max_tokens,
@@ -91,67 +91,39 @@ export default async function handler(req, res) {
         topK: 40
       }
     });
-
-    const response = result.response;
     
-    // Better error handling for response
-    if (!response.candidates || !response.candidates[0] || !response.candidates[0].content || !response.candidates[0].content.parts || !response.candidates[0].content.parts[0]) {
-      console.error('💥 Invalid response structure:', JSON.stringify(response, null, 2));
-      throw new Error('Gemini vrátil prázdnou odpověď');
-    }
-    
-    let textContent = response.candidates[0].content.parts[0].text || '';
-    
-    // Extract grounding metadata (sources)
-    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
-    const sources = extractSources(groundingMetadata);
+    let fullText = '';
+    let sources = [];
+    let searchNotified = false;
 
-    console.log('✅ Gemini response received, sources:', sources.length);
-
-    // Check if response is JSON structured
-    let isStructuredResponse = false;
-    let structuredData = null;
-    try {
-      if (textContent.trim().startsWith('{') && textContent.trim().endsWith('}')) {
-        structuredData = JSON.parse(textContent);
-        isStructuredResponse = true;
-        console.log('🎯 Detected structured JSON response');
-      }
-    } catch (e) {
-      // Not JSON, continue with regular text streaming
-    }
-
-    // Handle structured vs regular streaming
-    if (sources.length > 0) {
-      res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
-      await new Promise(resolve => setTimeout(resolve, 800));
-    }
-    
-    if (isStructuredResponse) {
-      // Send structured response directly
-      res.write(JSON.stringify({
-        type: 'completed',
-        fullText: textContent,
-        structured: structuredData,
-        sources: sources,
-        webSearchUsed: sources.length > 0
-      }) + '\n');
-    } else {
-      // Regular word-by-word streaming
-      const words = textContent.split(' ');
-      
-      for (const word of words) {
-        res.write(JSON.stringify({ type: 'text', content: word + ' ' }) + '\n');
-        await new Promise(resolve => setTimeout(resolve, 12));
+    // Process stream in real-time
+    for await (const item of result.stream) {
+      // Process grounding metadata (sources) as soon as they arrive
+      if (item.candidates && item.candidates[0].groundingMetadata) {
+        const extractedSources = extractSources(item.candidates[0].groundingMetadata);
+        if (extractedSources.length > 0 && !searchNotified) {
+          res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
+          await new Promise(resolve => setTimeout(resolve, 50)); // Short pause for UI
+          sources = extractedSources;
+          searchNotified = true;
+        }
       }
       
-      res.write(JSON.stringify({
-        type: 'completed',
-        fullText: textContent,
-        sources: sources,
-        webSearchUsed: sources.length > 0
-      }) + '\n');
+      // Process text parts
+      if (item.candidates && item.candidates[0].content.parts[0].text) {
+        const textChunk = item.candidates[0].content.parts[0].text;
+        fullText += textChunk; // Build complete text
+        res.write(JSON.stringify({ type: 'text', content: textChunk }) + '\n');
+      }
     }
+
+    // After stream completion, send final message with sources
+    res.write(JSON.stringify({
+      type: 'completed',
+      fullText: fullText,
+      sources: sources,
+      webSearchUsed: sources.length > 0
+    }) + '\n');
 
     console.log('✅ Gemini streaming completed');
     res.end();
