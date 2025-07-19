@@ -8,23 +8,39 @@ import ReactMarkdown from 'react-markdown';
 function cleanMarkdownLists(text) {
   if (!text) return text;
   
-  // Fix excessive spacing in lists (multiple newlines between items)
+  const isMobile = window.innerWidth <= 768;
+  
+  // Fix excessive spacing in lists
   let cleaned = text
     // Remove backslashes that might appear in text
-    .replace(/\\/g, '')
-    // Aggressive: reduce any 2+ newlines to just 1 newline between list items
-    .replace(/\n{2,}/g, '\n\n')
-    // Then specifically between list items, make it single newline
-    .replace(/([\*•○▪◦]\s+[^\n]+)\n\n+(?=[\*•○▪◦])/g, '$1\n')
-    .replace(/(\d+[\.)]\s+[^\n]+)\n\n+(?=\d+[\).])/g, '$1\n')
-    // Between paragraphs and lists
-    .replace(/([^\n])\n\n+(?=[\*•○▪◦])/g, '$1\n\n')
-    .replace(/([^\n])\n\n+(?=\d+[\).])/g, '$1\n\n')
-    // Clean up any remaining triple+ newlines
-    .replace(/\n{3,}/g, '\n\n')
-    // Fix indented items
-    .replace(/\n+(\s+[\*•○▪◦])/g, '\n$1')
-    // Remove trailing spaces
+    .replace(/\\/g, '');
+    
+  if (isMobile) {
+    // MOBILE: Ultra tight lists - NO spaces between bullets
+    cleaned = cleaned
+      // Remove ALL blank lines between list items
+      .replace(/([\*•○▪◦\-]\s+[^\n]+)\n+(?=\s*[\*•○▪◦\-])/g, '$1\n')
+      .replace(/(\d+[\.)]\s+[^\n]+)\n+(?=\s*\d+[\).])/g, '$1\n')
+      // Remove multiple newlines but keep one before new sections
+      .replace(/\n{3,}/g, '\n\n')
+      // Keep space after headers before lists
+      .replace(/(#{1,6}[^\n]+|[^\n]+:)\n+(?=[\*•○▪◦\-])/g, '$1\n\n')
+      // Remove extra spaces between any bullets
+      .replace(/([\*•○▪◦\-][^\n]+)\n\n+(?=[\*•○▪◦\-])/g, '$1\n');
+  } else {
+    // DESKTOP: Keep some spacing
+    cleaned = cleaned
+      .replace(/\n{2,}/g, '\n\n')
+      .replace(/([\*•○▪◦\-]\s+[^\n]+)\n\n+(?=[\*•○▪◦\-])/g, '$1\n')
+      .replace(/(\d+[\.)]\s+[^\n]+)\n\n+(?=\d+[\).])/g, '$1\n')
+      .replace(/([^\n])\n\n+(?=[\*•○▪◦\-])/g, '$1\n\n')
+      .replace(/([^\n])\n\n+(?=\d+[\).])/g, '$1\n\n')
+      .replace(/\n{3,}/g, '\n\n');
+  }
+  
+  // Common cleanup
+  cleaned = cleaned
+    .replace(/\n+(\s+[\*•○▪◦\-])/g, '\n$1')
     .replace(/ +$/gm, '');
     
   return cleaned;
