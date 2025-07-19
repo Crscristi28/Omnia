@@ -479,10 +479,25 @@ function App() {
     
     try {
       const audioBlob = await generateAudioForSentence(responseText, language);
-      await mobileAudioManager.playAudio(audioBlob);
-      console.log('✅ Audio playing instantly');
+      
+      // 🔧 Use same audio playback method as VoiceButton (simple HTML5 Audio)
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.onended = () => {
+        console.log('✅ Voice response audio ended');
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = (e) => {
+        console.error('❌ Voice response audio error:', e);
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      await audio.play();
+      console.log('✅ Voice response audio started playing');
     } catch (error) {
-      console.error('❌ Failed to generate audio:', error);
+      console.error('❌ Failed to generate or play audio:', error);
     }
   };
 
