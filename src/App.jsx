@@ -206,25 +206,20 @@ function cleanMarkdownLists(text) {
   
   // Fix excessive spacing in lists (multiple newlines between items)
   let cleaned = text
-    // First pass: normalize all multiple newlines to max 2
+    // Remove backslashes that might appear in text
+    .replace(/\\/g, '')
+    // Aggressive: reduce any 2+ newlines to just 1 newline between list items
+    .replace(/\n{2,}/g, '\n\n')
+    // Then specifically between list items, make it single newline
+    .replace(/([\*•○▪◦]\s+[^\n]+)\n\n+(?=[\*•○▪◦])/g, '$1\n')
+    .replace(/(\d+[\.)]\s+[^\n]+)\n\n+(?=\d+[\).])/g, '$1\n')
+    // Between paragraphs and lists
+    .replace(/([^\n])\n\n+(?=[\*•○▪◦])/g, '$1\n\n')
+    .replace(/([^\n])\n\n+(?=\d+[\).])/g, '$1\n\n')
+    // Clean up any remaining triple+ newlines
     .replace(/\n{3,}/g, '\n\n')
-    // Remove ALL blank lines between any list items (more aggressive)
-    .replace(/(\*\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
-    .replace(/(•\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
-    .replace(/(○\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
-    .replace(/(▪\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
-    .replace(/(◦\s+.*?)\n\n+(?=\s*[\*•○▪◦])/gs, '$1\n')
-    // Fix numbered lists
-    .replace(/(\d+\.\s+.*?)\n\n+(?=\s*\d+\.)/gs, '$1\n')
-    .replace(/(\d+\)\s+.*?)\n\n+(?=\s*\d+\))/gs, '$1\n')
-    // Remove blank lines before ANY list item (including first one after text)
-    .replace(/([^\n])\n\n+(\s*[\*•○▪◦])/g, '$1\n$2')
-    .replace(/([^\n])\n\n+(\s*\d+[\).])/g, '$1\n$2')
-    // Fix indented sublists
-    .replace(/\n\n+(\s+[\*•○▪◦])/g, '\n$1')
-    .replace(/\n\n+(\s+\d+[\).])/g, '\n$1')
-    // Clean up spaces at start of lines
-    .replace(/^(\s{4,})([\*•○▪◦])/gm, '  $2')
+    // Fix indented items
+    .replace(/\n+(\s+[\*•○▪◦])/g, '\n$1')
     // Remove trailing spaces
     .replace(/ +$/gm, '');
     
