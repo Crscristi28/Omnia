@@ -437,32 +437,32 @@ function App() {
         });
       }
       
-      console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
-      const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
+      console.log('🎵 Using Google TTS as primary');
+      const googleResponse = await fetch('/api/google-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ 
+          text: textToSpeak,  // Use sanitized text
+          language: language,
+          voice: 'natural'
+        })
+      });
       
-      console.log('✅ TTS Success - same path as VoiceButton');
-      return audioBlob;
+      if (!googleResponse.ok) {
+        throw new Error(`Google TTS failed: ${googleResponse.status}`);
+      }
+      
+      console.log('✅ Google TTS Success');
+      return await googleResponse.blob();
       
     } catch (error) {
-      console.error('💥 TTS generation failed:', error);
+      console.error('💥 Google TTS failed:', error);
       
       try {
-        console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
-        const googleResponse = await fetch('/api/google-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
-          body: JSON.stringify({ 
-            text: sentence,
-            language: language,
-            voice: 'natural'
-          })
-        });
-        
-        if (!googleResponse.ok) {
-          throw new Error(`Google TTS failed: ${googleResponse.status}`);
-        }
-        
-        return await googleResponse.blob();
+        console.warn('⚠️ Google failed, trying ElevenLabs TTS as fallback...');
+        const audioBlob = await elevenLabsService.generateSpeech(sentence);
+        console.log('✅ ElevenLabs fallback success');
+        return audioBlob;
       } catch (fallbackError) {
         console.error('💥 Both TTS services failed:', fallbackError);
         throw error;
@@ -566,8 +566,8 @@ function App() {
       
       const arrayBuffer = await audioBlob.arrayBuffer();
       
-      // 🔧 Try ElevenLabs STT first (primary)
-      let response = await fetch('/api/elevenlabs-stt', {
+      // 🔧 Try Google STT first (primary for now)
+      let response = await fetch('/api/google-stt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -576,21 +576,21 @@ function App() {
       });
 
       let data;
-      let usedService = 'ElevenLabs';
+      let usedService = 'Google';
 
-      // 🔧 If ElevenLabs fails, try Google STT as fallback
+      // 🔧 If Google fails, try ElevenLabs STT as fallback
       if (!response.ok) {
-        console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
-        showNotification('Zkouším Google STT...', 'info');
+        console.warn('⚠️ Google STT failed, trying ElevenLabs fallback...');
+        showNotification('Zkouším ElevenLabs STT...', 'info');
         
-        response = await fetch('/api/google-stt', {
+        response = await fetch('/api/elevenlabs-stt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/octet-stream',
           },
           body: arrayBuffer
         });
-        usedService = 'Google';
+        usedService = 'ElevenLabs';
       }
 
       if (!response.ok) {
