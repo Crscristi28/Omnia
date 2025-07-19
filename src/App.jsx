@@ -657,15 +657,12 @@ function App() {
     }));
   };
 
-  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE (UNCHANGED)
+  // 🆕 VOICE SCREEN OPEN/CLOSE - Now works with ALL models!
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
-    if (model !== 'gpt-4o') {
-      console.log('🎤 Voice mode: Auto-switching to GPT for faster responses');
-      setPreviousModel(model);
-      setModel('gpt-4o');
-    }
+    // Removed auto-switch to GPT - all models can use voice now!
+    console.log('🎤 Voice mode opened with:', model);
     
     mobileAudioManager.unlockAudioContext();
   };
@@ -673,11 +670,8 @@ function App() {
   const handleVoiceScreenClose = () => {
     setShowVoiceScreen(false);
     
-    if (previousModel && previousModel !== 'gpt-4o') {
-      console.log('🔄 Voice closed: Restoring previous model:', previousModel);
-      setModel(previousModel);
-      setPreviousModel(null);
-    }
+    // No need to restore model anymore - we keep the current one
+    console.log('🔄 Voice closed, keeping model:', model);
   };
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
