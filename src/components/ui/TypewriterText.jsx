@@ -75,8 +75,10 @@ function TypewriterText({ text, isStreaming = false }) {
     return () => clearTimeout(timeout);
   }, [charIndex, chars, text, isStreaming, displayedText]);
 
+  const isMobile = window.innerWidth <= 768;
+  
   return (
-    <div style={{ whiteSpace: 'pre-wrap' }}>
+    <div style={{ whiteSpace: isMobile ? 'normal' : 'pre-wrap' }}>
       <ReactMarkdown
         components={{
           // Custom rendering for markdown elements - SAME AS APP.JSX
