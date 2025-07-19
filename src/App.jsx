@@ -924,14 +924,17 @@ function App() {
 
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
+    console.log('🎙️ Voice screen state:', { showVoiceScreen });
     
     const detectedLang = detectLanguage(text);
     setUserLanguage(detectedLang);
     console.log('🌍 Voice detected language:', detectedLang);
     
     if (showVoiceScreen) {
+      console.log('🎙️ Calling handleSend with fromVoice=true');
       await handleSend(text, true);
     } else {
+      console.log('🎙️ Voice screen closed, setting input instead');
       setInput(text);
     }
   };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
