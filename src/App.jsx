@@ -757,6 +757,8 @@ function App() {
           setTimeout(async () => {
             await processVoiceResponse(finalText, detectedLang);
           }, 500);
+        } else if (fromVoice) {
+          console.log('🎵 Voice response debug:', { fromVoice, showVoiceScreen, hasFinalText: !!finalText });
         }
       }
       else if (model === 'gpt-4o') {
@@ -786,6 +788,8 @@ function App() {
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
           await processVoiceResponse(responseText, detectedLang);
+        } else if (fromVoice) {
+          console.log('🎵 GPT Voice response debug:', { fromVoice, showVoiceScreen, hasResponseText: !!responseText });
         }
       }
       else if (model === 'sonar') {
@@ -903,6 +907,8 @@ function App() {
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
           await processVoiceResponse(responseText, detectedLang);
+        } else if (fromVoice) {
+          console.log('🎵 Gemini Voice response debug:', { fromVoice, showVoiceScreen, hasResponseText: !!responseText });
         }
       }
 
