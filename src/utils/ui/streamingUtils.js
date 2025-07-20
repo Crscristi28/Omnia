@@ -226,18 +226,18 @@ export const streamMessageWithEffect = (
 ) => {
  let currentStreamedText = '';
  
- // Show complete text immediately - no word-by-word streaming
+ // Show text as it streams from API, but without word-by-word delays
  setMessages([
    ...previousMessages,
    { 
      sender: 'bot', 
      text: text, 
-     isStreaming: false,
+     isStreaming: true, // Keep streaming state for cursor and scrolling
      sources: sources
    }
  ]);
 
- // Smart scroll after showing complete text
+ // Smart scroll during streaming
  if (scrollContainer) {
    smartScrollToBottom(scrollContainer, {
      threshold: 150,
@@ -245,7 +245,18 @@ export const streamMessageWithEffect = (
    });
  }
 
- const stopStreaming = () => {}; // No-op function for compatibility
+ const stopStreaming = () => {
+   // When streaming actually finishes, remove streaming state
+   setMessages([
+     ...previousMessages,
+     { 
+       sender: 'bot', 
+       text: text, 
+       isStreaming: false,
+       sources: sources
+     }
+   ]);
+ };
 
  return stopStreaming;
 };
