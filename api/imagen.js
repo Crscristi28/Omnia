@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       parameters: {
         sampleCount: Math.min(Math.max(1, imageCount), 4), // Limit 1-4 images
         aspectRatio: "1:1", // Square images
-        outputMimeType: "image/jpeg"
+        outputMimeType: "image/png"
       }
     };
 
