@@ -1420,6 +1420,15 @@ function App() {
                       <img 
                         src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
                         alt={`Generated image for: ${msg.text}`}
+                        onError={(e) => {
+                          console.error('❌ Image load error on iPhone:', e);
+                          e.target.style.display = 'none';
+                          // Show error message
+                          const errorDiv = document.createElement('div');
+                          errorDiv.innerHTML = '❌ Obrázek se nepodařilo zobrazit na tomto zařízení';
+                          errorDiv.style.cssText = 'padding: 1rem; background: rgba(255,0,0,0.1); border-radius: 8px; color: #ff6b6b;';
+                          e.target.parentNode.appendChild(errorDiv);
+                        }}
                         style={{
                           maxWidth: isMobile ? '280px' : '400px',
                           width: '100%',
