@@ -7,8 +7,17 @@ import ReactMarkdown from 'react-markdown';
 function TypewriterText({ text, isStreaming = false }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
+  const [debouncedText, setDebouncedText] = useState('');
   const chars = useMemo(() => Array.from(text), [text]);
   const isMobile = window.innerWidth <= 768; // Same logic as App.jsx
+
+  // Debounced markdown parsing - only re-parse every 100ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedText(displayedText);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [displayedText]);
 
   useEffect(() => {
     if (text.length < displayedText.length) {
@@ -44,13 +53,26 @@ function TypewriterText({ text, isStreaming = false }) {
         components={{
           // Custom rendering for markdown elements
           p: ({ children }) => <p style={{ margin: '6px 0', lineHeight: window.innerWidth <= 768 ? '1.3' : '1.6' }}>{children}</p>,
-          ul: ({ children }) => <ul style={{ marginLeft: '20px', marginTop: '8px', marginBottom: '8px' }}>{children}</ul>,
+          ul: ({ children }) => <ul style={{ 
+            marginLeft: '20px', 
+            marginTop: '8px', 
+            marginBottom: '8px',
+            minHeight: '24px',
+            transition: 'all 0.2s ease'
+          }}>{children}</ul>,
           li: ({ children }) => <li style={{ 
             marginBottom: isMobile ? '2px' : '4px',
             display: 'list-item',
-            listStylePosition: 'outside'
+            listStylePosition: 'outside',
+            minHeight: '20px',
+            transition: 'all 0.2s ease'
           }}>{children}</li>,
-          strong: ({ children }) => <strong style={{ color: '#FFD700', fontWeight: '600' }}>{children}</strong>,
+          strong: ({ children }) => <strong style={{ 
+            color: '#FFD700', 
+            fontWeight: '600',
+            display: 'inline',
+            transition: 'all 0.2s ease'
+          }}>{children}</strong>,
           em: ({ children }) => <em style={{ fontStyle: 'italic', color: '#E0E0E0' }}>{children}</em>,
           code: ({ inline, children }) => 
             inline ? (
@@ -74,14 +96,35 @@ function TypewriterText({ text, isStreaming = false }) {
                 <code>{children}</code>
               </pre>
             ),
-          h1: ({ children }) => <h1 style={{ fontSize: '1.4em', fontWeight: '600', margin: '16px 0 8px 0', color: '#FFD700' }}>{children}</h1>,
-          h2: ({ children }) => <h2 style={{ fontSize: '1.2em', fontWeight: '600', margin: '12px 0 6px 0', color: '#FFD700' }}>{children}</h2>,
-          h3: ({ children }) => <h3 style={{ fontSize: '1.1em', fontWeight: '600', margin: '10px 0 5px 0', color: '#FFD700' }}>{children}</h3>,
+          h1: ({ children }) => <h1 style={{ 
+            fontSize: '1.4em', 
+            fontWeight: '600', 
+            margin: '16px 0 8px 0', 
+            color: '#FFD700',
+            minHeight: '1.5em',
+            transition: 'all 0.2s ease'
+          }}>{children}</h1>,
+          h2: ({ children }) => <h2 style={{ 
+            fontSize: '1.2em', 
+            fontWeight: '600', 
+            margin: '12px 0 6px 0', 
+            color: '#FFD700',
+            minHeight: '1.3em',
+            transition: 'all 0.2s ease'
+          }}>{children}</h2>,
+          h3: ({ children }) => <h3 style={{ 
+            fontSize: '1.1em', 
+            fontWeight: '600', 
+            margin: '10px 0 5px 0', 
+            color: '#FFD700',
+            minHeight: '1.2em',
+            transition: 'all 0.2s ease'
+          }}>{children}</h3>,
           a: ({ href, children }) => <a href={href} style={{ color: '#00ffff', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">{children}</a>,
           blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid rgba(255, 255, 255, 0.3)', paddingLeft: '12px', marginLeft: '0', marginTop: '8px', marginBottom: '8px', opacity: '0.9' }}>{children}</blockquote>,
         }}
       >
-        {displayedText}
+        {debouncedText}
       </ReactMarkdown>
       {isStreaming && (
         <span style={{ 
