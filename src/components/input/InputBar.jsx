@@ -218,7 +218,7 @@ const InputBar = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isLoading ? t('omniaPreparingResponse') : "Chat with Omnia..."}
+              placeholder={isLoading ? t('omniaPreparingResponse') : t('chatPlaceholder')}
               disabled={isLoading}
               rows={1}
               style={{
