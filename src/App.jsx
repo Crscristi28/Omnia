@@ -1421,6 +1421,7 @@ function App() {
                         src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
                         alt={`Generated image for: ${msg.text}`}
                         style={{
+                          maxWidth: isMobile ? '280px' : '400px',
                           width: '100%',
                           height: 'auto',
                           borderRadius: '12px',
