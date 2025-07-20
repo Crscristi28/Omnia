@@ -155,6 +155,7 @@ const InputBar = ({
   isLoading,
   isRecording,
   isAudioPlaying,
+  isImageMode = false,
   uiLanguage = 'cs'
 }) => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
@@ -326,17 +327,26 @@ const InputBar = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    // Aktivní styl když je image mode zapnutý
+                    background: isImageMode ? 'rgba(139, 69, 19, 0.3)' : 'transparent', // hnědá barva pro palette
+                    border: isImageMode ? '1px solid rgba(139, 69, 19, 0.5)' : buttonStyle.border,
+                    boxShadow: isImageMode ? '0 0 10px rgba(139, 69, 19, 0.4)' : 'none',
                   }}
                   onMouseEnter={(e) => {
-                    if (!isLoading) e.target.style.opacity = '0.7';
+                    if (!isLoading && !isImageMode) e.target.style.opacity = '0.7';
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.opacity = '1';
+                    if (!isImageMode) e.target.style.opacity = '1';
                   }}
                   title={t('generateImage') || 'Generate Image'}
                 >
-                  <Palette size={iconSize} strokeWidth={2} />
-                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{t('generateImage') || 'Image'}</span>
+                  <Palette size={iconSize} strokeWidth={2} style={{
+                    color: isImageMode ? '#D2691E' : 'inherit' // oranžová barva když aktivní
+                  }} />
+                  <span style={{ 
+                    fontSize: isMobile ? '14px' : '16px',
+                    color: isImageMode ? '#D2691E' : 'inherit'
+                  }}>{t('generateImage') || 'Image'}</span>
                 </button>
               </div>
               

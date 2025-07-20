@@ -1633,6 +1633,7 @@ function App() {
         isLoading={loading || streaming}
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}
+        isImageMode={isImageMode}
         uiLanguage={uiLanguage}
       />
 
