@@ -1414,7 +1414,7 @@ function App() {
                       marginTop: '1rem',
                       paddingTop: '0.8rem',
                       borderTop: '1px solid rgba(255,255,255,0.1)',
-                      justifyContent: 'flex-end'
+                      justifyContent: 'flex-start'
                     }}>
                       <SourcesButton 
                         sources={msg.sources || []}
