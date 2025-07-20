@@ -279,7 +279,7 @@ const InputBar = ({
                   }}
                   title={t('multimodalFeatures')}
                 >
-                  <Plus size={iconSize} strokeWidth={2} />
+                  <Plus size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                 </button>
                 
                 {/* 2. RESEARCH BUTTON */}
@@ -295,7 +295,7 @@ const InputBar = ({
                   }}
                   title={t('deepSearch')}
                 >
-                  <Search size={iconSize} strokeWidth={2} />
+                  <Search size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                 </button>
                 
                 {/* 3. IMAGE GENERATION BUTTON */}
@@ -315,7 +315,7 @@ const InputBar = ({
                     size={iconSize} 
                     strokeWidth={2} 
                     style={{
-                      color: isImageMode ? '#3B82F6' : 'rgba(255, 255, 255, 0.7)'
+                      color: isImageMode ? '#F59E0B' : 'rgba(255, 255, 255, 0.7)'
                     }}
                   />
                 </button>
