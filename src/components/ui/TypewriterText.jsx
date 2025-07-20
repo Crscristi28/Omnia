@@ -11,15 +11,17 @@ function TypewriterText({ text, isStreaming = false }) {
   const isMobile = window.innerWidth <= 768; // Same logic as App.jsx
 
   useEffect(() => {
-    if (text.length < displayedText.length) {
-      setDisplayedText('');
-      setCharIndex(0);
+    if (isStreaming) {
+      // During streaming: show complete text blocks as they arrive
+      setDisplayedText(text);
+      setCharIndex(text.length);
       return;
     }
 
-    if (isStreaming) {
-      setDisplayedText(text);
-      setCharIndex(text.length);
+    // Non-streaming: still use typewriter effect for final messages
+    if (text.length < displayedText.length) {
+      setDisplayedText('');
+      setCharIndex(0);
       return;
     }
 
