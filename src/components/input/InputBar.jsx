@@ -292,14 +292,8 @@ const InputBar = ({
                   disabled={isLoading || !input.trim()}
                   style={{
                     ...buttonStyle,
-                    width: 'auto',
-                    paddingLeft: isMobile ? '12px' : '16px',
-                    paddingRight: isMobile ? '12px' : '16px',
                     opacity: isLoading || !input.trim() ? 0.5 : 1,
                     cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
                   }}
                   onMouseEnter={(e) => {
                     if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
@@ -310,7 +304,6 @@ const InputBar = ({
                   title={t('deepSearch')}
                 >
                   <Search size={iconSize} strokeWidth={2} />
-                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{t('deepSearch')}</span>
                 </button>
                 
                 {/* 3. IMAGE GENERATION BUTTON */}
