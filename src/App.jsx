@@ -963,7 +963,7 @@ function App() {
               e.target.style.opacity = '1';
             }
           }}
-          title="Chat History & Settings"
+          title={t('chatHistory')}
         >
           <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
         </button>
@@ -1211,7 +1211,7 @@ function App() {
               e.target.style.opacity = '1';
             }
           }}
-          title="New Chat"
+          title={t('newChatButton')}
         >
           <MessageCircle size={isMobile ? 20 : 24} strokeWidth={2} />
         </button>

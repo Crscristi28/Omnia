@@ -266,7 +266,7 @@ const InputBar = ({
                   onMouseLeave={(e) => {
                     e.target.style.opacity = '1';
                   }}
-                  title="Multimodal Features"
+                  title={t('multimodalFeatures')}
                 >
                   <Plus size={iconSize} strokeWidth={2} />
                 </button>
@@ -292,10 +292,10 @@ const InputBar = ({
                   onMouseLeave={(e) => {
                     e.target.style.opacity = '1';
                   }}
-                  title="Deep Search"
+                  title={t('deepSearch')}
                 >
                   <Search size={iconSize} strokeWidth={2} />
-                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>Research</span>
+                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{t('deepSearch')}</span>
                 </button>
               </div>
               

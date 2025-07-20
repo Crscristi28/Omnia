@@ -2,6 +2,7 @@
 import React from 'react';
 import { MiniOmniaLogo } from '../ui/OmniaLogos.jsx';
 import OmniaArrowButton from '../ui/OmniaArrowButton.jsx';
+import { getTranslation } from '../../utils/text';
 
 const InputButtons = ({
   onPlusClick,
@@ -17,6 +18,7 @@ const InputButtons = ({
 }) => {
   const isMobile = window.innerWidth <= 768;
   const buttonSize = isMobile ? 54 : 60;
+  const t = getTranslation(uiLanguage);
 
   return (
     <>
@@ -40,7 +42,7 @@ const InputButtons = ({
           opacity: isLoading ? 0.5 : 1,
           boxShadow: '0 4px 12px rgba(107, 115, 255, 0.4)'
         }}
-        title="Plus Menu (Coming Soon)"
+        title={t('plusMenu')}
       >
         +
       </button>
@@ -65,7 +67,7 @@ const InputButtons = ({
           opacity: isLoading ? 0.5 : 1,
           boxShadow: '0 4px 12px rgba(0, 255, 136, 0.4)'
         }}
-        title="Deep Search"
+        title={t('deepSearch')}
       >
         🔍
       </button>

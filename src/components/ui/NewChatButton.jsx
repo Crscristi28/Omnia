@@ -3,13 +3,16 @@
 // 🚀 Chat bubble tvar jako na obrázku
 
 import React from 'react';
+import { getTranslation } from '../../utils/text';
 
 const NewChatButton = ({ 
   onClick, 
   disabled = false,
-  size = 'default' // 'small' | 'default' | 'large'
+  size = 'default', // 'small' | 'default' | 'large'
+  uiLanguage = 'cs'
 }) => {
   const isMobile = window.innerWidth <= 768;
+  const t = getTranslation(uiLanguage);
   
   // 📐 RESPONSIVE SIZES
   const sizes = {
@@ -39,7 +42,7 @@ const NewChatButton = ({
         outline: 'none',
         position: 'relative'
       }}
-      title="New Chat"
+      title={t('newChatButton')}
     >
       {/* 💬 CHAT BUBBLE SHAPE */}
       <svg 
@@ -178,7 +181,7 @@ export const SimplePlusButton = ({
           e.target.style.transform = 'scale(1.05)';
         }
       }}
-      title="New Chat"
+      title={t('newChatButton')}
     >
       +
     </button>

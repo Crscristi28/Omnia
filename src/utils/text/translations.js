@@ -40,7 +40,13 @@ export const uiTexts = {
     voicePermissionError: "Nepodařilo se získat přístup k mikrofonu",
     apiError: "Chyba API serveru",
     unknownError: "Neočekávaná chyba",
-    retryAction: "Klepněte pro opakování"
+    retryAction: "Klepněte pro opakování",
+    chatHistory: "Historie chatu a nastavení",
+    newChatButton: "Nový chat",
+    multimodalFeatures: "Multimodální funkce",
+    deepSearch: "Hluboké vyhledávání",
+    plusMenu: "Plus menu (již brzy)",
+    chatPlaceholder: "Chatujte s Omnia..."
   },
   en: {
     newChat: "New chat",
@@ -80,7 +86,13 @@ export const uiTexts = {
     voicePermissionError: "Could not access microphone",
     apiError: "API server error",
     unknownError: "Unexpected error",
-    retryAction: "Click to retry"
+    retryAction: "Click to retry",
+    chatHistory: "Chat History & Settings",
+    newChatButton: "New Chat",
+    multimodalFeatures: "Multimodal Features",
+    deepSearch: "Deep Search",
+    plusMenu: "Plus Menu (Coming Soon)",
+    chatPlaceholder: "Chat with Omnia..."
   },
   ro: {
     newChat: "Chat nou",
@@ -120,7 +132,13 @@ export const uiTexts = {
     voicePermissionError: "Nu s-a putut accesa microfonul",
     apiError: "Eroare server API",
     unknownError: "Eroare neașteptată",
-    retryAction: "Apasă pentru a reîncerca"
+    retryAction: "Apasă pentru a reîncerca",
+    chatHistory: "Istoricul chat-ului și setări",
+    newChatButton: "Chat nou",
+    multimodalFeatures: "Funcții multimodale",
+    deepSearch: "Căutare avansată",
+    plusMenu: "Meniu plus (în curând)",
+    chatPlaceholder: "Conversează cu Omnia..."
   }
 };
 
