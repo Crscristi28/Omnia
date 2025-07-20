@@ -1476,8 +1476,8 @@ function App() {
                     components={{
                       // Vlastní styly pro různé elementy
                       strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
-                      ul: ({children}) => <ul style={{marginLeft: '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: '20px'}}>{children}</ul>,
-                      ol: ({children}) => <ol style={{marginLeft: '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: '20px'}}>{children}</ol>,
+                      ul: ({children}) => <ul style={{marginLeft: isMobile ? '10px' : '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: isMobile ? '15px' : '20px'}}>{children}</ul>,
+                      ol: ({children}) => <ol style={{marginLeft: isMobile ? '10px' : '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: isMobile ? '15px' : '20px'}}>{children}</ol>,
                       li: ({children}) => <li style={{
                         marginBottom: isMobile ? '2px' : '4px',
                         display: 'list-item',
