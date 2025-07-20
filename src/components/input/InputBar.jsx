@@ -318,16 +318,21 @@ const InputBar = ({
                   onClick={handleImageGenerate}
                   disabled={isLoading}
                   style={{
-                    ...buttonStyle,
-                    opacity: isLoading ? 0.5 : 1,
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px',
                     cursor: isLoading ? 'not-allowed' : 'pointer',
-                    // Jednoduché modré rozsvícení
-                    background: isImageMode ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
-                    border: isImageMode ? '1px solid rgba(59, 130, 246, 0.5)' : buttonStyle.border,
+                    opacity: isLoading ? 0.5 : 1,
                   }}
                   title={t('generateImage') || 'Generate Image'}
                 >
-                  <Palette size={iconSize} strokeWidth={2} />
+                  <Palette 
+                    size={iconSize} 
+                    strokeWidth={2} 
+                    style={{
+                      color: isImageMode ? '#3B82F6' : 'rgba(255, 255, 255, 0.7)'
+                    }}
+                  />
                 </button>
               </div>
               
