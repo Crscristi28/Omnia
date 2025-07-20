@@ -238,6 +238,9 @@ function App() {
   // 🆕 STREAMING STATE - For controlling streaming effect
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
   
+  // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
+  const [isImageMode, setIsImageMode] = useState(false);
+  
   // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
@@ -674,6 +677,64 @@ function App() {
       const messagesWithUser = [...messages, userMessage];
       setMessages(messagesWithUser);
       sessionManager.saveMessages(messagesWithUser);
+
+      // 🎨 IMAGE GENERATION MODE
+      if (isImageMode) {
+        console.log('🎨 Image generation mode - calling Imagen API');
+        
+        try {
+          const response = await fetch('/api/imagen', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              prompt: textInput,
+              imageCount: 1
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Image generation failed: HTTP ${response.status}`);
+          }
+
+          const result = await response.json();
+          
+          if (result.success && result.images && result.images.length > 0) {
+            const imageMessage = {
+              sender: 'bot',
+              text: `🎨 Generated image for: "${textInput}"`,
+              image: result.images[0], // Contains base64, mimeType, etc.
+              isStreaming: false
+            };
+            
+            const finalMessages = [...messagesWithUser, imageMessage];
+            setMessages(finalMessages);
+            sessionManager.saveMessages(finalMessages);
+            
+            showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
+          } else {
+            throw new Error('No images generated');
+          }
+          
+        } catch (imageError) {
+          console.error('💥 Image generation error:', imageError);
+          
+          const errorMessage = {
+            sender: 'bot',
+            text: `❌ Nepodařilo se vygenerovat obrázek: ${imageError.message}`,
+            isStreaming: false
+          };
+          
+          const finalMessages = [...messagesWithUser, errorMessage];
+          setMessages(finalMessages);
+          sessionManager.saveMessages(finalMessages);
+          
+          showNotification('Chyba při generování obrázku', 'error');
+        }
+        
+        // Reset to chat mode after image generation
+        setIsImageMode(false);
+        return;
+      }
 
       let responseText = '';
 
@@ -1347,6 +1408,47 @@ function App() {
                     </span>
                   </div>
                   
+                  {/* 🎨 GENERATED IMAGE - Display if message contains image */}
+                  {msg.image && (
+                    <div style={{
+                      marginTop: '1rem',
+                      marginBottom: '1rem',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      maxWidth: '100%'
+                    }}>
+                      <img 
+                        src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
+                        alt={`Generated image for: ${msg.text}`}
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+                        }}
+                        onLoad={() => {
+                          // Scroll to show the generated image
+                          setTimeout(() => {
+                            smartScrollToBottom(mainContentRef.current, {
+                              behavior: 'smooth',
+                              force: true
+                            });
+                          }, 100);
+                        }}
+                      />
+                      {msg.image.enhancedPrompt && msg.image.enhancedPrompt !== msg.text && (
+                        <div style={{
+                          marginTop: '0.5rem',
+                          fontSize: '0.85rem',
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          fontStyle: 'italic'
+                        }}>
+                          Enhanced prompt: {msg.image.enhancedPrompt}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   <ReactMarkdown 
                     components={{
                       // Vlastní styly pro různé elementy
@@ -1503,6 +1605,7 @@ function App() {
         onSend={() => handleSend()}
         onSTT={toggleSTT}
         onVoiceScreen={handleVoiceScreenOpen}
+        onImageGenerate={() => setIsImageMode(true)}
         isLoading={loading || streaming}
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}

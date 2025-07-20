@@ -9,7 +9,7 @@ import { getTranslation } from '../../utils/text';
 // Using Lucide React icons instead of custom SVG components
 
 // PLUS MENU
-const PlusMenu = ({ isOpen, onClose, buttonRef, uiLanguage = 'cs' }) => {
+const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
   const menuItems = [
@@ -94,8 +94,14 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, uiLanguage = 'cs' }) => {
             <button
               key={item.key}
               onClick={() => {
-                console.log(`${item.key} clicked - Coming Soon!`);
-                onClose();
+                if (item.key === 'generate' && onImageGenerate) {
+                  console.log('🎨 Activating image generation mode');
+                  onImageGenerate();
+                  onClose();
+                } else {
+                  console.log(`${item.key} clicked - Coming Soon!`);
+                  onClose();
+                }
               }}
               style={{
                 display: 'flex',
@@ -145,6 +151,7 @@ const InputBar = ({
   onSend,
   onSTT,
   onVoiceScreen,
+  onImageGenerate,
   isLoading,
   isRecording,
   isAudioPlaying,
@@ -363,6 +370,7 @@ const InputBar = ({
         isOpen={showPlusMenu}
         onClose={() => setShowPlusMenu(false)}
         buttonRef={plusButtonRef}
+        onImageGenerate={onImageGenerate}
         uiLanguage={uiLanguage}
       />
     </>
