@@ -1420,12 +1420,35 @@ function App() {
                       <img 
                         src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
                         alt={`Generated image for: ${msg.text}`}
+                        onClick={() => {
+                          // Create a temporary link to open image in new tab/native viewer
+                          const link = document.createElement('a');
+                          link.href = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                          link.download = `omnia-image-${Date.now()}.png`;
+                          link.target = '_blank';
+                          
+                          // For iOS, this opens in native viewer
+                          if (isMobile) {
+                            window.open(link.href, '_blank');
+                          } else {
+                            // For desktop, download the image
+                            link.click();
+                          }
+                        }}
                         style={{
                           maxWidth: isMobile ? '280px' : '400px',
                           width: '100%',
                           height: 'auto',
                           borderRadius: '12px',
-                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'scale(1.02)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
                         }}
                         onLoad={() => {
                           // Scroll to show the generated image
