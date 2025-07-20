@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { SimpleVoiceRecorder } from '../voice';
-import { MiniOmniaLogo, TypewriterText } from '../ui';
+import { MiniOmniaLogo } from '../ui';
 
 const VoiceScreen = ({ 
   isOpen,
@@ -272,7 +272,14 @@ const VoiceScreen = ({
                 <MiniOmniaLogo size={16} isAudioPlaying={isOmniaSpeaking} />
                 Omnia {isOmniaSpeaking && '🔊 mluví...'}
               </div>
-              <TypewriterText text={currentResponse} isStreaming={isLoading} />
+              <div style={{ 
+                whiteSpace: 'pre-wrap',
+                fontSize: '1rem',
+                lineHeight: '1.5',
+                color: '#FFFFFF'
+              }}>
+                {currentResponse}
+              </div>
             </div>
           </div>
         )}
