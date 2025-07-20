@@ -256,6 +256,11 @@ export const streamMessageWithEffect = (
    ]);
  };
 
+ // Auto-stop streaming after a short delay to show buttons
+ setTimeout(() => {
+   stopStreaming();
+ }, 1000);
+
  return stopStreaming;
 };
 
