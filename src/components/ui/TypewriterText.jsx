@@ -7,17 +7,8 @@ import ReactMarkdown from 'react-markdown';
 function TypewriterText({ text, isStreaming = false }) {
   const [displayedText, setDisplayedText] = useState('');
   const [charIndex, setCharIndex] = useState(0);
-  const [debouncedText, setDebouncedText] = useState('');
   const chars = useMemo(() => Array.from(text), [text]);
   const isMobile = window.innerWidth <= 768; // Same logic as App.jsx
-
-  // Debounced markdown parsing - only re-parse every 100ms
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedText(displayedText);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [displayedText]);
 
   useEffect(() => {
     if (text.length < displayedText.length) {
@@ -124,7 +115,7 @@ function TypewriterText({ text, isStreaming = false }) {
           blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid rgba(255, 255, 255, 0.3)', paddingLeft: '12px', marginLeft: '0', marginTop: '8px', marginBottom: '8px', opacity: '0.9' }}>{children}</blockquote>,
         }}
       >
-        {debouncedText}
+        {displayedText}
       </ReactMarkdown>
       {isStreaming && (
         <span style={{ 
