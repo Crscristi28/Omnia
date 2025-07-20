@@ -40,7 +40,7 @@ function TypewriterText({ text, isStreaming = false }) {
           p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>,
           ul: ({ children }) => <ul style={{ marginLeft: '1.5em', marginTop: '0.5em', marginBottom: '0.5em' }}>{children}</ul>,
           li: ({ children }) => <li style={{ marginBottom: '0.25em' }}>{children}</li>,
-          strong: ({ children }) => <strong style={{ fontWeight: '600' }}>{children}</strong>,
+          strong: ({ children }) => <strong style={{ color: '#FFD700', fontWeight: '600' }}>{children}</strong>,
           em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
           code: ({ inline, children }) => 
             inline ? (
