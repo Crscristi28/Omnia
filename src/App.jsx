@@ -1394,8 +1394,7 @@ function App() {
                     marginBottom: '0.8rem',
                     display: 'flex', 
                     alignItems: 'center', 
-                    paddingBottom: '0.6rem', 
-                    borderBottom: '1px solid rgba(255,255,255,0.1)'
+                    paddingBottom: '0.6rem'
                   }}>
                     <span style={{ 
                       fontWeight: '600', 
@@ -1539,7 +1538,6 @@ function App() {
                       gap: '10px', 
                       marginTop: '1rem',
                       paddingTop: '0.8rem',
-                      borderTop: '1px solid rgba(255,255,255,0.1)',
                       justifyContent: 'flex-start'
                     }}>
                       <SourcesButton 
