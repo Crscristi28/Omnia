@@ -1333,7 +1333,6 @@ function App() {
                     marginBottom: '0.8rem',
                     display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'space-between',
                     paddingBottom: '0.6rem', 
                     borderBottom: '1px solid rgba(255,255,255,0.1)'
                   }}>
@@ -1346,22 +1345,6 @@ function App() {
                       <ChatOmniaLogo size={18} />
                       Omnia {msg.isStreaming ? ' • streaming' : ''}
                     </span>
-                    {!msg.isStreaming && (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        {/* 🔗 SOURCES BUTTON - UNCHANGED */}
-                        <SourcesButton 
-                          sources={msg.sources || []}
-                          onClick={() => handleSourcesClick(msg.sources || [])}
-                          language={detectLanguage(msg.text)}
-                        />
-                        <VoiceButton 
-                          text={msg.text} 
-                          onAudioStart={() => setIsAudioPlaying(true)}
-                          onAudioEnd={() => setIsAudioPlaying(false)}
-                        />
-                        <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
-                      </div>
-                    )}
                   </div>
                   
                   <ReactMarkdown 
@@ -1422,6 +1405,30 @@ function App() {
                   >
                     {msg.text || ''}
                   </ReactMarkdown>
+                  
+                  {/* 🔘 ACTION BUTTONS - Moved below message */}
+                  {!msg.isStreaming && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '10px', 
+                      marginTop: '1rem',
+                      paddingTop: '0.8rem',
+                      borderTop: '1px solid rgba(255,255,255,0.1)',
+                      justifyContent: 'flex-end'
+                    }}>
+                      <SourcesButton 
+                        sources={msg.sources || []}
+                        onClick={() => handleSourcesClick(msg.sources || [])}
+                        language={detectLanguage(msg.text)}
+                      />
+                      <VoiceButton 
+                        text={msg.text} 
+                        onAudioStart={() => setIsAudioPlaying(true)}
+                        onAudioEnd={() => setIsAudioPlaying(false)}
+                      />
+                      <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
