@@ -39,7 +39,11 @@ function TypewriterText({ text, isStreaming = false }) {
           // Custom rendering for markdown elements
           p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>,
           ul: ({ children }) => <ul style={{ marginLeft: '1.5em', marginTop: '0.5em', marginBottom: '0.5em' }}>{children}</ul>,
-          li: ({ children }) => <li style={{ marginBottom: '0.25em' }}>{children}</li>,
+          li: ({ children }) => <li style={{ 
+            marginBottom: '0.25em',
+            display: 'list-item',
+            listStylePosition: 'outside'
+          }}>{children}</li>,
           strong: ({ children }) => <strong style={{ color: '#FFD700', fontWeight: '600' }}>{children}</strong>,
           em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
           code: ({ inline, children }) => 

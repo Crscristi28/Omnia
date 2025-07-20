@@ -1375,7 +1375,11 @@ function App() {
                         // Vlastní styly pro různé elementy
                         strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
                         ul: ({children}) => <ul style={{marginLeft: '20px', marginTop: '8px', marginBottom: '8px'}}>{children}</ul>,
-                        li: ({children}) => <li style={{marginBottom: '4px'}}>{children}</li>,
+                        li: ({children}) => <li style={{
+                          marginBottom: isMobile ? '2px' : '4px',
+                          display: 'list-item',
+                          listStylePosition: 'outside'
+                        }}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (
                             <code style={{
