@@ -1,5 +1,4 @@
 // 🚀 OMNIA - APP.JSX PART 1/3 - IMPORTS + STATE + EFFECTS (REDESIGNED)
-// 🔄 Force redeploy: 2025-01-19 23:17
 // ✅ ADDED: ChatSidebar + NewChatButton imports
 // ✅ ADDED: welcomeTexts for multilingual welcome
 // ✅ SIMPLIFIED: Removed complex scroll system
@@ -201,48 +200,6 @@ function splitIntoSentences(text) {
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
-// 🔧 MARKDOWN CLEANUP - Remove excessive spacing in lists
-function cleanMarkdownLists(text) {
-  if (!text) return text;
-  
-  const isMobile = window.innerWidth <= 768;
-  
-  // Fix excessive spacing in lists
-  let cleaned = text
-    // Remove backslashes that might appear in text
-    .replace(/\\/g, '');
-    
-  if (isMobile) {
-    // MOBILE: Ultra tight lists - NO spaces between bullets
-    // Simple approach: just replace double newlines with single between common patterns
-    cleaned = cleaned
-      // Between any bullet points (including *, •, -, etc)
-      .replace(/\n\n+(?=[\*•○▪◦\-])/g, '\n')
-      // Between numbered items
-      .replace(/\n\n+(?=\d+[\).])/g, '\n')
-      // But keep double newline after headers/titles (ending with :)
-      .replace(/(:)\n(?=[\*•○▪◦\-])/g, '$1\n\n')
-      // Max 2 newlines anywhere else
-      .replace(/\n{3,}/g, '\n\n');
-  } else {
-    // DESKTOP: Keep some spacing
-    cleaned = cleaned
-      .replace(/\n{2,}/g, '\n\n')
-      .replace(/([\*•○▪◦\-]\s+[^\n]+)\n\n+(?=[\*•○▪◦\-])/g, '$1\n')
-      .replace(/(\d+[\.)]\s+[^\n]+)\n\n+(?=\d+[\).])/g, '$1\n')
-      .replace(/([^\n])\n\n+(?=[\*•○▪◦\-])/g, '$1\n\n')
-      .replace(/([^\n])\n\n+(?=\d+[\).])/g, '$1\n\n')
-      .replace(/\n{3,}/g, '\n\n');
-  }
-  
-  // Common cleanup
-  cleaned = cleaned
-    .replace(/\n+(\s+[\*•○▪◦\-])/g, '\n$1')
-    .replace(/ +$/gm, '');
-    
-  return cleaned;
-}
-
 function App() {
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
@@ -438,32 +395,32 @@ function App() {
         });
       }
       
-      console.log('🎵 Using Google TTS as primary');
-      const googleResponse = await fetch('/api/google-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ 
-          text: textToSpeak,  // Use sanitized text
-          language: language,
-          voice: 'natural'
-        })
-      });
+      console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
+      const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
       
-      if (!googleResponse.ok) {
-        throw new Error(`Google TTS failed: ${googleResponse.status}`);
-      }
-      
-      console.log('✅ Google TTS Success');
-      return await googleResponse.blob();
+      console.log('✅ TTS Success - same path as VoiceButton');
+      return audioBlob;
       
     } catch (error) {
-      console.error('💥 Google TTS failed:', error);
+      console.error('💥 TTS generation failed:', error);
       
       try {
-        console.warn('⚠️ Google failed, trying ElevenLabs TTS as fallback...');
-        const audioBlob = await elevenLabsService.generateSpeech(sentence);
-        console.log('✅ ElevenLabs fallback success');
-        return audioBlob;
+        console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
+        const googleResponse = await fetch('/api/google-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ 
+            text: sentence,
+            language: language,
+            voice: 'natural'
+          })
+        });
+        
+        if (!googleResponse.ok) {
+          throw new Error(`Google TTS failed: ${googleResponse.status}`);
+        }
+        
+        return await googleResponse.blob();
       } catch (fallbackError) {
         console.error('💥 Both TTS services failed:', fallbackError);
         throw error;
@@ -480,25 +437,10 @@ function App() {
     
     try {
       const audioBlob = await generateAudioForSentence(responseText, language);
-      
-      // 🔧 Use same audio playback method as VoiceButton (simple HTML5 Audio)
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      
-      audio.onended = () => {
-        console.log('✅ Voice response audio ended');
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = (e) => {
-        console.error('❌ Voice response audio error:', e);
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      await audio.play();
-      console.log('✅ Voice response audio started playing');
+      await mobileAudioManager.playAudio(audioBlob);
+      console.log('✅ Audio playing instantly');
     } catch (error) {
-      console.error('❌ Failed to generate or play audio:', error);
+      console.error('❌ Failed to generate audio:', error);
     }
   };
 
@@ -582,8 +524,8 @@ function App() {
       
       const arrayBuffer = await audioBlob.arrayBuffer();
       
-      // 🔧 Try Google STT first (primary for now)
-      let response = await fetch('/api/google-stt', {
+      // 🔧 Try ElevenLabs STT first (primary)
+      let response = await fetch('/api/elevenlabs-stt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -592,21 +534,21 @@ function App() {
       });
 
       let data;
-      let usedService = 'Google';
+      let usedService = 'ElevenLabs';
 
-      // 🔧 If Google fails, try ElevenLabs STT as fallback
+      // 🔧 If ElevenLabs fails, try Google STT as fallback
       if (!response.ok) {
-        console.warn('⚠️ Google STT failed, trying ElevenLabs fallback...');
-        showNotification('Zkouším ElevenLabs STT...', 'info');
+        console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
+        showNotification('Zkouším Google STT...', 'info');
         
-        response = await fetch('/api/elevenlabs-stt', {
+        response = await fetch('/api/google-stt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/octet-stream',
           },
           body: arrayBuffer
         });
-        usedService = 'ElevenLabs';
+        usedService = 'Google';
       }
 
       if (!response.ok) {
@@ -673,12 +615,15 @@ function App() {
     }));
   };
 
-  // 🆕 VOICE SCREEN OPEN/CLOSE - Now works with ALL models!
+  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE (UNCHANGED)
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
-    // Removed auto-switch to GPT - all models can use voice now!
-    console.log('🎤 Voice mode opened with:', model);
+    if (model !== 'gpt-4o') {
+      console.log('🎤 Voice mode: Auto-switching to GPT for faster responses');
+      setPreviousModel(model);
+      setModel('gpt-4o');
+    }
     
     mobileAudioManager.unlockAudioContext();
   };
@@ -686,8 +631,11 @@ function App() {
   const handleVoiceScreenClose = () => {
     setShowVoiceScreen(false);
     
-    // No need to restore model anymore - we keep the current one
-    console.log('🔄 Voice closed, keeping model:', model);
+    if (previousModel && previousModel !== 'gpt-4o') {
+      console.log('🔄 Voice closed: Restoring previous model:', previousModel);
+      setModel(previousModel);
+      setPreviousModel(null);
+    }
   };
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
@@ -773,8 +721,6 @@ function App() {
           setTimeout(async () => {
             await processVoiceResponse(finalText, detectedLang);
           }, 500);
-        } else if (fromVoice) {
-          console.log('🎵 Voice response debug:', { fromVoice, showVoiceScreen, hasFinalText: !!finalText });
         }
       }
       else if (model === 'gpt-4o') {
@@ -804,8 +750,6 @@ function App() {
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
           await processVoiceResponse(responseText, detectedLang);
-        } else if (fromVoice) {
-          console.log('🎵 GPT Voice response debug:', { fromVoice, showVoiceScreen, hasResponseText: !!responseText });
         }
       }
       else if (model === 'sonar') {
@@ -923,8 +867,6 @@ function App() {
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
           await processVoiceResponse(responseText, detectedLang);
-        } else if (fromVoice) {
-          console.log('🎵 Gemini Voice response debug:', { fromVoice, showVoiceScreen, hasResponseText: !!responseText });
         }
       }
 
@@ -940,17 +882,14 @@ function App() {
 
   const handleTranscript = async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
-    console.log('🎙️ Voice screen state:', { showVoiceScreen });
     
     const detectedLang = detectLanguage(text);
     setUserLanguage(detectedLang);
     console.log('🌍 Voice detected language:', detectedLang);
     
     if (showVoiceScreen) {
-      console.log('🎙️ Calling handleSend with fromVoice=true');
       await handleSend(text, true);
     } else {
-      console.log('🎙️ Voice screen closed, setting input instead');
       setInput(text);
     }
   };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
@@ -1383,7 +1322,7 @@ function App() {
                   padding: isMobile ? '1.2rem' : '1.6rem',
                   paddingLeft: isMobile ? '1rem' : '1.2rem',
                   fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: isMobile ? '1.5' : '1.6',
+                  lineHeight: '1.6',
                   whiteSpace: 'pre-wrap',
                   color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
                   textAlign: 'left'
@@ -1435,17 +1374,8 @@ function App() {
                       components={{
                         // Vlastní styly pro různé elementy
                         strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
-                        ul: ({children}) => <ul style={{
-                          marginLeft: isMobile ? '10px' : '20px', 
-                          marginTop: isMobile ? '4px' : '8px', 
-                          marginBottom: isMobile ? '4px' : '8px',
-                          paddingLeft: '5px'
-                        }}>{children}</ul>,
-                        li: ({children}) => <li style={{
-                          marginBottom: isMobile ? '0px' : '4px',
-                          paddingLeft: '3px',
-                          lineHeight: isMobile ? '1.4' : '1.6'
-                        }}>{children}</li>,
+                        ul: ({children}) => <ul style={{marginLeft: '20px', marginTop: '8px', marginBottom: '8px'}}>{children}</ul>,
+                        li: ({children}) => <li style={{marginBottom: '4px'}}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (
                             <code style={{
@@ -1492,7 +1422,7 @@ function App() {
                         ),
                       }}
                     >
-                      {cleanMarkdownLists(msg.text) || ''}
+                      {msg.text || ''}
                     </ReactMarkdown>
                   )}
                 </div>

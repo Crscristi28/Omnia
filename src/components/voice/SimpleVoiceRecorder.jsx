@@ -29,6 +29,7 @@ const SimpleVoiceRecorder = ({
   const MIN_RECORDING_TIME = 2000;    // 2 seconds minimum  
   const MAX_RECORDING_TIME = 30000;   // 30 seconds maximum
   
+  const isIOSPWA = window.navigator.standalone;
 
   // 🎵 AUDIO LEVEL MONITORING
   const startAudioLevelMonitoring = (stream) => {
@@ -101,7 +102,7 @@ const SimpleVoiceRecorder = ({
       
       const constraints = {
         audio: {
-          sampleRate: 16000, // Standard rate for Google STT compatibility
+          sampleRate: isIOSPWA ? 44100 : 16000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -143,7 +144,7 @@ const SimpleVoiceRecorder = ({
 
       const constraints = {
         audio: {
-          sampleRate: 16000, // Standard rate for Google STT compatibility
+          sampleRate: isIOSPWA ? 44100 : 16000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -157,9 +158,8 @@ const SimpleVoiceRecorder = ({
       // Start audio level monitoring
       startAudioLevelMonitoring(stream);
 
-      // 🔧 Force WEBM for better Google STT compatibility
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: isIOSPWA ? 'audio/mp4' : 'audio/webm;codecs=opus'
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -215,7 +215,7 @@ const SimpleVoiceRecorder = ({
           }
 
           const audioBlob = new Blob(audioChunksRef.current, { 
-            type: 'audio/webm' 
+            type: isIOSPWA ? 'audio/mp4' : 'audio/webm' 
           });
           
           if (audioBlob.size < 1000) {
@@ -235,8 +235,8 @@ const SimpleVoiceRecorder = ({
           const arrayBuffer = await audioBlob.arrayBuffer();
           console.log('📤 Sending to ElevenLabs STT API...');
           
-          // 🔧 Try Google STT first (primary for now)
-          let response = await fetch('/api/google-stt', {
+          // 🔧 Try ElevenLabs STT first (primary)
+          let response = await fetch('/api/elevenlabs-stt', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/octet-stream',
@@ -245,20 +245,20 @@ const SimpleVoiceRecorder = ({
           });
 
           let data;
-          let usedService = 'Google';
+          let usedService = 'ElevenLabs';
 
-          // 🔧 If Google fails, try ElevenLabs STT as fallback
+          // 🔧 If ElevenLabs fails, try Google STT as fallback
           if (!response.ok) {
-            console.warn('⚠️ Google STT failed, trying ElevenLabs fallback...');
+            console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
             
-            response = await fetch('/api/elevenlabs-stt', {
+            response = await fetch('/api/google-stt', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/octet-stream',
               },
               body: arrayBuffer
             });
-            usedService = 'ElevenLabs';
+            usedService = 'Google';
           }
 
           if (!response.ok) {

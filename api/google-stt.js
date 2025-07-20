@@ -95,20 +95,11 @@ export default async function handler(req) {
     const audioEncoding = detectGoogleAudioEncoding(audioBuffer);
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
 
-    // 🔧 Use consistent 16000 Hz for Google STT (recorder now uses consistent rate)
-    const sampleRate = 16000;
-    
-    console.log('🎵 Audio analysis:', {
-      encoding: audioEncoding,
-      sampleRate: sampleRate,
-      audioSize: audioBuffer.byteLength
-    });
-
     // 🔧 Google STT request with optimized settings
     const sttRequest = {
       config: {
         encoding: audioEncoding,
-        sampleRateHertz: sampleRate, // Dynamic rate based on device
+        sampleRateHertz: 16000, // Standard rate for good quality
         languageCode: 'cs-CZ', // Default to Czech, auto-detect will override
         alternativeLanguageCodes: ['en-US', 'ro-RO'], // Support other languages
         enableAutomaticPunctuation: true,
@@ -257,9 +248,9 @@ function detectGoogleAudioEncoding(audioBuffer) {
     return 'WEBM_OPUS';
   }
   
-  // Check for MP4 signature - but Google STT doesn't support MP4, convert to LINEAR16
+  // Check for MP4 signature
   if (uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70) {
-    return 'LINEAR16';  // Use LINEAR16 for MP4 files
+    return 'MP4';
   }
   
   // Check for WAV signature
@@ -267,13 +258,8 @@ function detectGoogleAudioEncoding(audioBuffer) {
     return 'LINEAR16';
   }
   
-  // 🔧 Try to detect OGG Opus (alternative WebM format)
-  if (uint8Array[0] === 0x4F && uint8Array[1] === 0x67 && uint8Array[2] === 0x67 && uint8Array[3] === 0x53) {
-    return 'OGG_OPUS';
-  }
-  
-  // Default fallback - prefer LINEAR16 for better compatibility
-  return 'LINEAR16';
+  // Default fallback
+  return 'WEBM_OPUS';
 }
 
 // 🔧 Enhanced language detection combining text analysis (SAME AS ELEVENLABS)
