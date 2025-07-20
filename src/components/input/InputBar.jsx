@@ -173,6 +173,13 @@ const InputBar = ({
     console.log('🔍 Deep Search clicked - Coming Soon!');
   };
 
+  const handleImageGenerate = () => {
+    console.log('🎨 Image generation from InputBar');
+    if (onImageGenerate) {
+      onImageGenerate();
+    }
+  };
+
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
   const buttonSize = isMobile ? 36 : 44;
   const iconSize = isMobile ? 20 : 24;
@@ -304,6 +311,33 @@ const InputBar = ({
                   <Search size={iconSize} strokeWidth={2} />
                   <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{t('deepSearch')}</span>
                 </button>
+                
+                {/* 3. IMAGE GENERATION BUTTON */}
+                <button
+                  onClick={handleImageGenerate}
+                  disabled={isLoading}
+                  style={{
+                    ...buttonStyle,
+                    width: 'auto',
+                    paddingLeft: isMobile ? '12px' : '16px',
+                    paddingRight: isMobile ? '12px' : '16px',
+                    opacity: isLoading ? 0.5 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) e.target.style.opacity = '0.7';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.opacity = '1';
+                  }}
+                  title={t('generateImage') || 'Generate Image'}
+                >
+                  <Palette size={iconSize} strokeWidth={2} />
+                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{t('generateImage') || 'Image'}</span>
+                </button>
               </div>
               
               {/* RIGHT SIDE BUTTONS */}
@@ -311,7 +345,7 @@ const InputBar = ({
                 display: 'flex',
                 gap: isMobile ? '8px' : '12px',
               }}>
-                {/* 3. MIKROFON BUTTON */}
+                {/* 4. MIKROFON BUTTON */}
                 <button
                   onClick={onSTT}
                   disabled={isLoading || isAudioPlaying}
@@ -336,7 +370,7 @@ const InputBar = ({
                   <Mic size={iconSize} strokeWidth={2} />
                 </button>
                 
-                {/* 4. DYNAMIC BUTTON */}
+                {/* 5. DYNAMIC BUTTON */}
                 <button
                   onClick={input.trim() ? onSend : onVoiceScreen}
                   disabled={isLoading}

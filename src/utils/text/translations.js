@@ -45,6 +45,7 @@ export const uiTexts = {
     newChatButton: "Nový chat",
     multimodalFeatures: "Multimodální funkce",
     deepSearch: "Hluboké vyhledávání",
+    generateImage: "Vytvořit obrázek",
     plusMenu: "Plus menu (již brzy)",
     chatPlaceholder: "Chatujte s Omnia..."
   },
@@ -91,6 +92,7 @@ export const uiTexts = {
     newChatButton: "New Chat",
     multimodalFeatures: "Multimodal Features",
     deepSearch: "Deep Search",
+    generateImage: "Generate Image",
     plusMenu: "Plus Menu (Coming Soon)",
     chatPlaceholder: "Chat with Omnia..."
   },
@@ -137,6 +139,7 @@ export const uiTexts = {
     newChatButton: "Chat nou",
     multimodalFeatures: "Funcții multimodale",
     deepSearch: "Căutare avansată",
+    generateImage: "Generează imagine",
     plusMenu: "Meniu plus (în curând)",
     chatPlaceholder: "Conversează cu Omnia..."
   }
