@@ -271,15 +271,11 @@ const InputBar = ({
                   onClick={() => setShowPlusMenu(!showPlusMenu)}
                   disabled={isLoading}
                   style={{
-                    ...buttonStyle,
-                    opacity: isLoading ? 0.5 : 1,
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px',
                     cursor: isLoading ? 'not-allowed' : 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) e.target.style.opacity = '0.7';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.opacity = '1';
+                    opacity: isLoading ? 0.5 : 1,
                   }}
                   title={t('multimodalFeatures')}
                 >
@@ -291,15 +287,11 @@ const InputBar = ({
                   onClick={handleDeepSearch}
                   disabled={isLoading || !input.trim()}
                   style={{
-                    ...buttonStyle,
-                    opacity: isLoading || !input.trim() ? 0.5 : 1,
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px',
                     cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading && input.trim()) e.target.style.opacity = '0.7';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.opacity = '1';
+                    opacity: isLoading || !input.trim() ? 0.5 : 1,
                   }}
                   title={t('deepSearch')}
                 >
@@ -339,24 +331,21 @@ const InputBar = ({
                   onClick={onSTT}
                   disabled={isLoading || isAudioPlaying}
                   style={{
-                    ...buttonStyle,
-                    background: isRecording ? 'rgba(255, 0, 0, 0.15)' : 'transparent',
-                    opacity: isLoading || isAudioPlaying ? 0.5 : 1,
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px',
                     cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading && !isAudioPlaying && !isRecording) {
-                      e.target.style.opacity = '0.7';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isRecording) {
-                      e.target.style.opacity = '1';
-                    }
+                    opacity: isLoading || isAudioPlaying ? 0.5 : 1,
                   }}
                   title={isRecording ? 'Stop Recording' : 'Voice Input'}
                 >
-                  <Mic size={iconSize} strokeWidth={2} />
+                  <Mic 
+                    size={iconSize} 
+                    strokeWidth={2} 
+                    style={{
+                      color: isRecording ? '#EF4444' : 'rgba(255, 255, 255, 0.7)'
+                    }}
+                  />
                 </button>
                 
                 {/* 5. DYNAMIC BUTTON */}
@@ -364,21 +353,17 @@ const InputBar = ({
                   onClick={input.trim() ? onSend : onVoiceScreen}
                   disabled={isLoading}
                   style={{
-                    ...buttonStyle,
-                    opacity: isLoading ? 0.5 : 1,
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px',
                     cursor: isLoading ? 'not-allowed' : 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading) e.target.style.opacity = '0.7';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.opacity = '1';
+                    opacity: isLoading ? 0.5 : 1,
                   }}
                   title={input.trim() ? 'Send Message' : 'Voice Chat'}
                 >
                   {input.trim() ? 
-                    <Send size={iconSize} strokeWidth={2} /> : 
-                    <AudioWaveform size={iconSize} strokeWidth={2} />
+                    <Send size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} /> : 
+                    <AudioWaveform size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                   }
                 </button>
               </div>
