@@ -226,37 +226,26 @@ export const streamMessageWithEffect = (
 ) => {
  let currentStreamedText = '';
  
- // Start streaming
- const stopStreaming = streamWords(
-   text,
-   (streamedText, isStreaming) => {
-     currentStreamedText = streamedText;
-     
-     // ✅ OPRAVENO: sources se nyní zachovávají při streamingu
-     setMessages([
-       ...previousMessages,
-       { 
-         sender: 'bot', 
-         text: streamedText, 
-         isStreaming,
-         sources: sources  // ✅ PŘIDÁNO: sources se ukládají do zprávy
-       }
-     ]);
-
-     // Smart scroll while streaming
-     if (isStreaming && scrollContainer) {
-       smartScrollToBottom(scrollContainer, {
-         threshold: 150,
-         behavior: 'smooth'
-       });
-     }
-   },
-   {
-     baseDelay: 40,
-     adaptive: true,
-     speedVariation: 0.2
+ // Show complete text immediately - no word-by-word streaming
+ setMessages([
+   ...previousMessages,
+   { 
+     sender: 'bot', 
+     text: text, 
+     isStreaming: false,
+     sources: sources
    }
- );
+ ]);
+
+ // Smart scroll after showing complete text
+ if (scrollContainer) {
+   smartScrollToBottom(scrollContainer, {
+     threshold: 150,
+     behavior: 'smooth'
+   });
+ }
+
+ const stopStreaming = () => {}; // No-op function for compatibility
 
  return stopStreaming;
 };
