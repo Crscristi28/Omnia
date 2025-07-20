@@ -37,7 +37,7 @@ function TypewriterText({ text, isStreaming = false }) {
       <ReactMarkdown
         components={{
           // Custom rendering for markdown elements
-          p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>,
+          p: ({ children }) => <p style={{ margin: '6px 0', lineHeight: window.innerWidth <= 768 ? '1.3' : '1.6' }}>{children}</p>,
           ul: ({ children }) => <ul style={{ marginLeft: '1.5em', marginTop: '0.5em', marginBottom: '0.5em' }}>{children}</ul>,
           li: ({ children }) => <li style={{ 
             marginBottom: '0.25em',

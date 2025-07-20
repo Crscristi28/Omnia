@@ -1308,7 +1308,7 @@ function App() {
                   borderRadius: '25px 25px 8px 25px',
                   maxWidth: isMobile ? '85%' : '75%',
                   fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: '1.6', 
+                  lineHeight: isMobile ? '1.3' : '1.6', 
                   whiteSpace: 'pre-wrap',
                   boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
                   border: '1px solid rgba(255, 215, 0, 0.3)',
@@ -1322,7 +1322,7 @@ function App() {
                   padding: isMobile ? '1.2rem' : '1.6rem',
                   paddingLeft: isMobile ? '1rem' : '1.2rem',
                   fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: '1.6',
+                  lineHeight: isMobile ? '1.3' : '1.6',
                   whiteSpace: 'pre-wrap',
                   color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
                   textAlign: 'left'
@@ -1402,7 +1402,7 @@ function App() {
                               <code>{children}</code>
                             </pre>
                           ),
-                        p: ({children}) => <p style={{margin: '8px 0', lineHeight: '1.6'}}>{children}</p>,
+                        p: ({children}) => <p style={{margin: '6px 0', lineHeight: isMobile ? '1.3' : '1.6'}}>{children}</p>,
                         h1: ({children}) => <h1 style={{fontSize: '1.4em', fontWeight: '600', margin: '16px 0 8px 0', color: '#FFD700'}}>{children}</h1>,
                         h2: ({children}) => <h2 style={{fontSize: '1.2em', fontWeight: '600', margin: '12px 0 6px 0', color: '#FFD700'}}>{children}</h2>,
                         h3: ({children}) => <h3 style={{fontSize: '1.1em', fontWeight: '600', margin: '10px 0 5px 0', color: '#FFD700'}}>{children}</h3>,
