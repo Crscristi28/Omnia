@@ -224,15 +224,13 @@ export const streamMessageWithEffect = (
  scrollContainer,
  sources = []  // ✅ PŘIDÁNO: sources parametr
 ) => {
- let currentStreamedText = '';
- 
  // Show text as it streams from API, but without word-by-word delays
  setMessages([
    ...previousMessages,
    { 
      sender: 'bot', 
      text: text, 
-     isStreaming: true, // Keep streaming state for cursor and scrolling
+     isStreaming: true,
      sources: sources
    }
  ]);

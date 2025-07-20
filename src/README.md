@@ -40,7 +40,7 @@ import { elevenLabsService } from './services/voice';
 import { sanitizeText, detectLanguage, getTranslation } from './utils/text';
 
 // UI Components
-import { VoiceButton, TypewriterText, CopyButton } from './components/ui';
+import { VoiceButton, CopyButton } from './components/ui';
 ```
 
 ### Direct Imports (when needed)
