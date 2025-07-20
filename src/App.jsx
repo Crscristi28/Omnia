@@ -1378,7 +1378,7 @@ function App() {
                         li: ({children}) => <li style={{
                           marginBottom: isMobile ? '2px' : '4px',
                           display: 'list-item',
-                          listStylePosition: 'outside'
+                          listStylePosition: 'inside'
                         }}>{children}</li>,
                         code: ({inline, children}) => 
                           inline ? (

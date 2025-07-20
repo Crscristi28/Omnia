@@ -56,7 +56,7 @@ function TypewriterText({ text, isStreaming = false }) {
           li: ({ children }) => <li style={{ 
             marginBottom: isMobile ? '2px' : '4px',
             display: 'list-item',
-            listStylePosition: 'outside',
+            listStylePosition: 'inside',
             minHeight: '20px',
             transition: 'all 0.2s ease'
           }}>{children}</li>,
