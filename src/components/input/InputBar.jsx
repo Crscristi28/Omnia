@@ -175,7 +175,7 @@ const InputBar = ({
   };
 
   const handleImageGenerate = () => {
-    console.log('🎨 Image generation from InputBar');
+    console.log('🎨 Image generation from InputBar - toggling mode');
     if (onImageGenerate) {
       onImageGenerate();
     }
@@ -319,34 +319,15 @@ const InputBar = ({
                   disabled={isLoading}
                   style={{
                     ...buttonStyle,
-                    width: 'auto',
-                    paddingLeft: isMobile ? '12px' : '16px',
-                    paddingRight: isMobile ? '12px' : '16px',
                     opacity: isLoading ? 0.5 : 1,
                     cursor: isLoading ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    // Aktivní styl když je image mode zapnutý
-                    background: isImageMode ? 'rgba(139, 69, 19, 0.3)' : 'transparent', // hnědá barva pro palette
-                    border: isImageMode ? '1px solid rgba(139, 69, 19, 0.5)' : buttonStyle.border,
-                    boxShadow: isImageMode ? '0 0 10px rgba(139, 69, 19, 0.4)' : 'none',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading && !isImageMode) e.target.style.opacity = '0.7';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isImageMode) e.target.style.opacity = '1';
+                    // Jednoduché modré rozsvícení
+                    background: isImageMode ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
+                    border: isImageMode ? '1px solid rgba(59, 130, 246, 0.5)' : buttonStyle.border,
                   }}
                   title={t('generateImage') || 'Generate Image'}
                 >
-                  <Palette size={iconSize} strokeWidth={2} style={{
-                    color: isImageMode ? '#D2691E' : 'inherit' // oranžová barva když aktivní
-                  }} />
-                  <span style={{ 
-                    fontSize: isMobile ? '14px' : '16px',
-                    color: isImageMode ? '#D2691E' : 'inherit'
-                  }}>{t('generateImage') || 'Image'}</span>
+                  <Palette size={iconSize} strokeWidth={2} />
                 </button>
               </div>
               

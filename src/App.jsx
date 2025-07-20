@@ -1629,7 +1629,7 @@ function App() {
         onSend={() => handleSend()}
         onSTT={toggleSTT}
         onVoiceScreen={handleVoiceScreenOpen}
-        onImageGenerate={() => setIsImageMode(true)}
+        onImageGenerate={() => setIsImageMode(prev => !prev)}
         isLoading={loading || streaming}
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}
