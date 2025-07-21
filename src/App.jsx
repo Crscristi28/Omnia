@@ -964,7 +964,7 @@ function App() {
 const getUploadErrorMessages = (language) => {
   const messages = {
     'cs': {
-      pdfOnly: 'Prosím nahrajte PDF soubor',
+      pdfOnly: 'Podporované formáty: PDF, Word, Text, Obrázky (PNG/JPG)',
       fileTooBig: 'Soubor je příliš velký. Maximum je 15MB.',
       dailyLimit: (remainingMB) => `Překročen denní limit 20MB. Zbývá ${remainingMB}MB do půlnoci.`,
       processing: 'Zpracovávám dokument...',
@@ -972,7 +972,7 @@ const getUploadErrorMessages = (language) => {
       success: 'Dokument je připraven pro AI!'
     },
     'en': {
-      pdfOnly: 'Please upload a PDF file',
+      pdfOnly: 'Supported formats: PDF, Word, Text, Images (PNG/JPG)',
       fileTooBig: 'File is too large. Maximum is 15MB.',
       dailyLimit: (remainingMB) => `Daily limit of 20MB exceeded. ${remainingMB}MB remaining until midnight.`,
       processing: 'Processing document...',
@@ -980,7 +980,7 @@ const getUploadErrorMessages = (language) => {
       success: 'Document is ready for AI!'
     },
     'ro': {
-      pdfOnly: 'Vă rugăm să încărcați un fișier PDF',
+      pdfOnly: 'Formate acceptate: PDF, Word, Text, Imagini (PNG/JPG)',
       fileTooBig: 'Fișierul este prea mare. Maximul este 15MB.',
       dailyLimit: (remainingMB) => `Limita zilnică de 20MB a fost depășită. ${remainingMB}MB rămase până la miezul nopții.`,
       processing: 'Procesez documentul...',
@@ -997,8 +997,18 @@ const handleDocumentUpload = async (event) => {
   
   const messages = getUploadErrorMessages(userLanguage);
   
-  // Check if it's PDF
-  if (!file.type.includes('pdf')) {
+  // Check if it's supported format
+  const supportedTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/msword', // .doc
+    'text/plain', // .txt
+    'image/png',
+    'image/jpeg',
+    'image/jpg'
+  ];
+  
+  if (!supportedTypes.includes(file.type)) {
     showNotification(messages.pdfOnly, 'error');
     return;
   }
@@ -1131,6 +1141,20 @@ const handleSendWithDocuments = async (text, documents) => {
     
     for (const doc of documents) {
       if (doc.file) {
+        // Validate file format before processing
+        const supportedTypes = [
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/msword',
+          'text/plain',
+          'image/png',
+          'image/jpeg',
+          'image/jpg'
+        ];
+        
+        if (!supportedTypes.includes(doc.file.type)) {
+          throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
+        }
         
         // Create FormData for upload
         const formData = new FormData();

@@ -101,7 +101,7 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUploa
                   console.log('📄 Document upload initiated');
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.accept = '.pdf';
+                  input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
                   input.onchange = onDocumentUpload;
                   input.click();
                   onClose();

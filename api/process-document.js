@@ -63,12 +63,12 @@ export default async function handler(req, res) {
         // Read file content
         const originalFileContent = fs.readFileSync(file.filepath);
         
-        // Create request
+        // Create request with dynamic MIME type
         const request = {
           name: name,
           rawDocument: {
             content: originalFileContent.toString('base64'),
-            mimeType: 'application/pdf',
+            mimeType: file.mimetype || file.type || 'application/pdf',
           },
         };
 
@@ -80,7 +80,11 @@ export default async function handler(req, res) {
         const timestamp = Date.now();
         const randomId = crypto.randomBytes(8).toString('hex');
         const textFileName = `documents/text/${timestamp}-${randomId}.txt`;
-        const pdfFileName = `documents/pdf/${timestamp}-${randomId}.pdf`;
+        
+        // Get original file extension
+        const originalName = file.originalFilename || file.name || 'document';
+        const fileExtension = originalName.split('.').pop() || 'pdf';
+        const originalFileName = `documents/original/${timestamp}-${randomId}.${fileExtension}`;
 
         // Upload extracted text to Cloud Storage
         const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET);
@@ -97,13 +101,13 @@ export default async function handler(req, res) {
           }
         });
 
-        // Upload original PDF to Cloud Storage
-        const pdfBlob = bucket.file(pdfFileName);
+        // Upload original file to Cloud Storage
+        const originalBlob = bucket.file(originalFileName);
         const fileContent = fs.readFileSync(file.filepath);
 
-        await pdfBlob.save(fileContent, {
+        await originalBlob.save(fileContent, {
           metadata: {
-            contentType: 'application/pdf',
+            contentType: file.mimetype || file.type || 'application/pdf',
             metadata: {
               originalName: file.originalFilename || file.name,
               uploadedAt: new Date().toISOString()
@@ -121,7 +125,7 @@ export default async function handler(req, res) {
           expires: Date.now() + 60 * 60 * 1000, // 1 hour
         });
         
-        const [pdfUrl] = await pdfBlob.getSignedUrl({
+        const [originalFileUrl] = await originalBlob.getSignedUrl({
           version: 'v4',
           action: 'read',
           expires: Date.now() + 60 * 60 * 1000, // 1 hour
@@ -131,7 +135,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
           success: true,
           documentUrl: textUrl,
-          originalPdfUrl: pdfUrl, // NOVÉ - URL původního PDF
+          originalPdfUrl: originalFileUrl, // NOVÉ - URL původního souboru
           fileName: textFileName,
           pageCount: document.pages ? document.pages.length : 0,
           preview: document.text ? document.text.substring(0, 200) + '...' : '',

@@ -65,13 +65,16 @@ export default async function handler(req, res) {
       if (documents && documents.length > 0) {
         documents.forEach(doc => {
           if (doc.geminiFileUri) {
+            // Detect MIME type from file name
+            const mimeType = getMimeTypeFromName(doc.name);
+            
             lastMessage.parts.unshift({
               file_data: {
-                mime_type: 'application/pdf',
+                mime_type: mimeType,
                 file_uri: doc.geminiFileUri
               }
             });
-            console.log('Added Vertex AI file to request:', doc.geminiFileUri);
+            console.log('Added Vertex AI file to request:', doc.geminiFileUri, 'MIME:', mimeType);
           }
         });
       }
@@ -228,4 +231,23 @@ function extractSources(groundingMetadata) {
   );
 
   return uniqueSources.slice(0, 5); // Limit to 5 sources
+}
+
+// 📄 GET MIME TYPE FROM FILE NAME
+function getMimeTypeFromName(fileName) {
+  if (!fileName) return 'application/pdf';
+  
+  const extension = fileName.toLowerCase().split('.').pop();
+  
+  const mimeTypes = {
+    'pdf': 'application/pdf',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'doc': 'application/msword',
+    'txt': 'text/plain',
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg'
+  };
+  
+  return mimeTypes[extension] || 'application/pdf';
 }
