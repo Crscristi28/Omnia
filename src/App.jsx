@@ -1195,13 +1195,16 @@ const handleSendWithDocuments = async (text, documents) => {
         uploadedDocuments
       );
       
-      const streamingEffect = streamMessageWithEffect(
-        result.text,
-        result.sources || [],
-        detectedLang
-      );
+      const currentMessagesWithUser = [...messages, userMessage];
       
-      await streamingEffect.complete;
+      const stopFn = streamMessageWithEffect(
+        result.text,
+        setMessages,
+        currentMessagesWithUser,
+        mainContentRef.current,
+        result.sources || []
+      );
+      setStopStreamingRef(() => stopFn);
     }
     
   } catch (error) {
