@@ -167,6 +167,7 @@ const InputBar = ({
   uiLanguage = 'cs'
 }) => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [pendingDocuments, setPendingDocuments] = useState([]);
   const plusButtonRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -187,6 +188,16 @@ const InputBar = ({
     if (onImageGenerate) {
       onImageGenerate();
     }
+  };
+
+  // TEST FUNCTION - Add demo document
+  const handleTestDocument = () => {
+    const testDoc = {
+      id: Date.now(),
+      name: 'test-document.pdf',
+      size: '2.5MB'
+    };
+    setPendingDocuments(prev => [...prev, testDoc]);
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
@@ -236,6 +247,50 @@ const InputBar = ({
             padding: isMobile ? '0.6rem' : '1rem',
           }}>
             
+            {/* DOCUMENT CHIPS ROW */}
+            {pendingDocuments.length > 0 && (
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginBottom: '0.5rem',
+                paddingBottom: '0.5rem',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+              }}>
+                {pendingDocuments.map((doc) => (
+                  <div
+                    key={doc.id}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '12px',
+                      padding: '6px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '14px',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                    }}
+                  >
+                    📄 <span>{doc.name}</span>
+                    <button
+                      onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        cursor: 'pointer',
+                        padding: '2px',
+                        marginLeft: '4px',
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             {/* TEXTAREA NAHOŘE */}
             <textarea
               value={input}
@@ -273,10 +328,10 @@ const InputBar = ({
                 display: 'flex',
                 gap: isMobile ? '8px' : '12px',
               }}>
-                {/* 1. PLUS BUTTON */}
+                {/* 1. PLUS BUTTON - TEMP TEST */}
                 <button
                   ref={plusButtonRef}
-                  onClick={() => setShowPlusMenu(!showPlusMenu)}
+                  onClick={handleTestDocument}
                   disabled={isLoading}
                   style={{
                     background: 'none',
@@ -285,7 +340,7 @@ const InputBar = ({
                     cursor: isLoading ? 'not-allowed' : 'pointer',
                     opacity: isLoading ? 0.5 : 1,
                   }}
-                  title={t('multimodalFeatures')}
+                  title="TEST: Add document chip"
                 >
                   <Plus size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                 </button>
