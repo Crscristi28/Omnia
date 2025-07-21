@@ -1076,7 +1076,7 @@ const handleDocumentUpload = async (event) => {
       uploadedAt: new Date()
     };
 
-    setUploadedDocuments([newDoc]);
+    setUploadedDocuments(prev => [...prev, newDoc]);
 
     // Update daily upload tracking
     todayUploaded.bytes += file.size;
