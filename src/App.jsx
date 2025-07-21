@@ -1106,12 +1106,23 @@ const handleSendWithDocuments = async (text, documents) => {
   
   if (!text.trim() && documents.length === 0) return;
   
+  // Add user message to chat immediately
+  const userMessage = {
+    sender: 'user',
+    text: text.trim() || '📄 Dokument nahrán',
+    timestamp: new Date()
+  };
+  setMessages(prev => [...prev, userMessage]);
+  
   setLoading(true);
+  setStreaming(true);
   
   try {
     // Process documents first
     for (const doc of documents) {
       if (doc.file) {
+        showNotification('Zpracovávám dokument...', 'info');
+        
         // Create FormData for upload
         const formData = new FormData();
         formData.append('file', doc.file);
@@ -1161,11 +1172,36 @@ const handleSendWithDocuments = async (text, documents) => {
       }
     }
     
-    // Then send the message if there's text
+    // Now send to AI with text and documents
     if (text.trim()) {
-      setInput(text); // Set input for handleSend
-      await handleSend();
-      setInput(''); // Clear input after send
+      // Use existing sendMessage logic with current uploadedDocuments
+      const detectedLang = detectLanguage(text);
+      setUserLanguage(detectedLang);
+      
+      // Get the current messages for AI
+      const currentMessages = [...messages, userMessage];
+      
+      // Send to Gemini with documents
+      const result = await geminiService.sendMessage(
+        currentMessages.slice(-10),
+        (chunk) => {
+          updateStreamingMessage(chunk, true);
+        },
+        (searchMsg) => {
+          setIsSearching(true);
+          setTimeout(() => setIsSearching(false), 3000);
+        },
+        detectedLang,
+        uploadedDocuments
+      );
+      
+      const streamingEffect = streamMessageWithEffect(
+        result.text,
+        result.sources || [],
+        detectedLang
+      );
+      
+      await streamingEffect.complete;
     }
     
   } catch (error) {
@@ -1174,6 +1210,7 @@ const handleSendWithDocuments = async (text, documents) => {
     showNotification(error.message || messages.processing, 'error');
   } finally {
     setLoading(false);
+    setStreaming(false);
   }
 };
 
