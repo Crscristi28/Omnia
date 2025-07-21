@@ -1231,6 +1231,8 @@ const handleSendWithDocuments = async (text, documents) => {
   } finally {
     setLoading(false);
     setStreaming(false);
+    // Clear input after sending
+    setInput('');
   }
 };
 
