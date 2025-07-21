@@ -83,19 +83,8 @@ export default async function handler(req, res) {
     // Always add language instruction when language is detected
     const languageInstruction = language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá';
     
-    // Add document context if provided
-    let documentContext = '';
-    if (documents && documents.length > 0) {
-      documentContext = '\n\nKONTEXT - Nahraný dokument:\n';
-      documents.forEach(doc => {
-        documentContext += `\nNázev dokumentu: ${doc.name}\n`;
-        documentContext += `Obsah dokumentu:\n${doc.text}\n`;
-        documentContext += '---\n';
-      });
-      documentContext += '\nPouží informace z tohoto dokumentu při odpovídání na otázky uživatele.';
-    }
-    
-    const finalSystemInstruction = systemInstruction + languageInstruction + documentContext;
+    // Documents are provided via file_data in Vertex AI Files, no need to duplicate in system prompt
+    const finalSystemInstruction = systemInstruction + languageInstruction;
 
     // Initialize model with proper system instruction and Google Search grounding
     const generativeModel = vertexAI.getGenerativeModel({
