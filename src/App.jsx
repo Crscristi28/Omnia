@@ -960,19 +960,52 @@ function App() {
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
 
+// 📄 UPLOAD ERROR MESSAGES - Multilingual
+const getUploadErrorMessages = (language) => {
+  const messages = {
+    'cs': {
+      pdfOnly: 'Prosím nahrajte PDF soubor',
+      fileTooBig: 'Soubor je příliš velký. Maximum je 15MB.',
+      dailyLimit: (remainingMB) => `Překročen denní limit 20MB. Zbývá ${remainingMB}MB do půlnoci.`,
+      processing: 'Zpracovávám dokument...',
+      preparing: 'Připravuji dokument pro AI...',
+      success: 'Dokument je připraven pro AI!'
+    },
+    'en': {
+      pdfOnly: 'Please upload a PDF file',
+      fileTooBig: 'File is too large. Maximum is 15MB.',
+      dailyLimit: (remainingMB) => `Daily limit of 20MB exceeded. ${remainingMB}MB remaining until midnight.`,
+      processing: 'Processing document...',
+      preparing: 'Preparing document for AI...',
+      success: 'Document is ready for AI!'
+    },
+    'ro': {
+      pdfOnly: 'Vă rugăm să încărcați un fișier PDF',
+      fileTooBig: 'Fișierul este prea mare. Maximul este 15MB.',
+      dailyLimit: (remainingMB) => `Limita zilnică de 20MB a fost depășită. ${remainingMB}MB rămase până la miezul nopții.`,
+      processing: 'Procesez documentul...',
+      preparing: 'Pregătesc documentul pentru AI...',
+      success: 'Documentul este gata pentru AI!'
+    }
+  };
+  return messages[language] || messages['cs'];
+};
+
 const handleDocumentUpload = async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
   
+  const messages = getUploadErrorMessages(userLanguage);
+  
   // Check if it's PDF
   if (!file.type.includes('pdf')) {
-    showNotification('Prosím nahrajte PDF soubor', 'error');
+    showNotification(messages.pdfOnly, 'error');
     return;
   }
   
   // Check file size (15MB limit)
   if (file.size > 15 * 1024 * 1024) {
-    showNotification('Soubor je příliš velký. Maximum je 15MB.', 'error');
+    showNotification(messages.fileTooBig, 'error');
     return;
   }
 
@@ -989,12 +1022,12 @@ const handleDocumentUpload = async (event) => {
   // Check if adding this file would exceed daily limit
   if (todayUploaded.bytes + file.size > 20 * 1024 * 1024) {
     const remainingMB = Math.max(0, (20 * 1024 * 1024 - todayUploaded.bytes) / (1024 * 1024)).toFixed(1);
-    showNotification(`Překročen denní limit 20MB. Zbývá ${remainingMB}MB do půlnoci.`, 'error');
+    showNotification(messages.dailyLimit(remainingMB), 'error');
     return;
   }
   
   setLoading(true);
-  showNotification('Zpracovávám dokument...', 'info');
+  showNotification(messages.processing, 'info');
   
   try {
     const formData = new FormData();
@@ -1013,7 +1046,7 @@ const handleDocumentUpload = async (event) => {
     const result = await response.json();
     
     // Upload to Gemini File API
-    showNotification('Připravuji dokument pro AI...', 'info');
+    showNotification(messages.preparing, 'info');
 
     const geminiResponse = await fetch('/api/upload-to-gemini', {
       method: 'POST',
@@ -1057,7 +1090,7 @@ const handleDocumentUpload = async (event) => {
     };
 
     setMessages(prev => [...prev, infoMessage]);
-    showNotification('Dokument je připraven pro AI!', 'success');
+    showNotification(messages.success, 'success');
     
   } catch (error) {
     console.error('Document upload error:', error);
