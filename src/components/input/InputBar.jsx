@@ -156,6 +156,7 @@ const InputBar = ({
   input,
   setInput,
   onSend,
+  onSendWithDocuments, // NEW: Send text + documents
   onSTT,
   onVoiceScreen,
   onImageGenerate,
@@ -172,10 +173,21 @@ const InputBar = ({
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
-  const handleKeyDown = (e) => {
-    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
-      e.preventDefault();
+  const handleSendMessage = () => {
+    if (pendingDocuments.length > 0 && onSendWithDocuments) {
+      // Send with documents
+      onSendWithDocuments(input, pendingDocuments);
+      setPendingDocuments([]); // Clear chips after sending
+    } else if (input.trim() && onSend) {
+      // Regular text-only send
       onSend();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && (input.trim() || pendingDocuments.length > 0)) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -424,7 +436,7 @@ const InputBar = ({
                 
                 {/* 5. DYNAMIC BUTTON */}
                 <button
-                  onClick={input.trim() ? onSend : onVoiceScreen}
+                  onClick={(input.trim() || pendingDocuments.length > 0) ? handleSendMessage : onVoiceScreen}
                   disabled={isLoading}
                   style={{
                     background: 'none',
@@ -433,9 +445,9 @@ const InputBar = ({
                     cursor: isLoading ? 'not-allowed' : 'pointer',
                     opacity: isLoading ? 0.5 : 1,
                   }}
-                  title={input.trim() ? 'Send Message' : 'Voice Chat'}
+                  title={(input.trim() || pendingDocuments.length > 0) ? 'Send Message' : 'Voice Chat'}
                 >
-                  {input.trim() ? 
+                  {(input.trim() || pendingDocuments.length > 0) ? 
                     <Send size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} /> : 
                     <AudioWaveform size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                   }
