@@ -1131,7 +1131,6 @@ const handleSendWithDocuments = async (text, documents) => {
     
     for (const doc of documents) {
       if (doc.file) {
-        showNotification(`Zpracovávám ${doc.name}...`, 'info');
         
         // Create FormData for upload
         const formData = new FormData();
@@ -1187,7 +1186,6 @@ const handleSendWithDocuments = async (text, documents) => {
     
     // Now send to AI with text and the processed documents
     if (text.trim() || processedDocuments.length > 0) {
-      showNotification('Posílám dotaz AI...', 'info');
       
       const detectedLang = detectLanguage(text || 'Dokument');
       setUserLanguage(detectedLang);
