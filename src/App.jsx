@@ -1100,6 +1100,83 @@ const handleDocumentUpload = async (event) => {
   }
 };
 
+// 📄 HANDLE SEND WITH DOCUMENTS
+const handleSendWithDocuments = async (text, documents) => {
+  console.log('📤 Sending with documents:', text, documents);
+  
+  if (!text.trim() && documents.length === 0) return;
+  
+  setLoading(true);
+  
+  try {
+    // Process documents first
+    for (const doc of documents) {
+      if (doc.file) {
+        // Create FormData for upload
+        const formData = new FormData();
+        formData.append('file', doc.file);
+        
+        // Process document (similar to handleDocumentUpload)
+        const response = await fetch('/api/process-document', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Document processing failed');
+        }
+        
+        const result = await response.json();
+        
+        // Upload to storage
+        const geminiResponse = await fetch('/api/upload-to-gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pdfUrl: result.originalPdfUrl,
+            originalName: result.originalName
+          })
+        });
+        
+        if (!geminiResponse.ok) {
+          throw new Error('Failed to process document');
+        }
+        
+        const geminiResult = await geminiResponse.json();
+        
+        // Add to uploadedDocuments
+        const newDoc = {
+          id: Date.now(),
+          name: result.originalName,
+          documentUrl: result.documentUrl,
+          originalPdfUrl: result.originalPdfUrl,
+          geminiFileUri: geminiResult.fileUri,
+          fileName: result.fileName,
+          pageCount: result.pageCount,
+          preview: result.preview,
+          uploadedAt: new Date()
+        };
+        
+        setUploadedDocuments(prev => [...prev, newDoc]);
+      }
+    }
+    
+    // Then send the message if there's text
+    if (text.trim()) {
+      setInput(text); // Set input for handleSend
+      await handleSend();
+      setInput(''); // Clear input after send
+    }
+    
+  } catch (error) {
+    console.error('Send with documents error:', error);
+    const messages = getUploadErrorMessages(userLanguage);
+    showNotification(error.message || messages.processing, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
@@ -1775,6 +1852,7 @@ const handleDocumentUpload = async (event) => {
         onVoiceScreen={handleVoiceScreenOpen}
         onImageGenerate={() => setIsImageMode(prev => !prev)}
         onDocumentUpload={handleDocumentUpload}
+        onSendWithDocuments={handleSendWithDocuments}
         isLoading={loading || streaming}
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}
