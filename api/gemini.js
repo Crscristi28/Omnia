@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const originalCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
   try {
-    const { messages, system, max_tokens = 2000, language, documents = [] } = req.body;
+    const { messages, system, max_tokens = 5000, language, documents = [] } = req.body;
     
     
     // Check for required environment variables
