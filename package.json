@@ -24,7 +24,8 @@
     "react-markdown": "^10.1.0",
     "@google-cloud/documentai": "^8.0.0",
     "formidable": "^3.5.1",
-    "@google/generative-ai": "^0.21.0"
+    "@google/generative-ai": "^0.21.0",
+    "@google-cloud/storage": "^7.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
