@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 
 export const config = {
-  runtime: 'nodejs18.x',
+  runtime: 'nodejs',
 };
 
 export default async function handler(req, res) {
