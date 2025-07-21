@@ -3,7 +3,7 @@
 // 🔥 Google native search grounding for current data
 
 const geminiService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs', documents = []) {
     try {
       console.log('🤖 Omnia Gemini 2.5 Flash - Google Grounding');
       const geminiMessages = this.prepareGeminiMessages(messages);
@@ -19,7 +19,8 @@ const geminiService = {
           messages: geminiMessages,
           system: systemPrompt,
           max_tokens: 5000,
-          language: detectedLanguage
+          language: detectedLanguage,
+          documents: documents
         })
       });
 

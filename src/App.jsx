@@ -240,6 +240,7 @@ function App() {
   
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
+  const [uploadedDocuments, setUploadedDocuments] = useState([]);
   
   // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
@@ -899,7 +900,8 @@ function App() {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
           },
-          detectedLang
+          detectedLang,
+          uploadedDocuments
         );
         
         responseText = result.text;
@@ -957,6 +959,70 @@ function App() {
 // ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
+
+const handleDocumentUpload = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  
+  // Check if it's PDF
+  if (!file.type.includes('pdf')) {
+    showNotification('Prosím nahrajte PDF soubor', 'error');
+    return;
+  }
+  
+  // Check file size (4MB limit for safety)
+  if (file.size > 4 * 1024 * 1024) {
+    showNotification('Soubor je příliš velký. Maximum je 4MB.', 'error');
+    return;
+  }
+  
+  setLoading(true);
+  showNotification('Zpracovávám dokument...', 'info');
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('/api/process-document', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Upload failed');
+    }
+    
+    const result = await response.json();
+    
+    // Save document to state
+    const newDoc = {
+      id: Date.now(),
+      name: file.name,
+      text: result.fullText,
+      pageCount: result.pageCount,
+      uploadedAt: new Date()
+    };
+    
+    setUploadedDocuments([newDoc]);
+    
+    // Add info message to chat
+    const infoMessage = {
+      sender: 'bot',
+      text: `📄 Dokument "${file.name}" byl úspěšně nahrán (${result.pageCount} stran). Můžeš se mě na něj zeptat na cokoliv!`,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, infoMessage]);
+    showNotification('Dokument byl úspěšně zpracován!', 'success');
+    
+  } catch (error) {
+    console.error('Document upload error:', error);
+    showNotification(error.message || 'Chyba při zpracování dokumentu', 'error');
+  } finally {
+    setLoading(false);
+  }
+};
 
 // 🎨 JSX RENDER  
   return (
@@ -1630,6 +1696,7 @@ function App() {
         onSTT={toggleSTT}
         onVoiceScreen={handleVoiceScreenOpen}
         onImageGenerate={() => setIsImageMode(prev => !prev)}
+        onDocumentUpload={handleDocumentUpload}
         isLoading={loading || streaming}
         isRecording={isRecordingSTT}
         isAudioPlaying={isAudioPlaying}

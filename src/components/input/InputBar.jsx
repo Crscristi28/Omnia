@@ -9,7 +9,7 @@ import { getTranslation } from '../../utils/text';
 // Using Lucide React icons instead of custom SVG components
 
 // PLUS MENU
-const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, uiLanguage = 'cs' }) => {
+const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUpload, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
 
   const menuItems = [
@@ -98,6 +98,14 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, uiLanguage = 'c
                   console.log('🎨 Activating image generation mode');
                   onImageGenerate();
                   onClose();
+                } else if (item.key === 'document' && onDocumentUpload) {
+                  console.log('📄 Document upload initiated');
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.pdf';
+                  input.onchange = onDocumentUpload;
+                  input.click();
+                  onClose();
                 } else {
                   console.log(`${item.key} clicked - Coming Soon!`);
                   onClose();
@@ -152,6 +160,7 @@ const InputBar = ({
   onSTT,
   onVoiceScreen,
   onImageGenerate,
+  onDocumentUpload,
   isLoading,
   isRecording,
   isAudioPlaying,
@@ -379,6 +388,7 @@ const InputBar = ({
         onClose={() => setShowPlusMenu(false)}
         buttonRef={plusButtonRef}
         onImageGenerate={onImageGenerate}
+        onDocumentUpload={onDocumentUpload}
         uiLanguage={uiLanguage}
       />
     </>
