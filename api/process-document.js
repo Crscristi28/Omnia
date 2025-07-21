@@ -96,9 +96,6 @@ export default async function handler(req, res) {
             }
           }
         });
-        
-        // Make text file public
-        await textBlob.makePublic();
 
         // Upload original PDF to Cloud Storage
         const pdfBlob = bucket.file(pdfFileName);
@@ -113,16 +110,22 @@ export default async function handler(req, res) {
             }
           }
         });
-        
-        // Make PDF file public
-        await pdfBlob.makePublic();
 
         // Clean up temp file
         fs.unlinkSync(file.filepath);
 
-        // Get public URLs
-        const textUrl = `https://storage.googleapis.com/${process.env.GOOGLE_STORAGE_BUCKET}/${textFileName}`;
-        const pdfUrl = `https://storage.googleapis.com/${process.env.GOOGLE_STORAGE_BUCKET}/${pdfFileName}`;
+        // Get signed URLs for secure access
+        const [textUrl] = await textBlob.getSignedUrl({
+          version: 'v4',
+          action: 'read',
+          expires: Date.now() + 60 * 60 * 1000, // 1 hour
+        });
+        
+        const [pdfUrl] = await pdfBlob.getSignedUrl({
+          version: 'v4',
+          action: 'read',
+          expires: Date.now() + 60 * 60 * 1000, // 1 hour
+        });
 
         // Return results
         return res.status(200).json({
