@@ -190,31 +190,24 @@ const InputBar = ({
     }
   };
 
-  // Handle document upload to chips
-  const handleDocumentUploadToChips = async (event) => {
-    console.log('📄 Document uploaded to chips:', event);
+  // Handle document upload to chips ONLY
+  const handleDocumentUploadToChips = (event) => {
+    console.log('📄 Document selected for chips:', event);
     
-    // Call original document upload but intercept the result
-    if (onDocumentUpload) {
-      try {
-        // This will still do the background processing
-        await onDocumentUpload(event);
-        
-        // For now, add a placeholder chip
-        // Later we'll modify this to get the real document info
-        const file = event.target.files?.[0];
-        if (file) {
-          const docChip = {
-            id: Date.now(),
-            name: file.name,
-            size: (file.size / (1024 * 1024)).toFixed(1) + 'MB'
-          };
-          setPendingDocuments(prev => [...prev, docChip]);
-          setShowPlusMenu(false); // Close menu after upload
-        }
-      } catch (error) {
-        console.error('Document upload error:', error);
-      }
+    const file = event.target.files?.[0];
+    if (file) {
+      // Only add chip - NO background upload yet
+      const docChip = {
+        id: Date.now(),
+        name: file.name,
+        size: (file.size / (1024 * 1024)).toFixed(1) + 'MB',
+        file: file // Store file for later upload
+      };
+      setPendingDocuments(prev => [...prev, docChip]);
+      setShowPlusMenu(false); // Close menu after selection
+      
+      // Clear the file input for next time
+      event.target.value = '';
     }
   };
 
