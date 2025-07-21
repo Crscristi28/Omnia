@@ -29,6 +29,7 @@ export default async function handler(req, res) {
 
   try {
     // Initialize Gemini File Manager
+    console.log('Initializing Gemini File Manager...');
     const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
 
     // Download PDF from Cloud Storage
@@ -44,7 +45,9 @@ export default async function handler(req, res) {
     // Save temporarily
     const tempDir = os.tmpdir();
     const tempFilePath = path.join(tempDir, `${Date.now()}-${originalName}`);
+    console.log('Saving PDF to temp file:', tempFilePath);
     fs.writeFileSync(tempFilePath, buffer);
+    console.log('PDF saved, size:', buffer.length, 'bytes');
 
     // Upload to Gemini File API
     console.log('Uploading to Gemini File API...');
