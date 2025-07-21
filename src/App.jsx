@@ -1106,10 +1106,18 @@ const handleSendWithDocuments = async (text, documents) => {
   
   if (!text.trim() && documents.length === 0) return;
   
-  // Add user message to chat immediately
+  // Add user message to chat immediately (with document info)
+  let messageText = text.trim();
+  if (documents.length > 0) {
+    const docsList = documents.map(doc => `📄 ${doc.name}`).join('\n');
+    messageText = messageText 
+      ? `${messageText}\n\n${docsList}` 
+      : docsList;
+  }
+  
   const userMessage = {
     sender: 'user',
-    text: text.trim() || '📄 Dokument nahrán',
+    text: messageText || '📄 Dokument nahrán',
     timestamp: new Date()
   };
   setMessages(prev => [...prev, userMessage]);
