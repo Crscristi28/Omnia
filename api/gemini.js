@@ -61,15 +61,15 @@ export default async function handler(req, res) {
       const enhancedText = enhanceForSearch(originalText);
       lastMessage.parts[0].text = enhancedText;
 
-      // Add Gemini file if provided
+      // Add Vertex AI file if provided
       if (geminiFileUri) {
         lastMessage.parts.unshift({
-          fileData: {
-            mimeType: 'application/pdf',
-            fileUri: geminiFileUri
+          file_data: {
+            mime_type: 'application/pdf',
+            file_uri: geminiFileUri
           }
         });
-        console.log('Added Gemini file to request:', geminiFileUri);
+        console.log('Added Vertex AI file to request:', geminiFileUri);
       }
     }
 
