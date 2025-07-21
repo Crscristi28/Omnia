@@ -1548,7 +1548,9 @@ const handleDocumentUpload = async (event) => {
                         marginBottom: isMobile ? '2px' : '4px',
                         display: 'list-item',
                         listStylePosition: 'outside',
-                        listStyleType: 'disc'
+                        listStyleType: 'disc',
+                        textIndent: isMobile ? '0' : '0',
+                        paddingLeft: isMobile ? '5px' : '0'
                       }}>{children}</li>,
                       code: ({inline, children}) => 
                         inline ? (
