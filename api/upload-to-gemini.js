@@ -30,7 +30,7 @@ export default async function handler(req, res) {
   try {
     // Initialize Gemini File Manager
     console.log('Initializing Gemini File Manager...');
-    const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+    const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY);
 
     // Download PDF from Cloud Storage
     console.log('Downloading PDF from Cloud Storage:', pdfUrl);
