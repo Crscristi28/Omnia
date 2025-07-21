@@ -153,7 +153,16 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('💥 Gemini API error:', error);
-    res.write(JSON.stringify({ error: true, message: 'Server error: ' + error.message }) + '\n');
+    
+    // Specific message for service agents provisioning
+    if (error.message && error.message.includes('Service agents are being provisioned')) {
+      res.write(JSON.stringify({ 
+        error: true, 
+        message: '⏳ Google Cloud nastavuje servisní agenty pro dokumenty. Zkus to znovu za 5 minut nebo piš bez dokumentu.' 
+      }) + '\n');
+    } else {
+      res.write(JSON.stringify({ error: true, message: 'Server error: ' + error.message }) + '\n');
+    }
     res.end();
   } finally {
     // Restore original env variable
