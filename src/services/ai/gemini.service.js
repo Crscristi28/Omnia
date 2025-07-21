@@ -20,7 +20,8 @@ const geminiService = {
           system: systemPrompt,
           max_tokens: 5000,
           language: detectedLanguage,
-          documents: documents
+          documents: documents,
+          geminiFileUri: documents?.[0]?.geminiFileUri || null
         })
       });
 

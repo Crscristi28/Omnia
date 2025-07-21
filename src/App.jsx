@@ -995,26 +995,48 @@ const handleDocumentUpload = async (event) => {
     
     const result = await response.json();
     
-    // Save document to state
+    // Upload to Gemini File API
+    showNotification('Připravuji dokument pro AI...', 'info');
+
+    const geminiResponse = await fetch('/api/upload-to-gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pdfUrl: result.originalPdfUrl,
+        originalName: result.originalName
+      })
+    });
+
+    if (!geminiResponse.ok) {
+      throw new Error('Failed to upload to Gemini');
+    }
+
+    const geminiResult = await geminiResponse.json();
+
+    // Save document reference with Gemini file URI
     const newDoc = {
       id: Date.now(),
-      name: file.name,
-      text: result.fullText,
+      name: result.originalName,
+      documentUrl: result.documentUrl,
+      originalPdfUrl: result.originalPdfUrl,
+      geminiFileUri: geminiResult.fileUri, // DŮLEŽITÉ - URI pro Gemini
+      fileName: result.fileName,
       pageCount: result.pageCount,
+      preview: result.preview,
       uploadedAt: new Date()
     };
-    
+
     setUploadedDocuments([newDoc]);
-    
+
     // Add info message to chat
     const infoMessage = {
       sender: 'bot',
-      text: `📄 Dokument "${file.name}" byl úspěšně nahrán (${result.pageCount} stran). Můžeš se mě na něj zeptat na cokoliv!`,
+      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). Můžeš se mě na něj zeptat na cokoliv!`,
       timestamp: new Date()
     };
-    
+
     setMessages(prev => [...prev, infoMessage]);
-    showNotification('Dokument byl úspěšně zpracován!', 'success');
+    showNotification('Dokument je připraven pro AI!', 'success');
     
   } catch (error) {
     console.error('Document upload error:', error);

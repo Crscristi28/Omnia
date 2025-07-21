@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const originalCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
   try {
-    const { messages, system, max_tokens = 2000, language, documents = [] } = req.body;
+    const { messages, system, max_tokens = 2000, language, documents = [], geminiFileUri } = req.body;
     
     
     // Check for required environment variables
@@ -60,6 +60,17 @@ export default async function handler(req, res) {
       const originalText = lastMessage.parts[0].text;
       const enhancedText = enhanceForSearch(originalText);
       lastMessage.parts[0].text = enhancedText;
+
+      // Add Gemini file if provided
+      if (geminiFileUri) {
+        lastMessage.parts.unshift({
+          fileData: {
+            mimeType: 'application/pdf',
+            fileUri: geminiFileUri
+          }
+        });
+        console.log('Added Gemini file to request:', geminiFileUri);
+      }
     }
 
     // Use the complete system prompt sent from frontend

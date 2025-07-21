@@ -1,5 +1,7 @@
 import { DocumentProcessorServiceClient } from '@google-cloud/documentai';
 import { IncomingForm } from 'formidable';
+import { Storage } from '@google-cloud/storage';
+import crypto from 'crypto';
 import fs from 'fs';
 
 // Tell Vercel not to parse the body
@@ -45,6 +47,12 @@ export default async function handler(req, res) {
           apiEndpoint: `${process.env.DOCUMENT_AI_LOCATION}-documentai.googleapis.com`
         });
 
+        // Initialize Cloud Storage
+        const storage = new Storage({
+          credentials: credentials,
+          projectId: credentials.project_id
+        });
+
         const projectId = credentials.project_id;
         const location = process.env.DOCUMENT_AI_LOCATION;
         const processorId = process.env.DOCUMENT_AI_PROCESSOR_ID;
@@ -53,13 +61,13 @@ export default async function handler(req, res) {
         const name = client.processorPath(projectId, location, processorId);
         
         // Read file content
-        const fileContent = fs.readFileSync(file.filepath);
+        const originalFileContent = fs.readFileSync(file.filepath);
         
         // Create request
         const request = {
           name: name,
           rawDocument: {
-            content: fileContent.toString('base64'),
+            content: originalFileContent.toString('base64'),
             mimeType: 'application/pdf',
           },
         };
@@ -68,15 +76,57 @@ export default async function handler(req, res) {
         const [result] = await client.processDocument(request);
         const { document } = result;
 
+        // Generate unique filenames
+        const timestamp = Date.now();
+        const randomId = crypto.randomBytes(8).toString('hex');
+        const textFileName = `documents/text/${timestamp}-${randomId}.txt`;
+        const pdfFileName = `documents/pdf/${timestamp}-${randomId}.pdf`;
+
+        // Upload extracted text to Cloud Storage
+        const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET);
+        const textBlob = bucket.file(textFileName);
+
+        await textBlob.save(document.text || '', {
+          metadata: {
+            contentType: 'text/plain',
+            metadata: {
+              originalName: file.originalFilename || file.name,
+              uploadedAt: new Date().toISOString(),
+              pageCount: document.pages ? document.pages.length.toString() : '0'
+            }
+          }
+        });
+
+        // Upload original PDF to Cloud Storage
+        const pdfBlob = bucket.file(pdfFileName);
+        const fileContent = fs.readFileSync(file.filepath);
+
+        await pdfBlob.save(fileContent, {
+          metadata: {
+            contentType: 'application/pdf',
+            metadata: {
+              originalName: file.originalFilename || file.name,
+              uploadedAt: new Date().toISOString()
+            }
+          }
+        });
+
         // Clean up temp file
         fs.unlinkSync(file.filepath);
+
+        // Get public URLs
+        const textUrl = `https://storage.googleapis.com/${process.env.GOOGLE_STORAGE_BUCKET}/${textFileName}`;
+        const pdfUrl = `https://storage.googleapis.com/${process.env.GOOGLE_STORAGE_BUCKET}/${pdfFileName}`;
 
         // Return results
         return res.status(200).json({
           success: true,
-          fullText: document.text || '',
+          documentUrl: textUrl,
+          originalPdfUrl: pdfUrl, // NOVÉ - URL původního PDF
+          fileName: textFileName,
           pageCount: document.pages ? document.pages.length : 0,
-          preview: document.text ? document.text.substring(0, 200) + '...' : ''
+          preview: document.text ? document.text.substring(0, 200) + '...' : '',
+          originalName: file.originalFilename || file.name
         });
 
       } catch (processError) {
