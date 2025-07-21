@@ -1178,9 +1178,6 @@ const handleSendWithDocuments = async (text, documents) => {
         };
         
         processedDocuments.push(newDoc);
-        
-        // Add to uploadedDocuments immediately
-        setUploadedDocuments(prev => [...prev, newDoc]);
       }
     }
     
@@ -1209,6 +1206,11 @@ const handleSendWithDocuments = async (text, documents) => {
         detectedLang,
         allDocuments // Pass all documents including newly processed
       );
+      
+      // Update uploadedDocuments state AFTER successful AI response
+      if (processedDocuments.length > 0) {
+        setUploadedDocuments(prev => [...prev, ...processedDocuments]);
+      }
       
       const currentMessagesWithUser = [...messages, userMessage];
       
