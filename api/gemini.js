@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const originalCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
   try {
-    const { messages, system, max_tokens = 2000, language, documents = [], geminiFileUri } = req.body;
+    const { messages, system, max_tokens = 2000, language, documents = [] } = req.body;
     
     
     // Check for required environment variables
@@ -61,15 +61,19 @@ export default async function handler(req, res) {
       const enhancedText = enhanceForSearch(originalText);
       lastMessage.parts[0].text = enhancedText;
 
-      // Add Vertex AI file if provided
-      if (geminiFileUri) {
-        lastMessage.parts.unshift({
-          file_data: {
-            mime_type: 'application/pdf',
-            file_uri: geminiFileUri
+      // Add all Vertex AI files if provided
+      if (documents && documents.length > 0) {
+        documents.forEach(doc => {
+          if (doc.geminiFileUri) {
+            lastMessage.parts.unshift({
+              file_data: {
+                mime_type: 'application/pdf',
+                file_uri: doc.geminiFileUri
+              }
+            });
+            console.log('Added Vertex AI file to request:', doc.geminiFileUri);
           }
         });
-        console.log('Added Vertex AI file to request:', geminiFileUri);
       }
     }
 
