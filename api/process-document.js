@@ -96,6 +96,9 @@ export default async function handler(req, res) {
             }
           }
         });
+        
+        // Make text file public
+        await textBlob.makePublic();
 
         // Upload original PDF to Cloud Storage
         const pdfBlob = bucket.file(pdfFileName);
@@ -110,6 +113,9 @@ export default async function handler(req, res) {
             }
           }
         });
+        
+        // Make PDF file public
+        await pdfBlob.makePublic();
 
         // Clean up temp file
         fs.unlinkSync(file.filepath);
