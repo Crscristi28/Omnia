@@ -970,9 +970,26 @@ const handleDocumentUpload = async (event) => {
     return;
   }
   
-  // Check file size (4MB limit for safety)
-  if (file.size > 4 * 1024 * 1024) {
-    showNotification('Soubor je příliš velký. Maximum je 4MB.', 'error');
+  // Check file size (15MB limit)
+  if (file.size > 15 * 1024 * 1024) {
+    showNotification('Soubor je příliš velký. Maximum je 15MB.', 'error');
+    return;
+  }
+
+  // Check daily upload limit (20MB per device)
+  const todayUploaded = JSON.parse(localStorage.getItem('dailyUploads') || '{"date": "", "bytes": 0}');
+  const today = new Date().toDateString();
+
+  // Reset if new day
+  if (todayUploaded.date !== today) {
+    todayUploaded.date = today;
+    todayUploaded.bytes = 0;
+  }
+
+  // Check if adding this file would exceed daily limit
+  if (todayUploaded.bytes + file.size > 20 * 1024 * 1024) {
+    const remainingMB = Math.max(0, (20 * 1024 * 1024 - todayUploaded.bytes) / (1024 * 1024)).toFixed(1);
+    showNotification(`Překročen denní limit 20MB. Zbývá ${remainingMB}MB do půlnoci.`, 'error');
     return;
   }
   
@@ -1027,6 +1044,10 @@ const handleDocumentUpload = async (event) => {
     };
 
     setUploadedDocuments([newDoc]);
+
+    // Update daily upload tracking
+    todayUploaded.bytes += file.size;
+    localStorage.setItem('dailyUploads', JSON.stringify(todayUploaded));
 
     // Add info message to chat
     const infoMessage = {
