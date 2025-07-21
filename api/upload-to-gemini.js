@@ -1,11 +1,5 @@
-import { GoogleAIFileManager } from "@google/generative-ai/server";
-import fetch from 'node-fetch';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'nodejs18.x',
 };
 
 export default async function handler(req, res) {
@@ -22,55 +16,44 @@ export default async function handler(req, res) {
   }
 
   const { pdfUrl, originalName } = req.body;
+  console.log('🔍 Received pdfUrl:', pdfUrl);
 
   if (!pdfUrl) {
     return res.status(400).json({ error: 'PDF URL is required' });
   }
 
   try {
-    // Initialize Gemini File Manager
-    console.log('Initializing Gemini File Manager...');
-    const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY);
-
-    // Download PDF from Cloud Storage
-    console.log('Downloading PDF from Cloud Storage:', pdfUrl);
-    const response = await fetch(pdfUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to download PDF: ${response.statusText}`);
+    // Extrahuj název souboru z URL
+    // Z: https://storage.googleapis.com/omnia-temp-docs/documents/pdf/xxx.pdf
+    // Na: gs://omnia-temp-docs/documents/pdf/xxx.pdf
+    
+    const urlParts = pdfUrl.split('?')[0]; // Odstranit query parametry
+    const pathMatch = urlParts.match(/storage\.googleapis\.com\/([^\/]+)\/(.+)$/);
+    
+    if (!pathMatch) {
+      throw new Error('Invalid Cloud Storage URL format');
     }
     
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const bucket = pathMatch[1];
+    const filePath = pathMatch[2];
+    const gcsUri = `gs://${bucket}/${filePath}`;
+    
+    console.log('Vertex AI will use Cloud Storage file:', gcsUri);
+    console.log('🎯 Returning gcsUri:', gcsUri);
 
-    // Save temporarily
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, `${Date.now()}-${originalName}`);
-    console.log('Saving PDF to temp file:', tempFilePath);
-    fs.writeFileSync(tempFilePath, buffer);
-    console.log('PDF saved, size:', buffer.length, 'bytes');
-
-    // Upload to Gemini File API
-    console.log('Uploading to Gemini File API...');
-    const uploadResult = await fileManager.uploadFile(tempFilePath, {
-      mimeType: 'application/pdf',
-      displayName: originalName,
-    });
-
-    // Clean up temp file
-    fs.unlinkSync(tempFilePath);
-
-    console.log('File uploaded to Gemini:', uploadResult.file.uri);
-
+    // Vertex AI může číst přímo z Cloud Storage!
+    // Nemusíme nic uploadovat
+    
     return res.status(200).json({
       success: true,
-      fileUri: uploadResult.file.uri,
+      fileUri: gcsUri, // gs:// format pro Vertex AI
       fileName: originalName
     });
 
   } catch (error) {
-    console.error('Gemini File API error:', error);
+    console.error('Cloud Storage URI error:', error);
     return res.status(500).json({ 
-      error: 'Failed to upload to Gemini',
+      error: 'Failed to process Cloud Storage URI',
       message: error.message 
     });
   }
