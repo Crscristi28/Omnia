@@ -190,14 +190,32 @@ const InputBar = ({
     }
   };
 
-  // TEST FUNCTION - Add demo document
-  const handleTestDocument = () => {
-    const testDoc = {
-      id: Date.now(),
-      name: 'test-document.pdf',
-      size: '2.5MB'
-    };
-    setPendingDocuments(prev => [...prev, testDoc]);
+  // Handle document upload to chips
+  const handleDocumentUploadToChips = async (event) => {
+    console.log('📄 Document uploaded to chips:', event);
+    
+    // Call original document upload but intercept the result
+    if (onDocumentUpload) {
+      try {
+        // This will still do the background processing
+        await onDocumentUpload(event);
+        
+        // For now, add a placeholder chip
+        // Later we'll modify this to get the real document info
+        const file = event.target.files?.[0];
+        if (file) {
+          const docChip = {
+            id: Date.now(),
+            name: file.name,
+            size: (file.size / (1024 * 1024)).toFixed(1) + 'MB'
+          };
+          setPendingDocuments(prev => [...prev, docChip]);
+          setShowPlusMenu(false); // Close menu after upload
+        }
+      } catch (error) {
+        console.error('Document upload error:', error);
+      }
+    }
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
@@ -328,10 +346,10 @@ const InputBar = ({
                 display: 'flex',
                 gap: isMobile ? '8px' : '12px',
               }}>
-                {/* 1. PLUS BUTTON - TEMP TEST */}
+                {/* 1. PLUS BUTTON */}
                 <button
                   ref={plusButtonRef}
-                  onClick={handleTestDocument}
+                  onClick={() => setShowPlusMenu(!showPlusMenu)}
                   disabled={isLoading}
                   style={{
                     background: 'none',
@@ -340,7 +358,7 @@ const InputBar = ({
                     cursor: isLoading ? 'not-allowed' : 'pointer',
                     opacity: isLoading ? 0.5 : 1,
                   }}
-                  title="TEST: Add document chip"
+                  title={t('multimodalFeatures')}
                 >
                   <Plus size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                 </button>
@@ -442,7 +460,7 @@ const InputBar = ({
         onClose={() => setShowPlusMenu(false)}
         buttonRef={plusButtonRef}
         onImageGenerate={onImageGenerate}
-        onDocumentUpload={onDocumentUpload}
+        onDocumentUpload={handleDocumentUploadToChips}
         uiLanguage={uiLanguage}
       />
     </>
