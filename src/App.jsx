@@ -1126,10 +1126,12 @@ const handleSendWithDocuments = async (text, documents) => {
   setStreaming(true);
   
   try {
-    // Process documents first
+    // Process documents first and collect them
+    const processedDocuments = [];
+    
     for (const doc of documents) {
       if (doc.file) {
-        showNotification('Zpracovávám dokument...', 'info');
+        showNotification(`Zpracovávám ${doc.name}...`, 'info');
         
         // Create FormData for upload
         const formData = new FormData();
@@ -1163,9 +1165,9 @@ const handleSendWithDocuments = async (text, documents) => {
         
         const geminiResult = await geminiResponse.json();
         
-        // Add to uploadedDocuments
+        // Create processed document
         const newDoc = {
-          id: Date.now(),
+          id: Date.now() + Math.random(), // Unique ID
           name: result.originalName,
           documentUrl: result.documentUrl,
           originalPdfUrl: result.originalPdfUrl,
@@ -1176,20 +1178,27 @@ const handleSendWithDocuments = async (text, documents) => {
           uploadedAt: new Date()
         };
         
+        processedDocuments.push(newDoc);
+        
+        // Add to uploadedDocuments immediately
         setUploadedDocuments(prev => [...prev, newDoc]);
       }
     }
     
-    // Now send to AI with text and documents
-    if (text.trim()) {
-      // Use existing sendMessage logic with current uploadedDocuments
-      const detectedLang = detectLanguage(text);
+    // Now send to AI with text and the processed documents
+    if (text.trim() || processedDocuments.length > 0) {
+      showNotification('Posílám dotaz AI...', 'info');
+      
+      const detectedLang = detectLanguage(text || 'Dokument');
       setUserLanguage(detectedLang);
       
-      // Get the current messages for AI
+      // Get current messages for AI
       const currentMessages = [...messages, userMessage];
       
-      // Send to Gemini with documents
+      // Get current uploaded documents (including newly processed ones)
+      const allDocuments = [...uploadedDocuments, ...processedDocuments];
+      
+      // Send to Gemini with ALL documents
       const result = await geminiService.sendMessage(
         currentMessages.slice(-10),
         (chunk) => {
@@ -1200,7 +1209,7 @@ const handleSendWithDocuments = async (text, documents) => {
           setTimeout(() => setIsSearching(false), 3000);
         },
         detectedLang,
-        uploadedDocuments
+        allDocuments // Pass all documents including newly processed
       );
       
       const currentMessagesWithUser = [...messages, userMessage];
