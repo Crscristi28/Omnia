@@ -1856,12 +1856,12 @@ const handleSendWithDocuments = async (text, documents) => {
                       ul: ({children}) => <ul style={{marginLeft: isMobile ? '10px' : '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: isMobile ? '15px' : '20px'}}>{children}</ul>,
                       ol: ({children}) => <ol style={{marginLeft: isMobile ? '10px' : '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: isMobile ? '15px' : '20px'}}>{children}</ol>,
                       li: ({children}) => <li style={{
-                        marginBottom: isMobile ? '2px' : '4px',
+                        marginBottom: isMobile ? '4px' : '6px',
                         display: 'list-item',
-                        listStylePosition: 'outside',
+                        listStylePosition: 'inside',
                         listStyleType: 'disc',
-                        textIndent: isMobile ? '0' : '0',
-                        paddingLeft: isMobile ? '5px' : '0'
+                        lineHeight: '1.4',
+                        paddingLeft: isMobile ? '8px' : '10px'
                       }}>{children}</li>,
                       code: ({inline, children}) => 
                         inline ? (
