@@ -1770,8 +1770,11 @@ const handleSendWithDocuments = async (text, documents) => {
               ) : (
                 <div style={{
                   width: '100%',
-                  padding: isMobile ? '1.2rem' : '1.6rem',
-                  paddingLeft: isMobile ? '1rem' : '1.2rem',
+                  padding: '0',
+                  paddingTop: '12px',
+                  paddingBottom: '12px',
+                  paddingLeft: '0',
+                  paddingRight: '0',
                   fontSize: isMobile ? '1rem' : '0.95rem',
                   lineHeight: isMobile ? '1.3' : '1.6',
                   whiteSpace: 'pre-wrap',
