@@ -242,6 +242,9 @@ function App() {
   const [isImageMode, setIsImageMode] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
   
+  // 📄 Smart document context management - tracks which documents AI can currently see
+  const [activeDocumentContexts, setActiveDocumentContexts] = useState([]);
+  
   // 📱 DEVICE STATE (UNCHANGED)
   const currentAudioRef = useRef(null);
   const endOfMessagesRef = useRef(null);
@@ -888,6 +891,53 @@ function App() {
       else if (model === 'gemini-2.5-flash') {
         let streamingSources = []; // Add this to capture sources during streaming
         
+        // 🧠 Smart document filtering logic
+        let currentActiveDocs = [...activeDocumentContexts];
+
+        // Update timestamps for mentioned documents
+        currentActiveDocs = currentActiveDocs.map(doc => {
+          if (textInput.toLowerCase().includes(doc.name.toLowerCase())) {
+            return { 
+              ...doc, 
+              lastAccessedTimestamp: Date.now(), 
+              lastAccessedMessageIndex: messagesWithUser.length 
+            };
+          }
+          return doc;
+        });
+
+        // Filter out old/irrelevant documents based on time and message count
+        currentActiveDocs = currentActiveDocs.filter(doc => {
+          const timeSinceUpload = Date.now() - doc.uploadTimestamp;
+          const timeSinceLastAccess = Date.now() - doc.lastAccessedTimestamp;
+          const messagesSinceUpload = messagesWithUser.length - doc.lastAccessedMessageIndex;
+          const messagesSinceLastAccess = messagesWithUser.length - doc.lastAccessedMessageIndex;
+          
+          // Rule 1: Very recent upload (5 messages OR 10 minutes from upload)
+          const isVeryRecentUpload = messagesSinceUpload <= 5 || timeSinceUpload < 10 * 60 * 1000;
+          
+          // Rule 2: Recently mentioned (7 messages OR 15 minutes since last access)
+          const isRecentlyMentioned = messagesSinceLastAccess <= 7 || timeSinceLastAccess < 15 * 60 * 1000;
+          
+          // Rule 3: Explicit forget command (optional feature)
+          const explicitlyForget = textInput.toLowerCase().includes(`zapomeň na ${doc.name.toLowerCase()}`);
+          if (explicitlyForget) {
+            showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
+            return false;
+          }
+          
+          return isVeryRecentUpload || isRecentlyMentioned;
+        });
+
+        // Update the state with filtered documents
+        setActiveDocumentContexts(currentActiveDocs);
+
+        // Create filtered document list for AI
+        const documentsToPassToGemini = currentActiveDocs.map(doc => ({ 
+          geminiFileUri: doc.uri, 
+          name: doc.name 
+        }));
+        
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (text, isStreaming, sources = []) => {
@@ -901,7 +951,7 @@ function App() {
             setTimeout(() => setIsSearching(false), 3000);
           },
           detectedLang,
-          uploadedDocuments
+          documentsToPassToGemini
         );
         
         responseText = result.text;
@@ -1088,6 +1138,18 @@ const handleDocumentUpload = async (event) => {
 
     setUploadedDocuments(prev => [...prev, newDoc]);
 
+    // ✅ Add document to active AI context
+    setActiveDocumentContexts(prev => [
+      ...prev.filter(d => d.uri !== geminiResult.fileUri), // Prevent duplicates
+      {
+        uri: geminiResult.fileUri,
+        name: result.originalName,
+        uploadTimestamp: Date.now(),
+        lastAccessedTimestamp: Date.now(),
+        lastAccessedMessageIndex: messages.length + 1
+      }
+    ]);
+
     // Update daily upload tracking
     todayUploaded.bytes += file.size;
     localStorage.setItem('dailyUploads', JSON.stringify(todayUploaded));
@@ -1228,12 +1290,25 @@ const handleSendWithDocuments = async (text, documents) => {
           setTimeout(() => setIsSearching(false), 3000);
         },
         detectedLang,
-        allDocuments // Pass all documents including newly processed
+        activeDocumentContexts.map(doc => ({ geminiFileUri: doc.uri, name: doc.name }))
       );
       
       // Update uploadedDocuments state AFTER successful AI response
       if (processedDocuments.length > 0) {
         setUploadedDocuments(prev => [...prev, ...processedDocuments]);
+        
+        // ✅ Add processed documents to active AI context
+        setActiveDocumentContexts(prev => {
+          const newActiveDocs = processedDocuments.map(doc => ({
+            uri: doc.geminiFileUri,
+            name: doc.name,
+            uploadTimestamp: Date.now(),
+            lastAccessedTimestamp: Date.now(),
+            lastAccessedMessageIndex: messages.length + 1
+          }));
+          // Remove duplicates and add new documents
+          return [...prev.filter(d => !newActiveDocs.some(nad => nad.uri === d.uri)), ...newActiveDocs];
+        });
       }
       
       const currentMessagesWithUser = [...messages, userMessage];
