@@ -1906,27 +1906,34 @@ const handleSendWithDocuments = async (text, documents) => {
                             background: 'rgba(255, 255, 255, 0.1)', 
                             padding: '2px 6px', 
                             borderRadius: '4px',
-                            fontSize: '0.9em',
-                            wordBreak: 'break-all'
+                            fontSize: '0.9em'
                           }}>
                             {children}
                           </code>
                         ) : (
                           <pre style={{
-                            background: 'rgba(0, 0, 0, 0.2)', 
-                            padding: '12px', 
-                            borderRadius: '6px',
+                            background: 'rgba(0, 0, 0, 0.3)',
+                            padding: '16px',
+                            borderRadius: '8px',
                             overflowX: 'auto',
-                            marginTop: '8px',
-                            marginBottom: '8px',
-                            maxWidth: '100%',
-                            overflowWrap: 'break-word',
-                            whiteSpace: 'pre-wrap'
+                            overflowY: 'auto',
+                            margin: '12px -1.6rem',
+                            maxHeight: '400px',
+                            fontSize: isMobile ? '13px' : '14px',
+                            lineHeight: '1.5',
+                            WebkitOverflowScrolling: 'touch',
+                            position: 'relative',
+                            width: 'calc(100vw - 2rem)',
+                            maxWidth: '1000px'
                           }}>
-                            <code style={{
-                              fontSize: isMobile ? '0.85em' : '0.9em',
-                              lineHeight: '1.4'
-                            }}>{children}</code>
+                            <code style={{ 
+                              fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                              whiteSpace: 'pre',
+                              display: 'block',
+                              color: '#e0e0e0'
+                            }}>
+                              {children}
+                            </code>
                           </pre>
                         ),
                       p: ({children}) => <p style={{margin: '6px 0', lineHeight: isMobile ? '1.3' : '1.6'}}>{children}</p>,
