@@ -1157,7 +1157,7 @@ const handleDocumentUpload = async (event) => {
     // Add info message to chat
     const infoMessage = {
       sender: 'bot',
-      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). Můžeš se mě na něj zeptat na cokoliv!`,
+      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). AI má plný přístup k dokumentu a může jej analyzovat. Můžeš se mě na něj zeptat na cokoliv!`,
       timestamp: new Date()
     };
 
