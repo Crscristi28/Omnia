@@ -1154,14 +1154,16 @@ const handleDocumentUpload = async (event) => {
     todayUploaded.bytes += file.size;
     localStorage.setItem('dailyUploads', JSON.stringify(todayUploaded));
 
-    // Add info message to chat
-    const infoMessage = {
-      sender: 'bot',
-      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). AI má plný přístup k dokumentu a může jej analyzovat. Můžeš se mě na něj zeptat na cokoliv!`,
-      timestamp: new Date()
+    // Add hidden context message for AI (not visible to user)
+    const hiddenContextMessage = {
+      sender: 'system',
+      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). AI má plný přístup k dokumentu a může jej analyzovat.`,
+      timestamp: new Date(),
+      isHidden: true
     };
 
-    setMessages(prev => [...prev, infoMessage]);
+    // Add to messages context but don't display to user
+    setMessages(prev => [...prev, hiddenContextMessage]);
     showNotification(messages.success, 'success');
     
   } catch (error) {
@@ -1731,7 +1733,7 @@ const handleSendWithDocuments = async (text, documents) => {
           )}
 
           {/* 💬 CHAT MESSAGES - UNCHANGED styling */}
-          {messages.map((msg, idx) => (
+          {messages.filter(msg => !msg.isHidden).map((msg, idx) => (
             <div key={idx} data-sender={msg.sender} style={{
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
