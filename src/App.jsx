@@ -1904,33 +1904,37 @@ const handleSendWithDocuments = async (text, documents) => {
                         inline ? (
                           <code style={{
                             background: 'rgba(255, 255, 255, 0.1)', 
-                            padding: '2px 6px', 
+                            padding: '2px 4px',
                             borderRadius: '4px',
-                            fontSize: '0.9em'
+                            fontSize: '0.85em',
+                            wordBreak: 'break-word',
+                            maxWidth: '100%',
+                            display: 'inline-block'
                           }}>
                             {children}
                           </code>
                         ) : (
                           <pre style={{
                             background: 'rgba(0, 0, 0, 0.3)',
-                            padding: '16px',
+                            padding: isMobile ? '12px' : '16px',
                             borderRadius: '8px',
                             overflowX: 'auto',
-                            overflowY: 'auto',
-                            margin: '12px -1.6rem',
-                            maxHeight: '400px',
-                            fontSize: isMobile ? '13px' : '14px',
-                            lineHeight: '1.5',
+                            overflowY: 'visible',
+                            margin: isMobile ? '12px -1rem' : '12px -1.6rem',
+                            fontSize: isMobile ? '12px' : '14px',
+                            lineHeight: '1.4',
                             WebkitOverflowScrolling: 'touch',
+                            width: isMobile ? 'calc(100vw - 2rem)' : 'calc(100% + 3.2rem)',
+                            maxWidth: '100vw',
                             position: 'relative',
-                            width: 'calc(100vw - 2rem)',
-                            maxWidth: '1000px'
+                            left: isMobile ? '0' : '-1.6rem'
                           }}>
                             <code style={{ 
                               fontFamily: 'Consolas, Monaco, "Courier New", monospace',
                               whiteSpace: 'pre',
                               display: 'block',
-                              color: '#e0e0e0'
+                              color: '#e0e0e0',
+                              fontSize: 'inherit'
                             }}>
                               {children}
                             </code>
