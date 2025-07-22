@@ -1920,14 +1920,14 @@ const handleSendWithDocuments = async (text, documents) => {
                             borderRadius: '8px',
                             overflowX: 'auto',
                             overflowY: 'visible',
-                            margin: isMobile ? '12px -1rem' : '12px -1.6rem',
+                            margin: isMobile ? '12px 0' : '12px -1.6rem',
                             fontSize: isMobile ? '12px' : '14px',
                             lineHeight: '1.4',
                             WebkitOverflowScrolling: 'touch',
-                            width: isMobile ? 'calc(100vw - 2rem)' : 'calc(100% + 3.2rem)',
-                            maxWidth: '100vw',
+                            width: isMobile ? '100%' : 'calc(100% + 3.2rem)',
+                            maxWidth: '100%',
                             position: 'relative',
-                            left: isMobile ? '0' : '-1.6rem'
+                            left: '0'
                           }}>
                             <code style={{ 
                               fontFamily: 'Consolas, Monaco, "Courier New", monospace',
