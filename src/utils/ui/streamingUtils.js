@@ -222,20 +222,20 @@ export const streamMessageWithEffect = (
  setMessages, 
  previousMessages, 
  scrollContainer,
- sources = []  // ✅ PŘIDÁNO: sources parametr
+ sources = []
 ) => {
- // Show text as it streams from API, but without word-by-word delays
+ // Show complete text directly - no fake streaming
  setMessages([
    ...previousMessages,
    { 
      sender: 'bot', 
      text: text, 
-     isStreaming: true,
+     isStreaming: false,
      sources: sources
    }
  ]);
 
- // Smart scroll during streaming
+ // Smart scroll after message display
  if (scrollContainer) {
    smartScrollToBottom(scrollContainer, {
      threshold: 150,
@@ -243,25 +243,8 @@ export const streamMessageWithEffect = (
    });
  }
 
- const stopStreaming = () => {
-   // When streaming actually finishes, remove streaming state
-   setMessages([
-     ...previousMessages,
-     { 
-       sender: 'bot', 
-       text: text, 
-       isStreaming: false,
-       sources: sources
-     }
-   ]);
- };
-
- // Auto-stop streaming after a short delay to show buttons
- setTimeout(() => {
-   stopStreaming();
- }, 500);
-
- return stopStreaming;
+ // Return empty stop function for compatibility
+ return () => {};
 };
 
 /**
