@@ -1866,24 +1866,50 @@ const handleSendWithDocuments = async (text, documents) => {
                     components={{
                       // Vlastní styly pro různé elementy
                       strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
-                      ul: ({children}) => <ul style={{marginLeft: isMobile ? '10px' : '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: isMobile ? '15px' : '20px'}}>{children}</ul>,
-                      ol: ({children}) => <ol style={{marginLeft: isMobile ? '10px' : '20px', marginTop: '8px', marginBottom: '8px', paddingLeft: isMobile ? '15px' : '20px'}}>{children}</ol>,
-                      li: ({children}) => <li style={{
-                        marginBottom: isMobile ? '4px' : '6px',
-                        display: 'list-item',
-                        listStylePosition: 'outside',
-                        listStyleType: 'disc',
-                        lineHeight: '1.4',
-                        paddingLeft: '0',
-                        marginLeft: isMobile ? '20px' : '24px'
-                      }}>{children}</li>,
+                      ul: ({children}) => (
+                        <ul style={{
+                          marginLeft: 0,
+                          marginTop: '8px',
+                          marginBottom: '8px',
+                          paddingLeft: 0,
+                          listStyle: 'none'
+                        }}>
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({children}) => (
+                        <ol style={{
+                          marginLeft: 0,
+                          marginTop: '8px',
+                          marginBottom: '8px',
+                          paddingLeft: 0,
+                          listStyle: 'none'
+                        }}>
+                          {children}
+                        </ol>
+                      ),
+                      li: ({children}) => (
+                        <li style={{
+                          marginBottom: isMobile ? '6px' : '8px',
+                          marginLeft: isMobile ? '20px' : '24px',
+                          paddingLeft: '4px',
+                          listStyleType: 'disc',
+                          listStylePosition: 'outside',
+                          lineHeight: '1.5',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word'
+                        }}>
+                          {children}
+                        </li>
+                      ),
                       code: ({inline, children}) => 
                         inline ? (
                           <code style={{
                             background: 'rgba(255, 255, 255, 0.1)', 
                             padding: '2px 6px', 
                             borderRadius: '4px',
-                            fontSize: '0.9em'
+                            fontSize: '0.9em',
+                            wordBreak: 'break-all'
                           }}>
                             {children}
                           </code>
@@ -1894,9 +1920,15 @@ const handleSendWithDocuments = async (text, documents) => {
                             borderRadius: '6px',
                             overflowX: 'auto',
                             marginTop: '8px',
-                            marginBottom: '8px'
+                            marginBottom: '8px',
+                            maxWidth: '100%',
+                            overflowWrap: 'break-word',
+                            whiteSpace: 'pre-wrap'
                           }}>
-                            <code>{children}</code>
+                            <code style={{
+                              fontSize: isMobile ? '0.85em' : '0.9em',
+                              lineHeight: '1.4'
+                            }}>{children}</code>
                           </pre>
                         ),
                       p: ({children}) => <p style={{margin: '6px 0', lineHeight: isMobile ? '1.3' : '1.6'}}>{children}</p>,
