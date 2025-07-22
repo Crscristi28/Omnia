@@ -1868,22 +1868,20 @@ const handleSendWithDocuments = async (text, documents) => {
                       strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
                       ul: ({children}) => (
                         <ul style={{
-                          marginLeft: 0,
+                          marginLeft: isMobile ? '10px' : '20px',
                           marginTop: '8px',
                           marginBottom: '8px',
-                          paddingLeft: 0,
-                          listStyle: 'none'
+                          paddingLeft: isMobile ? '15px' : '20px'
                         }}>
                           {children}
                         </ul>
                       ),
                       ol: ({children}) => (
                         <ol style={{
-                          marginLeft: 0,
+                          marginLeft: isMobile ? '10px' : '20px',
                           marginTop: '8px',
                           marginBottom: '8px',
-                          paddingLeft: 0,
-                          listStyle: 'none'
+                          paddingLeft: isMobile ? '15px' : '20px'
                         }}>
                           {children}
                         </ol>
