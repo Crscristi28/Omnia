@@ -1281,7 +1281,18 @@ const handleSendWithDocuments = async (text, documents) => {
       // Get current uploaded documents (including newly processed ones)
       const allDocuments = [...uploadedDocuments, ...processedDocuments];
       
-      // Send to Gemini with ALL documents
+      // Combine existing and new documents BEFORE sending to AI
+      const newActiveDocuments = processedDocuments.map(doc => ({
+        uri: doc.geminiFileUri,
+        name: doc.name,
+        uploadTimestamp: Date.now(),
+        lastAccessedTimestamp: Date.now(),
+        lastAccessedMessageIndex: currentMessages.length
+      }));
+      
+      const allActiveDocuments = [...activeDocumentContexts, ...newActiveDocuments];
+      
+      // Send to Gemini with ALL documents (existing + new)
       const result = await geminiService.sendMessage(
         currentMessages.slice(-10),
         (chunk) => {
@@ -1292,7 +1303,7 @@ const handleSendWithDocuments = async (text, documents) => {
           setTimeout(() => setIsSearching(false), 3000);
         },
         detectedLang,
-        activeDocumentContexts.map(doc => ({ geminiFileUri: doc.uri, name: doc.name }))
+        allActiveDocuments.map(doc => ({ geminiFileUri: doc.uri, name: doc.name }))
       );
       
       // Update uploadedDocuments state AFTER successful AI response
