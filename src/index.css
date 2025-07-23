@@ -23,16 +23,3 @@
   margin-left: 0 !important;
   padding-left: 8px !important;
 }
-
-/* MOBILE SPECIFIC FIX - Force inline behavior */
-@media (max-width: 768px) {
-  .wmde-markdown ol {
-    padding-left: 20px !important;
-    list-style-position: inside !important;
-  }
-  .wmde-markdown li {
-    margin-left: 0 !important;
-    padding-left: 4px !important;
-    display: flex !important;
-  }
-}
