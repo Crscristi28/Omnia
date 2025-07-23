@@ -35,8 +35,19 @@ main div ol li,
   list-style-position: outside !important;
 }
 
-/* MOBILE AGGRESSIVE FIX - Force inline numbered lists */
+/* MOBILE CODE BLOCKS + LIST FIX */
 @media (max-width: 768px) {
+  /* Force code block styling on mobile */
+  code {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-family: 'Courier New', monospace !important;
+  }
+  
+  /* Enhanced list targeting for mobile */
+  main div ol,
+  [data-sender="bot"] ol,
   .wmde-markdown ol {
     display: block !important;
     padding-left: 20px !important; 
