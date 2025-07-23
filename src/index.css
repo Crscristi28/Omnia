@@ -15,8 +15,14 @@
 
 /* Custom styles will go here */
 
-/* OMNIA LISTS - TARGET ALL OL ELEMENTS (with and without classes) */
-ol, .wmde-markdown ol {
+/* OMNIA LISTS - SUPER HIGH SPECIFICITY for streaming content */
+div div ol, 
+div .wmde-markdown ol,
+article ol,
+main ol,
+[class*="markdown"] ol,
+body ol,
+ol {
   padding-left: 20px !important;
   padding-inline-start: 20px !important;
   margin-inline-start: 0 !important;
@@ -24,7 +30,13 @@ ol, .wmde-markdown ol {
   display: block !important;
 }
 
-ol li, .wmde-markdown ol li {
+div div ol li,
+div .wmde-markdown ol li,
+article ol li,
+main ol li,
+[class*="markdown"] ol li,
+body ol li,
+ol li {
   display: list-item !important;
   margin-left: 0 !important;
   padding-left: 8px !important;
