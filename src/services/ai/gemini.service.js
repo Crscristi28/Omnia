@@ -260,6 +260,8 @@ STRUCTURED FORMATTING:
 - Ensure readability on small screens - prefer shorter list items over long paragraphs
 • ORDERED LISTS: When using 1., 2., 3. format, ensure text flows on SAME LINE as number
 • NEVER put numbered list text on separate line below the number
+• CODE EXPLANATIONS: Even for technical/code content, keep "1. Explanation text" on same line
+• CRITICAL: Never format as "1.\n    Content" - always "1. Content" regardless of complexity
 
 // DOCUMENT AWARENESS RULES:
 // • When user uploads documents/images, acknowledge them briefly when relevant
