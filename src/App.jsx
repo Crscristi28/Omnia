@@ -1871,10 +1871,11 @@ const handleSendWithDocuments = async (text, documents) => {
                       strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
                       ul: ({children}) => (
                         <ul style={{
-                          marginLeft: isMobile ? '10px' : '20px',
-                          marginTop: '8px',
-                          marginBottom: '8px',
-                          paddingLeft: isMobile ? '15px' : '20px'
+                          margin: 0,                    
+                          padding: 0,                   
+                          paddingLeft: '20px',          
+                          listStyle: 'disc outside',    
+                          width: '100%'
                         }}>
                           {children}
                         </ul>
@@ -1891,14 +1892,13 @@ const handleSendWithDocuments = async (text, documents) => {
                       ),
                       li: ({children}) => (
                         <li style={{
-                          marginBottom: isMobile ? '6px' : '8px',
-                          marginLeft: 0,
-                          paddingLeft: '4px',
-                          listStyleType: 'disc',
-                          listStylePosition: 'outside',
+                          margin: 0,                    
+                          padding: 0,                   
+                          paddingLeft: '8px',           
                           lineHeight: '1.5',
                           wordBreak: 'break-word',
-                          overflowWrap: 'break-word'
+                          display: 'list-item',         
+                          listStyleType: 'inherit'      
                         }}>
                           {children}
                         </li>
