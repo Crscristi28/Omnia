@@ -1865,6 +1865,12 @@ const handleSendWithDocuments = async (text, documents) => {
                     </div>
                   )}
                   
+                  {/* 🔍 DEBUG: Raw AI output analysis */}
+                  {console.log('🔍 RAW AI TEXT:', msg.text)}
+                  {console.log('🔍 Has numbered list markers?:', /^\s*\d+\.\s/m.test(msg.text || ''))}
+                  {console.log('🔍 Has "Krok" pattern?:', /krok\s+\d+:/i.test(msg.text || ''))}
+                  {console.log('🔍 Text length:', (msg.text || '').length)}
+                  
                   <MDEditor.Markdown 
                     source={msg.text || ''}
                     style={{
