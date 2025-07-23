@@ -23,3 +23,27 @@
   margin-left: 0 !important;
   padding-left: 8px !important;
 }
+
+/* PWA STANDALONE MODE FIXES */
+@media (display-mode: standalone) {
+  .wmde-markdown ol {
+    padding-left: 16px !important; /* PWA adjusted */
+  }
+}
+
+/* iOS PWA SPECIFIC - list positioning */
+@media (display-mode: standalone) and (-webkit-touch-callout: none) {
+  .wmde-markdown ol {
+    list-style-position: inside !important;
+  }
+}
+
+/* COMPACT PWA STYLING - pro malé obrazovky */
+@media (display-mode: standalone) and (max-height: 800px) {
+  .wmde-markdown ol {
+    padding-left: 14px !important;
+  }
+  .wmde-markdown ol li {
+    margin-bottom: 0.2rem !important;
+  }
+}
