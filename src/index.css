@@ -18,6 +18,7 @@
 /* OMNIA LISTS - TARGET ALL OL ELEMENTS (with and without classes) */
 ol, .wmde-markdown ol {
   padding-left: 20px !important;
+  padding-inline-start: 20px !important;
   list-style-position: outside !important;
   display: block !important;
 }
