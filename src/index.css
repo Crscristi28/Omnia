@@ -20,3 +20,13 @@
   padding-left: 20px !important;
   list-style-position: outside !important;
 }
+
+/* FIX: Lists containing inline code elements */
+.wmde-markdown ol li code {
+  display: inline !important;
+}
+
+.wmde-markdown ol li:has(code) {
+  display: list-item !important;
+  list-style-position: outside !important;
+}
