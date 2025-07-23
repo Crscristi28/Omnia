@@ -15,86 +15,8 @@
 
 /* Custom styles will go here */
 
-/* OMNIA LISTS - SURGICAL TARGETING for chat content only */
-main div ol,
-[data-sender="bot"] ol,
+/* OMNIA LISTS - CLEAN VANILLA MARKDOWN */
 .wmde-markdown ol {
   padding-left: 20px !important;
-  padding-inline-start: 20px !important;
-  margin-inline-start: 0 !important;  
   list-style-position: outside !important;
-  display: block !important;
-}
-
-main div ol li,
-[data-sender="bot"] ol li,
-.wmde-markdown ol li {
-  display: list-item !important;
-  margin-left: 0 !important;
-  padding-left: 8px !important;
-  list-style-position: outside !important;
-}
-
-/* MOBILE CODE BLOCKS + LIST FIX */
-@media (max-width: 768px) {
-  /* Force code block styling on mobile */
-  code {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    padding: 2px 6px !important;
-    border-radius: 4px !important;
-    font-family: 'Courier New', monospace !important;
-  }
-  
-  /* Enhanced list targeting for mobile */
-  main div ol,
-  [data-sender="bot"] ol,
-  .wmde-markdown ol {
-    display: block !important;
-    padding-left: 20px !important; 
-    margin-left: 0 !important;
-    list-style-position: outside !important;
-  }
-  
-  .wmde-markdown ol li {
-    display: list-item !important;
-    margin-left: 0 !important;
-    padding-left: 4px !important;
-    text-indent: 0 !important;
-    position: relative !important;
-  }
-  
-  .wmde-markdown ol li::marker {
-    display: inline !important;
-  }
-}
-
-/* PWA STANDALONE MODE FIXES */
-@media (display-mode: standalone) {
-  /* Code blocks styling for PWA */
-  code {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    padding: 2px 6px !important;
-    border-radius: 4px !important;
-    font-family: 'Courier New', monospace !important;
-  }
-  
-  /* Enhanced list targeting for PWA */
-  main div ol,
-  [data-sender="bot"] ol,
-  .wmde-markdown ol {
-    padding-left: 20px !important;
-    padding-inline-start: 20px !important;
-    margin-inline-start: 0 !important;
-    list-style-position: outside !important;
-    display: block !important;
-  }
-  
-  main div ol li,
-  [data-sender="bot"] ol li,
-  .wmde-markdown ol li {
-    display: list-item !important;
-    margin-left: 0 !important;
-    padding-left: 4px !important;
-    list-style-position: outside !important;
-  }
 }
