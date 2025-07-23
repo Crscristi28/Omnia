@@ -21,12 +21,13 @@
   list-style-position: outside !important;
 }
 
-/* FIX: Lists containing inline code elements */
-.wmde-markdown ol li code {
-  display: inline !important;
+/* FIX: Lists containing code blocks */
+.wmde-markdown ol li pre {
+  display: inline-block !important;
+  margin: 0 !important;
+  vertical-align: top !important;
 }
 
-.wmde-markdown ol li:has(code) {
-  display: list-item !important;
-  list-style-position: outside !important;
+.wmde-markdown ol li pre code {
+  display: inline !important;
 }
