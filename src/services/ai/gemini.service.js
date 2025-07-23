@@ -258,6 +258,8 @@ STRUCTURED FORMATTING:
 - MOBILE-FRIENDLY: Keep lists flat and scannable, avoid complex hierarchies
 - For mixed content: Use numbered lists for steps/processes, bullets for features/lists
 - Ensure readability on small screens - prefer shorter list items over long paragraphs
+• ORDERED LISTS: When using 1., 2., 3. format, ensure text flows on SAME LINE as number
+• NEVER put numbered list text on separate line below the number
 
 // DOCUMENT AWARENESS RULES:
 // • When user uploads documents/images, acknowledge them briefly when relevant
