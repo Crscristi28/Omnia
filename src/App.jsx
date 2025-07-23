@@ -941,7 +941,7 @@ function App() {
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (text, isStreaming, sources = []) => {
-            // setStreaming(isStreaming); // DISABLED - testing CSS fix
+            setStreaming(isStreaming);
             if (sources && sources.length > 0) {
               streamingSources = sources; // Capture sources during streaming
             }

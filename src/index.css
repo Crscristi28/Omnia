@@ -15,6 +15,13 @@
 
 /* Custom styles will go here */
 
+/* NUCLEAR TEST - GLOBAL OL OVERRIDE */
+* ol {
+  padding-left: 20px !important;
+  padding-inline-start: 20px !important;
+  list-style-position: outside !important;
+}
+
 /* OMNIA LISTS - SUPER HIGH SPECIFICITY for streaming content */
 div div ol, 
 div .wmde-markdown ol,
