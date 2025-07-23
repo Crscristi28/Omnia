@@ -1871,6 +1871,17 @@ const handleSendWithDocuments = async (text, documents) => {
                       backgroundColor: 'transparent',
                       color: '#ffffff'
                     }}
+                    components={{
+                      ol: ({children}) => (
+                        <ol style={{
+                          padding: 0,
+                          margin: 0,
+                          paddingLeft: '20px'
+                        }}>
+                          {children}
+                        </ol>
+                      )
+                    }}
                   />
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
