@@ -14,3 +14,12 @@
 }
 
 /* Custom styles will go here */
+
+/* OMNIA LISTS - Final fix for dynamic CSS injection */
+.wmde-markdown ol {
+  padding-left: 20px !important;
+}
+.wmde-markdown li {
+  margin-left: 0 !important;
+  padding-left: 8px !important;
+}
