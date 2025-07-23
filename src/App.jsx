@@ -1870,6 +1870,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 Has numbered list markers?:', /^\s*\d+\.\s/m.test(msg.text || ''))}
                   {console.log('🔍 Has "Krok" pattern?:', /krok\s+\d+:/i.test(msg.text || ''))}
                   {console.log('🔍 Text length:', (msg.text || '').length)}
+                  {console.log('🔍 AFTER MARKDOWN RENDER CHECK - inspect element for list-style-type!')}
                   
                   <MDEditor.Markdown 
                     source={msg.text || ''}

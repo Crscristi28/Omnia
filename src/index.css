@@ -15,13 +15,20 @@
 
 /* Custom styles will go here */
 
-/* OMNIA LISTS - Final fix for dynamic CSS injection */
+/* OMNIA LISTS - AGGRESSIVE fix for numbered lists */
 .wmde-markdown ol {
   padding-left: 20px !important;
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  display: block !important;
 }
-.wmde-markdown li {
+
+.wmde-markdown ol li {
+  display: list-item !important;
   margin-left: 0 !important;
   padding-left: 8px !important;
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
 }
 
 /* MOBILE AGGRESSIVE FIX - Force inline numbered lists */
