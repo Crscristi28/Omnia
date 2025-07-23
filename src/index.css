@@ -21,10 +21,19 @@
   list-style-position: outside !important;
 }
 
-/* FIX: Lists with short code snippets (not full blocks) */
-.wmde-markdown ol li code:not(pre code) {
+/* FIX: Inline code in lists - make them properly copyable and inline */
+.wmde-markdown ol li code {
   background-color: rgba(255, 255, 255, 0.1) !important;
   padding: 2px 6px !important;
   border-radius: 4px !important;
+  font-family: 'Courier New', Consolas, monospace !important;
+  font-size: 0.9em !important;
   display: inline !important;
+  vertical-align: baseline !important;
+  line-height: normal !important;
+  white-space: nowrap !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
 }
