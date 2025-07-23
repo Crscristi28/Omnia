@@ -24,26 +24,38 @@
   padding-left: 8px !important;
 }
 
+/* MOBILE AGGRESSIVE FIX - Force inline numbered lists */
+@media (max-width: 768px) {
+  .wmde-markdown ol {
+    display: block !important;
+    padding-left: 20px !important; 
+    margin-left: 0 !important;
+    list-style-position: outside !important;
+  }
+  
+  .wmde-markdown ol li {
+    display: list-item !important;
+    margin-left: 0 !important;
+    padding-left: 4px !important;
+    text-indent: 0 !important;
+    position: relative !important;
+  }
+  
+  .wmde-markdown ol li::marker {
+    display: inline !important;
+  }
+}
+
 /* PWA STANDALONE MODE FIXES */
 @media (display-mode: standalone) {
   .wmde-markdown ol {
-    padding-left: 16px !important; /* PWA adjusted */
+    padding-left: 20px !important;
+    list-style-position: outside !important;
   }
-}
-
-/* iOS PWA SPECIFIC - list positioning */
-@media (display-mode: standalone) and (-webkit-touch-callout: none) {
-  .wmde-markdown ol {
-    list-style-position: inside !important;
-  }
-}
-
-/* COMPACT PWA STYLING - pro malé obrazovky */
-@media (display-mode: standalone) and (max-height: 800px) {
-  .wmde-markdown ol {
-    padding-left: 14px !important;
-  }
+  
   .wmde-markdown ol li {
-    margin-bottom: 0.2rem !important;
+    display: list-item !important;
+    margin-left: 0 !important;
+    padding-left: 4px !important;
   }
 }
