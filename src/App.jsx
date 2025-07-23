@@ -1874,18 +1874,18 @@ const handleSendWithDocuments = async (text, documents) => {
                     components={{
                       ol: ({children}) => (
                         <ol style={{
-                          padding: 0,
-                          margin: 0,
-                          paddingLeft: '28px',
-                          listStylePosition: 'outside'
+                          padding: '0 !important',
+                          margin: '0 !important',
+                          paddingLeft: '28px !important',
+                          listStylePosition: 'outside !important'
                         }}>
                           {children}
                         </ol>
                       ),
                       li: ({children}) => (
                         <li style={{
-                          paddingLeft: '8px',
-                          marginBottom: '0.5rem'
+                          paddingLeft: '8px !important',
+                          marginBottom: '0.5rem !important'
                         }}>
                           {children}
                         </li>
