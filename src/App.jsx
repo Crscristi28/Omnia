@@ -940,12 +940,7 @@ function App() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (text, isStreaming, sources = []) => {
-            setStreaming(isStreaming);
-            if (sources && sources.length > 0) {
-              streamingSources = sources; // Capture sources during streaming
-            }
-          },
+          null, // DISABLED STREAMING CALLBACK - testing CSS fix
           () => {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
@@ -955,7 +950,7 @@ function App() {
         );
         
         responseText = result.text;
-        const sources = streamingSources.length > 0 ? streamingSources : (result.sources || []);
+        const sources = result.sources || []; // Use final sources directly
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
