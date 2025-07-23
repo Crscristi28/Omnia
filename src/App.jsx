@@ -1892,10 +1892,10 @@ const handleSendWithDocuments = async (text, documents) => {
                       li: ({children}) => (
                         <li style={{
                           marginBottom: isMobile ? '6px' : '8px',
-                          marginLeft: '0',
-                          paddingLeft: '0',
+                          marginLeft: 0,
+                          paddingLeft: '4px',
                           listStyleType: 'disc',
-                          listStylePosition: 'inside',
+                          listStylePosition: 'outside',
                           lineHeight: '1.5',
                           wordBreak: 'break-word',
                           overflowWrap: 'break-word'
