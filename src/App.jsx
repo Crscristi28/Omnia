@@ -7,7 +7,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import MDEditor from '@uiw/react-md-editor';
 import './App.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
@@ -1865,110 +1865,13 @@ const handleSendWithDocuments = async (text, documents) => {
                     </div>
                   )}
                   
-                  <ReactMarkdown 
-                    components={{
-                      // Vlastní styly pro různé elementy
-                      strong: ({children}) => <strong style={{color: '#FFD700', fontWeight: '600'}}>{children}</strong>,
-                      ul: ({children}) => (
-                        <ul style={{
-                          margin: 0,                    
-                          padding: 0,                   
-                          paddingLeft: '20px',          
-                          listStyle: 'disc outside',    
-                          width: '100%'
-                        }}>
-                          {children}
-                        </ul>
-                      ),
-                      ol: ({children}) => (
-                        <ol style={{
-                          marginLeft: isMobile ? '10px' : '20px',
-                          marginTop: '8px',
-                          marginBottom: '8px',
-                          paddingLeft: isMobile ? '15px' : '20px'
-                        }}>
-                          {children}
-                        </ol>
-                      ),
-                      li: ({children}) => (
-                        <li style={{
-                          margin: 0,                    
-                          padding: 0,                   
-                          paddingLeft: '8px',           
-                          lineHeight: '1.5',
-                          wordBreak: 'break-word',
-                          display: 'list-item',         
-                          listStyleType: 'inherit'      
-                        }}>
-                          {children}
-                        </li>
-                      ),
-                      code: ({inline, children}) => 
-                        inline ? (
-                          <code style={{
-                            background: 'rgba(255, 255, 255, 0.1)', 
-                            padding: '2px 4px',
-                            borderRadius: '4px',
-                            fontSize: '0.85em',
-                            wordBreak: 'break-word',
-                            maxWidth: '100%',
-                            display: 'inline-block'
-                          }}>
-                            {children}
-                          </code>
-                        ) : (
-                          <pre style={{
-                            background: 'rgba(0, 0, 0, 0.3)',
-                            padding: isMobile ? '12px' : '16px',
-                            borderRadius: '8px',
-                            overflowX: 'auto',
-                            overflowY: 'visible',
-                            margin: isMobile ? '12px 0' : '12px -1.6rem',
-                            fontSize: isMobile ? '14px' : '14px',
-                            lineHeight: '1.5',
-                            WebkitOverflowScrolling: 'touch',
-                            width: isMobile ? '100%' : 'calc(100% + 3.2rem)',
-                            maxWidth: '100%',
-                            position: 'relative',
-                            left: '0'
-                          }}>
-                            <code style={{ 
-                              fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                              whiteSpace: 'pre',
-                              display: 'block',
-                              color: '#e0e0e0',
-                              fontSize: 'inherit'
-                            }}>
-                              {children}
-                            </code>
-                          </pre>
-                        ),
-                      p: ({children}) => <p style={{margin: '6px 0', lineHeight: isMobile ? '1.3' : '1.6'}}>{children}</p>,
-                      h1: ({children}) => <h1 style={{fontSize: '1.4em', fontWeight: '600', margin: '16px 0 8px 0', color: '#FFD700'}}>{children}</h1>,
-                      h2: ({children}) => <h2 style={{fontSize: '1.2em', fontWeight: '600', margin: '12px 0 6px 0', color: '#FFD700'}}>{children}</h2>,
-                      h3: ({children}) => <h3 style={{fontSize: '1.1em', fontWeight: '600', margin: '10px 0 5px 0', color: '#FFD700'}}>{children}</h3>,
-                      em: ({children}) => <em style={{fontStyle: 'italic', color: '#E0E0E0'}}>{children}</em>,
-                      a: ({href, children}) => (
-                        <a href={href} style={{color: '#00ffff', textDecoration: 'underline'}} target="_blank" rel="noopener noreferrer">
-                          {children}
-                        </a>
-                      ),
-                      blockquote: ({children}) => (
-                        <blockquote style={{
-                          borderLeft: '3px solid rgba(255, 255, 255, 0.3)', 
-                          paddingLeft: '12px', 
-                          marginLeft: '0', 
-                          marginTop: '8px', 
-                          marginBottom: '8px', 
-                          opacity: '0.9'
-                        }}>
-                          {children}
-                        </blockquote>
-                      ),
+                  <MDEditor.Markdown 
+                    source={msg.text || ''}
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: '#ffffff'
                     }}
-                  >
-                    {msg.text || ''}
-                  </ReactMarkdown>
+                  />
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
                   {!msg.isStreaming && (
