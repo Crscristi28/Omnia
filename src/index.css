@@ -19,6 +19,7 @@
 ol, .wmde-markdown ol {
   padding-left: 20px !important;
   padding-inline-start: 20px !important;
+  margin-inline-start: 0 !important;
   list-style-position: outside !important;
   display: block !important;
 }
