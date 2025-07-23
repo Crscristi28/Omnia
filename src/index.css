@@ -21,13 +21,10 @@
   list-style-position: outside !important;
 }
 
-/* FIX: Lists containing code blocks */
-.wmde-markdown ol li pre {
-  display: inline-block !important;
-  margin: 0 !important;
-  vertical-align: top !important;
-}
-
-.wmde-markdown ol li pre code {
+/* FIX: Lists with short code snippets (not full blocks) */
+.wmde-markdown ol li code:not(pre code) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
   display: inline !important;
 }
