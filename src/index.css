@@ -15,17 +15,17 @@
 
 /* Custom styles will go here */
 
-/* CRITICAL: Override Tailwind's list resets */
+/* CRITICAL: Override Tailwind's list resets with !important */
 ol, ul {
-  list-style: initial;
-  margin: 0;
-  padding: 0;
+  list-style: initial !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 li {
-  list-style-position: outside;
-  margin: 0;
-  padding: 0;
+  list-style-position: outside !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* FORCE LIST NUMBERS TO STAY BESIDE TEXT */
