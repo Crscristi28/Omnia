@@ -65,6 +65,13 @@ li {
   padding: 0 !important;
 }
 
+/* Bold text styling with red color */
+.wmde-markdown strong,
+.wmde-markdown b {
+  color: #ef4444 !important; /* Tailwind red-500 */
+  font-weight: 700 !important;
+}
+
 /* Mobile responsive adjustments for lists */
 @media (max-width: 768px) {
   .wmde-markdown ul,
