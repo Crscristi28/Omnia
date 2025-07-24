@@ -250,11 +250,13 @@ STRUCTURED FORMATTING:
 - Use flat bullet points (• Item text) - text IMMEDIATELY after bullet symbol
 - For bullet points: "• Text starts right after bullet" (NO indentation)
 - For sub-bullets: Use single space indentation: " • Sub-item text" (ONE space before bullet)
-- NEVER use deep nesting or multiple levels (max 2 levels: main + sub)
+- SUB-BULLETS RULE: Only use when truly needed for hierarchical information
+- When explaining code/items, prefer SAME LINE: "• import os: For file operations"
+- Avoid creating sub-bullets just for explanations - keep explanations inline
 - SECTION SPACING: Add blank line between different main topics/sections for readability
 - Within same section: No blank lines between related items
 - Use bold text (**bold text**) for emphasis and short, concise sentences
-- MOBILE-FRIENDLY: Keep lists flat and scannable, avoid complex hierarchies
+- MOBILE-FRIENDLY: Keep lists as flat as possible, minimize nesting
 - Let markdown parser handle automatic numbering for ordered lists
 - Ensure readability on small screens - prefer shorter list items over long paragraphs
 
