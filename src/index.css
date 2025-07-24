@@ -19,7 +19,8 @@
 .wmde-markdown ol,
 .wmde-markdown ul {
   margin: 8px 0 !important;
-  padding-left: 25px !important;
+  padding: 0 !important; /* Changed: Zero padding */
+  margin-left: 25px !important; /* Changed: Use margin-left instead of padding-left */
   list-style-position: outside !important;
 }
 
@@ -56,14 +57,6 @@
   .wmde-markdown ul,
   .wmde-markdown ol {
     /* Override desktop styles for mobile */
-    margin: 8px 0 !important;
-    padding-left: 18px !important; /* Reduced from 25px for mobile */
-  }
-  
-  .wmde-markdown ul li,
-  .wmde-markdown ol li {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-    list-style-position: outside !important;
+    margin-left: 15px !important; /* Reduced from 25px for mobile */
   }
 }
