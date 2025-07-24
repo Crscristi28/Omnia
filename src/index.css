@@ -65,12 +65,11 @@ li {
   padding: 0 !important;
 }
 
-/* Bold text styling with orange color and glow */
+/* Bold text styling with yellow color */
 .wmde-markdown strong,
 .wmde-markdown b {
-  color: #fdba74 !important; /* Tailwind orange-300 */
+  color: #fbbf24 !important; /* Tailwind amber-400 - bright yellow */
   font-weight: 700 !important;
-  text-shadow: 0 0 8px rgba(253, 186, 116, 0.6) !important; /* Glow efekt */
 }
 
 /* Mobile responsive adjustments for lists */
