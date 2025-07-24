@@ -68,7 +68,7 @@ li {
 /* Bold text styling with orange color */
 .wmde-markdown strong,
 .wmde-markdown b {
-  color: #f97316 !important; /* Tailwind orange-500 */
+  color: #fdba74 !important; /* Tailwind orange-300 */
   font-weight: 700 !important;
 }
 
