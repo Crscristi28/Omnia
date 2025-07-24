@@ -65,10 +65,10 @@ li {
   padding: 0 !important;
 }
 
-/* Bold text styling with red color */
+/* Bold text styling with orange color */
 .wmde-markdown strong,
 .wmde-markdown b {
-  color: #ef4444 !important; /* Tailwind red-500 */
+  color: #f97316 !important; /* Tailwind orange-500 */
   font-weight: 700 !important;
 }
 
