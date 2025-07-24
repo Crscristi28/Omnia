@@ -72,6 +72,19 @@ li {
   font-weight: 700 !important;
 }
 
+/* Hide bullets from list items that contain only bold text (section headers) */
+.wmde-markdown li:has(> strong:first-child:last-child) {
+  list-style: none !important;
+  margin-left: -25px !important; /* Compensate for removed bullet spacing */
+}
+
+/* For mobile */
+@media (max-width: 768px) {
+  .wmde-markdown li:has(> strong:first-child:last-child) {
+    margin-left: -25px !important;
+  }
+}
+
 /* Mobile responsive adjustments for lists */
 @media (max-width: 768px) {
   .wmde-markdown ul,
