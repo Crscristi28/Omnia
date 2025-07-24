@@ -15,6 +15,19 @@
 
 /* Custom styles will go here */
 
+/* CRITICAL: Override Tailwind's list resets */
+ol, ul {
+  list-style: initial;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style-position: outside;
+  margin: 0;
+  padding: 0;
+}
+
 /* FORCE LIST NUMBERS TO STAY BESIDE TEXT */
 .wmde-markdown ol,
 .wmde-markdown ul {
@@ -57,6 +70,14 @@
   .wmde-markdown ul,
   .wmde-markdown ol {
     /* Override desktop styles for mobile */
-    margin-left: 15px !important; /* Reduced from 25px for mobile */
+    margin-left: 18px !important; /* Optimized for mobile */
+    padding-left: 0 !important; /* Ensure no padding */
+  }
+  
+  .wmde-markdown ul li,
+  .wmde-markdown ol li {
+    list-style-position: outside !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
