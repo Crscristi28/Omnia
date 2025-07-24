@@ -16,12 +16,15 @@
 /* Custom styles will go here */
 
 /* FORCE LIST NUMBERS TO STAY BESIDE TEXT */
-.wmde-markdown ol {
-  padding-left: 20px !important;
+.wmde-markdown ol,
+.wmde-markdown ul {
+  margin: 8px 0 !important;
+  padding-left: 25px !important;
   list-style-position: outside !important;
 }
 
-.wmde-markdown ol li {
+.wmde-markdown ol li,
+.wmde-markdown ul li {
   display: list-item !important;
   list-style-position: outside !important;
   margin: 0 !important;
@@ -52,13 +55,15 @@
 @media (max-width: 768px) {
   .wmde-markdown ul,
   .wmde-markdown ol {
-    margin-left: 18px !important; /* Reduced spacing for mobile */
-    padding-left: 0 !important;
+    /* Override desktop styles for mobile */
+    margin: 8px 0 !important;
+    padding-left: 18px !important; /* Reduced from 25px for mobile */
   }
   
   .wmde-markdown ul li,
   .wmde-markdown ol li {
     padding-left: 0 !important;
     margin-left: 0 !important;
+    list-style-position: outside !important;
   }
 }
