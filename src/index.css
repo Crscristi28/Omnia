@@ -33,7 +33,7 @@ li {
 .wmde-markdown ul {
   margin: 8px 0 !important;
   padding: 0 !important; /* Changed: Zero padding */
-  margin-left: 25px !important; /* Changed: Use margin-left instead of padding-left */
+  margin-left: 35px !important; /* Increased for better desktop alignment */
   list-style-position: outside !important;
 }
 
@@ -77,7 +77,7 @@ li {
   .wmde-markdown ul,
   .wmde-markdown ol {
     /* Override desktop styles for mobile */
-    margin-left: 18px !important; /* Optimized for mobile */
+    margin-left: 25px !important; /* Increased for better mobile alignment */
     padding-left: 0 !important; /* Ensure no padding */
   }
   
