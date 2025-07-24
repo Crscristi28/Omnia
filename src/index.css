@@ -47,3 +47,18 @@
   margin: 0 !important;
   padding: 0 !important;
 }
+
+/* Mobile responsive adjustments for lists */
+@media (max-width: 768px) {
+  .wmde-markdown ul,
+  .wmde-markdown ol {
+    margin-left: 18px !important; /* Reduced spacing for mobile */
+    padding-left: 0 !important;
+  }
+  
+  .wmde-markdown ul li,
+  .wmde-markdown ol li {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
