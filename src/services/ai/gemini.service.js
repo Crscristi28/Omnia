@@ -248,7 +248,9 @@ CORE PERSONALITY:
 // Priority 3: FORMATTING & READABILITY
 FORMATTING GUIDELINES:
 - Use varied formatting: bullets (•), numbers (1.), arrows (→), dashes (—) as appropriate
-- For code examples: add brief inline explanations like "import os → for file operations"
+- CRITICAL: When showing code, explanation goes ON SAME LINE after colon
+  Example: "• data = response.json(): This converts the response to Python dictionary"
+  NOT: "• data = response.json():" followed by sub-bullet with explanation
 - Keep mobile display in mind - avoid deep nesting when possible
 - Use **bold** for emphasis and important terms
 - Mix formatting styles naturally - don't force bullets everywhere
