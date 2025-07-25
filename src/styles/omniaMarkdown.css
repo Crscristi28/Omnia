@@ -235,23 +235,14 @@
   white-space: pre !important;
 }
 
-/* Custom syntax highlighting colors */
-.omnia-code-block .keyword {
-  color: #66d9ef !important; /* Cyan keywords */
+/* Override highlight.js colors for our dark theme */
+.omnia-code-block .hljs {
+  background: transparent !important;
+  color: #f8f8f2 !important;
+  padding: 0 !important;
 }
 
-.omnia-code-block .string {
-  color: #e6db74 !important; /* Yellow strings */
-}
-
-.omnia-code-block .comment {
-  color: #75715e !important; /* Gray comments */
-  font-style: italic;
-}
-
-.omnia-code-block .number {
-  color: #ae81ff !important; /* Purple numbers */
-}
+/* Let highlight.js handle all the syntax coloring */
 
 /* Mobile responsive */
 @media (max-width: 768px) {
