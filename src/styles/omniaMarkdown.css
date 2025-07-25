@@ -172,90 +172,137 @@
 }
 
 /* ================================================
- * 📋 CLEAN & SIMPLE CODE BLOCKS
+ * 🎨 BEAUTIFUL PROFESSIONAL CODE BLOCKS - VS Code Style
  * ================================================ */
 
 .omnia-code-block {
-  margin: 16px 0;
-  border-radius: 6px;
+  margin: 20px 0;
+  border-radius: 12px;
   overflow: hidden;
-  background: #1e1e1e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0d1117;
+  border: 1px solid rgba(56, 139, 253, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.omnia-code-block:hover {
+  box-shadow: 0 12px 40px rgba(56, 139, 253, 0.15);
+  border-color: rgba(56, 139, 253, 0.25);
 }
 
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
-  background: #2d2d2d;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #161b22 0%, #1f2937 100%);
+  border-bottom: 1px solid rgba(56, 139, 253, 0.1);
 }
 
 .language-label {
-  font-size: 11px;
-  color: #888;
-  font-weight: 500;
+  font-size: 12px;
+  color: #7dd3fc;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
 
 .omnia-copy-button {
-  background: transparent;
-  color: #888;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  padding: 4px 8px;
+  background: rgba(56, 139, 253, 0.1);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 139, 253, 0.3);
+  border-radius: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   font-size: 11px;
+  font-weight: 500;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .omnia-copy-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(56, 139, 253, 0.2);
+  color: #ffffff;
+  border-color: rgba(56, 139, 253, 0.5);
+  transform: translateY(-1px);
 }
 
-/* Clean code styling */
+.omnia-copy-button:active {
+  transform: translateY(0);
+}
+
+/* Beautiful code content styling */
 .omnia-code-block pre {
   margin: 0 !important;
-  padding: 16px !important;
-  background: transparent !important;
+  padding: 24px !important;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%) !important;
   overflow-x: auto !important;
-  line-height: 1.5 !important;
+  line-height: 1.6 !important;
+  font-size: 14px !important;
+  border: none !important;
 }
 
 .omnia-code-block code {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace !important;
-  font-size: 13px !important;
-  color: #f8f8f2 !important;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !important;
+  font-size: 14px !important;
+  color: #e6edf3 !important;
   background: transparent !important;
   padding: 0 !important;
   border-radius: 0 !important;
   white-space: pre !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.02em !important;
 }
 
-/* Override highlight.js colors for our dark theme */
+/* Enhanced highlight.js colors for professional look */
 .omnia-code-block .hljs {
   background: transparent !important;
-  color: #f8f8f2 !important;
+  color: #e6edf3 !important;
   padding: 0 !important;
 }
 
+/* Professional syntax highlighting colors */
+.omnia-code-block .hljs-keyword { color: #ff7b72 !important; }
+.omnia-code-block .hljs-string { color: #a5d6ff !important; }
+.omnia-code-block .hljs-comment { color: #8b949e !important; font-style: italic !important; }
+.omnia-code-block .hljs-number { color: #79c0ff !important; }
+.omnia-code-block .hljs-function { color: #d2a8ff !important; }
+.omnia-code-block .hljs-variable { color: #ffa657 !important; }
+.omnia-code-block .hljs-type { color: #7ee787 !important; }
+.omnia-code-block .hljs-literal { color: #79c0ff !important; }
+.omnia-code-block .hljs-built_in { color: #ffa657 !important; }
+
 /* Let highlight.js handle all the syntax coloring */
 
-/* Mobile responsive */
+/* Mobile responsive - keep it beautiful on mobile too */
 @media (max-width: 768px) {
+  .omnia-code-block {
+    margin: 16px 0;
+    border-radius: 10px;
+  }
+  
   .omnia-code-block pre {
-    padding: 12px !important;
+    padding: 18px !important;
+    font-size: 13px !important;
   }
   
   .omnia-code-block code {
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
   
   .code-header {
-    padding: 6px 12px;
+    padding: 10px 16px;
+  }
+  
+  .language-label {
+    font-size: 11px;
+  }
+  
+  .omnia-copy-button {
+    padding: 5px 10px;
+    font-size: 10px;
   }
 }
 
