@@ -37,7 +37,7 @@ const ReactCodeBlock = ({ code, language = 'javascript' }) => {
       </div>
       <CodeMirror
         value={code}
-        height="auto"
+        height={`${code.split('\n').length * 18 + 20}px`}
         theme={oneDark}
         extensions={getLanguageExtension(language)}
         editable={false}
