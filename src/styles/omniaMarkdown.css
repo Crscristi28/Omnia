@@ -172,107 +172,51 @@
 }
 
 /* ================================================
- * 🎨 BEAUTIFUL PROFESSIONAL CODE BLOCKS - VS Code Style
+ * 🎨 CLEAN CODE BLOCKS - Just code with inline copy button
  * ================================================ */
 
 .omnia-code-block {
-  margin: 12px 0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #0d1117;
-  border: 1px solid rgba(56, 139, 253, 0.15);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  margin: 8px 0;
+  background: #1e1e1e;
+  border-radius: 4px;
+  position: relative;
 }
 
-.omnia-code-block:hover {
-  box-shadow: 0 12px 40px rgba(56, 139, 253, 0.15);
-  border-color: rgba(56, 139, 253, 0.25);
-}
-
-.code-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: linear-gradient(90deg, #161b22 0%, #1f2937 100%);
-  border-bottom: 1px solid rgba(56, 139, 253, 0.1);
-}
-
-.language-label {
-  font-size: 12px;
-  color: #7dd3fc;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-}
-
-.omnia-copy-button {
-  background: rgba(56, 139, 253, 0.1);
-  color: #7dd3fc;
-  border: 1px solid rgba(56, 139, 253, 0.3);
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.omnia-copy-button:hover {
-  background: rgba(56, 139, 253, 0.2);
-  color: #ffffff;
-  border-color: rgba(56, 139, 253, 0.5);
-  transform: translateY(-1px);
-}
-
-.omnia-copy-button:active {
-  transform: translateY(0);
-}
-
-/* Beautiful code content styling */
+/* Just the code */
 .omnia-code-block pre {
   margin: 0 !important;
-  padding: 12px 16px !important;
-  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%) !important;
+  padding: 12px !important;
+  padding-right: 60px !important; /* Space for copy button */
+  background: #1e1e1e !important;
   overflow-x: auto !important;
   line-height: 1.4 !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   border: none !important;
+  border-radius: 4px !important;
 }
 
 .omnia-code-block code {
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !important;
-  font-size: 14px !important;
-  color: #e6edf3 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 13px !important;
+  color: #f8f8f2 !important;
   background: transparent !important;
   padding: 0 !important;
   border-radius: 0 !important;
   white-space: pre !important;
-  font-weight: 400 !important;
-  letter-spacing: 0.02em !important;
 }
 
-/* Enhanced highlight.js colors for professional look */
+/* Simple syntax highlighting */
 .omnia-code-block .hljs {
   background: transparent !important;
-  color: #e6edf3 !important;
+  color: #f8f8f2 !important;
   padding: 0 !important;
 }
 
-/* Professional syntax highlighting colors */
-.omnia-code-block .hljs-keyword { color: #ff7b72 !important; }
-.omnia-code-block .hljs-string { color: #a5d6ff !important; }
-.omnia-code-block .hljs-comment { color: #8b949e !important; font-style: italic !important; }
-.omnia-code-block .hljs-number { color: #79c0ff !important; }
-.omnia-code-block .hljs-function { color: #d2a8ff !important; }
-.omnia-code-block .hljs-variable { color: #ffa657 !important; }
-.omnia-code-block .hljs-type { color: #7ee787 !important; }
-.omnia-code-block .hljs-literal { color: #79c0ff !important; }
-.omnia-code-block .hljs-built_in { color: #ffa657 !important; }
+.omnia-code-block .hljs-keyword { color: #ff79c6 !important; }
+.omnia-code-block .hljs-string { color: #f1fa8c !important; }
+.omnia-code-block .hljs-comment { color: #6272a4 !important; }
+.omnia-code-block .hljs-number { color: #bd93f9 !important; }
+.omnia-code-block .hljs-function { color: #50fa7b !important; }
 
 /* Let highlight.js handle all the syntax coloring */
 

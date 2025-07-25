@@ -75,16 +75,13 @@ export const parseOmniaText = (text) => {
         
         processedLines.push(`
           <div class="omnia-code-block">
-            <div class="code-header">
-              <span class="language-label">${codeBlockLanguage || 'text'}</span>
-              <button 
-                class="omnia-copy-button" 
-                onclick="copyCodeToClipboard('${copyId}', this)"
-                title="Copy code"
-              >
-                📋 Copy
-              </button>
-            </div>
+            <button 
+              class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors duration-200 z-10"
+              onclick="copyCodeToClipboard('${copyId}', this)"
+              title="Copy code"
+            >
+              📋
+            </button>
             <pre><code>${highlightedCode}</code></pre>
             <script type="text/plain" id="${copyId}">${codeContent}</script>
           </div>
