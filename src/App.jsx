@@ -32,6 +32,7 @@ import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
+import ReactCodeBlock from './components/code/ReactCodeBlock';
 
 // 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
 const welcomeTexts = {
@@ -1001,6 +1002,65 @@ function App() {
     } else {
       setInput(text);
     }
+  };
+
+  // Function to render markdown with React code blocks
+  const renderMarkdownWithReactCodeBlocks = (htmlString) => {
+    if (!htmlString) return null;
+
+    const parts = [];
+    let currentPos = 0;
+    
+    // Find React code block placeholders
+    const codeBlockPattern = /<div class="react-code-block-placeholder"[^>]*data-language="([^"]*)"[^>]*data-code="([^"]*)"[^>]*data-copy-id="([^"]*)"[^>]*>\s*<\/div>/g;
+    
+    let match;
+    while ((match = codeBlockPattern.exec(htmlString)) !== null) {
+      // Add HTML before this block
+      if (match.index > currentPos) {
+        const beforeHtml = htmlString.slice(currentPos, match.index);
+        if (beforeHtml.trim()) {
+          parts.push(
+            <div 
+              key={`html-${currentPos}`}
+              dangerouslySetInnerHTML={{ __html: beforeHtml }} 
+            />
+          );
+        }
+      }
+      
+      // Decode HTML entities in code
+      const language = match[1] || 'text';
+      const encodedCode = match[2] || '';
+      const copyId = match[3] || `copy-${Date.now()}`;
+      const code = decodeHTMLEntities(encodedCode);
+      
+      // Add React code block
+      parts.push(
+        <ReactCodeBlock
+          key={`code-${match.index}`}
+          code={code}
+          language={language}
+        />
+      );
+      
+      currentPos = match.index + match[0].length;
+    }
+    
+    // Add remaining HTML
+    if (currentPos < htmlString.length) {
+      const afterHtml = htmlString.slice(currentPos);
+      if (afterHtml.trim()) {
+        parts.push(
+          <div 
+            key={`html-${currentPos}`}
+            dangerouslySetInnerHTML={{ __html: afterHtml }} 
+          />
+        );
+      }
+    }
+    
+    return parts.length > 0 ? <div>{parts}</div> : <div dangerouslySetInnerHTML={{ __html: htmlString }} />;
   };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
 // ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
@@ -1870,10 +1930,9 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 Has HASH+NUMBER pattern?:', /#\d+\./g.test(msg.text || ''))}
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
-                  <div 
-                    className="omnia-markdown"
-                    dangerouslySetInnerHTML={{ __html: parseOmniaText(msg.text || '') }}
-                  />
+                  <div className="omnia-markdown">
+                    {renderMarkdownWithReactCodeBlocks(parseOmniaText(msg.text || ''))}
+                  </div>
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
                   {!msg.isStreaming && (
