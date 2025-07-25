@@ -1033,7 +1033,10 @@ function App() {
       const language = match[1] || 'text';
       const encodedCode = match[2] || '';
       const copyId = match[3] || `copy-${Date.now()}`;
-      const code = decodeHTMLEntities(encodedCode);
+      // Decode HTML entities
+      const element = document.createElement('div');
+      element.innerHTML = encodedCode;
+      const code = element.textContent || element.innerText || '';
       
       // Add React code block
       parts.push(
