@@ -1,27 +1,6 @@
-// 🚀 OMNIA PARSER - Advanced Markdown Parser with Prism.js syntax highlighting
+// 🚀 OMNIA PARSER - Advanced Markdown Parser with simple syntax highlighting
 // Replaces @uiw/react-md-editor with BETTER functionality and styling
 // Date: 2025-07-25
-
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css'; // Dark theme
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-php';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-c';
-import 'prismjs/components/prism-cpp';
-import 'prismjs/components/prism-csharp';
-import 'prismjs/components/prism-ruby';
-import 'prismjs/components/prism-go';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-swift';
-import 'prismjs/components/prism-kotlin';
 
 /**
  * Main parser function - converts markdown text to HTML
@@ -55,21 +34,9 @@ export const parseOmniaText = (text) => {
         const codeContent = codeBlockContent.join('\n');
         const copyId = 'copy-' + Math.random().toString(36).substr(2, 9);
         
-        // Get language mapping for Prism
-        const language = getPrismLanguage(codeBlockLanguage);
-        
-        // Highlight code with Prism.js
-        let highlightedCode;
-        try {
-          if (Prism.languages[language]) {
-            highlightedCode = Prism.highlight(codeContent, Prism.languages[language], language);
-          } else {
-            highlightedCode = escapeHtml(codeContent);
-          }
-        } catch (error) {
-          console.warn('Prism highlight failed:', error);
-          highlightedCode = escapeHtml(codeContent);
-        }
+        // Simple syntax highlighting
+        const language = getLanguage(codeBlockLanguage);
+        const highlightedCode = highlightCode(codeContent, language);
         
         // Add line numbers to highlighted code
         const lines = highlightedCode.split('\n');
@@ -162,35 +129,60 @@ export const parseOmniaText = (text) => {
   return processedLines.join('\n');
 };
 
-// Map common language names to Prism language keys
-const getPrismLanguage = (lang) => {
+// Simple language detection
+const getLanguage = (lang) => {
   if (!lang) return 'text';
   
   const languageMap = {
     'py': 'python',
-    'js': 'javascript',
+    'js': 'javascript', 
     'ts': 'typescript',
-    'jsx': 'jsx',
-    'tsx': 'tsx',
+    'jsx': 'javascript',
+    'tsx': 'typescript',
     'sh': 'bash',
     'shell': 'bash',
     'cmd': 'bash',
-    'powershell': 'bash',
-    'ps1': 'bash',
     'c++': 'cpp',
     'c#': 'csharp',
     'cs': 'csharp',
     'rb': 'ruby',
     'rs': 'rust',
-    'kt': 'kotlin',
-    'yml': 'yaml',
-    'yaml': 'yaml',
-    'md': 'markdown',
-    'dockerfile': 'docker'
+    'kt': 'kotlin'
   };
   
   const normalized = lang.toLowerCase();
   return languageMap[normalized] || normalized;
+};
+
+// Simple syntax highlighter
+const highlightCode = (code, language) => {
+  const escaped = escapeHtml(code);
+  
+  if (language === 'python') {
+    return escaped
+      .replace(/\b(def|class|import|from|if|elif|else|for|while|try|except|finally|with|as|return|yield|lambda|pass|break|continue|and|or|not|in|is|True|False|None)\b/g, '<span class="keyword">$1</span>')
+      .replace(/(#.*$)/gm, '<span class="comment">$1</span>')
+      .replace(/(['"])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="string">$1$2$1</span>')
+      .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="number">$1</span>');
+  }
+  
+  if (language === 'javascript' || language === 'typescript') {
+    return escaped
+      .replace(/\b(function|const|let|var|if|else|for|while|do|switch|case|default|return|break|continue|try|catch|finally|throw|class|extends|import|export|from|async|await|typeof|instanceof|new|this|super|true|false|null|undefined)\b/g, '<span class="keyword">$1</span>')
+      .replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, '<span class="comment">$1</span>')
+      .replace(/(['"`])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="string">$1$2$1</span>')
+      .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="number">$1</span>');
+  }
+  
+  if (language === 'bash') {
+    return escaped
+      .replace(/\b(cd|ls|mkdir|rm|cp|mv|grep|find|sed|awk|cat|echo|export|sudo|chmod|chown|ps|kill|top|wget|curl|git|npm|pip|docker)\b/g, '<span class="keyword">$1</span>')
+      .replace(/(#.*$)/gm, '<span class="comment">$1</span>')
+      .replace(/(['"])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="string">$1$2$1</span>');
+  }
+  
+  // Fallback - just return escaped code for other languages
+  return escaped;
 };
 
 // Helper to finish a list

@@ -247,18 +247,23 @@
   overflow-x: auto;
 }
 
-/* Override Prism.js theme colors for our dark theme */
-.omnia-code-block pre[class*="language-"] {
-  background: transparent !important;
-  border: none !important;
-  margin: 0 !important;
-  padding: 8px 0 !important;
+/* Custom syntax highlighting colors */
+.omnia-code-block .keyword {
+  color: #569cd6 !important; /* Blue keywords */
+  font-weight: 500;
 }
 
-.omnia-code-block code[class*="language-"] {
-  background: transparent !important;
-  color: inherit !important;
-  text-shadow: none !important;
+.omnia-code-block .string {
+  color: #ce9178 !important; /* Orange strings */
+}
+
+.omnia-code-block .comment {
+  color: #6a9955 !important; /* Green comments */
+  font-style: italic;
+}
+
+.omnia-code-block .number {
+  color: #b5cea8 !important; /* Light green numbers */
 }
 
 .numbered-code .line-number {
