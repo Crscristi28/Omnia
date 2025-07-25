@@ -17,6 +17,7 @@ import { elevenLabsService } from './services/voice';
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
+import CustomListItem from './components/CustomListItem';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -1917,20 +1918,12 @@ const handleSendWithDocuments = async (text, documents) => {
                           {children}
                         </strong>
                       ),
-                      ul: ({ children }) => (
-                        <ul style={{marginLeft: '2rem !important', listStyle: 'disc !important', listStylePosition: 'inside !important'}}>
+                      ul: ({ children }) => <ul className="list-none p-0 m-0">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-none p-0 m-0">{children}</ol>,
+                      li: ({ children, ordered, index }) => (
+                        <CustomListItem isOrdered={ordered} index={index} isMobile={isMobile}>
                           {children}
-                        </ul>
-                      ),
-                      ol: ({ children }) => (
-                        <ol style={{marginLeft: '2rem !important', listStyle: 'decimal !important', listStylePosition: 'inside !important'}}>
-                          {children}
-                        </ol>
-                      ),
-                      li: ({ children }) => (
-                        <li style={{marginBottom: '0.5rem', paddingLeft: '1rem !important', textIndent: '-1rem !important', verticalAlign: 'baseline !important'}}>
-                          {children}
-                        </li>
+                        </CustomListItem>
                       )
                     }}
                     className="text-white"
