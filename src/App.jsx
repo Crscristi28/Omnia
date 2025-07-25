@@ -1918,17 +1918,17 @@ const handleSendWithDocuments = async (text, documents) => {
                         </strong>
                       ),
                       ul: ({ children }) => (
-                        <ul className="!list-disc ml-16 md:ml-6 my-2">
+                        <ul className="!list-disc !ml-16 !md:ml-6 !my-2" style={{marginLeft: '4rem !important', listStyle: 'disc !important'}}>
                           {children}
                         </ul>
                       ),
                       ol: ({ children }) => (
-                        <ol className="!list-decimal ml-16 md:ml-6 my-2">
+                        <ol className="!list-decimal !ml-16 !md:ml-6 !my-2" style={{marginLeft: '4rem !important', listStyle: 'decimal !important'}}>
                           {children}
                         </ol>
                       ),
                       li: ({ children }) => (
-                        <li className="mb-2 pl-4 md:pl-0 -indent-4 md:indent-0">
+                        <li className="!mb-2 !pl-4 !md:pl-0" style={{marginBottom: '0.5rem !important', paddingLeft: '1rem !important', textIndent: '-1rem !important'}}>
                           {children}
                         </li>
                       )
@@ -2078,11 +2078,10 @@ const handleSendWithDocuments = async (text, documents) => {
 
       {/* 🎨 STYLES - UNCHANGED + nové animace */}
       <style>{`
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { box-sizing: border-box; }
         html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
         body { margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden !important; }
         #root { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; display: flex; flex-direction: column; }
-        body > * { margin: 0 !important; }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px) translateZ(0); } 100% { opacity: 1; transform: translateY(0) translateZ(0); } }
