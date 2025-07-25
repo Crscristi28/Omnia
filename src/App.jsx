@@ -1916,17 +1916,17 @@ const handleSendWithDocuments = async (text, documents) => {
                         </strong>
                       ),
                       ul: ({ children }) => (
-                        <ul className="list-disc ml-6 my-2">
+                        <ul className="list-disc ml-8 md:ml-6 my-2">
                           {children}
                         </ul>
                       ),
                       ol: ({ children }) => (
-                        <ol className="list-decimal ml-6 my-2">
+                        <ol className="list-decimal ml-8 md:ml-6 my-2">
                           {children}
                         </ol>
                       ),
                       li: ({ children }) => (
-                        <li className="mb-1">
+                        <li className="mb-1 pl-2 md:pl-0 -indent-2 md:indent-0">
                           {children}
                         </li>
                       )

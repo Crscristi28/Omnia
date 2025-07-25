@@ -26,5 +26,14 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.-indent-2': {
+          'text-indent': '-0.5rem',
+        },
+      }
+      addUtilities(newUtilities, ['responsive'])
+    }
+  ],
 }
