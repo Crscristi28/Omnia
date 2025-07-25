@@ -172,35 +172,116 @@
 }
 
 /* ================================================
- * 📋 COPY BUTTON FOR CODE BLOCKS
+ * 📋 ENHANCED CODE BLOCKS WITH LINE NUMBERS
  * ================================================ */
 
 .omnia-code-block {
   position: relative;
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(45, 55, 72, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.omnia-copy-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.7);
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.language-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.omnia-copy-button.enhanced {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(59, 130, 246, 0.8);
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
+  border-radius: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   font-size: 12px;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 10;
-}
-
-.omnia-code-block:hover .omnia-copy-button {
+  font-weight: 500;
+  transition: all 0.2s ease;
   opacity: 1;
 }
 
-.omnia-copy-button:hover {
-  background: rgba(0, 0, 0, 0.9);
+.omnia-copy-button.enhanced:hover {
+  background: rgba(59, 130, 246, 1);
+  transform: scale(1.05);
+}
+
+.copy-text {
+  display: none;
+}
+
+.omnia-copy-button.enhanced:hover .copy-text {
+  display: inline;
+}
+
+.omnia-copy-button.enhanced:hover .copy-icon {
+  display: none;
+}
+
+/* Line numbers styling */
+.numbered-code {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace !important;
+  font-size: 0.85em !important;
+  line-height: 1.6 !important;
+  display: block;
+  overflow-x: auto;
+  padding: 16px 0 !important;
+}
+
+.numbered-code .line-number {
+  display: inline-block;
+  width: 40px;
+  text-align: right;
+  color: rgba(148, 163, 184, 0.6);
+  background: rgba(30, 41, 59, 0.5);
+  padding: 0 12px 0 8px;
+  margin-right: 16px;
+  font-weight: 400;
+  user-select: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.numbered-code .line-content {
+  color: #ffffff;
+  white-space: pre;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .code-header {
+    padding: 6px 12px;
+  }
+  
+  .omnia-copy-button.enhanced {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .numbered-code .line-number {
+    width: 30px;
+    padding: 0 8px 0 4px;
+    margin-right: 12px;
+  }
 }
 
 /* ================================================

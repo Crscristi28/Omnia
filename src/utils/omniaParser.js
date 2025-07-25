@@ -33,14 +33,27 @@ export const parseOmniaText = (text) => {
         // End code block
         const codeContent = codeBlockContent.join('\n');
         const copyId = 'copy-' + Math.random().toString(36).substr(2, 9);
+        
+        // Add line numbers
+        const lines = codeContent.split('\n');
+        const numberedLines = lines.map((line, index) => 
+          `<span class="line-number">${index + 1}</span><span class="line-content">${escapeHtml(line)}</span>`
+        ).join('\n');
+        
         processedLines.push(`
-          <div class="omnia-code-block" style="position: relative;">
-            <pre><code class="language-${codeBlockLanguage}">${escapeHtml(codeContent)}</code></pre>
-            <button 
-              class="omnia-copy-button" 
-              onclick="copyCodeToClipboard('${copyId}', this)"
-              title="Copy code"
-            >📋</button>
+          <div class="omnia-code-block">
+            <div class="code-header">
+              <span class="language-label">${codeBlockLanguage || 'text'}</span>
+              <button 
+                class="omnia-copy-button enhanced" 
+                onclick="copyCodeToClipboard('${copyId}', this)"
+                title="Copy code"
+              >
+                <span class="copy-icon">📋</span>
+                <span class="copy-text">Copy</span>
+              </button>
+            </div>
+            <pre><code class="language-${codeBlockLanguage} numbered-code">${numberedLines}</code></pre>
             <script type="text/plain" id="${copyId}">${codeContent}</script>
           </div>
         `);
