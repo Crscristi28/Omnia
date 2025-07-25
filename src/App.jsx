@@ -1017,47 +1017,19 @@ function App() {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : 'text';
     
-    if (inline) {
-      return (
-        <code 
-          className={className} 
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            padding: '0.2em 0.4em',
-            borderRadius: '3px',
-            fontSize: '0.9em'
-          }}
-          {...props}
-        >
-          {children}
-        </code>
-      );
-    }
-    
-    // Clean the code content thoroughly
-    let codeContent = String(children);
-    // Remove trailing newlines
-    codeContent = codeContent.replace(/\n+$/, '');
-    // Remove any trailing punctuation that might be artifacts
-    codeContent = codeContent.replace(/[.,;:]+$/, '');
-    
-    return (
-      <div style={{ margin: '1rem 0', position: 'relative' }}>
-        <SyntaxHighlighter
-          style={oneDark}
-          language={language}
-          PreTag="div"
-          customStyle={{
-            margin: 0,
-            borderRadius: '8px',
-            fontSize: '14px',
-            lineHeight: '1.5'
-          }}
-          {...props}
-        >
-          {codeContent}
-        </SyntaxHighlighter>
-      </div>
+    return !inline ? (
+      <SyntaxHighlighter
+        style={oneDark}
+        language={language}
+        PreTag="div"
+        {...props}
+      >
+        {String(children).replace(/\n$/, '')}
+      </SyntaxHighlighter>
+    ) : (
+      <code className={className} {...props}>
+        {children}
+      </code>
     );
   };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
 // ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
@@ -1945,55 +1917,24 @@ const handleSendWithDocuments = async (text, documents) => {
                           {children}
                         </strong>
                       ),
-                      ul: ({ children }) => {
-                        const isMobile = window.innerWidth <= 768;
-                        return (
-                          <ul style={{ 
-                            paddingLeft: isMobile ? '35px' : '20px',
-                            marginLeft: isMobile ? '15px' : '0',
-                            listStylePosition: 'outside',
-                            listStyleType: 'disc'
-                          }}>
-                            {children}
-                          </ul>
-                        );
-                      },
-                      ol: ({ children }) => {
-                        const isMobile = window.innerWidth <= 768;
-                        return (
-                          <ol style={{ 
-                            paddingLeft: isMobile ? '35px' : '20px',
-                            marginLeft: isMobile ? '15px' : '0',
-                            listStylePosition: 'outside',
-                            listStyleType: 'decimal'
-                          }}>
-                            {children}
-                          </ol>
-                        );
-                      },
-                      li: ({ children }) => {
-                        const isMobile = window.innerWidth <= 768;
-                        return (
-                          <li style={{ 
-                            marginBottom: isMobile ? '0.5rem' : '0.25rem',
-                            lineHeight: 1.6
-                          }}>
-                            {children}
-                          </li>
-                        );
-                      },
-                      p: ({ children }) => {
-                        const isMobile = window.innerWidth <= 768;
-                        return (
-                          <p style={{ 
-                            margin: isMobile ? '0.75rem 0' : '0.5rem 0',
-                            paddingLeft: isMobile ? '16px' : '0',
-                            paddingRight: isMobile ? '16px' : '0'
-                          }}>
-                            {children}
-                          </p>
-                        );
-                      }
+                      ul: ({ children }) => (
+                        <ul style={{ 
+                          paddingLeft: '20px', 
+                          marginLeft: '0',
+                          listStylePosition: 'outside'
+                        }}>
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol style={{ 
+                          paddingLeft: '20px', 
+                          marginLeft: '0',
+                          listStylePosition: 'outside'
+                        }}>
+                          {children}
+                        </ol>
+                      )
                     }}
                     className="text-white"
                   >
