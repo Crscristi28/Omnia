@@ -76,11 +76,11 @@ export const parseOmniaText = (text) => {
         processedLines.push(`
           <div class="omnia-code-block">
             <button 
-              class="absolute top-3 right-3 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white p-2 rounded transition-all duration-200 z-10 opacity-70 hover:opacity-100"
+              class="absolute top-2 right-2 text-gray-400 p-1 z-10"
               onclick="copyCodeToClipboard('${copyId}', this)"
-              title="Copy code"
+              title="Copy"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
