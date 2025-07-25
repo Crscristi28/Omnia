@@ -21,6 +21,13 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkBreaks from 'remark-breaks';
+import remarkFootnotes from 'remark-footnotes';
+import remarkEmoji from 'remark-emoji';
+import remarkToc from 'remark-toc';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton } from './components/ui';
@@ -1894,7 +1901,15 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
                   <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
+                    remarkPlugins={[
+                      remarkGfm, 
+                      remarkMath, 
+                      remarkBreaks, 
+                      remarkFootnotes, 
+                      remarkEmoji, 
+                      remarkToc
+                    ]}
+                    rehypePlugins={[rehypeKatex]}
                     components={{
                       code: CodeBlock,
                       strong: ({ children }) => (
