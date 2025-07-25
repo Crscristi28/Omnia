@@ -1017,6 +1017,9 @@ function App() {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : 'text';
     
+    // KLÍČOVÁ ZMĚNA: Aplikuj .replace() na obsah kódu
+    const cleanedCode = String(children).replace(/\n$/, '').replace(/[.,;:]+$/, '');
+    
     return !inline ? (
       <SyntaxHighlighter
         style={oneDark}
@@ -1024,11 +1027,11 @@ function App() {
         PreTag="div"
         {...props}
       >
-        {String(children).replace(/\n$/, '')}
+        {cleanedCode}
       </SyntaxHighlighter>
     ) : (
       <code className={className} {...props}>
-        {children}
+        {cleanedCode}
       </code>
     );
   };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)

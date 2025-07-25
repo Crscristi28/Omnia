@@ -15,17 +15,53 @@
 
 /* Custom styles will go here */
 
-/* CRITICAL: Override Tailwind's list resets with !important */
-ol, ul {
-  list-style: initial !important;
-  margin: 0 !important;
-  padding: 0 !important;
+/* Zajistíme, že listy uvnitř chatových zpráv mají správné styly */
+/* Používáme selektor založený na HTML struktuře */
+.max-w-\[70\%\].bg-gray-800.text-white ul,
+.max-w-\[70\%\].bg-gray-800.text-white ol {
+  padding-left: 0;
+  margin-left: 0;
+  list-style-position: inside;
 }
 
-li {
-  list-style-position: outside !important;
-  margin: 0 !important;
-  padding: 0 !important;
+.max-w-\[70\%\].bg-gray-800.text-white li {
+  padding-left: 25px;
+  margin-left: 0;
+  margin-bottom: 8px;
+  text-indent: -1.5em;
+  line-height: 1.5;
+  vertical-align: top;
+  list-style-type: disc;
+}
+
+/* Mobilní optimalizace pro odrážky */
+@media (max-width: 768px) {
+  .max-w-\[70\%\].bg-gray-800.text-white ul,
+  .max-w-\[70\%\].bg-gray-800.text-white ol {
+    margin-left: 10px;
+    padding-left: 0;
+  }
+  .max-w-\[70\%\].bg-gray-800.text-white li {
+    padding-left: 30px;
+    text-indent: -1.8em;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Stylování pro kódové bloky */
+.max-w-\[70\%\].bg-gray-800.text-white pre {
+  margin: 1rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  background-color: #2d2d2d;
+  border-radius: 8px;
+}
+
+.max-w-\[70\%\].bg-gray-800.text-white pre::after,
+.max-w-\[70\%\].bg-gray-800.text-white pre::before,
+.max-w-\[70\%\].bg-gray-800.text-white code::after,
+.max-w-\[70\%\].bg-gray-800.text-white code::before {
+  content: none !important;
 }
 
 /* All MDEditor styles removed - now using omniaMarkdown.css */
