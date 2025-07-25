@@ -76,7 +76,7 @@ export const parseOmniaText = (text) => {
         processedLines.push(`
           <div class="omnia-code-block">
             <button 
-              class="absolute top-2 right-2 text-gray-400 p-1 z-10"
+              class="absolute top-2 right-2 text-gray-400 bg-transparent border-none p-0 z-10"
               onclick="copyCodeToClipboard('${copyId}', this)"
               title="Copy"
             >
