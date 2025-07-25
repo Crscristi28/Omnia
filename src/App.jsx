@@ -1016,13 +1016,14 @@ function App() {
     
     let match;
     while ((match = codeBlockPattern.exec(htmlString)) !== null) {
-      // Add HTML before this block
+      // Add HTML before this block (wrapped in omnia-markdown)
       if (match.index > currentPos) {
         const beforeHtml = htmlString.slice(currentPos, match.index);
         if (beforeHtml.trim()) {
           parts.push(
             <div 
               key={`html-${currentPos}`}
+              className="omnia-markdown"
               dangerouslySetInnerHTML={{ __html: beforeHtml }} 
             />
           );
@@ -1050,13 +1051,14 @@ function App() {
       currentPos = match.index + match[0].length;
     }
     
-    // Add remaining HTML
+    // Add remaining HTML (wrapped in omnia-markdown)
     if (currentPos < htmlString.length) {
       const afterHtml = htmlString.slice(currentPos);
       if (afterHtml.trim()) {
         parts.push(
           <div 
             key={`html-${currentPos}`}
+            className="omnia-markdown"
             dangerouslySetInnerHTML={{ __html: afterHtml }} 
           />
         );
@@ -1933,9 +1935,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 Has HASH+NUMBER pattern?:', /#\d+\./g.test(msg.text || ''))}
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
-                  <div className="omnia-markdown">
-                    {renderMarkdownWithReactCodeBlocks(parseOmniaText(msg.text || ''))}
-                  </div>
+                  {renderMarkdownWithReactCodeBlocks(parseOmniaText(msg.text || ''))}
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
                   {!msg.isStreaming && (

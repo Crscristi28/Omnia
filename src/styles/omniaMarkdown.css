@@ -292,3 +292,32 @@
     padding: 8px !important;
   }
 }
+
+/* ================================================
+ * 🔧 CODEMIRROR FIXES - Force full height display
+ * ================================================ */
+
+/* Force CodeMirror to show full content */
+.react-code-block-wrapper {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.react-code-block-wrapper .cm-editor {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.react-code-block-wrapper .cm-content {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.react-code-block-wrapper .cm-scroller {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}

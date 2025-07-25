@@ -21,12 +21,19 @@ const ReactCodeBlock = ({ code, language = 'javascript' }) => {
   };
 
   return (
-    <div style={{ 
-      position: 'relative', 
-      margin: '4px 0',
-      backgroundColor: '#1e1e1e',
-      borderRadius: '4px'
-    }}>
+    <div 
+      className="react-code-block-wrapper"
+      style={{ 
+        position: 'relative', 
+        margin: '4px 0',
+        backgroundColor: '#1e1e1e',
+        borderRadius: '4px',
+        // Force it to break out of any parent container restrictions
+        minHeight: 'auto',
+        height: 'auto',
+        maxHeight: 'none',
+        overflow: 'visible'
+      }}>
       <div style={{
         position: 'absolute',
         top: '8px',
@@ -35,29 +42,40 @@ const ReactCodeBlock = ({ code, language = 'javascript' }) => {
       }}>
         <CopyButton text={code} />
       </div>
-      <CodeMirror
-        value={code}
-        height={`${code.split('\n').length * 18 + 20}px`}
-        theme={oneDark}
-        extensions={getLanguageExtension(language)}
-        editable={false}
-        basicSetup={{
-          lineNumbers: true,
-          foldGutter: false,
-          dropCursor: false,
-          allowMultipleSelections: false,
-          indentOnInput: false,
-          bracketMatching: false,
-          closeBrackets: false,
-          autocompletion: false,
-          highlightSelectionMatches: false,
-          searchKeymap: false
-        }}
-        style={{
-          fontSize: '14px',
-          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace'
-        }}
-      />
+      <div style={{
+        // Force CodeMirror container to show full content
+        height: 'auto',
+        minHeight: 'auto',
+        maxHeight: 'none',
+        overflow: 'visible'
+      }}>
+        <CodeMirror
+          value={code}
+          height={`${code.split('\n').length * 18 + 20}px`}
+          theme={oneDark}
+          extensions={getLanguageExtension(language)}
+          editable={false}
+          basicSetup={{
+            lineNumbers: true,
+            foldGutter: false,
+            dropCursor: false,
+            allowMultipleSelections: false,
+            indentOnInput: false,
+            bracketMatching: false,
+            closeBrackets: false,
+            autocompletion: false,
+            highlightSelectionMatches: false,
+            searchKeymap: false
+          }}
+          style={{
+            fontSize: '14px',
+            fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+            height: 'auto',
+            minHeight: 'auto',
+            maxHeight: 'none'
+          }}
+        />
+      </div>
     </div>
   );
 };
