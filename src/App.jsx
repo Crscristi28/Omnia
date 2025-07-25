@@ -1919,8 +1919,8 @@ const handleSendWithDocuments = async (text, documents) => {
                       ),
                       ul: ({ children }) => (
                         <ul style={{ 
-                          paddingLeft: '20px', 
-                          marginLeft: '0',
+                          paddingLeft: window.innerWidth <= 768 ? '40px' : '20px', 
+                          marginLeft: window.innerWidth <= 768 ? '20px' : '0',
                           listStylePosition: 'outside'
                         }}>
                           {children}
@@ -1928,12 +1928,20 @@ const handleSendWithDocuments = async (text, documents) => {
                       ),
                       ol: ({ children }) => (
                         <ol style={{ 
-                          paddingLeft: '20px', 
-                          marginLeft: '0',
+                          paddingLeft: window.innerWidth <= 768 ? '40px' : '20px', 
+                          marginLeft: window.innerWidth <= 768 ? '20px' : '0',
                           listStylePosition: 'outside'
                         }}>
                           {children}
                         </ol>
+                      ),
+                      p: ({ children }) => (
+                        <p style={{ 
+                          paddingLeft: window.innerWidth <= 768 ? '16px' : '0',
+                          margin: '8px 0'
+                        }}>
+                          {children}
+                        </p>
                       )
                     }}
                     className="text-white"
