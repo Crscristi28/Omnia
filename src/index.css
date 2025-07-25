@@ -15,6 +15,63 @@
 
 /* Custom styles will go here */
 
+/* ================================================
+ * ⚡️ AGRESIVNÍ OPRAVA VNOŘENÝCH SEZNAMŮ - Mobilní Zobrazení
+ * ================================================ */
+
+/* Cílíme na obalující div bot zpráv s jeho konkrétními třídami */
+/* Toto CSS se bude starat o zobrazení seznamů uvnitř zpráv */
+.p-4 { /* Toto je váš kontejner bot zprávy */
+  /* Vnitřní odsazení p-4 se aplikuje v JSX. */
+}
+
+/* Úplné vypnutí nativních stylů pro všechny UL a OL uvnitř zprávy */
+.p-4 ul,
+.p-4 ol {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Odsazení pro VŠECHNY položky seznamu LI, včetně vnořených. */
+/* CustomListItem bude spravovat odsazení markeru. */
+.p-4 li {
+  margin-left: 0 !important; /* Zajistí, že LI samo nepřidává margin */
+}
+
+/* Odsazení pro UL a OL na základě jejich úrovně vnoření */
+/* Toto CSS zajistí odsazení pro každou úroveň seznamu */
+.p-4 ul,
+.p-4 ol {
+  /* Základní odsazení pro první úroveň */
+  margin-left: 1.5rem !important; /* 24px jako základ, experimentujte pokud je potřeba */
+}
+
+/* Styly pro vnořené UL a OL (další úrovně) */
+.p-4 ul ul,
+.p-4 ul ol,
+.p-4 ol ul,
+.p-4 ol ol {
+  margin-left: 1.5rem !important; /* Každá další úroveň přidá 1.5rem */
+}
+
+/* Doladění vzhledu samotného symbolu odrážky/čísla v CustomListItem */
+/* Cílíme na span uvnitř li (předpokládáme, že CustomListItem ho má) */
+.p-4 li > span:first-child {
+  font-size: 1.1em !important; /* Mírné zvětšení, aby bylo "•" lépe vidět */
+  line-height: 1 !important; /* Zajištění správného vertikálního zarovnání */
+  vertical-align: middle !important; /* Posunutí doprostřed řádku textu */
+  color: #FFFFFF !important; /* Explicitní barva, pokud se ztrácí */
+}
+
+/* Zajištění, že kódové bloky uvnitř seznamů se zalomí správně */
+.p-4 li pre {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
 /* Custom styles handled by Tailwind utilities in ReactMarkdown components */
 
 /* All MDEditor styles removed - now using omniaMarkdown.css */
