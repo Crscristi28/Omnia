@@ -17,8 +17,10 @@ import { elevenLabsService } from './services/voice';
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
-import { parseOmniaText } from './utils/omniaParser'; // 🆕 OMNIA PARSER
-import './styles/omniaMarkdown.css'; // 🆕 OMNIA STYLES
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkGfm from 'remark-gfm';
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton } from './components/ui';
@@ -32,7 +34,6 @@ import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
-import ReactCodeBlock from './components/code/ReactCodeBlock';
 
 // 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
 const welcomeTexts = {
@@ -1004,68 +1005,25 @@ function App() {
     }
   };
 
-  // Function to render markdown with React code blocks
-  const renderMarkdownWithReactCodeBlocks = (htmlString) => {
-    if (!htmlString) return null;
-
-    const parts = [];
-    let currentPos = 0;
+  // Custom code component for syntax highlighting
+  const CodeBlock = ({ node, inline, className, children, ...props }) => {
+    const match = /language-(\w+)/.exec(className || '');
+    const language = match ? match[1] : 'text';
     
-    // Find React code block placeholders
-    const codeBlockPattern = /<div class="react-code-block-placeholder"[^>]*data-language="([^"]*)"[^>]*data-code="([^"]*)"[^>]*data-copy-id="([^"]*)"[^>]*>\s*<\/div>/g;
-    
-    let match;
-    while ((match = codeBlockPattern.exec(htmlString)) !== null) {
-      // Add HTML before this block (wrapped in omnia-markdown)
-      if (match.index > currentPos) {
-        const beforeHtml = htmlString.slice(currentPos, match.index);
-        if (beforeHtml.trim()) {
-          parts.push(
-            <div 
-              key={`html-${currentPos}`}
-              className="omnia-markdown"
-              dangerouslySetInnerHTML={{ __html: beforeHtml }} 
-            />
-          );
-        }
-      }
-      
-      // Decode HTML entities in code
-      const language = match[1] || 'text';
-      const encodedCode = match[2] || '';
-      const copyId = match[3] || `copy-${Date.now()}`;
-      // Decode HTML entities
-      const element = document.createElement('div');
-      element.innerHTML = encodedCode;
-      const code = element.textContent || element.innerText || '';
-      
-      // Add React code block
-      parts.push(
-        <ReactCodeBlock
-          key={`code-${match.index}`}
-          code={code}
-          language={language}
-        />
-      );
-      
-      currentPos = match.index + match[0].length;
-    }
-    
-    // Add remaining HTML (wrapped in omnia-markdown)
-    if (currentPos < htmlString.length) {
-      const afterHtml = htmlString.slice(currentPos);
-      if (afterHtml.trim()) {
-        parts.push(
-          <div 
-            key={`html-${currentPos}`}
-            className="omnia-markdown"
-            dangerouslySetInnerHTML={{ __html: afterHtml }} 
-          />
-        );
-      }
-    }
-    
-    return parts.length > 0 ? <div>{parts}</div> : <div dangerouslySetInnerHTML={{ __html: htmlString }} />;
+    return !inline ? (
+      <SyntaxHighlighter
+        style={oneDark}
+        language={language}
+        PreTag="div"
+        {...props}
+      >
+        {String(children).replace(/\n$/, '')}
+      </SyntaxHighlighter>
+    ) : (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
   };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
 // ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
@@ -1935,7 +1893,15 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 Has HASH+NUMBER pattern?:', /#\d+\./g.test(msg.text || ''))}
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
-                  {renderMarkdownWithReactCodeBlocks(parseOmniaText(msg.text || ''))}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code: CodeBlock
+                    }}
+                    className="text-white"
+                  >
+                    {msg.text || ''}
+                  </ReactMarkdown>
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
                   {!msg.isStreaming && (
