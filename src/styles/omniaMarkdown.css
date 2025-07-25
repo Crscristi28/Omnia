@@ -235,7 +235,7 @@
   display: none;
 }
 
-/* Line numbers styling */
+/* Line numbers styling with Prism.js integration */
 .numbered-code {
   padding: 8px 0 !important;
   margin: 0 !important;
@@ -245,6 +245,20 @@
   line-height: 1.4 !important;
   display: block;
   overflow-x: auto;
+}
+
+/* Override Prism.js theme colors for our dark theme */
+.omnia-code-block pre[class*="language-"] {
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+}
+
+.omnia-code-block code[class*="language-"] {
+  background: transparent !important;
+  color: inherit !important;
+  text-shadow: none !important;
 }
 
 .numbered-code .line-number {

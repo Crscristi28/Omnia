@@ -1,6 +1,27 @@
-// 🚀 OMNIA PARSER - Simple Markdown Parser using basic regex
-// Replaces @uiw/react-md-editor with identical functionality and styling
+// 🚀 OMNIA PARSER - Advanced Markdown Parser with Prism.js syntax highlighting
+// Replaces @uiw/react-md-editor with BETTER functionality and styling
 // Date: 2025-07-25
+
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-tomorrow.css'; // Dark theme
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-php';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-c';
+import 'prismjs/components/prism-cpp';
+import 'prismjs/components/prism-csharp';
+import 'prismjs/components/prism-ruby';
+import 'prismjs/components/prism-go';
+import 'prismjs/components/prism-rust';
+import 'prismjs/components/prism-swift';
+import 'prismjs/components/prism-kotlin';
 
 /**
  * Main parser function - converts markdown text to HTML
@@ -34,10 +55,26 @@ export const parseOmniaText = (text) => {
         const codeContent = codeBlockContent.join('\n');
         const copyId = 'copy-' + Math.random().toString(36).substr(2, 9);
         
-        // Add line numbers
-        const lines = codeContent.split('\n');
+        // Get language mapping for Prism
+        const language = getPrismLanguage(codeBlockLanguage);
+        
+        // Highlight code with Prism.js
+        let highlightedCode;
+        try {
+          if (Prism.languages[language]) {
+            highlightedCode = Prism.highlight(codeContent, Prism.languages[language], language);
+          } else {
+            highlightedCode = escapeHtml(codeContent);
+          }
+        } catch (error) {
+          console.warn('Prism highlight failed:', error);
+          highlightedCode = escapeHtml(codeContent);
+        }
+        
+        // Add line numbers to highlighted code
+        const lines = highlightedCode.split('\n');
         const numberedLines = lines.map((line, index) => 
-          `<span class="line-number">${index + 1}</span><span class="line-content">${escapeHtml(line)}</span>`
+          `<span class="line-number">${index + 1}</span><span class="line-content">${line}</span>`
         ).join('\n');
         
         processedLines.push(`
@@ -53,7 +90,7 @@ export const parseOmniaText = (text) => {
                 <span class="copy-text">Copy</span>
               </button>
             </div>
-            <pre><code class="language-${codeBlockLanguage} numbered-code">${numberedLines}</code></pre>
+            <pre class="language-${language}"><code class="language-${language} numbered-code">${numberedLines}</code></pre>
             <script type="text/plain" id="${copyId}">${codeContent}</script>
           </div>
         `);
@@ -123,6 +160,37 @@ export const parseOmniaText = (text) => {
   }
 
   return processedLines.join('\n');
+};
+
+// Map common language names to Prism language keys
+const getPrismLanguage = (lang) => {
+  if (!lang) return 'text';
+  
+  const languageMap = {
+    'py': 'python',
+    'js': 'javascript',
+    'ts': 'typescript',
+    'jsx': 'jsx',
+    'tsx': 'tsx',
+    'sh': 'bash',
+    'shell': 'bash',
+    'cmd': 'bash',
+    'powershell': 'bash',
+    'ps1': 'bash',
+    'c++': 'cpp',
+    'c#': 'csharp',
+    'cs': 'csharp',
+    'rb': 'ruby',
+    'rs': 'rust',
+    'kt': 'kotlin',
+    'yml': 'yaml',
+    'yaml': 'yaml',
+    'md': 'markdown',
+    'dockerfile': 'docker'
+  };
+  
+  const normalized = lang.toLowerCase();
+  return languageMap[normalized] || normalized;
 };
 
 // Helper to finish a list
