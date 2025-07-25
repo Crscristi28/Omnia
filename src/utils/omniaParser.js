@@ -275,16 +275,25 @@ const fallbackCopyToClipboard = (text, buttonElement) => {
 };
 
 /**
- * Show visual feedback for copy operation
+ * Show visual feedback for copy operation - like in chat
  */
 const showCopyFeedback = (buttonElement, success) => {
-  const originalText = buttonElement.innerHTML;
-  buttonElement.innerHTML = success ? '✅' : '❌';
-  buttonElement.style.opacity = '1';
+  const copyIcon = buttonElement.querySelector('.copy-icon');
+  const checkIcon = buttonElement.querySelector('.check-icon');
   
-  setTimeout(() => {
-    buttonElement.innerHTML = originalText;
-  }, 1500);
+  if (success) {
+    // Hide copy icon, show green check icon
+    copyIcon.classList.add('hidden');
+    checkIcon.classList.remove('hidden');
+    buttonElement.title = 'Copied!';
+    
+    setTimeout(() => {
+      // Show copy icon, hide check icon
+      copyIcon.classList.remove('hidden');
+      checkIcon.classList.add('hidden');
+      buttonElement.title = 'Copy code';
+    }, 2000);
+  }
 };
 
 // Make copyCodeToClipboard available globally for onclick handlers
