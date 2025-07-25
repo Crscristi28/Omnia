@@ -1921,7 +1921,7 @@ const handleSendWithDocuments = async (text, documents) => {
                       ul: ({ children }) => <ul className="list-none p-0 m-0">{children}</ul>,
                       ol: ({ children }) => <ol className="list-none p-0 m-0">{children}</ol>,
                       li: ({ children, ordered, index }) => (
-                        <CustomListItem isOrdered={ordered} index={index} isMobile={isMobile}>
+                        <CustomListItem isOrdered={ordered} index={index}>
                           {children}
                         </CustomListItem>
                       )

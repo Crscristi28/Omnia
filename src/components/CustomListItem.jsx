@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CustomListItem = ({ children, index, isOrdered, isMobile }) => {
+const CustomListItem = ({ children, index, isOrdered }) => {
   const marker = isOrdered ? `${index}.` : '•';
 
   // V CustomListItem ODSTRAŇTE jakékoliv PL-*, ML-*, -INDENT-* Tailwind třídy nebo inline styly.
