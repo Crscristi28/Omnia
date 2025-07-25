@@ -1918,17 +1918,17 @@ const handleSendWithDocuments = async (text, documents) => {
                         </strong>
                       ),
                       ul: ({ children }) => (
-                        <ul className="!list-disc !ml-16 !md:ml-6 !my-2" style={{marginLeft: '4rem !important', listStyle: 'disc !important'}}>
+                        <ul style={{marginLeft: '2rem !important', listStyle: 'disc !important'}}>
                           {children}
                         </ul>
                       ),
                       ol: ({ children }) => (
-                        <ol className="!list-decimal !ml-16 !md:ml-6 !my-2" style={{marginLeft: '4rem !important', listStyle: 'decimal !important'}}>
+                        <ol style={{marginLeft: '2rem !important', listStyle: 'decimal !important'}}>
                           {children}
                         </ol>
                       ),
                       li: ({ children }) => (
-                        <li className="!mb-2 !pl-4 !md:pl-0" style={{marginBottom: '0.5rem !important', paddingLeft: '1rem !important', textIndent: '-1rem !important'}}>
+                        <li style={{marginBottom: '0.5rem', paddingLeft: '1rem !important', textIndent: '-1rem !important', verticalAlign: 'baseline !important'}}>
                           {children}
                         </li>
                       )
