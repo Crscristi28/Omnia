@@ -16,13 +16,12 @@ import { elevenLabsService } from './services/voice';
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton } from './components/ui';
 import { VoiceScreen } from './components/chat';
+import MessageRenderer from './components/MessageRenderer';
 
 // 🆕 IMPORT INPUT BAR (MODULAR)
 import { InputBar } from './components/input';
@@ -1861,21 +1860,10 @@ const handleSendWithDocuments = async (text, documents) => {
                     </div>
                   )}
                   
-                  {/* 🔍 DEBUG: Raw AI output analysis */}
-                  {console.log('🔍 RAW AI TEXT:', msg.text)}
-                  {console.log('🔍 Has numbered list markers?:', /^\s*\d+\.\s/m.test(msg.text || ''))}
-                  {console.log('🔍 Has "Krok" pattern?:', /krok\s+\d+:/i.test(msg.text || ''))}
-                  {console.log('🔍 Text length:', (msg.text || '').length)}
-                  {console.log('🔍 AFTER MARKDOWN RENDER CHECK - inspect element for list-style-type!')}
-                  {console.log('🔍 Has HASH+NUMBER pattern?:', /#\d+\./g.test(msg.text || ''))}
-                  {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
-                  
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
+                  <MessageRenderer 
+                    content={msg.text || ''}
                     className="text-white"
-                  >
-                    {msg.text || ''}
-                  </ReactMarkdown>
+                  />
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
                   {!msg.isStreaming && (
