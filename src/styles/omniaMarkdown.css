@@ -177,19 +177,19 @@
 
 .omnia-code-block {
   position: relative;
-  margin: 16px 0;
-  border-radius: 12px;
+  margin: 12px 0;
+  border-radius: 8px;
   overflow: hidden;
   background: rgba(45, 55, 72, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: rgba(30, 41, 59, 0.8);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -237,15 +237,14 @@
 
 /* Line numbers styling */
 .numbered-code {
-  padding: 0 !important;
+  padding: 8px 0 !important;
   margin: 0 !important;
   background: transparent !important;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace !important;
   font-size: 0.85em !important;
-  line-height: 1.6 !important;
+  line-height: 1.4 !important;
   display: block;
   overflow-x: auto;
-  padding: 16px 0 !important;
 }
 
 .numbered-code .line-number {
