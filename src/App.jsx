@@ -1797,19 +1797,16 @@ const handleSendWithDocuments = async (text, documents) => {
                   {msg.text}
                 </div>
               ) : (
-                <div style={{
-                  width: '100%',
-                  padding: '0',
-                  paddingTop: '12px',
-                  paddingBottom: '12px',
-                  paddingLeft: '0',
-                  paddingRight: '0',
-                  fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: isMobile ? '1.3' : '1.6',
-                  whiteSpace: 'pre-wrap',
-                  color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
-                  textAlign: 'left'
-                }}>
+                <div 
+                  className="max-w-[70%] bg-gray-800 text-white rounded-lg p-4"
+                  style={{
+                    width: '100%',
+                    fontSize: isMobile ? '1rem' : '0.95rem',
+                    lineHeight: isMobile ? '1.3' : '1.6',
+                    whiteSpace: 'pre-wrap',
+                    color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
+                    textAlign: 'left'
+                  }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
                     opacity: 0.7, 
@@ -1920,24 +1917,6 @@ const handleSendWithDocuments = async (text, documents) => {
                           {children}
                         </strong>
                       ),
-                      ul: ({ children }) => (
-                        <ul style={{ 
-                          paddingLeft: '20px', 
-                          marginLeft: '0',
-                          listStylePosition: 'outside'
-                        }}>
-                          {children}
-                        </ul>
-                      ),
-                      ol: ({ children }) => (
-                        <ol style={{ 
-                          paddingLeft: '20px', 
-                          marginLeft: '0',
-                          listStylePosition: 'outside'
-                        }}>
-                          {children}
-                        </ol>
-                      )
                     }}
                     className="text-white"
                   >
