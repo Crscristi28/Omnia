@@ -16,56 +16,49 @@
 /* Custom styles will go here */
 
 /* ================================================
- * ⚡️ AGRESIVNÍ OPRAVA VNOŘENÝCH SEZNAMŮ - Mobilní Zobrazení
+ * ⚡️ AGRESIVNÍ OPRAVA SEZNAMŮ - KONEČNÉ ŘEŠENÍ
  * ================================================ */
 
-/* Cílíme na obalující div bot zpráv s jeho konkrétními třídami */
+/* Cílíme na obalující div bot zpráv s jeho konkrétními třídami (p-4 bg-gray-800 rounded-lg) */
 /* Toto CSS se bude starat o zobrazení seznamů uvnitř zpráv */
-.p-4 { /* Toto je váš kontejner bot zprávy */
-  /* Vnitřní odsazení p-4 se aplikuje v JSX. */
-}
-
-/* Úplné vypnutí nativních stylů pro všechny UL a OL uvnitř zprávy */
-.p-4 ul,
-.p-4 ol {
-  list-style: none !important;
+.p-4.bg-gray-800.rounded-lg ul,
+.p-4.bg-gray-800.rounded-lg ol {
+  /* Zajištění, že odrážka/číslo je uvnitř li boxu */
+  list-style-position: inside !important;
+  /* Reset margin/padding od Tailwind base */
   margin: 0 !important;
   padding: 0 !important;
+
+  /* Základní levé odsazení pro KAŽDOU úroveň seznamu */
+  /* Tímto se zajistí konzistentní odsazení 1.5rem pro každou úroveň */
+  margin-left: 1.5rem !important; /* 24px odsazení */
 }
 
-/* Odsazení pro VŠECHNY položky seznamu LI, včetně vnořených. */
-/* CustomListItem bude spravovat odsazení markeru. */
-.p-4 li {
-  margin-left: 0 !important; /* Zajistí, že LI samo nepřidává margin */
+/* LI elementy - ZAJIŠTĚNÍ PROSTORU A ZAROVNÁNÍ TEXTU K ODRÁŽCE/ČÍSLU */
+.p-4.bg-gray-800.rounded-lg li {
+  /* Odstraní veškeré marginy na LI */
+  margin: 0 !important;
+  /* Odstraní veškeré paddingy na LI */
+  padding: 0 !important;
+
+  /* Klíčové pro prostor pro odrážku/číslo a posunutí textu */
+  padding-left: 1rem !important; /* Např. 16px prostor pro odrážku/číslo */
+  text-indent: -1rem !important;  /* Posune text zpět o 16px, aby začínal pod markerem */
+
+  /* Zajištění správného vertikálního zarovnání odrážky/čísla s textem */
+  line-height: 1.5 !important;
+  vertical-align: baseline !important;
 }
 
-/* Odsazení pro UL a OL na základě jejich úrovně vnoření */
-/* Toto CSS zajistí odsazení pro každou úroveň seznamu */
-.p-4 ul,
-.p-4 ol {
-  /* Základní odsazení pro první úroveň */
-  margin-left: 1.5rem !important; /* 24px jako základ, experimentujte pokud je potřeba */
+/* Fix pro "o" odrážky: Cílíme na ::marker pseudo-element */
+.p-4.bg-gray-800.rounded-lg ul li::marker,
+.p-4.bg-gray-800.rounded-lg ol li::marker {
+  font-size: 1.1em !important; /* Zvětšení markeru, aby se zobrazil správněji (např. • místo o) */
+  color: #FFFFFF !important; /* Ujistit se, že má správnou barvu */
 }
 
-/* Styly pro vnořené UL a OL (další úrovně) */
-.p-4 ul ul,
-.p-4 ul ol,
-.p-4 ol ul,
-.p-4 ol ol {
-  margin-left: 1.5rem !important; /* Každá další úroveň přidá 1.5rem */
-}
-
-/* Doladění vzhledu samotného symbolu odrážky/čísla v CustomListItem */
-/* Cílíme na span uvnitř li (předpokládáme, že CustomListItem ho má) */
-.p-4 li > span:first-child {
-  font-size: 1.1em !important; /* Mírné zvětšení, aby bylo "•" lépe vidět */
-  line-height: 1 !important; /* Zajištění správného vertikálního zarovnání */
-  vertical-align: middle !important; /* Posunutí doprostřed řádku textu */
-  color: #FFFFFF !important; /* Explicitní barva, pokud se ztrácí */
-}
-
-/* Zajištění, že kódové bloky uvnitř seznamů se zalomí správně */
-.p-4 li pre {
+/* Kódové bloky uvnitř seznamů - zajištění zalomení a odsazení */
+.p-4.bg-gray-800.rounded-lg li pre {
   margin-left: 0 !important;
   margin-right: 0 !important;
   padding-left: 0.5rem !important;

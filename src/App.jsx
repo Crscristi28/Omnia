@@ -17,7 +17,6 @@ import { elevenLabsService } from './services/voice';
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
-import CustomListItem from './components/CustomListItem';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -1799,7 +1798,7 @@ const handleSendWithDocuments = async (text, documents) => {
                 </div>
               ) : (
                 <div 
-                  className="p-4"
+                  className="p-4 bg-gray-800 rounded-lg"
                   style={{
                     width: '100%',
                     fontSize: isMobile ? '1rem' : '0.95rem',
@@ -1920,11 +1919,6 @@ const handleSendWithDocuments = async (text, documents) => {
                       ),
                       ul: ({ children }) => <ul className="list-none p-0 m-0">{children}</ul>,
                       ol: ({ children }) => <ol className="list-none p-0 m-0">{children}</ol>,
-                      li: ({ children, ordered, index }) => (
-                        <CustomListItem isOrdered={ordered} index={index}>
-                          {children}
-                        </CustomListItem>
-                      )
                     }}
                     className="text-white"
                   >
