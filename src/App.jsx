@@ -1871,8 +1871,8 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 Has HASH+NUMBER pattern?:', /#\d+\./g.test(msg.text || ''))}
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
-                  {/* 🚨 TESTING PHASE 4 - Both parsers side by side */}
-                  <div style={{ border: '2px solid #ff0000', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+                  {/* 🚨 TESTING PHASE 4 - Only Omnia Parser (MDEditor hidden to avoid conflicts) */}
+                  {/* <div style={{ border: '2px solid #ff0000', padding: '10px', marginBottom: '10px', borderRadius: '8px', display: 'none' }}>
                     <h4 style={{ color: '#ff6b6b', fontSize: '14px', marginBottom: '8px' }}>🔴 STARÝ MDEditor:</h4>
                     <MDEditor.Markdown 
                       source={msg.text || ''}
@@ -1881,10 +1881,10 @@ const handleSendWithDocuments = async (text, documents) => {
                         color: '#ffffff'
                       }}
                     />
-                  </div>
+                  </div> */}
 
                   <div style={{ border: '2px solid #00ff00', padding: '10px', borderRadius: '8px' }}>
-                    <h4 style={{ color: '#51ff51', fontSize: '14px', marginBottom: '8px' }}>🟢 NOVÝ Omnia Parser:</h4>
+                    <h4 style={{ color: '#51ff51', fontSize: '14px', marginBottom: '8px' }}>🟢 NOVÝ Omnia Parser (bez MDEditor interference):</h4>
                     <div 
                       className="omnia-markdown"
                       dangerouslySetInnerHTML={{ __html: parseOmniaText(msg.text || '') }}
