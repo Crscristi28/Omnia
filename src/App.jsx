@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
+import './styles/chat-markdown-fix.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, sonarService, grokService, geminiService } from './services/ai';
