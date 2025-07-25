@@ -18,6 +18,8 @@ import { elevenLabsService } from './services/voice';
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
+import { parseOmniaText } from './utils/omniaParser'; // 🆕 OMNIA PARSER
+import './styles/omniaMarkdown.css'; // 🆕 OMNIA STYLES
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton } from './components/ui';
@@ -1869,13 +1871,25 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 Has HASH+NUMBER pattern?:', /#\d+\./g.test(msg.text || ''))}
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
-                  <MDEditor.Markdown 
-                    source={msg.text || ''}
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: '#ffffff'
-                    }}
-                  />
+                  {/* 🚨 TESTING PHASE 4 - Both parsers side by side */}
+                  <div style={{ border: '2px solid #ff0000', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+                    <h4 style={{ color: '#ff6b6b', fontSize: '14px', marginBottom: '8px' }}>🔴 STARÝ MDEditor:</h4>
+                    <MDEditor.Markdown 
+                      source={msg.text || ''}
+                      style={{
+                        backgroundColor: 'transparent',
+                        color: '#ffffff'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ border: '2px solid #00ff00', padding: '10px', borderRadius: '8px' }}>
+                    <h4 style={{ color: '#51ff51', fontSize: '14px', marginBottom: '8px' }}>🟢 NOVÝ Omnia Parser:</h4>
+                    <div 
+                      className="omnia-markdown"
+                      dangerouslySetInnerHTML={{ __html: parseOmniaText(msg.text || '') }}
+                    />
+                  </div>
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
                   {!msg.isStreaming && (
