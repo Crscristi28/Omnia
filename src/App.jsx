@@ -1798,13 +1798,13 @@ const handleSendWithDocuments = async (text, documents) => {
                 </div>
               ) : (
                 <div 
-                  className="p-4 bg-gray-800 rounded-lg"
+                  className="p-4"
                   style={{
                     width: '100%',
                     fontSize: isMobile ? '1rem' : '0.95rem',
                     lineHeight: isMobile ? '1.3' : '1.6',
                     whiteSpace: 'pre-wrap',
-                    color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
+                    color: '#FFFFFF',
                     textAlign: 'left'
                   }}>
                   <div style={{ 
@@ -1918,17 +1918,17 @@ const handleSendWithDocuments = async (text, documents) => {
                         </strong>
                       ),
                       ul: ({ children }) => (
-                        <ul className="!list-disc ml-4 md:ml-6 my-2">
+                        <ul className="!list-disc ml-16 md:ml-6 my-2">
                           {children}
                         </ul>
                       ),
                       ol: ({ children }) => (
-                        <ol className="!list-decimal ml-4 md:ml-6 my-2">
+                        <ol className="!list-decimal ml-16 md:ml-6 my-2">
                           {children}
                         </ol>
                       ),
                       li: ({ children }) => (
-                        <li className="mb-2 pl-2 md:pl-0 -indent-2 md:indent-0">
+                        <li className="mb-2 pl-4 md:pl-0 -indent-4 md:indent-0">
                           {children}
                         </li>
                       )
