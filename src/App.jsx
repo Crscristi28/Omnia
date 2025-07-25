@@ -16,18 +16,9 @@ import { elevenLabsService } from './services/voice';
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
-import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import remarkBreaks from 'remark-breaks';
-import remarkFootnotes from 'remark-footnotes';
-import remarkEmoji from 'remark-emoji';
-import remarkToc from 'remark-toc';
-import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
+import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton } from './components/ui';
@@ -1013,28 +1004,7 @@ function App() {
   };
 
   // Custom code component for syntax highlighting
-  const CodeBlock = ({ node, inline, className, children, ...props }) => {
-    const match = /language-(\w+)/.exec(className || '');
-    const language = match ? match[1] : 'text';
-    
-    // KLÍČOVÁ ZMĚNA: Aplikuj .replace() na obsah kódu
-    const cleanedCode = String(children).replace(/\n$/, '').replace(/[.,;:]+$/, '');
-    
-    return !inline ? (
-      <SyntaxHighlighter
-        style={oneDark}
-        language={language}
-        PreTag="div"
-        {...props}
-      >
-        {cleanedCode}
-      </SyntaxHighlighter>
-    ) : (
-      <code className={className} {...props}>
-        {cleanedCode}
-      </code>
-    );
-  };// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
+// 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
 // ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
@@ -1798,7 +1768,7 @@ const handleSendWithDocuments = async (text, documents) => {
                 </div>
               ) : (
                 <div 
-                  className="p-4 bg-gray-800 rounded-lg"
+                  className="p-4"
                   style={{
                     width: '100%',
                     fontSize: isMobile ? '1rem' : '0.95rem',
@@ -1901,25 +1871,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   {console.log('🔍 HASH+NUMBER matches:', (msg.text || '').match(/#\d+\./g))}
                   
                   <ReactMarkdown
-                    remarkPlugins={[
-                      remarkGfm, 
-                      remarkMath, 
-                      remarkBreaks, 
-                      remarkFootnotes, 
-                      remarkEmoji, 
-                      remarkToc
-                    ]}
-                    rehypePlugins={[rehypeKatex]}
-                    components={{
-                      code: CodeBlock,
-                      strong: ({ children }) => (
-                        <strong className="text-amber-400 font-bold">
-                          {children}
-                        </strong>
-                      ),
-                      ul: ({ children }) => <ul className="list-none p-0 m-0">{children}</ul>,
-                      ol: ({ children }) => <ol className="list-none p-0 m-0">{children}</ol>,
-                    }}
+                    remarkPlugins={[remarkGfm]}
                     className="text-white"
                   >
                     {msg.text || ''}

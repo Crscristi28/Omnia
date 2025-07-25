@@ -26,20 +26,5 @@ export default {
       },
     },
   },
-  plugins: [
-    function({ addUtilities }) {
-      const newUtilities = {
-        '.-indent-2': {
-          'text-indent': '-0.5rem',
-        },
-        '.-indent-4': {
-          'text-indent': '-1rem',
-        },
-        '.-indent-6': {
-          'text-indent': '-1.5rem',
-        },
-      }
-      addUtilities(newUtilities, ['responsive'])
-    }
-  ],
+  plugins: [],
 }
