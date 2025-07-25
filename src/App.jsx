@@ -1896,7 +1896,12 @@ const handleSendWithDocuments = async (text, documents) => {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      code: CodeBlock
+                      code: CodeBlock,
+                      strong: ({ children }) => (
+                        <strong style={{ color: '#fbbf24', fontWeight: 700 }}>
+                          {children}
+                        </strong>
+                      )
                     }}
                     className="text-white"
                   >
