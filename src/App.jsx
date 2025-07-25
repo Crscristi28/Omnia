@@ -1797,14 +1797,16 @@ const handleSendWithDocuments = async (text, documents) => {
                   {msg.text}
                 </div>
               ) : (
-                <div style={{
-                  width: '100%',
-                  fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: isMobile ? '1.3' : '1.6',
-                  whiteSpace: 'pre-wrap',
-                  color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
-                  textAlign: 'left'
-                }}>
+                <div 
+                  className="p-4 bg-gray-800 rounded-lg"
+                  style={{
+                    width: '100%',
+                    fontSize: isMobile ? '1rem' : '0.95rem',
+                    lineHeight: isMobile ? '1.3' : '1.6',
+                    whiteSpace: 'pre-wrap',
+                    color: msg.isStreaming ? '#F0F8FF' : '#FFFFFF',
+                    textAlign: 'left'
+                  }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
                     opacity: 0.7, 
@@ -1916,17 +1918,17 @@ const handleSendWithDocuments = async (text, documents) => {
                         </strong>
                       ),
                       ul: ({ children }) => (
-                        <ul className="!list-disc ml-12 md:ml-6 my-2">
+                        <ul className="!list-disc ml-4 md:ml-6 my-2">
                           {children}
                         </ul>
                       ),
                       ol: ({ children }) => (
-                        <ol className="!list-decimal ml-12 md:ml-6 my-2">
+                        <ol className="!list-decimal ml-4 md:ml-6 my-2">
                           {children}
                         </ol>
                       ),
                       li: ({ children }) => (
-                        <li className="mb-2 pl-6 md:pl-0 -indent-6 md:indent-0">
+                        <li className="mb-2 pl-2 md:pl-0 -indent-2 md:indent-0">
                           {children}
                         </li>
                       )
