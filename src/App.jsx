@@ -1916,6 +1916,24 @@ const handleSendWithDocuments = async (text, documents) => {
                         <strong style={{ color: '#fbbf24', fontWeight: 700 }}>
                           {children}
                         </strong>
+                      ),
+                      ul: ({ children }) => (
+                        <ul style={{ 
+                          paddingLeft: '20px', 
+                          marginLeft: '0',
+                          listStylePosition: 'outside'
+                        }}>
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol style={{ 
+                          paddingLeft: '20px', 
+                          marginLeft: '0',
+                          listStylePosition: 'outside'
+                        }}>
+                          {children}
+                        </ol>
                       )
                     }}
                     className="text-white"
