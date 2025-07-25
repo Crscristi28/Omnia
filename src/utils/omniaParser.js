@@ -38,26 +38,19 @@ export const parseOmniaText = (text) => {
         const language = getLanguage(codeBlockLanguage);
         const highlightedCode = highlightCode(codeContent, language);
         
-        // Add line numbers to highlighted code
-        const lines = highlightedCode.split('\n');
-        const numberedLines = lines.map((line, index) => 
-          `<span class="line-number">${index + 1}</span><span class="line-content">${line}</span>`
-        ).join('\n');
-        
         processedLines.push(`
           <div class="omnia-code-block">
             <div class="code-header">
               <span class="language-label">${codeBlockLanguage || 'text'}</span>
               <button 
-                class="omnia-copy-button enhanced" 
+                class="omnia-copy-button" 
                 onclick="copyCodeToClipboard('${copyId}', this)"
                 title="Copy code"
               >
-                <span class="copy-icon">📋</span>
-                <span class="copy-text">Copy</span>
+                📋 Copy
               </button>
             </div>
-            <pre class="language-${language}"><code class="language-${language} numbered-code">${numberedLines}</code></pre>
+            <pre><code>${highlightedCode}</code></pre>
             <script type="text/plain" id="${copyId}">${codeContent}</script>
           </div>
         `);

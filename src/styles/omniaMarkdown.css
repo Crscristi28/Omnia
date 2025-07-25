@@ -172,133 +172,99 @@
 }
 
 /* ================================================
- * 📋 ENHANCED CODE BLOCKS WITH LINE NUMBERS
+ * 📋 CLEAN & SIMPLE CODE BLOCKS
  * ================================================ */
 
 .omnia-code-block {
-  position: relative;
-  margin: 12px 0;
-  border-radius: 8px;
+  margin: 16px 0;
+  border-radius: 6px;
   overflow: hidden;
-  background: rgba(45, 55, 72, 0.95);
+  background: #1e1e1e;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 12px;
-  background: rgba(30, 41, 59, 0.8);
+  padding: 8px 16px;
+  background: #2d2d2d;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .language-label {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 11px;
+  color: #888;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.omnia-copy-button.enhanced {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(59, 130, 246, 0.8);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
+.omnia-copy-button {
+  background: transparent;
+  color: #888;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 4px 8px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
   transition: all 0.2s ease;
-  opacity: 1;
 }
 
-.omnia-copy-button.enhanced:hover {
-  background: rgba(59, 130, 246, 1);
-  transform: scale(1.05);
+.omnia-copy-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
-.copy-text {
-  display: none;
-}
-
-.omnia-copy-button.enhanced:hover .copy-text {
-  display: inline;
-}
-
-.omnia-copy-button.enhanced:hover .copy-icon {
-  display: none;
-}
-
-/* Line numbers styling with Prism.js integration */
-.numbered-code {
-  padding: 8px 0 !important;
+/* Clean code styling */
+.omnia-code-block pre {
   margin: 0 !important;
+  padding: 16px !important;
   background: transparent !important;
+  overflow-x: auto !important;
+  line-height: 1.5 !important;
+}
+
+.omnia-code-block code {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace !important;
-  font-size: 0.85em !important;
-  line-height: 1.4 !important;
-  display: block;
-  overflow-x: auto;
+  font-size: 13px !important;
+  color: #f8f8f2 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  white-space: pre !important;
 }
 
 /* Custom syntax highlighting colors */
 .omnia-code-block .keyword {
-  color: #569cd6 !important; /* Blue keywords */
-  font-weight: 500;
+  color: #66d9ef !important; /* Cyan keywords */
 }
 
 .omnia-code-block .string {
-  color: #ce9178 !important; /* Orange strings */
+  color: #e6db74 !important; /* Yellow strings */
 }
 
 .omnia-code-block .comment {
-  color: #6a9955 !important; /* Green comments */
+  color: #75715e !important; /* Gray comments */
   font-style: italic;
 }
 
 .omnia-code-block .number {
-  color: #b5cea8 !important; /* Light green numbers */
+  color: #ae81ff !important; /* Purple numbers */
 }
 
-.numbered-code .line-number {
-  display: inline-block;
-  width: 40px;
-  text-align: right;
-  color: rgba(148, 163, 184, 0.6);
-  background: rgba(30, 41, 59, 0.5);
-  padding: 0 12px 0 8px;
-  margin-right: 16px;
-  font-weight: 400;
-  user-select: none;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.numbered-code .line-content {
-  color: #ffffff;
-  white-space: pre;
-}
-
-/* Responsive adjustments */
+/* Mobile responsive */
 @media (max-width: 768px) {
+  .omnia-code-block pre {
+    padding: 12px !important;
+  }
+  
+  .omnia-code-block code {
+    font-size: 12px !important;
+  }
+  
   .code-header {
     padding: 6px 12px;
-  }
-  
-  .omnia-copy-button.enhanced {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
-  
-  .numbered-code .line-number {
-    width: 30px;
-    padding: 0 8px 0 4px;
-    margin-right: 12px;
   }
 }
 
