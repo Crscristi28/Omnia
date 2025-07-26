@@ -3,25 +3,10 @@ import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
-  // 🚀 CUSTOM FORMATTING: Control spacing and structure
+  // 🚀 MINIMAL REGEX: Only fix numbered lists, let markdown handle the rest
   const fixedContent = (content || '')
     // Escape numbered lists to prevent auto-formatting
-    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
-    
-    // Add space between numbered items and following bullets
-    .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
-    
-    // Preserve bullet symbols and fix spacing
-    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '$1$2 $4')
-    
-    // Convert single asterisks to bullets (but preserve double asterisks for bold)
-    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '$1• $3')
-    
-    // Add spacing between different numbered sections
-    .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
-    
-    // Clean up multiple newlines but preserve intentional spacing
-    .replace(/\n{3,}/g, '\n\n');
+    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2');
   
   return (
     <div className={className}>
