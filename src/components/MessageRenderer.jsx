@@ -6,29 +6,25 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
-  // 🚀 SMART REGEX: Fix numbered lists + auto sub-bullets
+  // 🚀 CUSTOM FORMATTING: Control spacing and structure (from deploy 3cc2168)
   const fixedContent = (content || '')
-    // Escape numbered lists to prevent auto-formatting (but skip math expressions)
-    .replace(/^(\d+)\.\s+(.+)$/gm, (match, num, text) => {
-      // Skip if line contains $ (likely math expression)
-      if (match.includes('$')) return match;
-      return `${num}\\. ${text}`;
-    })
+    // Escape numbered lists to prevent auto-formatting
+    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
     
-    // EXPERIMENTAL: Smart sub-bullet detection
-    .replace(/^(• .+:)\n(• )(.+)$/gm, (match, mainBullet, bullet, subText) => {
-      // If main bullet ends with : and next bullet looks like detail/continuation
-      if (subText.length < 80 && !subText.includes(':')) {
-        return `${mainBullet}\n  ${bullet}${subText}`; // Make it sub-bullet
-      }
-      return match; // Keep original
-    })
+    // Add space between numbered items and following bullets
+    .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
     
-    // Add spacing after numbered lines for better readability
-    .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n')
+    // Preserve bullet symbols and fix spacing
+    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '$1$2 $4')
     
-    // Remove leading spaces before asterisks to prevent code blocks
-    .replace(/^\s+\*/gm, '*');
+    // Convert single asterisks to bullets (but preserve double asterisks for bold)
+    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '$1• $3')
+    
+    // Add spacing between different numbered sections
+    .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
+    
+    // Clean up multiple newlines but preserve intentional spacing
+    .replace(/\n{3,}/g, '\n\n');
   
   return (
     <div className={className}>
