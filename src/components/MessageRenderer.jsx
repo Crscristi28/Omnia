@@ -3,10 +3,15 @@ import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
+  // 🚀 FIX: Prevent markdown from auto-formatting numbered lists
+  const fixedContent = (content || '')
+    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')  // Escape numbered lists: "1. text" → "1\. text"
+    .replace(/^(\s*)(•|-)(\s+)(.+)$/gm, '$1$2 $4'); // Fix bullet spacing
+  
   return (
     <div className={className}>
       <MDEditor.Markdown 
-        source={content || ''} 
+        source={fixedContent} 
         style={{ 
           backgroundColor: 'transparent',
           color: 'inherit',
