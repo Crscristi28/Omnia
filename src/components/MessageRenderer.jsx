@@ -17,11 +17,11 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Add space between numbered items and following bullets
     .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
     
-    // Preserve bullet symbols and fix spacing, add indentation
-    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '  $2 $4')
+    // Convert bullet points to proper markdown list items
+    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '- $4')
     
-    // Convert single asterisks to bullets (but preserve double asterisks for bold)
-    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '  • $3')
+    // Convert single asterisks to markdown list items (but preserve double asterisks for bold)
+    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '- $3')
     
     // Add spacing between different numbered sections
     .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
@@ -64,6 +64,28 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         }
         .w-md-editor-text b {
           color: #facc15 !important;
+        }
+        
+        /* List styling for proper indentation */
+        .markdown-container ul {
+          margin-left: 1.5rem !important;
+          padding-left: 0 !important;
+          list-style-position: outside !important;
+        }
+        .markdown-container ol {
+          margin-left: 0 !important;
+          padding-left: 1.5rem !important;
+          list-style-position: outside !important;
+        }
+        .markdown-container li {
+          margin-bottom: 0.5rem !important;
+          padding-left: 0.5rem !important;
+        }
+        .markdown-container ul li {
+          list-style-type: disc !important;
+        }
+        .markdown-container ol li {
+          list-style-type: decimal !important;
         }
         
         /* Code block styling */
