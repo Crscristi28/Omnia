@@ -8,8 +8,8 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Escape numbered lists to prevent auto-formatting
     .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
     
-    // Add spacing between numbered lists and following bullets for proper markdown
-    .replace(/^(\d+\\\..*?)(\n)(\*)/gm, '$1\n\n$3');
+    // Add spacing between any content and following bullets for proper markdown
+    .replace(/^(.+?)(\n)(\* )/gm, '$1\n\n$3');
   
   return (
     <div className={className}>
