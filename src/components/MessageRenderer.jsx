@@ -6,7 +6,7 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
-  // 🚀 MINIMAL REGEX: Fix numbered lists and day patterns
+  // 🚀 SMART REGEX: Fix numbered lists + auto sub-bullets
   const fixedContent = (content || '')
     // Escape numbered lists to prevent auto-formatting (but skip math expressions)
     .replace(/^(\d+)\.\s+(.+)$/gm, (match, num, text) => {
@@ -15,8 +15,14 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
       return `${num}\\. ${text}`;
     })
     
-    // Fix "Den X:" patterns that get auto-formatted wrong  
-    .replace(/^(Den\s+\d+):\s*(.*)$/gm, '**$1:**\n\n$2')
+    // EXPERIMENTAL: Smart sub-bullet detection
+    .replace(/^(• .+:)\n(• )(.+)$/gm, (match, mainBullet, bullet, subText) => {
+      // If main bullet ends with : and next bullet looks like detail/continuation
+      if (subText.length < 80 && !subText.includes(':')) {
+        return `${mainBullet}\n  ${bullet}${subText}`; // Make it sub-bullet
+      }
+      return match; // Keep original
+    })
     
     // Add spacing after numbered lines for better readability
     .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n')

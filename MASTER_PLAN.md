@@ -49,13 +49,17 @@ Projekt je strukturován do jasných fází:
 ### Fáze 0: Firebase Foundation (Týden 1-2) 
 * **Priorita #1**: Přesun na Firebase infrastrukturu
 * **Klíčové úkoly**:
+  * **Den 1**: Vytvoření centralizovaného prompt systému (`src/prompts/omnia.js`)
+    * Přesun Omnia promptu do samostatného souboru
+    * Refaktoring všech AI services pro použití centralizovaného promptu
+    * Smazání duplicitních promptů ze služeb
   * Setup Firebase projektu a konfigurace
   * Implementace Firebase Authentication (email/password)
   * Migrace z localStorage na Firebase Firestore
   * Multi-user session management
   * Vytvoření onboarding obrazovky s přihlášením
   * Vytvoření welcome screen s vysvětlením funkcí aplikace
-* **Výsledek**: Aplikace podporuje více současných uživatelů s izolovanými sessions
+* **Výsledek**: Aplikace podporuje více současných uživatelů s izolovanými sessions a má centralizovaný prompt management
 
 ### Fáze 1: Beta Spuštění (Týden 3-4)
 * **Cíl**: Implementace jednotné AI osobnosti Omnia, dynamického paměťového systému a zajištění stability.
