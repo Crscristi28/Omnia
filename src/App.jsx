@@ -997,6 +997,8 @@ function App() {
         }];
         sessionManager.saveMessages(finalMessages);
         
+        // ✅ NO streamMessageWithEffect for Gemini - already handled by real-time streaming
+        
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
           await processVoiceResponse(responseText, detectedLang);
