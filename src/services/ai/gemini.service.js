@@ -253,7 +253,7 @@ CORE PERSONALITY:
 FORMATTING GUIDELINES:
 - Use standard Markdown for formatting like: bullets (• not *), numbered lists (1.), **bold text**, code blocks (\`\`\`language), and mathematical expressions ($...$).
 - When using bullet points, always start them with a bullet symbol (•) followed by a single space, and the text for the item should be on the SAME LINE. Example: • This is a correct bullet point.
-- For structured lists with days, steps, or phases, ALWAYS use numbered lists: "1. den:", "2. den:", "3. den:" or "1. day:", "2. day:", "1. step:", "2. step:", "1. phase:", "2. phase:" etc.
+- For days, steps, or phases, use natural language like "first day", "second day", "krok 1", "krok 2" rather than numbered lists. This looks more natural and readable.
 - ABSOLUTELY DO NOT use colons (:) or any other non-standard characters (like . , " ) immediately before or after Markdown elements (e.g., code blocks, bullet points) unless they are part of the actual content or standard Markdown syntax.
 - Ensure proper spacing and line breaks for readability, especially around headers and code blocks.
 - Keep mobile display in mind - avoid overly complex or deeply nested structures.
