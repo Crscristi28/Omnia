@@ -17,14 +17,17 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Add space between numbered items and following bullets
     .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
     
-    // Preserve bullet symbols and fix spacing
-    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '$1$2 $4')
+    // Preserve bullet symbols and fix spacing, add indentation
+    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '  $2 $4')
     
     // Convert single asterisks to bullets (but preserve double asterisks for bold)
-    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '$1• $3')
+    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '  • $3')
     
     // Add spacing between different numbered sections
     .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
+    
+    // Ensure spacing after numbered items that have content following them
+    .replace(/^(\d+\\\. .+)(\n)(?=[^\n])/gm, '$1\n\n')
     
     // Clean up multiple newlines but preserve intentional spacing
     .replace(/\n{3,}/g, '\n\n');
