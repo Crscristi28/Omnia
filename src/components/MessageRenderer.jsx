@@ -16,6 +16,10 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         skipHtml={false}
         allowedElements={undefined}  // Don't restrict elements
         unwrapDisallowed={false}     // Don't unwrap/reformat content
+        remarkPlugins={[]}           // Remove all remark plugins that auto-format
+        rehypePlugins={[]}           // Remove all rehype plugins that auto-format
+        transformLinkUri={null}      // Disable link transformations
+        transformImageUri={null}     // Disable image transformations
       />
     </div>
   );
