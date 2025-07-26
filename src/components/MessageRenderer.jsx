@@ -6,7 +6,13 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
   // 🚀 MINIMAL REGEX: Only fix numbered lists, let markdown handle the rest
   const fixedContent = (content || '')
     // Escape numbered lists to prevent auto-formatting
-    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2');
+    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
+    
+    // Add spacing after numbered lines for better readability
+    .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n')
+    
+    // Convert asterisks to bullet symbols
+    .replace(/^\* /gm, '• ');
   
   return (
     <div className={className}>
