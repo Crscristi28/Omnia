@@ -9,9 +9,13 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         source={content || ''} 
         style={{ 
           backgroundColor: 'transparent',
-          color: 'inherit'
+          color: 'inherit',
+          whiteSpace: 'pre-wrap'  // Preserve exact spacing during streaming
         }}
         data-color-mode="dark"
+        skipHtml={false}
+        allowedElements={undefined}  // Don't restrict elements
+        unwrapDisallowed={false}     // Don't unwrap/reformat content
       />
     </div>
   );
