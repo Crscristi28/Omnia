@@ -5,8 +5,12 @@ import '@uiw/react-md-editor/markdown-editor.css';
 const MessageRenderer = ({ content, className = "text-white" }) => {
   // 🚀 MINIMAL REGEX: Only fix numbered lists, let markdown handle the rest
   const fixedContent = (content || '')
-    // Escape numbered lists to prevent auto-formatting
-    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
+    // Escape numbered lists to prevent auto-formatting (but skip math expressions)
+    .replace(/^(\d+)\.\s+(.+)$/gm, (match, num, text) => {
+      // Skip if line contains $ (likely math expression)
+      if (match.includes('$')) return match;
+      return `${num}\\. ${text}`;
+    })
     
     // Add spacing after numbered lines for better readability
     .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n')
