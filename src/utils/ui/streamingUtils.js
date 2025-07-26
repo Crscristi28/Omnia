@@ -224,30 +224,27 @@ export const streamMessageWithEffect = (
  scrollContainer,
  sources = []
 ) => {
- // 🚀 REAL STREAMING: Word-by-word rendering for proper markdown parsing
- return streamWords(text, (currentText, isStreaming) => {
-   setMessages([
-     ...previousMessages,
-     { 
-       sender: 'bot', 
-       text: currentText, 
-       isStreaming: isStreaming,
-       sources: sources  // Keep sources consistent - don't change during streaming
-     }
-   ]);
-
-   // Smart scroll during streaming
-   if (scrollContainer && !isStreaming) {
-     smartScrollToBottom(scrollContainer, {
-       threshold: 150,
-       behavior: 'smooth'
-     });
+ // 🔄 CLAUDE PATTERN: Show complete text instantly for proper markdown parsing
+ setMessages([
+   ...previousMessages,
+   { 
+     sender: 'bot', 
+     text: text, 
+     isStreaming: false,
+     sources: sources
    }
- }, {
-   baseDelay: 30,        // Fast streaming
-   punctuationDelay: 50,
-   adaptive: true
- });
+ ]);
+
+ // Smart scroll after message display
+ if (scrollContainer) {
+   smartScrollToBottom(scrollContainer, {
+     threshold: 150,
+     behavior: 'smooth'
+   });
+ }
+
+ // Return empty stop function for compatibility
+ return () => {};
 };
 
 /**
