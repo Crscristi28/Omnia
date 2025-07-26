@@ -133,17 +133,31 @@ export default async function handler(req, res) {
         const textChunk = item.candidates[0].content.parts[0].text;
         fullText += textChunk; // Build complete text
         
-        // 🚀 FAST STREAMING: Send by words like Claude
-        const words = textChunk.split(' ');
-        for (const word of words) {
-          if (word.trim()) { // Skip empty strings
-            res.write(JSON.stringify({ 
-              type: 'text', 
-              content: word + ' ' 
-            }) + '\n');
-            
-            // Minimal delay for streaming effect
-            await new Promise(resolve => setTimeout(resolve, 5));
+        // 🚀 SMART STREAMING: Handle complex content better
+        // For long content with code blocks, send larger chunks to prevent bullet parsing issues
+        if (textChunk.length > 100 || textChunk.includes('```') || textChunk.includes('•') || /\d+\./.test(textChunk)) {
+          // Send in larger chunks for complex content
+          const chunks = textChunk.match(/.{1,20}/g) || [textChunk];
+          for (const chunk of chunks) {
+            if (chunk.trim()) {
+              res.write(JSON.stringify({ 
+                type: 'text', 
+                content: chunk
+              }) + '\n');
+              await new Promise(resolve => setTimeout(resolve, 15));
+            }
+          }
+        } else {
+          // Regular word-by-word streaming for simple content
+          const words = textChunk.split(' ');
+          for (const word of words) {
+            if (word.trim()) {
+              res.write(JSON.stringify({ 
+                type: 'text', 
+                content: word + ' ' 
+              }) + '\n');
+              await new Promise(resolve => setTimeout(resolve, 5));
+            }
           }
         }
       }
