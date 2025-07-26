@@ -132,7 +132,20 @@ export default async function handler(req, res) {
       if (item.candidates && item.candidates[0].content.parts[0].text) {
         const textChunk = item.candidates[0].content.parts[0].text;
         fullText += textChunk; // Build complete text
-        res.write(JSON.stringify({ type: 'text', content: textChunk }) + '\n');
+        
+        // 🚀 FAST STREAMING: Send by words like Claude
+        const words = textChunk.split(' ');
+        for (const word of words) {
+          if (word.trim()) { // Skip empty strings
+            res.write(JSON.stringify({ 
+              type: 'text', 
+              content: word + ' ' 
+            }) + '\n');
+            
+            // Minimal delay for streaming effect
+            await new Promise(resolve => setTimeout(resolve, 5));
+          }
+        }
       }
     }
 
