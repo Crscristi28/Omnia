@@ -53,7 +53,7 @@ const geminiService = {
                 if (data.type === 'text' && data.content) {
                   fullText += data.content;
                   if (onStreamUpdate) {
-                    onStreamUpdate(data.content, true);  // Send only new chunk, not full text
+                    onStreamUpdate(fullText, true);  // Send full text for proper markdown parsing
                   }
                 }
                 else if (data.type === 'search_start') {

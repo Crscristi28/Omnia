@@ -940,23 +940,22 @@ function App() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (chunk, isStreaming) => {
-            // 🚀 REAL-TIME STREAMING: Update UI as chunks arrive
+          (fullText, isStreaming) => {
+            // 🚀 REAL-TIME STREAMING: Update UI with full text for proper markdown parsing
             if (isStreaming) {
-              // Add chunk to current streaming message
               setMessages(prev => {
                 const lastMessage = prev[prev.length - 1];
                 if (lastMessage && lastMessage.sender === 'bot' && lastMessage.isStreaming) {
-                  // Update existing streaming message
+                  // Update existing streaming message with full text
                   return [
                     ...prev.slice(0, -1),
-                    { ...lastMessage, text: lastMessage.text + chunk }
+                    { ...lastMessage, text: fullText }
                   ];
                 } else {
-                  // Create new streaming message
+                  // Create new streaming message with full text
                   return [
                     ...prev,
-                    { sender: 'bot', text: chunk, isStreaming: true, sources: [] }
+                    { sender: 'bot', text: fullText, isStreaming: true, sources: [] }
                   ];
                 }
               });
