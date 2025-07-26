@@ -232,7 +232,7 @@ export const streamMessageWithEffect = (
        sender: 'bot', 
        text: currentText, 
        isStreaming: isStreaming,
-       sources: isStreaming ? [] : sources
+       sources: sources  // Keep sources consistent - don't change during streaming
      }
    ]);
 
