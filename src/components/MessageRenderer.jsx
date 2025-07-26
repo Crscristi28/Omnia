@@ -6,10 +6,7 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
   // 🚀 MINIMAL REGEX: Only fix numbered lists, let markdown handle the rest
   const fixedContent = (content || '')
     // Escape numbered lists to prevent auto-formatting
-    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
-    
-    // Add spacing after every numbered line
-    .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n');
+    .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2');
   
   return (
     <div className={className}>
