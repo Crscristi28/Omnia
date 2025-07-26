@@ -52,15 +52,17 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         
         /* Code block styling */
         .markdown-container pre {
-          background-color: #9ca3af !important;
+          background-color: #374151 !important;
           border-radius: 8px;
           padding: 1rem;
         }
         .markdown-container code {
-          background-color: #9ca3af !important;
+          background-color: #374151 !important;
+          color: #f3f4f6 !important;
         }
         .markdown-container pre code {
           background-color: transparent !important;
+          color: #f3f4f6 !important;
         }
       `}</style>
     </div>
