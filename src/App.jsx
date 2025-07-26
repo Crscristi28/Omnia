@@ -1688,9 +1688,7 @@ const handleSendWithDocuments = async (text, documents) => {
         <div style={{ 
           maxWidth: '1000px', 
           margin: '0 auto',
-          height: messages.length === 0 ? '100vh' : 'auto',
-          minHeight: messages.length === 0 ? '100vh' : 'auto',
-          overflow: messages.length === 0 ? 'hidden' : 'auto',
+          minHeight: messages.length === 0 ? '60vh' : 'auto',
           display: 'flex', 
           flexDirection: 'column',
           justifyContent: messages.length === 0 ? 'center' : 'flex-start'
@@ -1703,8 +1701,7 @@ const handleSendWithDocuments = async (text, documents) => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: isMobile ? '1.5rem' : '2rem',
-              marginBottom: '4rem'
+              gap: isMobile ? '1.5rem' : '2rem'
             }}>
               
               {/* OMNIA LOGO */}
