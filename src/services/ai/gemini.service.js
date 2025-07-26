@@ -251,7 +251,7 @@ CORE PERSONALITY:
 
 // Priority 3: FORMATTING & READABILITY
 FORMATTING GUIDELINES:
-- Use standard Markdown for formatting like: bullets (• not *), numbered lists (1.), **bold text**, code blocks (\`\`\`language), and mathematical expressions ($...$).
+- Use standard Markdown for formatting like: bullets (• not *), numbered lists (1.), **bold text**, code blocks (\`\`\`language), and mathematical expressions (use LaTeX syntax between $ symbols for inline math or $$ for display math).
 - IMPORTANT: When presenting analysis with sections like "Key Factors:", "Potential Risks:", "Main Points:", etc., write the section header WITHOUT a bullet, then list items under it WITH bullets:
   Key Factors:
   • First factor
