@@ -940,7 +940,28 @@ function App() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          null, // DISABLED STREAMING CALLBACK - testing CSS fix
+          (chunk, isStreaming) => {
+            // 🚀 REAL-TIME STREAMING: Update UI as chunks arrive
+            if (isStreaming) {
+              // Add chunk to current streaming message
+              setMessages(prev => {
+                const lastMessage = prev[prev.length - 1];
+                if (lastMessage && lastMessage.sender === 'bot' && lastMessage.isStreaming) {
+                  // Update existing streaming message
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...lastMessage, text: lastMessage.text + chunk }
+                  ];
+                } else {
+                  // Create new streaming message
+                  return [
+                    ...prev,
+                    { sender: 'bot', text: chunk, isStreaming: true, sources: [] }
+                  ];
+                }
+              });
+            }
+          },
           () => {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
@@ -954,15 +975,20 @@ function App() {
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // 🆕 STREAMING: Use streaming effect for Gemini with sources
-        const stopFn = streamMessageWithEffect(
-          responseText,
-          setMessages,
-          messagesWithUser,
-          mainContentRef.current,
-          sources
-        );
-        setStopStreamingRef(() => stopFn);
+        // 🚀 FINALIZE STREAMING: Update the last message with final state and sources
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage && lastMessage.sender === 'bot' && lastMessage.isStreaming) {
+            // Update streaming message to final state with sources
+            newMessages[newMessages.length - 1] = {
+              ...lastMessage,
+              isStreaming: false,
+              sources: sources
+            };
+          }
+          return newMessages;
+        });
         
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
