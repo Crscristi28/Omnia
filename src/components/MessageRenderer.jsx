@@ -15,8 +15,8 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
       return `${num}\\. ${text}`;
     })
     
-    // Fix "Den X:" patterns that get auto-formatted wrong
-    .replace(/^(Den\s+\d+):\s*$/gm, '**$1:**\n')
+    // Fix "Den X:" patterns that get auto-formatted wrong  
+    .replace(/^(Den\s+\d+):\s*(.*)$/gm, '**$1:**\n\n$2')
     
     // Add spacing after numbered lines for better readability
     .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n')
