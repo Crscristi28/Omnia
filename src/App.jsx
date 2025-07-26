@@ -1688,7 +1688,7 @@ const handleSendWithDocuments = async (text, documents) => {
         <div style={{ 
           maxWidth: '1000px', 
           margin: '0 auto',
-          minHeight: messages.length === 0 ? '60vh' : 'auto',
+          minHeight: 'auto',
           display: 'flex', 
           flexDirection: 'column',
           justifyContent: messages.length === 0 ? 'center' : 'flex-start'
