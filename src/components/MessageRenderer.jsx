@@ -1,6 +1,9 @@
 import React from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
   // 🚀 MINIMAL REGEX: Only fix numbered lists, let markdown handle the rest
@@ -28,7 +31,9 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
             color: 'inherit'
           }}
           data-color-mode="dark"
-          // ✅ FULL MARKDOWN: MDEditor has all plugins built-in
+          remarkPlugins={[remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+          // ✅ FULL MARKDOWN + MATH: With KaTeX for math rendering
         />
       </div>
       
@@ -63,6 +68,29 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         .markdown-container pre code {
           background-color: transparent !important;
           color: #f3f4f6 !important;
+        }
+        
+        /* Syntax highlighting colors for better visibility */
+        .markdown-container .token.keyword {
+          color: #f97316 !important; /* Orange for keywords */
+        }
+        .markdown-container .token.string {
+          color: #84cc16 !important; /* Lime green for strings */
+        }
+        .markdown-container .token.number {
+          color: #06b6d4 !important; /* Cyan for numbers */
+        }
+        .markdown-container .token.comment {
+          color: #94a3b8 !important; /* Light gray for comments */
+        }
+        .markdown-container .token.function {
+          color: #fbbf24 !important; /* Yellow for functions */
+        }
+        .markdown-container .token.operator {
+          color: #e5e7eb !important; /* White for operators */
+        }
+        .markdown-container .token.punctuation {
+          color: #e5e7eb !important; /* White for punctuation */
         }
       `}</style>
     </div>
