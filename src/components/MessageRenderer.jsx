@@ -14,8 +14,8 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Preserve bullet symbols and fix spacing
     .replace(/^(\s*)(•)(\s+)(.+)$/gm, '$1$2 $4')
     
-    // Convert asterisks back to bullet symbols (in case something converted them)
-    .replace(/^(\s*)\*(\s+)(.+)$/gm, '$1• $3')
+    // Convert single asterisks to bullets (but preserve double asterisks for bold)
+    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '$1• $3')
     
     // Add spacing between different numbered sections
     .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
@@ -25,18 +25,36 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
   
   return (
     <div className={className}>
-      <div style={{ '--md-bold-color': '#facc15' }}>
+      <div className="markdown-container">
         <MDEditor.Markdown 
           source={fixedContent} 
           style={{ 
             backgroundColor: 'transparent',
-            color: 'inherit',
-            '--md-bold-color': '#facc15'
+            color: 'inherit'
           }}
           data-color-mode="dark"
           // ✅ ENABLE FULL MARKDOWN: Regex already fixed problematic parts
         />
       </div>
+      
+      <style>{`
+        .markdown-container strong {
+          color: #facc15 !important;
+          font-weight: bold !important;
+        }
+        .markdown-container .w-md-editor-text strong {
+          color: #facc15 !important;
+        }
+        .markdown-container .w-md-editor-text b {
+          color: #facc15 !important;
+        }
+        .w-md-editor-text strong {
+          color: #facc15 !important;
+        }
+        .w-md-editor-text b {
+          color: #facc15 !important;
+        }
+      `}</style>
     </div>
   );
 };
