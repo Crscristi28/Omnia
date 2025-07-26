@@ -26,17 +26,10 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         source={fixedContent} 
         style={{ 
           backgroundColor: 'transparent',
-          color: 'inherit',
-          whiteSpace: 'pre-wrap'  // Preserve exact spacing during streaming
+          color: 'inherit'
         }}
         data-color-mode="dark"
-        skipHtml={false}
-        allowedElements={undefined}  // Don't restrict elements
-        unwrapDisallowed={false}     // Don't unwrap/reformat content
-        remarkPlugins={[]}           // Remove all remark plugins that auto-format
-        rehypePlugins={[]}           // Remove all rehype plugins that auto-format
-        transformLinkUri={null}      // Disable link transformations
-        transformImageUri={null}     // Disable image transformations
+        // ✅ ENABLE FULL MARKDOWN: Regex already fixed problematic parts
       />
     </div>
   );
