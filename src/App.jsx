@@ -967,16 +967,14 @@ function App() {
         );
         setStopStreamingRef(() => stopFn);
         
-        // 🚀 WAIT: Save messages after streaming completes to prevent interference
-        setTimeout(() => {
-          const finalMessages = [...messagesWithUser, { 
-            sender: 'bot', 
-            text: responseText,
-            sources: sources,
-            isStreaming: false
-          }];
-          sessionManager.saveMessages(finalMessages);
-        }, 100); // Small delay to ensure streaming is finished
+        // 🔄 CLAUDE PATTERN: Save messages immediately like other models
+        const finalMessages = [...messagesWithUser, { 
+          sender: 'bot', 
+          text: responseText,
+          sources: sources,
+          isStreaming: false
+        }];
+        sessionManager.saveMessages(finalMessages);
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
