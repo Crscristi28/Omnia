@@ -42,8 +42,10 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
             color: 'inherit'
           }}
           data-color-mode="dark"
-          remarkPlugins={[remarkMath]}
-          rehypePlugins={[rehypeKatex]}
+          options={{
+            remarkPlugins: [[remarkMath]],
+            rehypePlugins: [[rehypeKatex]]
+          }}
           // ✅ FULL MARKDOWN + MATH: With KaTeX for math rendering
         />
       </div>
