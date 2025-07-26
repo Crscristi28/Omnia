@@ -25,33 +25,18 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
   
   return (
     <div className={className}>
-      <MDEditor.Markdown 
-        source={fixedContent} 
-        style={{ 
-          backgroundColor: 'transparent',
-          color: 'inherit'
-        }}
-        data-color-mode="dark"
-        // ✅ ENABLE FULL MARKDOWN: Regex already fixed problematic parts
-      />
-      
-      {/* 🎨 CUSTOM STYLES: Yellow bold text */}
-      <style jsx>{`
-        .markdown-body strong {
-          color: #facc15 !important; /* Tailwind yellow-400 */
-          font-weight: bold;
-        }
-        
-        .w-md-editor-text strong {
-          color: #facc15 !important; /* Tailwind yellow-400 */
-          font-weight: bold;
-        }
-        
-        div[data-color-mode="dark"] strong {
-          color: #facc15 !important; /* Tailwind yellow-400 */
-          font-weight: bold;
-        }
-      `}</style>
+      <div style={{ '--md-bold-color': '#facc15' }}>
+        <MDEditor.Markdown 
+          source={fixedContent} 
+          style={{ 
+            backgroundColor: 'transparent',
+            color: 'inherit',
+            '--md-bold-color': '#facc15'
+          }}
+          data-color-mode="dark"
+          // ✅ ENABLE FULL MARKDOWN: Regex already fixed problematic parts
+        />
+      </div>
     </div>
   );
 };
