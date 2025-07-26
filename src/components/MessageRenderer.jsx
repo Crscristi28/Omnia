@@ -11,6 +11,9 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Escape numbered lists to prevent auto-formatting
     .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
     
+    // Add spacing after main sections (Krok 1:, Den 7:, etc.) before numbered lists
+    .replace(/^((?:Krok|Den|Step|Day)\s+\d+:.*?)(\n)(\d+\\\.)(.+)$/gm, '$1\n\n$3$4')
+    
     // Add space between numbered items and following bullets
     .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
     
