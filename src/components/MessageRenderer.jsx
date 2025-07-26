@@ -45,6 +45,19 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         .w-md-editor-text b {
           color: #facc15 !important;
         }
+        
+        /* Code block styling */
+        .markdown-container pre {
+          background-color: #e5e7eb !important;
+          border-radius: 8px;
+          padding: 1rem;
+        }
+        .markdown-container code {
+          background-color: #e5e7eb !important;
+        }
+        .markdown-container pre code {
+          background-color: transparent !important;
+        }
       `}</style>
     </div>
   );
