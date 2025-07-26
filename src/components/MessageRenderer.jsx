@@ -34,6 +34,24 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         data-color-mode="dark"
         // ✅ ENABLE FULL MARKDOWN: Regex already fixed problematic parts
       />
+      
+      {/* 🎨 CUSTOM STYLES: Yellow bold text */}
+      <style jsx>{`
+        .markdown-body strong {
+          color: #facc15 !important; /* Tailwind yellow-400 */
+          font-weight: bold;
+        }
+        
+        .w-md-editor-text strong {
+          color: #facc15 !important; /* Tailwind yellow-400 */
+          font-weight: bold;
+        }
+        
+        div[data-color-mode="dark"] strong {
+          color: #facc15 !important; /* Tailwind yellow-400 */
+          font-weight: bold;
+        }
+      `}</style>
     </div>
   );
 };
