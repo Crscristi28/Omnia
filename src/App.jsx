@@ -940,26 +940,9 @@ function App() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (fullText, isStreaming) => {
-            // 🚀 REAL-TIME STREAMING: Update UI with full text for proper markdown parsing
-            if (isStreaming) {
-              setMessages(prev => {
-                const lastMessage = prev[prev.length - 1];
-                if (lastMessage && lastMessage.sender === 'bot' && lastMessage.isStreaming) {
-                  // Update existing streaming message with full text
-                  return [
-                    ...prev.slice(0, -1),
-                    { ...lastMessage, text: fullText }
-                  ];
-                } else {
-                  // Create new streaming message with full text
-                  return [
-                    ...prev,
-                    { sender: 'bot', text: fullText, isStreaming: true, sources: [] }
-                  ];
-                }
-              });
-            }
+          (text, isStreaming) => {
+            // 🔄 CLAUDE PATTERN: Just track streaming state, don't update UI
+            setStreaming(isStreaming);
           },
           () => {
             setIsSearching(true);
@@ -974,20 +957,15 @@ function App() {
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // 🚀 FINALIZE STREAMING: Update the last message with final state and sources
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage && lastMessage.sender === 'bot' && lastMessage.isStreaming) {
-            // Update streaming message to final state with sources
-            newMessages[newMessages.length - 1] = {
-              ...lastMessage,
-              isStreaming: false,
-              sources: sources
-            };
-          }
-          return newMessages;
-        });
+        // 🔄 CLAUDE PATTERN: Use streamMessageWithEffect for final rendering
+        const stopFn = streamMessageWithEffect(
+          responseText,
+          setMessages,
+          messagesWithUser,
+          mainContentRef.current,
+          sources
+        );
+        setStopStreamingRef(() => stopFn);
         
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
@@ -996,8 +974,6 @@ function App() {
           isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
-        
-        // ✅ NO streamMessageWithEffect for Gemini - already handled by real-time streaming
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
