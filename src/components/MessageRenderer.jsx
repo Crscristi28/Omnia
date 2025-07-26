@@ -9,10 +9,7 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
     
     // Add spacing after numbered lines for better readability
-    .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n')
-    
-    // Convert asterisks to bullet symbols to prevent code blocks
-    .replace(/^\* /gm, '• ');
+    .replace(/^(\d+\\\..*?)(\n)/gm, '$1\n\n');
   
   return (
     <div className={className}>
