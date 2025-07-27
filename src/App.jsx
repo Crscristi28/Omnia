@@ -1006,40 +1006,55 @@ function App() {
     }
   };
 
-  // 📄 PARSE MESSAGE TEXT FOR CLICKABLE FILES
-  const parseMessageContent = (text) => {
-    if (!text) return { textContent: '', files: [] };
-    
-    const filePattern = /(📄\s+)([^\n]+?\.(pdf|docx?|txt|png|jpe?g))/gim;
-    const files = [];
-    let processedText = text;
-    
-    let match;
-    while ((match = filePattern.exec(text)) !== null) {
-      files.push({
-        emoji: match[1],
-        filename: match[2].trim(),
-        fullMatch: match[0]
-      });
-    }
-    
-    // Remove file references from text if we have separate files to display
-    if (files.length > 0) {
-      files.forEach(file => {
-        processedText = processedText.replace(file.fullMatch, '').trim();
-      });
-    }
-    
-    return { textContent: processedText, files };
-  };
 
-  // 📄 HANDLE FILE CLICK
-  const handleFileClick = (filename) => {
-    console.log('📄 File clicked:', filename);
+  // 📄 HANDLE FILE CLICK - Actually open/download files
+  const handleFileClick = (filename, file) => {
+    console.log('📄 File clicked:', filename, file);
     
-    // For now, show notification that file was clicked
-    // In the future, this could open the file in a modal or download it
-    showNotification(`Soubor kliknut: ${filename}`, 'info');
+    if (!file) {
+      showNotification(`Soubor ${filename} není dostupný`, 'error');
+      return;
+    }
+    
+    try {
+      // Create blob URL for the file
+      const fileUrl = URL.createObjectURL(file);
+      
+      // Check if it's an image
+      if (file.type.startsWith('image/')) {
+        // For images, open in new tab for viewing
+        window.open(fileUrl, '_blank');
+        showNotification(`Obrázek ${filename} otevřen`, 'success');
+      } else {
+        // For documents (PDF, etc.), try to open in new tab
+        // If browser can display it, it will show inline
+        // Otherwise it will download
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = filename;
+        link.target = '_blank';
+        
+        // Try to open in new tab first
+        const newWindow = window.open(fileUrl, '_blank');
+        
+        if (!newWindow) {
+          // If popup blocked, fall back to download
+          link.click();
+          showNotification(`Dokument ${filename} stažen`, 'success');
+        } else {
+          showNotification(`Dokument ${filename} otevřen`, 'success');
+        }
+      }
+      
+      // Clean up URL after some time
+      setTimeout(() => {
+        URL.revokeObjectURL(fileUrl);
+      }, 10000);
+      
+    } catch (error) {
+      console.error('Failed to open file:', error);
+      showNotification(`Chyba při otevírání souboru ${filename}`, 'error');
+    }
   };
 
   // Custom code component for syntax highlighting
@@ -1219,18 +1234,15 @@ const handleSendWithDocuments = async (text, documents) => {
   if (!text.trim() && documents.length === 0) return;
   
   // Add user message to chat immediately (with document info)
-  let messageText = text.trim();
-  if (documents.length > 0) {
-    const docsList = documents.map(doc => `📄 ${doc.name}`).join('\n');
-    messageText = messageText 
-      ? `${messageText}\n\n${docsList}` 
-      : docsList;
-  }
-  
   const userMessage = {
     sender: 'user',
-    text: messageText || '📄 Dokument nahrán',
-    timestamp: new Date()
+    text: text.trim() || 'Dokumenty nahrány',
+    timestamp: new Date(),
+    attachedFiles: documents.map(doc => ({
+      name: doc.name,
+      size: doc.size,
+      file: doc.file // Store the actual file for later access
+    }))
   };
   setMessages(prev => [...prev, userMessage]);
   
@@ -1789,91 +1801,148 @@ const handleSendWithDocuments = async (text, documents) => {
               animation: 'fadeInUp 0.4s ease-out'
             }}>
               {msg.sender === 'user' ? (
-                (() => {
-                  const { textContent, files } = parseMessageContent(msg.text);
-                  
-                  return (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: '0.8rem',
+                  maxWidth: isMobile ? '85%' : '75%'
+                }}>
+                  {/* User text bubble */}
+                  {msg.text && (
                     <div style={{
                       backgroundColor: 'rgba(45, 55, 72, 0.8)', 
                       color: '#ffd700',
                       padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
                       borderRadius: '25px 25px 8px 25px',
-                      maxWidth: isMobile ? '85%' : '75%',
                       fontSize: isMobile ? '1rem' : '0.95rem',
                       lineHeight: isMobile ? '1.3' : '1.6', 
                       whiteSpace: 'pre-wrap',
                       boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
                       border: '1px solid rgba(255, 215, 0, 0.3)',
-                      backdropFilter: 'blur(10px)',
+                      backdropFilter: 'blur(10px)'
+                    }}>
+                      {msg.text}
+                    </div>
+                  )}
+                  
+                  {/* File attachments as separate cards */}
+                  {msg.attachedFiles && msg.attachedFiles.length > 0 && (
+                    <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '0.8rem'
+                      gap: '0.5rem',
+                      width: '100%'
                     }}>
-                      {/* Text content (if any) */}
-                      {textContent && (
-                        <div style={{ whiteSpace: 'pre-wrap' }}>
-                          {textContent}
-                        </div>
-                      )}
-                      
-                      {/* Clickable file chips */}
-                      {files.length > 0 && (
-                        <div style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.5rem'
-                        }}>
-                          {files.map((file, index) => (
-                            <div
-                              key={index}
-                              onClick={() => handleFileClick(file.filename)}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                padding: '0.5rem 0.8rem',
-                                backgroundColor: 'rgba(96, 165, 250, 0.2)',
-                                border: '1px solid rgba(96, 165, 250, 0.4)',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                color: '#93C5FD',
-                                fontSize: '0.9rem'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(96, 165, 250, 0.3)';
-                                e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.6)';
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(96, 165, 250, 0.2)';
-                                e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.4)';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                              }}
-                            >
-                              <span style={{ fontSize: '1.1rem' }}>📄</span>
-                              <span style={{ 
-                                fontWeight: '500',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                {file.filename}
-                              </span>
-                              <span style={{ 
-                                marginLeft: 'auto',
-                                fontSize: '0.8rem',
-                                opacity: 0.7
-                              }}>
-                                ↗️
-                              </span>
+                      {msg.attachedFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleFileClick(file.name, file.file)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.8rem',
+                            padding: '1rem',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            color: 'white',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+                          }}
+                        >
+                          {/* File icon/thumbnail */}
+                          <div style={{
+                            width: '48px',
+                            height: '48px',
+                            backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '20px',
+                            flexShrink: 0,
+                            overflow: 'hidden',
+                            position: 'relative'
+                          }}>
+                            {file.file && file.file.type.startsWith('image/') ? (
+                              <img 
+                                src={URL.createObjectURL(file.file)}
+                                alt={file.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                  borderRadius: '8px'
+                                }}
+                                onLoad={(e) => {
+                                  // Clean up URL after image loads
+                                  setTimeout(() => {
+                                    URL.revokeObjectURL(e.target.src);
+                                  }, 1000);
+                                }}
+                              />
+                            ) : (
+                              file.name.match(/\.(png|jpe?g|gif|webp)$/i) ? '🖼️' : '📄'
+                            )}
+                          </div>
+                          
+                          {/* File info */}
+                          <div style={{
+                            flex: 1,
+                            minWidth: 0
+                          }}>
+                            <div style={{
+                              fontWeight: '500',
+                              fontSize: '0.95rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              marginBottom: '0.2rem'
+                            }}>
+                              {file.name}
                             </div>
-                          ))}
+                            <div style={{
+                              fontSize: '0.8rem',
+                              opacity: 0.7
+                            }}>
+                              {file.size}
+                            </div>
+                          </div>
+                          
+                          {/* Open icon */}
+                          <div style={{
+                            width: '24px',
+                            height: '24px',
+                            backgroundColor: 'rgba(96, 165, 250, 0.3)',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '12px',
+                            flexShrink: 0
+                          }}>
+                            ↗️
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  );
-                })()
+                  )}
+                </div>
               ) : (
                 <div 
                   className="p-4"
