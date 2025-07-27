@@ -17,11 +17,11 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Add space between numbered items and following bullets
     .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
     
-    // Convert bullet points to proper markdown list items with preserved indentation
-    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '$1- $4')
+    // Convert bullet points to proper markdown list items
+    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '- $4')
     
     // Convert single asterisks to markdown list items (but preserve double asterisks for bold)
-    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '$1- $3')
+    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '- $3')
     
     // Add spacing between different numbered sections
     .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
