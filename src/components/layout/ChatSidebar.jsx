@@ -2,9 +2,10 @@
 // ✅ Clean professional design podle fotky
 // 🚀 Animované slide-in/out, responsive
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageCircle, Check, X } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
+import sessionManager from '../../services/storage/sessionManager';
 
 const ChatSidebar = ({ 
   isOpen, 
@@ -14,10 +15,14 @@ const ChatSidebar = ({
   setUILanguage,
   chatHistory = [],
   onSelectChat,
-  currentChatId = null
+  currentChatId = null,
+  onChatDeleted = () => {} // Callback to refresh history after deletion
 }) => {
   const t = getTranslation(uiLanguage);
   const isMobile = window.innerWidth <= 768;
+  
+  // Long press state
+  const [longPressTimer, setLongPressTimer] = useState(null);
 
   // 📱 CLOSE ON OVERLAY CLICK
   const handleOverlayClick = (e) => {
@@ -44,6 +49,34 @@ const ChatSidebar = ({
   const handleChatSelect = (chatId) => {
     onSelectChat(chatId);
     onClose(); // Always close after selecting chat
+  };
+
+  // 🗑️ LONG PRESS DELETE FUNCTIONALITY
+  const handleLongPressStart = (chatId, chatTitle) => {
+    const timer = setTimeout(() => {
+      handleDeleteChat(chatId, chatTitle);
+    }, 800); // 800ms long press
+    setLongPressTimer(timer);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const handleDeleteChat = (chatId, chatTitle) => {
+    const confirmText = uiLanguage === 'cs' ? 
+      `Opravdu chcete smazat chat "${chatTitle}"?` :
+      uiLanguage === 'en' ? 
+      `Really delete chat "${chatTitle}"?` :
+      `Ștergi conversația "${chatTitle}"?`;
+      
+    if (confirm(confirmText)) {
+      sessionManager.deleteChatHistory(chatId);
+      onChatDeleted(); // Refresh the chat history
+    }
   };
 
   if (!isOpen) return null;
@@ -184,6 +217,11 @@ const ChatSidebar = ({
                   <button
                     key={chat.id || index}
                     onClick={() => handleChatSelect(chat.id)}
+                    onTouchStart={() => handleLongPressStart(chat.id, chat.title)}
+                    onTouchEnd={handleLongPressEnd}
+                    onTouchCancel={handleLongPressEnd}
+                    onMouseDown={() => handleLongPressStart(chat.id, chat.title)}
+                    onMouseUp={handleLongPressEnd}
                     style={{
                       width: '100%',
                       padding: '0.75rem 0.75rem',
@@ -200,7 +238,9 @@ const ChatSidebar = ({
                       transition: 'all 0.2s ease',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.5rem'
+                      gap: '0.5rem',
+                      userSelect: 'none', // Prevent text selection during long press
+                      WebkitUserSelect: 'none'
                     }}
                     onMouseEnter={(e) => {
                       if (currentChatId !== chat.id) {
@@ -211,6 +251,7 @@ const ChatSidebar = ({
                       if (currentChatId !== chat.id) {
                         e.target.style.background = 'transparent';
                       }
+                      handleLongPressEnd(); // Also clear long press on mouse leave
                     }}
                   >
                     <span style={{ 

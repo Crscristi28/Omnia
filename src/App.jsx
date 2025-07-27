@@ -2245,6 +2245,7 @@ const handleSendWithDocuments = async (text, documents) => {
         chatHistory={chatHistories}
         onSelectChat={handleSelectChat}
         currentChatId={currentChatId}
+        onChatDeleted={loadChatHistories}
       />
 
       {/* 🎤 VOICE SCREEN - UNCHANGED */}
