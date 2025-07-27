@@ -382,15 +382,16 @@ function App() {
     setShowChatSidebar(false);
   };
 
-  const handleSidebarNewChat = () => {
-    // Save current chat before creating new one
+
+  const handleNewChatKeepSidebar = () => {
+    // Same as handleSidebarNewChat but keeps sidebar open
     if (currentChatId && messages.length > 0) {
       sessionManager.saveChatHistory(currentChatId, messages);
     }
     handleNewChat();
     setCurrentChatId(sessionManager.generateChatId());
     loadChatHistories();
-    setShowChatSidebar(false);
+    // Note: sidebar stays open
   };
 
   // 📚 CHAT HISTORY FUNCTIONS
@@ -2239,7 +2240,7 @@ const handleSendWithDocuments = async (text, documents) => {
       <ChatSidebar
         isOpen={showChatSidebar}
         onClose={handleSidebarClose}
-        onNewChat={handleSidebarNewChat}
+        onNewChatKeepSidebar={handleNewChatKeepSidebar}
         uiLanguage={uiLanguage}
         setUILanguage={setUILanguage}
         chatHistory={chatHistories}

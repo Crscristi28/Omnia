@@ -10,7 +10,7 @@ import sessionManager from '../../services/storage/sessionManager';
 const ChatSidebar = ({ 
   isOpen, 
   onClose, 
-  onNewChat,
+  onNewChatKeepSidebar = () => {}, // New chat without closing sidebar
   uiLanguage = 'cs',
   setUILanguage,
   chatHistory = [],
@@ -18,7 +18,6 @@ const ChatSidebar = ({
   currentChatId = null,
   onChatDeleted = () => {} // Callback to refresh history after deletion
 }) => {
-  const t = getTranslation(uiLanguage);
   const isMobile = window.innerWidth <= 768;
   
   // Long press state
@@ -74,9 +73,19 @@ const ChatSidebar = ({
       `Ștergi conversația "${chatTitle}"?`;
       
     if (confirm(confirmText)) {
+      // If deleting the current chat, start new chat but keep sidebar open
+      const isDeletingCurrentChat = chatId === currentChatId;
+      
       sessionManager.deleteChatHistory(chatId);
+      
+      if (isDeletingCurrentChat) {
+        onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open
+      }
+      
       onChatDeleted(); // Refresh the chat history
+      // Note: Sidebar stays open, no automatic chat selection
     }
+    // Whether confirmed or cancelled, sidebar stays open
   };
 
   if (!isOpen) return null;

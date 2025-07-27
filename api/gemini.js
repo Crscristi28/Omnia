@@ -47,7 +47,8 @@ export default async function handler(req, res) {
     const lastMessage = messages[messages.length - 1];
     
     // Prepare messages for Gemini (without system instruction in contents)
-    const geminiMessages = messages.slice(-5)
+    // Note: Frontend already provides isolated chat messages, so use all messages from current chat
+    const geminiMessages = messages
       .filter(msg => msg.text || msg.content) // Filter out empty messages
       .map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'model',
