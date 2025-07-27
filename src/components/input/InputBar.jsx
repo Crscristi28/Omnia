@@ -270,47 +270,103 @@ const InputBar = ({
             padding: isMobile ? '0.6rem' : '1rem',
           }}>
             
-            {/* DOCUMENT CHIPS ROW */}
+            {/* DOCUMENT PREVIEW CARDS */}
             {pendingDocuments.length > 0 && (
               <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '12px',
                 marginBottom: '0.5rem',
                 paddingBottom: '0.5rem',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
               }}>
-                {pendingDocuments.map((doc) => (
-                  <div
-                    key={doc.id}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      borderRadius: '12px',
-                      padding: '6px 12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '14px',
-                      color: 'rgba(255, 255, 255, 0.9)',
-                    }}
-                  >
-                    📄 <span>{doc.name}</span>
-                    <button
-                      onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
+                {pendingDocuments.map((doc) => {
+                  const isImage = doc.file && doc.file.type.startsWith('image/');
+                  const fileExtension = doc.name.split('.').pop()?.toUpperCase() || 'FILE';
+                  
+                  return (
+                    <div
+                      key={doc.id}
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        cursor: 'pointer',
-                        padding: '2px',
-                        marginLeft: '4px',
+                        position: 'relative',
+                        aspectRatio: '1',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                      {/* X Button */}
+                      <button
+                        onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
+                        style={{
+                          position: 'absolute',
+                          top: '6px',
+                          left: '6px',
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12px',
+                          zIndex: 1,
+                        }}
+                      >
+                        ×
+                      </button>
+                      
+                      {isImage ? (
+                        /* Image thumbnail */
+                        <img 
+                          src={URL.createObjectURL(doc.file)} 
+                          alt={doc.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      ) : (
+                        /* Document preview */
+                        <>
+                          <div style={{
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            fontSize: '12px',
+                            textAlign: 'center',
+                            padding: '8px',
+                            wordBreak: 'break-word',
+                            lineHeight: '1.2',
+                            maxHeight: '60%',
+                            overflow: 'hidden',
+                          }}>
+                            {doc.name}
+                          </div>
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '8px',
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                          }}>
+                            {fileExtension}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
             
