@@ -305,10 +305,10 @@ const InputBar = ({
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
                         style={{
                           position: 'absolute',
-                          top: '4px',
-                          left: '4px',
-                          width: '16px',
-                          height: '16px',
+                          top: isMobile ? '2px' : '4px',
+                          left: isMobile ? '2px' : '4px',
+                          width: isMobile ? '18px' : '16px',
+                          height: isMobile ? '18px' : '16px',
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
@@ -317,8 +317,8 @@ const InputBar = ({
                         }}
                       >
                         <svg
-                          width="16"
-                          height="16"
+                          width={isMobile ? "18" : "16"}
+                          height={isMobile ? "18" : "16"}
                           viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
