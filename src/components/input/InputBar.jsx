@@ -171,6 +171,7 @@ const InputBar = ({
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const plusButtonRef = useRef(null);
+  const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
 
@@ -438,6 +439,7 @@ const InputBar = ({
             
             {/* TEXTAREA NAHOŘE */}
             <textarea
+              ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -477,12 +479,19 @@ const InputBar = ({
                 <button
                   ref={plusButtonRef}
                   onClick={() => {
-                    // Use native file picker on all devices
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
-                    input.onchange = handleDocumentUploadToChips;
-                    input.click();
+                    // Close keyboard first on mobile
+                    if (isMobile && textareaRef.current) {
+                      textareaRef.current.blur();
+                    }
+                    
+                    // Wait for keyboard to close, then open file picker
+                    setTimeout(() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
+                      input.onchange = handleDocumentUploadToChips;
+                      input.click();
+                    }, isMobile ? 100 : 0);
                   }}
                   disabled={isLoading}
                   style={{
