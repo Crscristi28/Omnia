@@ -234,6 +234,8 @@ function App() {
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [chatHistories, setChatHistories] = useState([]);
   
   // 🆕 STREAMING STATE - For controlling streaming effect
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
@@ -381,9 +383,52 @@ function App() {
   };
 
   const handleSidebarNewChat = () => {
+    // Save current chat before creating new one
+    if (currentChatId && messages.length > 0) {
+      sessionManager.saveChatHistory(currentChatId, messages);
+    }
     handleNewChat();
+    setCurrentChatId(sessionManager.generateChatId());
+    loadChatHistories();
     setShowChatSidebar(false);
   };
+
+  // 📚 CHAT HISTORY FUNCTIONS
+  const loadChatHistories = () => {
+    const histories = sessionManager.getAllChatHistories();
+    setChatHistories(histories);
+  };
+
+  const handleSelectChat = (chatId) => {
+    // Save current chat before switching
+    if (currentChatId && messages.length > 0) {
+      sessionManager.saveChatHistory(currentChatId, messages);
+    }
+    
+    // Load selected chat
+    const chatData = sessionManager.getChatHistory(chatId);
+    if (chatData) {
+      setMessages(chatData.messages);
+      setCurrentChatId(chatId);
+      loadChatHistories(); // Refresh to update "current" indicators
+    }
+  };
+
+  // 🔄 INITIALIZATION - Load chat history on mount
+  React.useEffect(() => {
+    loadChatHistories();
+    if (!currentChatId) {
+      setCurrentChatId(sessionManager.generateChatId());
+    }
+  }, []);
+
+  // 📚 AUTO-SAVE CHAT HISTORY - Save when messages change
+  React.useEffect(() => {
+    if (currentChatId && messages.length > 0) {
+      sessionManager.saveChatHistory(currentChatId, messages);
+      loadChatHistories(); // Refresh to update timestamps
+    }
+  }, [messages, currentChatId]);
 
   // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON (UNCHANGED)
   const generateAudioForSentence = async (sentence, language) => {
@@ -611,6 +656,9 @@ function App() {
     sessionManager.clearSession();
     setMessages([]);
     setUserLanguage('cs');
+    
+    // Create new chat ID for history tracking
+    setCurrentChatId(sessionManager.generateChatId());
     
     // showNotification(t('newChatCreated'), 'success');
   };
@@ -2194,9 +2242,9 @@ const handleSendWithDocuments = async (text, documents) => {
         onNewChat={handleSidebarNewChat}
         uiLanguage={uiLanguage}
         setUILanguage={setUILanguage}
-        chatHistory={[]} // TODO: Implement chat history
-        onSelectChat={(chatId) => console.log('Select chat:', chatId)}
-        currentChatId={null}
+        chatHistory={chatHistories}
+        onSelectChat={handleSelectChat}
+        currentChatId={currentChatId}
       />
 
       {/* 🎤 VOICE SCREEN - UNCHANGED */}
