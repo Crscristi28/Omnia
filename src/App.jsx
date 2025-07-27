@@ -1342,9 +1342,20 @@ const handleSendWithDocuments = async (text, documents) => {
       
       const allActiveDocuments = [...activeDocumentContexts, ...newActiveDocuments];
       
+      // Prepare messages for AI - if user sent only documents without text, add document context
+      const messagesForAI = currentMessages.slice(-10).map(msg => {
+        if (msg === userMessage && !text.trim() && processedDocuments.length > 0) {
+          return {
+            ...msg,
+            text: processedDocuments.map(doc => `Analyzuj nahraný dokument: ${doc.name}`).join(', ')
+          };
+        }
+        return msg;
+      });
+      
       // Send to Gemini with ALL documents (existing + new)
       const result = await geminiService.sendMessage(
-        currentMessages.slice(-10),
+        messagesForAI,
         (chunk) => {
           updateStreamingMessage(chunk, true);
         },
