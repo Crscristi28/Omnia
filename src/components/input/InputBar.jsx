@@ -300,26 +300,13 @@ const InputBar = ({
                         justifyContent: 'center',
                       }}
                     >
-                      {/* X Button - White SVG */}
+                      {/* X Button - Tailwind */}
                       <button
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
-                        style={{
-                          position: 'absolute',
-                          top: '0',
-                          left: '0',
-                          width: '20px',
-                          height: '20px',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '0',
-                          margin: '0',
-                          zIndex: 1,
-                        }}
+                        className="absolute top-0 left-0 w-5 h-5 bg-transparent border-none cursor-pointer p-0 m-0 z-10"
                       >
                         <svg
-                          width="20"
-                          height="20"
+                          className="w-5 h-5"
                           viewBox="0 0 20 20"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
