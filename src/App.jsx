@@ -1924,20 +1924,6 @@ const handleSendWithDocuments = async (text, documents) => {
                             </div>
                           </div>
                           
-                          {/* Open icon */}
-                          <div style={{
-                            width: '24px',
-                            height: '24px',
-                            backgroundColor: 'rgba(96, 165, 250, 0.3)',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '12px',
-                            flexShrink: 0
-                          }}>
-                            ↗️
-                          </div>
                         </div>
                       ))}
                     </div>
