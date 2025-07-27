@@ -8,6 +8,35 @@ import { getTranslation } from '../../utils/text';
 
 // Using Lucide React icons instead of custom SVG components
 
+// PREVIEW IMAGE COMPONENT - Uses FileReader to avoid mobile native viewer
+const PreviewImage = ({ file, name }) => {
+  const [imageSrc, setImageSrc] = useState(null);
+  
+  React.useEffect(() => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImageSrc(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }, [file]);
+  
+  if (!imageSrc) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Načítám...</div>;
+  }
+  
+  return (
+    <img 
+      src={imageSrc}
+      alt={name}
+      style={{
+        maxWidth: '100%',
+        maxHeight: '70vh',
+        objectFit: 'contain'
+      }}
+    />
+  );
+};
+
 // PLUS MENU
 const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUpload, uiLanguage = 'cs' }) => {
   if (!isOpen) return null;
@@ -612,15 +641,7 @@ const InputBar = ({
             </button>
             
             {previewFile.file && previewFile.file.type.startsWith('image/') ? (
-              <img 
-                src={URL.createObjectURL(previewFile.file)} 
-                alt={previewFile.name}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '70vh',
-                  objectFit: 'contain'
-                }}
-              />
+              <PreviewImage file={previewFile.file} name={previewFile.name} />
             ) : (
               <div style={{
                 padding: '40px',
