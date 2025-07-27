@@ -612,7 +612,7 @@ function App() {
     setMessages([]);
     setUserLanguage('cs');
     
-    showNotification(t('newChatCreated'), 'success');
+    // showNotification(t('newChatCreated'), 'success');
   };
 
   const convertMessagesForOpenAI = (messages) => {
@@ -714,7 +714,7 @@ function App() {
             setMessages(finalMessages);
             sessionManager.saveMessages(finalMessages);
             
-            showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
+            // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
             throw new Error('No images generated');
           }
@@ -922,7 +922,7 @@ function App() {
           // Rule 3: Explicit forget command (optional feature)
           const explicitlyForget = textInput.toLowerCase().includes(`zapomeň na ${doc.name.toLowerCase()}`);
           if (explicitlyForget) {
-            showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
+            // showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
             return false;
           }
           
@@ -1024,7 +1024,7 @@ function App() {
       if (file.type.startsWith('image/')) {
         // For images, open in new tab for viewing
         window.open(fileUrl, '_blank');
-        showNotification(`Obrázek ${filename} otevřen`, 'success');
+        // showNotification(`Obrázek ${filename} otevřen`, 'success');
       } else {
         // For documents (PDF, etc.), try to open in new tab
         // If browser can display it, it will show inline
@@ -1040,9 +1040,9 @@ function App() {
         if (!newWindow) {
           // If popup blocked, fall back to download
           link.click();
-          showNotification(`Dokument ${filename} stažen`, 'success');
+          // showNotification(`Dokument ${filename} stažen`, 'success');
         } else {
-          showNotification(`Dokument ${filename} otevřen`, 'success');
+          // showNotification(`Dokument ${filename} otevřen`, 'success');
         }
       }
       
@@ -1140,7 +1140,7 @@ const handleDocumentUpload = async (event) => {
   }
   
   setLoading(true);
-  showNotification(messages.processing, 'info');
+  // showNotification(messages.processing, 'info');
   
   try {
     const formData = new FormData();
@@ -1159,7 +1159,7 @@ const handleDocumentUpload = async (event) => {
     const result = await response.json();
     
     // Upload to Gemini File API
-    showNotification(messages.preparing, 'info');
+    // showNotification(messages.preparing, 'info');
 
     const geminiResponse = await fetch('/api/upload-to-gemini', {
       method: 'POST',
@@ -1217,7 +1217,7 @@ const handleDocumentUpload = async (event) => {
 
     // Add to messages context but don't display to user
     setMessages(prev => [...prev, hiddenContextMessage]);
-    showNotification(messages.success, 'success');
+    // showNotification(messages.success, 'success');
     
   } catch (error) {
     console.error('Document upload error:', error);
@@ -1373,7 +1373,7 @@ const handleSendWithDocuments = async (text, documents) => {
         // Rule 3: Explicit forget command
         const explicitlyForget = (text || '').toLowerCase().includes(`zapomeň na ${doc.name.toLowerCase()}`);
         if (explicitlyForget) {
-          showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
+          // showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
           return false;
         }
         

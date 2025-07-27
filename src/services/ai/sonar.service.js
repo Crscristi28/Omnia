@@ -7,7 +7,7 @@ const sonarService = {
     try {
       console.log('🔍 Sonar detected language:', detectedLanguage);
       
-      showNotification(this.getSearchMessage(detectedLanguage), 'info');
+      // showNotification(this.getSearchMessage(detectedLanguage), 'info');
 
       const enhancedQuery = this.enhanceQueryForCurrentData(query);
 
@@ -33,7 +33,7 @@ const sonarService = {
         throw new Error('Invalid Sonar response');
       }
 
-      showNotification(this.getSuccessMessage(detectedLanguage), 'success');
+      // showNotification(this.getSuccessMessage(detectedLanguage), 'success');
       
       return {
         success: true,
