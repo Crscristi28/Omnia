@@ -284,9 +284,37 @@ const InputBar = ({
                   const isImage = doc.file && doc.file.type.startsWith('image/');
                   const fileExtension = doc.name.split('.').pop()?.toUpperCase() || 'FILE';
                   
+                  let longPressTimer = null;
+                  
+                  const handleTouchStart = () => {
+                    longPressTimer = setTimeout(() => {
+                      if (isImage) {
+                        const imgUrl = URL.createObjectURL(doc.file);
+                        window.open(imgUrl, '_blank');
+                        setTimeout(() => URL.revokeObjectURL(imgUrl), 1000);
+                      } else {
+                        const fileUrl = URL.createObjectURL(doc.file);
+                        window.open(fileUrl, '_blank');
+                        setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                      }
+                    }, 500);
+                  };
+                  
+                  const handleTouchEnd = () => {
+                    if (longPressTimer) {
+                      clearTimeout(longPressTimer);
+                      longPressTimer = null;
+                    }
+                  };
+                  
                   return (
                     <div
                       key={doc.id}
+                      onTouchStart={handleTouchStart}
+                      onTouchEnd={handleTouchEnd}
+                      onMouseDown={handleTouchStart}
+                      onMouseUp={handleTouchEnd}
+                      onMouseLeave={handleTouchEnd}
                       style={{
                         position: 'relative',
                         aspectRatio: '1',
@@ -298,6 +326,7 @@ const InputBar = ({
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        cursor: 'pointer',
                       }}
                     >
                       {/* X Button */}
@@ -305,10 +334,11 @@ const InputBar = ({
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
                         style={{
                           position: 'absolute',
-                          top: isMobile ? '2px' : '4px',
-                          left: isMobile ? '2px' : '4px',
-                          width: isMobile ? '18px' : '16px',
-                          height: isMobile ? '18px' : '16px',
+                          top: isMobile ? '50%' : '4px',
+                          left: isMobile ? '50%' : '4px',
+                          transform: isMobile ? 'translate(-50%, -50%)' : 'none',
+                          width: isMobile ? '16px' : '16px',
+                          height: isMobile ? '16px' : '16px',
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
@@ -317,8 +347,8 @@ const InputBar = ({
                         }}
                       >
                         <svg
-                          width={isMobile ? "18" : "16"}
-                          height={isMobile ? "18" : "16"}
+                          width="16"
+                          height="16"
                           viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -326,7 +356,7 @@ const InputBar = ({
                           <path
                             d="M12 4L4 12M4 4L12 12"
                             stroke="white"
-                            strokeWidth="1.5"
+                            strokeWidth={isMobile ? "1" : "1.5"}
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
