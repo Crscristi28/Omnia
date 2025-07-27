@@ -1851,7 +1851,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   flexDirection: 'column',
                   alignItems: 'flex-end',
                   gap: '0.8rem',
-                  maxWidth: isMobile ? '100%' : '75%',
+                  maxWidth: isMobile ? '90%' : '75%',
                   width: '100%'
                 }}>
                   {/* User text bubble */}
