@@ -287,18 +287,7 @@ const InputBar = ({
                   return (
                     <div
                       key={doc.id}
-                      style={{
-                        position: 'relative',
-                        aspectRatio: '1',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
+                      className="relative aspect-square bg-white/10 border border-white/15 rounded-xl overflow-hidden flex flex-col items-center justify-center"
                     >
                       {/* X Button - Tailwind */}
                       <button
