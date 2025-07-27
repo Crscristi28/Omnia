@@ -329,11 +329,10 @@ const InputBar = ({
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
                         style={{
                           position: 'absolute',
-                          top: isMobile ? '50%' : '4px',
-                          left: isMobile ? '50%' : '4px',
-                          transform: isMobile ? 'translate(-50%, -50%)' : 'none',
-                          width: isMobile ? '16px' : '16px',
-                          height: isMobile ? '16px' : '16px',
+                          top: '2px',
+                          left: '2px',
+                          width: '18px',
+                          height: '18px',
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
@@ -351,7 +350,7 @@ const InputBar = ({
                           <path
                             d="M12 4L4 12M4 4L12 12"
                             stroke="white"
-                            strokeWidth={isMobile ? "1" : "1.5"}
+                            strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
