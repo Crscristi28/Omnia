@@ -1854,15 +1854,15 @@ const handleSendWithDocuments = async (text, documents) => {
                   {/* User text bubble */}
                   {msg.text && (
                     <div style={{
-                      backgroundColor: 'rgba(59, 130, 246, 0.9)', // Tailwind blue-500
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
                       color: '#ffffff',
                       padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
                       borderRadius: '25px 25px 8px 25px',
                       fontSize: isMobile ? '1rem' : '0.95rem',
                       lineHeight: isMobile ? '1.3' : '1.6', 
                       whiteSpace: 'pre-wrap',
-                      boxShadow: '0 4px 20px rgba(59, 130, 246, 0.3)',
-                      border: '1px solid rgba(59, 130, 246, 0.4)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
                       backdropFilter: 'blur(10px)'
                     }}>
                       {msg.text}
