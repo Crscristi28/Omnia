@@ -1006,6 +1006,42 @@ function App() {
     }
   };
 
+  // 📄 PARSE MESSAGE TEXT FOR CLICKABLE FILES
+  const parseMessageContent = (text) => {
+    if (!text) return { textContent: '', files: [] };
+    
+    const filePattern = /(📄\s+)([^\n]+?\.(pdf|docx?|txt|png|jpe?g))/gim;
+    const files = [];
+    let processedText = text;
+    
+    let match;
+    while ((match = filePattern.exec(text)) !== null) {
+      files.push({
+        emoji: match[1],
+        filename: match[2].trim(),
+        fullMatch: match[0]
+      });
+    }
+    
+    // Remove file references from text if we have separate files to display
+    if (files.length > 0) {
+      files.forEach(file => {
+        processedText = processedText.replace(file.fullMatch, '').trim();
+      });
+    }
+    
+    return { textContent: processedText, files };
+  };
+
+  // 📄 HANDLE FILE CLICK
+  const handleFileClick = (filename) => {
+    console.log('📄 File clicked:', filename);
+    
+    // For now, show notification that file was clicked
+    // In the future, this could open the file in a modal or download it
+    showNotification(`Soubor kliknut: ${filename}`, 'info');
+  };
+
   // Custom code component for syntax highlighting
 // 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
 // ✅ NEW: Single gradient background + fixed top buttons + multilingual welcome
@@ -1753,21 +1789,91 @@ const handleSendWithDocuments = async (text, documents) => {
               animation: 'fadeInUp 0.4s ease-out'
             }}>
               {msg.sender === 'user' ? (
-                <div style={{
-                  backgroundColor: 'rgba(45, 55, 72, 0.8)', 
-                  color: '#ffd700',
-                  padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
-                  borderRadius: '25px 25px 8px 25px',
-                  maxWidth: isMobile ? '85%' : '75%',
-                  fontSize: isMobile ? '1rem' : '0.95rem',
-                  lineHeight: isMobile ? '1.3' : '1.6', 
-                  whiteSpace: 'pre-wrap',
-                  boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
-                  border: '1px solid rgba(255, 215, 0, 0.3)',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  {msg.text}
-                </div>
+                (() => {
+                  const { textContent, files } = parseMessageContent(msg.text);
+                  
+                  return (
+                    <div style={{
+                      backgroundColor: 'rgba(45, 55, 72, 0.8)', 
+                      color: '#ffd700',
+                      padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
+                      borderRadius: '25px 25px 8px 25px',
+                      maxWidth: isMobile ? '85%' : '75%',
+                      fontSize: isMobile ? '1rem' : '0.95rem',
+                      lineHeight: isMobile ? '1.3' : '1.6', 
+                      whiteSpace: 'pre-wrap',
+                      boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
+                      border: '1px solid rgba(255, 215, 0, 0.3)',
+                      backdropFilter: 'blur(10px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.8rem'
+                    }}>
+                      {/* Text content (if any) */}
+                      {textContent && (
+                        <div style={{ whiteSpace: 'pre-wrap' }}>
+                          {textContent}
+                        </div>
+                      )}
+                      
+                      {/* Clickable file chips */}
+                      {files.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem'
+                        }}>
+                          {files.map((file, index) => (
+                            <div
+                              key={index}
+                              onClick={() => handleFileClick(file.filename)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.5rem 0.8rem',
+                                backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                                border: '1px solid rgba(96, 165, 250, 0.4)',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                color: '#93C5FD',
+                                fontSize: '0.9rem'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(96, 165, 250, 0.3)';
+                                e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.6)';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(96, 165, 250, 0.2)';
+                                e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.4)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                              }}
+                            >
+                              <span style={{ fontSize: '1.1rem' }}>📄</span>
+                              <span style={{ 
+                                fontWeight: '500',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {file.filename}
+                              </span>
+                              <span style={{ 
+                                marginLeft: 'auto',
+                                fontSize: '0.8rem',
+                                opacity: 0.7
+                              }}>
+                                ↗️
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
               ) : (
                 <div 
                   className="p-4"
