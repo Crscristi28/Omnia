@@ -290,8 +290,16 @@ const InputBar = ({
                   const handleTouchStart = () => {
                     longPressTimer = setTimeout(() => {
                       const fileUrl = URL.createObjectURL(doc.file);
-                      window.open(fileUrl, '_blank');
-                      setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                      const link = document.createElement('a');
+                      link.href = fileUrl;
+                      link.download = doc.name; // This triggers iOS preview instead of opening tab
+                      link.style.display = 'none';
+                      document.body.appendChild(link);
+                      link.click();
+                      setTimeout(() => {
+                        URL.revokeObjectURL(fileUrl);
+                        document.body.removeChild(link);
+                      }, 1000);
                     }, 500);
                   };
                   
