@@ -300,29 +300,38 @@ const InputBar = ({
                         justifyContent: 'center',
                       }}
                     >
-                      {/* X Button */}
+                      {/* X Button - White SVG */}
                       <button
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
                         style={{
                           position: 'absolute',
-                          top: isMobile ? '1px' : '2px',
-                          left: isMobile ? '1px' : '2px',
-                          width: isMobile ? '18px' : '16px',
-                          height: isMobile ? '18px' : '16px',
+                          top: '0',
+                          left: '0',
+                          width: '20px',
+                          height: '20px',
                           background: 'none',
                           border: 'none',
-                          color: 'white',
                           cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: isMobile ? '16px' : '14px',
-                          fontWeight: 'bold',
-                          textShadow: '0 0 4px rgba(0, 0, 0, 0.8)',
+                          padding: '0',
+                          margin: '0',
                           zIndex: 1,
                         }}
                       >
-                        ×
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M15 5L5 15M5 5L15 15"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
                       </button>
                       
                       {isImage ? (
