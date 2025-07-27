@@ -290,16 +290,15 @@ const InputBar = ({
                   const handleTouchStart = () => {
                     longPressTimer = setTimeout(() => {
                       const fileUrl = URL.createObjectURL(doc.file);
-                      const link = document.createElement('a');
-                      link.href = fileUrl;
-                      link.download = doc.name; // This triggers iOS preview instead of opening tab
-                      link.style.display = 'none';
-                      document.body.appendChild(link);
-                      link.click();
+                      // Create hidden iframe to trigger iOS preview
+                      const iframe = document.createElement('iframe');
+                      iframe.src = fileUrl;
+                      iframe.style.display = 'none';
+                      document.body.appendChild(iframe);
                       setTimeout(() => {
                         URL.revokeObjectURL(fileUrl);
-                        document.body.removeChild(link);
-                      }, 1000);
+                        document.body.removeChild(iframe);
+                      }, 2000);
                     }, 500);
                   };
                   
