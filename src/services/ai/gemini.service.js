@@ -114,8 +114,9 @@ const geminiService = {
         content: msg.text || ''
       }));
 
-      // Keep last 5 messages for context
-      return geminiMessages.slice(-5);
+      // Return all messages from current chat (no artificial limit)
+      // Each chat is isolated, so full context is preserved per chat
+      return geminiMessages;
 
     } catch (error) {
       console.error('Error preparing Gemini messages:', error);
