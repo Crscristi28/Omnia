@@ -1768,7 +1768,7 @@ const handleSendWithDocuments = async (text, documents) => {
           flex: 1, 
           overflowY: 'auto', 
           overflowX: 'hidden',
-          padding: isMobile ? '1rem' : '2rem',
+          padding: isMobile ? '0' : '2rem',
           paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
           paddingBottom: '160px',
           width: '100%',
@@ -1841,7 +1841,9 @@ const handleSendWithDocuments = async (text, documents) => {
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
-              animation: 'fadeInUp 0.4s ease-out'
+              animation: 'fadeInUp 0.4s ease-out',
+              paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
+              paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem'
             }}>
               {msg.sender === 'user' ? (
                 <div style={{
@@ -1849,7 +1851,8 @@ const handleSendWithDocuments = async (text, documents) => {
                   flexDirection: 'column',
                   alignItems: 'flex-end',
                   gap: '0.8rem',
-                  maxWidth: isMobile ? '85%' : '75%'
+                  maxWidth: isMobile ? '100%' : '75%',
+                  width: '100%'
                 }}>
                   {/* User text bubble */}
                   {msg.text && (
@@ -1857,7 +1860,7 @@ const handleSendWithDocuments = async (text, documents) => {
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
                       color: '#ffffff',
                       padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
-                      borderRadius: '25px 25px 8px 25px',
+                      borderRadius: isMobile ? '0' : '25px 25px 8px 25px',
                       fontSize: isMobile ? '1rem' : '0.95rem',
                       lineHeight: isMobile ? '1.3' : '1.6', 
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
