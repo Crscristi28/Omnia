@@ -1860,12 +1860,14 @@ const handleSendWithDocuments = async (text, documents) => {
                       borderRadius: '25px 25px 8px 25px',
                       fontSize: isMobile ? '1rem' : '0.95rem',
                       lineHeight: isMobile ? '1.3' : '1.6', 
-                      whiteSpace: 'pre-wrap',
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
                       backdropFilter: 'blur(10px)'
                     }}>
-                      {msg.text}
+                      <MessageRenderer 
+                        content={msg.text || ''}
+                        className="user-message-content"
+                      />
                     </div>
                   )}
                   
@@ -2222,6 +2224,35 @@ const handleSendWithDocuments = async (text, documents) => {
         @keyframes omnia-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1) translateZ(0); } 50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); transform: scale(1.05) translateZ(0); } }
         @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
         @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
+        
+        /* User message markdown styles */
+        .user-message-content .markdown-container strong {
+          color: #60A5FA !important;
+          font-weight: bold !important;
+        }
+        .user-message-content .markdown-container code {
+          background-color: rgba(0, 0, 0, 0.2) !important;
+          color: #93C5FD !important;
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+        .user-message-content .markdown-container pre {
+          background-color: rgba(0, 0, 0, 0.3) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 1rem;
+          margin: 0.5rem 0;
+        }
+        .user-message-content .markdown-container pre code {
+          background-color: transparent !important;
+          color: #E5E7EB !important;
+          padding: 0;
+        }
+        .user-message-content .markdown-container ul,
+        .user-message-content .markdown-container ol {
+          margin-left: 1rem !important;
+          color: white !important;
+        }
         
         * { -webkit-tap-highlight-color: transparent; }
         @media (max-width: 768px) { input { font-size: 16px !important; } button { min-height: 44px; min-width: 44px; } }
