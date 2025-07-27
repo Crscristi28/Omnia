@@ -1862,7 +1862,10 @@ const handleSendWithDocuments = async (text, documents) => {
                       lineHeight: isMobile ? '1.3' : '1.6', 
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
-                      backdropFilter: 'blur(10px)'
+                      backdropFilter: 'blur(10px)',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      maxWidth: '100%'
                     }}>
                       <MessageRenderer 
                         content={msg.text || ''}
@@ -2226,6 +2229,11 @@ const handleSendWithDocuments = async (text, documents) => {
         @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
         
         /* User message markdown styles */
+        .user-message-content .markdown-container {
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+        }
         .user-message-content .markdown-container strong {
           color: #60A5FA !important;
           font-weight: bold !important;
@@ -2242,11 +2250,15 @@ const handleSendWithDocuments = async (text, documents) => {
           border-radius: 8px;
           padding: 1rem;
           margin: 0.5rem 0;
+          overflow-x: auto;
+          max-width: 100%;
         }
         .user-message-content .markdown-container pre code {
           background-color: transparent !important;
           color: #E5E7EB !important;
           padding: 0;
+          white-space: pre;
+          word-break: normal;
         }
         .user-message-content .markdown-container ul,
         .user-message-content .markdown-container ol {
