@@ -1822,7 +1822,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   {/* User text bubble */}
                   {msg.text && (
                     <div style={{
-                      backgroundColor: 'rgba(45, 55, 72, 0.8)', 
+                      backgroundColor: 'rgba(96, 165, 250, 0.8)', // Světle modrá 
                       color: '#ffd700',
                       padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
                       borderRadius: '25px 25px 8px 25px',
