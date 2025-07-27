@@ -287,23 +287,46 @@ const InputBar = ({
                   return (
                     <div
                       key={doc.id}
-                      className="relative aspect-square bg-white/10 border border-white/15 rounded-xl overflow-hidden flex flex-col items-center justify-center"
+                      style={{
+                        position: 'relative',
+                        aspectRatio: '1',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                     >
-                      {/* X Button - Tailwind */}
+                      {/* X Button */}
                       <button
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
-                        className="absolute top-0 left-0 w-5 h-5 bg-transparent border-none cursor-pointer p-0 m-0 z-10"
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          left: '4px',
+                          width: '16px',
+                          height: '16px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0',
+                          zIndex: 1,
+                        }}
                       >
                         <svg
-                          className="w-5 h-5"
-                          viewBox="0 0 20 20"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M15 5L5 15M5 5L15 15"
+                            d="M12 4L4 12M4 4L12 12"
                             stroke="white"
-                            strokeWidth="2"
+                            strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
