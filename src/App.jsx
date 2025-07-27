@@ -1342,18 +1342,60 @@ const handleSendWithDocuments = async (text, documents) => {
       
       const allActiveDocuments = [...activeDocumentContexts, ...newActiveDocuments];
       
+      // Apply same filtering logic as in handleSend
+      let filteredActiveDocs = allActiveDocuments;
+      
+      // Update timestamps for mentioned documents
+      filteredActiveDocs = filteredActiveDocs.map(doc => {
+        if ((text || '').toLowerCase().includes(doc.name.toLowerCase())) {
+          return { 
+            ...doc, 
+            lastAccessedTimestamp: Date.now(), 
+            lastAccessedMessageIndex: currentMessages.length 
+          };
+        }
+        return doc;
+      });
+
+      // Filter out old/irrelevant documents based on time and message count
+      filteredActiveDocs = filteredActiveDocs.filter(doc => {
+        const timeSinceUpload = Date.now() - doc.uploadTimestamp;
+        const timeSinceLastAccess = Date.now() - doc.lastAccessedTimestamp;
+        const messagesSinceUpload = currentMessages.length - doc.lastAccessedMessageIndex;
+        const messagesSinceLastAccess = currentMessages.length - doc.lastAccessedMessageIndex;
+        
+        // Rule 1: Very recent upload (5 messages OR 10 minutes from upload)
+        const isVeryRecentUpload = messagesSinceUpload <= 5 || timeSinceUpload < 10 * 60 * 1000;
+        
+        // Rule 2: Recently mentioned (7 messages OR 15 minutes since last access)
+        const isRecentlyMentioned = messagesSinceLastAccess <= 7 || timeSinceLastAccess < 15 * 60 * 1000;
+        
+        // Rule 3: Explicit forget command
+        const explicitlyForget = (text || '').toLowerCase().includes(`zapomeň na ${doc.name.toLowerCase()}`);
+        if (explicitlyForget) {
+          showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
+          return false;
+        }
+        
+        return isVeryRecentUpload || isRecentlyMentioned;
+      });
+      
       // Prepare messages for AI - if user sent only documents without text, add document context
       const messagesForAI = currentMessages.slice(-10).map(msg => {
         if (msg === userMessage && !text.trim() && processedDocuments.length > 0) {
           return {
             ...msg,
-            text: processedDocuments.map(doc => `Analyzuj nahraný dokument: ${doc.name}`).join(', ')
+            text: processedDocuments.map(doc => {
+              const isImage = doc.name.match(/\.(png|jpe?g|gif|webp)$/i);
+              const emoji = isImage ? '🖼️' : '📄';
+              return `${emoji} ${doc.name}`;
+            }).join('\n')
           };
         }
         return msg;
       });
       
-      // Send to Gemini with ALL documents (existing + new)
+      // Send to Gemini with FILTERED documents only
       const result = await geminiService.sendMessage(
         messagesForAI,
         (chunk) => {
@@ -1364,26 +1406,16 @@ const handleSendWithDocuments = async (text, documents) => {
           setTimeout(() => setIsSearching(false), 3000);
         },
         detectedLang,
-        allActiveDocuments.map(doc => ({ geminiFileUri: doc.uri, name: doc.name }))
+        filteredActiveDocs.map(doc => ({ geminiFileUri: doc.uri, name: doc.name }))
       );
       
       // Update uploadedDocuments state AFTER successful AI response
       if (processedDocuments.length > 0) {
         setUploadedDocuments(prev => [...prev, ...processedDocuments]);
-        
-        // ✅ Add processed documents to active AI context
-        setActiveDocumentContexts(prev => {
-          const newActiveDocs = processedDocuments.map(doc => ({
-            uri: doc.geminiFileUri,
-            name: doc.name,
-            uploadTimestamp: Date.now(),
-            lastAccessedTimestamp: Date.now(),
-            lastAccessedMessageIndex: messages.length + 1
-          }));
-          // Remove duplicates and add new documents
-          return [...prev.filter(d => !newActiveDocs.some(nad => nad.uri === d.uri)), ...newActiveDocs];
-        });
       }
+      
+      // Update activeDocumentContexts with the filtered list
+      setActiveDocumentContexts(filteredActiveDocs);
       
       const currentMessagesWithUser = [...messages, userMessage];
       
@@ -1822,15 +1854,15 @@ const handleSendWithDocuments = async (text, documents) => {
                   {/* User text bubble */}
                   {msg.text && (
                     <div style={{
-                      backgroundColor: 'rgba(96, 165, 250, 0.8)', // Světle modrá 
-                      color: '#ffd700',
+                      backgroundColor: 'rgba(59, 130, 246, 0.9)', // Tailwind blue-500
+                      color: '#ffffff',
                       padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
                       borderRadius: '25px 25px 8px 25px',
                       fontSize: isMobile ? '1rem' : '0.95rem',
                       lineHeight: isMobile ? '1.3' : '1.6', 
                       whiteSpace: 'pre-wrap',
-                      boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',
-                      border: '1px solid rgba(255, 215, 0, 0.3)',
+                      boxShadow: '0 4px 20px rgba(59, 130, 246, 0.3)',
+                      border: '1px solid rgba(59, 130, 246, 0.4)',
                       backdropFilter: 'blur(10px)'
                     }}>
                       {msg.text}
