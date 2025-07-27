@@ -305,10 +305,10 @@ const InputBar = ({
                         onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
                         style={{
                           position: 'absolute',
-                          top: '2px',
-                          left: '2px',
-                          width: '16px',
-                          height: '16px',
+                          top: isMobile ? '1px' : '2px',
+                          left: isMobile ? '1px' : '2px',
+                          width: isMobile ? '18px' : '16px',
+                          height: isMobile ? '18px' : '16px',
                           background: 'none',
                           border: 'none',
                           color: 'white',
@@ -316,7 +316,7 @@ const InputBar = ({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '14px',
+                          fontSize: isMobile ? '16px' : '14px',
                           fontWeight: 'bold',
                           textShadow: '0 0 4px rgba(0, 0, 0, 0.8)',
                           zIndex: 1,
