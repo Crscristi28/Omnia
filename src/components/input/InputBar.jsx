@@ -169,9 +169,33 @@ const InputBar = ({
   uiLanguage = 'cs'
 }) => {
   const [pendingDocuments, setPendingDocuments] = useState([]);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const plusButtonRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+
+  // iOS keyboard detection
+  React.useEffect(() => {
+    if (!isMobile) return;
+    
+    const initialViewportHeight = window.visualViewport?.height || window.innerHeight;
+    
+    const handleViewportChange = () => {
+      const currentHeight = window.visualViewport?.height || window.innerHeight;
+      const heightDifference = initialViewportHeight - currentHeight;
+      
+      // If height difference > 150px, keyboard is probably open
+      setIsKeyboardOpen(heightDifference > 150);
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      return () => window.visualViewport.removeEventListener('resize', handleViewportChange);
+    } else {
+      window.addEventListener('resize', handleViewportChange);
+      return () => window.removeEventListener('resize', handleViewportChange);
+    }
+  }, [isMobile]);
 
   const handleSendMessage = () => {
     if (pendingDocuments.length > 0 && onSendWithDocuments) {
@@ -250,8 +274,11 @@ const InputBar = ({
         left: 0,
         right: 0,
         padding: isMobile ? '0.5rem' : '1.5rem',
-        paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)' : '1.5rem',
+        paddingBottom: isMobile 
+          ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
+          : '1.5rem',
         zIndex: 10,
+        transform: isMobile && isKeyboardOpen ? 'translateY(0)' : 'none',
       }}>
         
         <div style={{
