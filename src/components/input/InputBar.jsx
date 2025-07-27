@@ -8,34 +8,6 @@ import { getTranslation } from '../../utils/text';
 
 // Using Lucide React icons instead of custom SVG components
 
-// PREVIEW IMAGE COMPONENT - Uses FileReader to avoid mobile native viewer
-const PreviewImage = ({ file, name }) => {
-  const [imageSrc, setImageSrc] = useState(null);
-  
-  React.useEffect(() => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImageSrc(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  }, [file]);
-  
-  if (!imageSrc) {
-    return <div style={{ padding: '40px', textAlign: 'center' }}>Načítám...</div>;
-  }
-  
-  return (
-    <img 
-      src={imageSrc}
-      alt={name}
-      style={{
-        maxWidth: '100%',
-        maxHeight: '70vh',
-        objectFit: 'contain'
-      }}
-    />
-  );
-};
 
 // PLUS MENU
 const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUpload, uiLanguage = 'cs' }) => {
@@ -198,7 +170,6 @@ const InputBar = ({
 }) => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [pendingDocuments, setPendingDocuments] = useState([]);
-  const [previewFile, setPreviewFile] = useState(null);
   const plusButtonRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -318,7 +289,9 @@ const InputBar = ({
                   
                   const handleTouchStart = () => {
                     longPressTimer = setTimeout(() => {
-                      setPreviewFile(doc);
+                      const fileUrl = URL.createObjectURL(doc.file);
+                      window.open(fileUrl, '_blank');
+                      setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
                     }, 500);
                   };
                   
@@ -600,63 +573,6 @@ const InputBar = ({
         />
       )}
 
-      {/* FILE PREVIEW OVERLAY */}
-      {previewFile && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-          onClick={() => setPreviewFile(null)}
-        >
-          <div style={{
-            maxWidth: '90%',
-            maxHeight: '90%',
-            background: 'white',
-            borderRadius: '12px',
-            padding: '20px',
-            position: 'relative',
-          }}>
-            <button
-              onClick={() => setPreviewFile(null)}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-              }}
-            >
-              ×
-            </button>
-            
-            {previewFile.file && previewFile.file.type.startsWith('image/') ? (
-              <PreviewImage file={previewFile.file} name={previewFile.name} />
-            ) : (
-              <div style={{
-                padding: '40px',
-                textAlign: 'center',
-                color: '#333',
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '20px' }}>📄</div>
-                <h3>{previewFile.name}</h3>
-                <p>Typ: {previewFile.name.split('.').pop()?.toUpperCase()}</p>
-                <p>Velikost: {previewFile.size}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </>
   );
 };
