@@ -168,7 +168,6 @@ const InputBar = ({
   isImageMode = false,
   uiLanguage = 'cs'
 }) => {
-  const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const plusButtonRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
@@ -451,17 +450,12 @@ const InputBar = ({
                 <button
                   ref={plusButtonRef}
                   onClick={() => {
-                    if (isMobile) {
-                      // On mobile - go directly to file picker
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
-                      input.onchange = handleDocumentUploadToChips;
-                      input.click();
-                    } else {
-                      // On desktop - show our custom menu
-                      setShowPlusMenu(!showPlusMenu);
-                    }
+                    // Use native file picker on all devices
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
+                    input.onchange = handleDocumentUploadToChips;
+                    input.click();
                   }}
                   disabled={isLoading}
                   style={{
@@ -567,17 +561,6 @@ const InputBar = ({
         </div>
       </div>
 
-      {/* PLUS MENU MODAL - Only on desktop */}
-      {!isMobile && (
-        <PlusMenu 
-          isOpen={showPlusMenu}
-          onClose={() => setShowPlusMenu(false)}
-          buttonRef={plusButtonRef}
-          onImageGenerate={onImageGenerate}
-          onDocumentUpload={handleDocumentUploadToChips}
-          uiLanguage={uiLanguage}
-        />
-      )}
 
     </>
   );
