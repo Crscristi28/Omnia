@@ -1236,7 +1236,7 @@ const handleSendWithDocuments = async (text, documents) => {
   // Add user message to chat immediately (with document info)
   const userMessage = {
     sender: 'user',
-    text: text.trim() || 'Dokumenty nahrány',
+    text: text.trim(), // Keep empty if no text - no default message
     timestamp: new Date(),
     attachedFiles: documents.map(doc => ({
       name: doc.name,
