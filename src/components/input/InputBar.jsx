@@ -274,8 +274,8 @@ const InputBar = ({
             {pendingDocuments.length > 0 && (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
+                gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
+                gap: isMobile ? '12px' : '8px',
                 marginBottom: '0.5rem',
                 paddingBottom: '0.5rem',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
