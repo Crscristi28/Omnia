@@ -169,6 +169,7 @@ const InputBar = ({
 }) => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [pendingDocuments, setPendingDocuments] = useState([]);
+  const [previewFile, setPreviewFile] = useState(null);
   const plusButtonRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -288,15 +289,7 @@ const InputBar = ({
                   
                   const handleTouchStart = () => {
                     longPressTimer = setTimeout(() => {
-                      if (isImage) {
-                        const imgUrl = URL.createObjectURL(doc.file);
-                        window.open(imgUrl, '_blank');
-                        setTimeout(() => URL.revokeObjectURL(imgUrl), 1000);
-                      } else {
-                        const fileUrl = URL.createObjectURL(doc.file);
-                        window.open(fileUrl, '_blank');
-                        setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
-                      }
+                      setPreviewFile(doc);
                     }, 500);
                   };
                   
@@ -576,6 +569,72 @@ const InputBar = ({
           onDocumentUpload={handleDocumentUploadToChips}
           uiLanguage={uiLanguage}
         />
+      )}
+
+      {/* FILE PREVIEW OVERLAY */}
+      {previewFile && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setPreviewFile(null)}
+        >
+          <div style={{
+            maxWidth: '90%',
+            maxHeight: '90%',
+            background: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            position: 'relative',
+          }}>
+            <button
+              onClick={() => setPreviewFile(null)}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+              }}
+            >
+              ×
+            </button>
+            
+            {previewFile.file && previewFile.file.type.startsWith('image/') ? (
+              <img 
+                src={URL.createObjectURL(previewFile.file)} 
+                alt={previewFile.name}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '70vh',
+                  objectFit: 'contain'
+                }}
+              />
+            ) : (
+              <div style={{
+                padding: '40px',
+                textAlign: 'center',
+                color: '#333',
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '20px' }}>📄</div>
+                <h3>{previewFile.name}</h3>
+                <p>Typ: {previewFile.name.split('.').pop()?.toUpperCase()}</p>
+                <p>Velikost: {previewFile.size}</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </>
   );
