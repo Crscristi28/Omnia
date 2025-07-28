@@ -65,9 +65,21 @@ textarea {
 * {
   touch-action: manipulation; /* Allow single-finger panning, disable pinch zoom */
   -webkit-touch-callout: none; /* Disable iOS context menu */
-  -webkit-user-select: none; /* Prevent text selection */
   user-zoom: fixed; /* Prevent zoom */
   -webkit-user-zoom: fixed; /* Prevent zoom on webkit */
+}
+
+/* Disable text selection for UI elements only */
+button, input, .input-bar, .header, nav, .ui-element {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Enable text selection for chat messages */
+.message, .markdown-container, .chat-content {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default; /* Allow iOS context menu for text */
 }
 
 /* Specific touch-action for scrollable areas */
