@@ -1896,6 +1896,7 @@ const handleSendWithDocuments = async (text, documents) => {
       {/* 🎨 MAIN CONTENT AREA */}
       <main 
         ref={mainContentRef}
+        className="scrollable"
         style={{ 
           flex: 1, 
           overflowY: 'auto', 
@@ -1904,8 +1905,12 @@ const handleSendWithDocuments = async (text, documents) => {
           paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
           paddingBottom: '160px',
           width: '100%',
+          position: 'relative', // Create proper stacking context
           WebkitOverflowScrolling: 'touch',
-          scrollBehavior: 'smooth'
+          scrollBehavior: 'smooth',
+          overscrollBehavior: 'none', // Prevent elastic scroll
+          WebkitOverscrollBehavior: 'none', // iOS Safari support
+          touchAction: 'pan-y' // Only allow vertical scrolling
         }}
       >
         <div style={{ 

@@ -13,4 +13,68 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* PWA & Mobile Optimizations */
+html {
+  height: 100%;
+  overflow: hidden; /* Prevent overscroll bounce */
+  -webkit-overflow-scrolling: touch;
+  -webkit-text-size-adjust: 100%; /* Prevent text scaling */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevent overscroll bounce */
+  position: fixed; /* Prevent iOS address bar bounce */
+  width: 100%;
+  -webkit-user-select: none; /* Prevent text selection issues */
+  -webkit-touch-callout: none; /* Disable iOS context menu */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlights */
+}
+
+#root {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  overflow: hidden;
+  position: relative;
+}
+
+/* Disable zoom on inputs (iOS fix) */
+input[type="text"],
+input[type="email"], 
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  font-size: 16px !important; /* Prevents zoom on iOS */
+}
+
+/* Prevent pinch zoom gestures and all scaling */
+* {
+  touch-action: none; /* Disable all touch gestures initially */
+  -webkit-touch-callout: none; /* Disable iOS context menu */
+  -webkit-user-select: none; /* Prevent text selection */
+  user-zoom: fixed; /* Prevent zoom */
+  -webkit-user-zoom: fixed; /* Prevent zoom on webkit */
+}
+
+/* Specific touch-action for scrollable areas */
+.scrollable {
+  touch-action: pan-y; /* Allow only vertical scrolling */
+  -webkit-touch-action: pan-y; /* Webkit support */
+}
+
+/* Prevent elastic scroll on all elements */
+* {
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none; /* iOS Safari support */
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none; /* iOS Safari support */
+}
+
 /* Custom styles will go here */
