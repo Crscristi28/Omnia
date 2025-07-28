@@ -349,7 +349,7 @@ const InputBar = ({
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        paddingBottom: isMobile ? '8px' : '12px',
+        paddingBottom: isMobile ? '18px' : '12px',
       }}>
         {/* Disclaimer text */}
         <div style={{
