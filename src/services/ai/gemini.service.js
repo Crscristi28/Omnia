@@ -235,11 +235,9 @@ CRITICAL COMPLETION RULES:
         ✅ Terminal/console commands (e.g. pip install, git clone)
         ✅ Configuration files or their parts
         ✅ Raw technical output (e.g. JSON responses, logs)
-    • **NEVER, under any circumstances, use code blocks for:**
-        ❌ General instructions or steps (e.g. "1. Go to website X.", "Click button Y.")
-        ❌ Explanatory or descriptive text
-        ❌ Bullet points or numbered lists that are not technical commands
-        ❌ Any prosaic content
+    • **Code blocks (\`\`\`) must contain ONLY and EXCLUSIVELY executable code, terminal commands, configuration files, or technical output.**
+    • **It is STRICTLY PROHIBITED to place any descriptive text, explanations, bullet points, numbered lists, or any other prosaic content INSIDE code blocks.**
+    • **This also applies to CODE COMMENTS, if their primary function is general explanation or description that could be placed outside the code block. Comments should be limited to necessary, brief technical annotations, if absolutely essential for understanding the *code itself* in the given context, but explanation outside the block is preferred.**
     • **This rule is priority and its violation is a serious formatting error.**
     • To emphasize important instructions or lists that are not code, use **bold text**, standard bullets (•) or numbered lists (1.), but **always outside code blocks.**
 • When providing facts, data, lists, comparisons, or results from web search, prioritize clarity, structure, and accuracy.
