@@ -17,8 +17,14 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     // Add space between numbered items and following bullets
     .replace(/^(\d+\\\..*?)(\n)(•)/gm, '$1\n\n$3')
     
-    // Convert bullet points to proper markdown list items
-    .replace(/^(\s*)(•)(\s+)(.+)$/gm, '- $4')
+    // Convert bullet points to HTML with proper spacing for consistent rendering
+    .replace(/^(\s*)(•)(\s+)(.+)$/gm, (match, indent, bullet, space, text) => {
+      // Only process complete-looking bullet points (avoid streaming artifacts)
+      if (text.trim().length >= 2 && !text.endsWith('...') && text.length > 3) {
+        return `${indent}<div class="bullet-item">• ${text}</div>`;
+      }
+      return match; // Keep original for incomplete bullets
+    })
     
     // Convert single asterisks to markdown list items (but preserve double asterisks for bold)
     .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '- $3')
@@ -86,6 +92,21 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         }
         .markdown-container ol li {
           list-style-type: decimal !important;
+        }
+        
+        /* Styling for bullet points (•) that aren't converted to markdown lists */
+        .markdown-container p {
+          line-height: 1.6 !important;
+          margin-bottom: 0.5rem !important;
+        }
+        
+        /* Bullet item styling for consistent rendering */
+        .markdown-container .bullet-item {
+          margin-left: 1.5rem !important;
+          text-indent: -1.5rem !important;
+          margin-bottom: 0.5rem !important;
+          line-height: 1.6 !important;
+          display: block !important;
         }
         
         /* Code block styling */
