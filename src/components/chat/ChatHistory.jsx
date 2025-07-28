@@ -1,9 +1,9 @@
-// 📚 CHAT HISTORY COMPONENT
-// Simple localStorage-based chat history for testing
+// 📚 CHAT HISTORY COMPONENT  
+// IndexedDB-based chat history with async operations
 
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Trash2, Clock, MessageCircle } from 'lucide-react';
-import sessionManager from '../../services/storage/sessionManager';
+import chatDB from '../../services/storage/chatDB';
 
 const ChatHistory = ({ 
   isVisible, 
@@ -21,10 +21,10 @@ const ChatHistory = ({
     }
   }, [isVisible]);
 
-  const loadChatHistories = () => {
+  const loadChatHistories = async () => {
     setLoading(true);
     try {
-      const histories = sessionManager.getAllChatHistories();
+      const histories = await chatDB.getAllChats();
       setChatHistories(histories);
     } catch (error) {
       console.error('Error loading chat histories:', error);
@@ -33,10 +33,10 @@ const ChatHistory = ({
     }
   };
 
-  const handleDeleteChat = (chatId, event) => {
+  const handleDeleteChat = async (chatId, event) => {
     event.stopPropagation(); // Prevent loading the chat
     if (confirm('Opravdu chcete smazat tento chat?')) {
-      sessionManager.deleteChatHistory(chatId);
+      await chatDB.deleteChat(chatId);
       loadChatHistories(); // Refresh list
     }
   };

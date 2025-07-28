@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { MessageCircle, Check, X } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
-import sessionManager from '../../services/storage/sessionManager';
+import chatDB from '../../services/storage/chatDB';
 
 const ChatSidebar = ({ 
   isOpen, 
@@ -65,7 +65,7 @@ const ChatSidebar = ({
     }
   };
 
-  const handleDeleteChat = (chatId, chatTitle) => {
+  const handleDeleteChat = async (chatId, chatTitle) => {
     const confirmText = uiLanguage === 'cs' ? 
       `Opravdu chcete smazat chat "${chatTitle}"?` :
       uiLanguage === 'en' ? 
@@ -76,7 +76,7 @@ const ChatSidebar = ({
       // If deleting the current chat, start new chat but keep sidebar open
       const isDeletingCurrentChat = chatId === currentChatId;
       
-      sessionManager.deleteChatHistory(chatId);
+      await chatDB.deleteChat(chatId);
       
       if (isDeletingCurrentChat) {
         onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open

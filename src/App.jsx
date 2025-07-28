@@ -16,6 +16,7 @@ import { elevenLabsService } from './services/voice';
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
+import chatDB from './services/storage/chatDB'; // 💾 IndexedDB for chat history
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
@@ -383,35 +384,59 @@ function App() {
   };
 
 
-  const handleNewChatKeepSidebar = () => {
+  const handleNewChatKeepSidebar = async () => {
     // Same as handleSidebarNewChat but keeps sidebar open
+    // 💾 Strategic save point #4: Save chat before creating new chat
     if (currentChatId && messages.length > 0) {
-      sessionManager.saveChatHistory(currentChatId, messages);
+      console.log('💾 [IndexedDB] Saving current chat before new chat (sidebar):', currentChatId);
+      await chatDB.saveChat(currentChatId, messages);
     }
     handleNewChat();
-    setCurrentChatId(sessionManager.generateChatId());
+    setCurrentChatId(chatDB.generateChatId());
     loadChatHistories();
     // Note: sidebar stays open
   };
 
-  // 📚 CHAT HISTORY FUNCTIONS
-  const loadChatHistories = () => {
-    const histories = sessionManager.getAllChatHistories();
-    setChatHistories(histories);
+  // 📚 CHAT HISTORY FUNCTIONS - Updated for IndexedDB
+  const loadChatHistories = async () => {
+    try {
+      console.log('📋 [IndexedDB] Loading chat history...');
+      const startTime = performance.now();
+      
+      const histories = await chatDB.getAllChats();
+      setChatHistories(histories);
+      
+      const loadTime = performance.now() - startTime;
+      console.log(`📋 [IndexedDB] Loaded ${histories.length} chats in ${loadTime.toFixed(2)}ms`);
+      
+    } catch (error) {
+      console.error('❌ [IndexedDB] Error loading chat histories:', error);
+      setChatHistories([]); // Fallback to empty array
+    }
   };
 
-  const handleSelectChat = (chatId) => {
-    // Save current chat before switching
-    if (currentChatId && messages.length > 0) {
-      sessionManager.saveChatHistory(currentChatId, messages);
-    }
-    
-    // Load selected chat
-    const chatData = sessionManager.getChatHistory(chatId);
-    if (chatData) {
-      setMessages(chatData.messages);
-      setCurrentChatId(chatId);
-      loadChatHistories(); // Refresh to update "current" indicators
+  const handleSelectChat = async (chatId) => {
+    try {
+      // 💾 Save current chat before switching (strategic save point #1)
+      if (currentChatId && messages.length > 0) {
+        console.log('💾 [IndexedDB] Saving current chat before switch:', currentChatId);
+        await chatDB.saveChat(currentChatId, messages);
+      }
+      
+      // 📖 Load selected chat
+      console.log('📖 [IndexedDB] Loading chat:', chatId);
+      const chatData = await chatDB.getChat(chatId);
+      
+      if (chatData) {
+        setMessages(chatData.messages);
+        setCurrentChatId(chatId);
+        console.log(`📖 [IndexedDB] Loaded chat with ${chatData.messages.length} messages`);
+      } else {
+        console.warn('⚠️ [IndexedDB] Chat not found:', chatId);
+      }
+      
+    } catch (error) {
+      console.error('❌ [IndexedDB] Error in handleSelectChat:', error);
     }
   };
 
@@ -419,17 +444,27 @@ function App() {
   React.useEffect(() => {
     loadChatHistories();
     if (!currentChatId) {
-      setCurrentChatId(sessionManager.generateChatId());
+      setCurrentChatId(chatDB.generateChatId());
     }
   }, []);
 
-  // 📚 AUTO-SAVE CHAT HISTORY - Save when messages change
+  // 💾 Strategic save point #5: Save chat before page unload
   React.useEffect(() => {
-    if (currentChatId && messages.length > 0) {
-      sessionManager.saveChatHistory(currentChatId, messages);
-      loadChatHistories(); // Refresh to update timestamps
-    }
-  }, [messages, currentChatId]);
+    const handleBeforeUnload = async () => {
+      if (currentChatId && messages.length > 0) {
+        console.log('💾 [IndexedDB] Saving chat before page unload:', currentChatId);
+        // Note: Can't await in beforeunload, but chatDB.saveChat handles async internally
+        chatDB.saveChat(currentChatId, messages);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [currentChatId, messages]);
+
+  // ❌ REMOVED: Problematic auto-save useEffect that caused UI freezing
+  // 📝 Chat saving moved to strategic moments (user send, stream end, chat switch, etc.)
+  // 🚀 This eliminates localStorage blocking during AI streaming
 
   // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON (UNCHANGED)
   const generateAudioForSentence = async (sentence, language) => {
@@ -635,7 +670,13 @@ function App() {
   };
 
   // 🔧 UTILITY FUNCTIONS (UNCHANGED)
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
+    // 💾 Strategic save point #4: Save current chat before creating new chat (main button)
+    if (currentChatId && messages.length > 0) {
+      console.log('💾 [IndexedDB] Saving current chat before new chat (main button):', currentChatId);
+      await chatDB.saveChat(currentChatId, messages);
+    }
+
     // 🆕 STREAMING: Stop any ongoing streaming
     if (stopStreamingRef) {
       stopStreamingRef();
@@ -659,7 +700,7 @@ function App() {
     setUserLanguage('cs');
     
     // Create new chat ID for history tracking
-    setCurrentChatId(sessionManager.generateChatId());
+    setCurrentChatId(chatDB.generateChatId());
     
     // showNotification(t('newChatCreated'), 'success');
   };
@@ -730,6 +771,12 @@ function App() {
       const messagesWithUser = [...messages, userMessage];
       setMessages(messagesWithUser);
       sessionManager.saveMessages(messagesWithUser);
+
+      // 💾 Strategic save point #2: Save chat after user sends message
+      if (currentChatId) {
+        console.log('💾 [IndexedDB] Saving chat after user message:', currentChatId);
+        await chatDB.saveChat(currentChatId, messagesWithUser);
+      }
 
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
@@ -829,6 +876,12 @@ function App() {
         
         const finalMessages = [...messagesWithUser, finalMessage];
         sessionManager.saveMessages(finalMessages);
+
+        // 💾 Strategic save point #3: Save chat after AI completes response (Claude)
+        if (currentChatId) {
+          console.log('💾 [IndexedDB] Saving chat after Claude response:', currentChatId);
+          await chatDB.saveChat(currentChatId, finalMessages);
+        }
         
         if (fromVoice && showVoiceScreen && finalText) {
           console.log('🎵 Claude complete, instant voice playback...');
@@ -860,6 +913,12 @@ function App() {
           isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
+
+        // 💾 Strategic save point #3: Save chat after AI completes response (OpenAI)
+        if (currentChatId) {
+          console.log('💾 [IndexedDB] Saving chat after OpenAI response:', currentChatId);
+          await chatDB.saveChat(currentChatId, finalMessages);
+        }
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
@@ -887,6 +946,12 @@ function App() {
           isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
+
+        // 💾 Strategic save point #3: Save chat after AI completes response (Sonar)
+        if (currentChatId) {
+          console.log('💾 [IndexedDB] Saving chat after Sonar response:', currentChatId);
+          await chatDB.saveChat(currentChatId, finalMessages);
+        }
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Sonar response complete, processing voice...');
@@ -930,6 +995,12 @@ function App() {
           isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
+
+        // 💾 Strategic save point #3: Save chat after AI completes response (Grok)
+        if (currentChatId) {
+          console.log('💾 [IndexedDB] Saving chat after Grok response:', currentChatId);
+          await chatDB.saveChat(currentChatId, finalMessages);
+        }
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Grok response complete, processing voice...');
@@ -1024,6 +1095,12 @@ function App() {
           isStreaming: false
         }];
         sessionManager.saveMessages(finalMessages);
+
+        // 💾 Strategic save point #3: Save chat after AI completes response (Gemini)
+        if (currentChatId) {
+          console.log('💾 [IndexedDB] Saving chat after Gemini response:', currentChatId);
+          await chatDB.saveChat(currentChatId, finalMessages);
+        }
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
