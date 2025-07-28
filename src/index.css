@@ -53,7 +53,7 @@ textarea {
 
 /* Prevent pinch zoom gestures and all scaling */
 * {
-  touch-action: none; /* Disable all touch gestures initially */
+  touch-action: manipulation; /* Allow single-finger panning, disable pinch zoom */
   -webkit-touch-callout: none; /* Disable iOS context menu */
   -webkit-user-select: none; /* Prevent text selection */
   user-zoom: fixed; /* Prevent zoom */
