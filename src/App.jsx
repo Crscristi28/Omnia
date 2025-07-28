@@ -776,6 +776,7 @@ function App() {
       if (currentChatId) {
         console.log('💾 [IndexedDB] Saving chat after user message:', currentChatId);
         await chatDB.saveChat(currentChatId, messagesWithUser);
+        loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
       }
 
       // 🎨 IMAGE GENERATION MODE
@@ -881,6 +882,7 @@ function App() {
         if (currentChatId) {
           console.log('💾 [IndexedDB] Saving chat after Claude response:', currentChatId);
           await chatDB.saveChat(currentChatId, finalMessages);
+          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
         }
         
         if (fromVoice && showVoiceScreen && finalText) {
@@ -918,6 +920,7 @@ function App() {
         if (currentChatId) {
           console.log('💾 [IndexedDB] Saving chat after OpenAI response:', currentChatId);
           await chatDB.saveChat(currentChatId, finalMessages);
+          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
         }
         
         if (fromVoice && showVoiceScreen && responseText) {
@@ -951,6 +954,7 @@ function App() {
         if (currentChatId) {
           console.log('💾 [IndexedDB] Saving chat after Sonar response:', currentChatId);
           await chatDB.saveChat(currentChatId, finalMessages);
+          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
         }
         
         if (fromVoice && showVoiceScreen && responseText) {
@@ -1000,6 +1004,7 @@ function App() {
         if (currentChatId) {
           console.log('💾 [IndexedDB] Saving chat after Grok response:', currentChatId);
           await chatDB.saveChat(currentChatId, finalMessages);
+          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
         }
         
         if (fromVoice && showVoiceScreen && responseText) {
@@ -1100,6 +1105,7 @@ function App() {
         if (currentChatId) {
           console.log('💾 [IndexedDB] Saving chat after Gemini response:', currentChatId);
           await chatDB.saveChat(currentChatId, finalMessages);
+          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
         }
         
         if (fromVoice && showVoiceScreen && responseText) {
