@@ -1903,7 +1903,7 @@ const handleSendWithDocuments = async (text, documents) => {
           overflowX: 'hidden',
           padding: isMobile ? '0' : '2rem',
           paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
-          paddingBottom: '160px',
+          paddingBottom: isMobile ? '200px' : '160px', // Extra space on mobile for input bar
           width: '100%',
           position: 'relative', // Create proper stacking context
           WebkitOverflowScrolling: 'touch',
