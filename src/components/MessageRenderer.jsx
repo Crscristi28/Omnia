@@ -7,6 +7,26 @@ import 'katex/dist/katex.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
   // 🚀 CUSTOM FORMATTING: Control spacing and structure (from deploy 3cc2168)
+  // Skip processing if content already contains processed HTML
+  if ((content || '').includes('bullet-item')) {
+    return (
+      <div className={className}>
+        <div className="markdown-container">
+          <MDEditor.Markdown 
+            source={content} 
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'inherit'
+            }}
+            data-color-mode="dark"
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const fixedContent = (content || '')
     // Escape numbered lists to prevent auto-formatting
     .replace(/^(\d+)\.\s+(.+)$/gm, '$1\\. $2')
@@ -19,6 +39,10 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     
     // Convert bullet points to HTML with proper spacing for consistent rendering
     .replace(/^(\s*)(•)(\s+)(.+)$/gm, (match, indent, bullet, space, text) => {
+      // Skip if already processed (contains HTML tags)
+      if (match.includes('<div') || match.includes('</div>')) {
+        return match;
+      }
       // Only process complete-looking bullet points (avoid streaming artifacts)
       if (text.trim().length >= 2 && !text.endsWith('...') && text.length > 3) {
         return `${indent}<div class="bullet-item">• ${text}</div>`;
@@ -27,7 +51,13 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
     })
     
     // Convert single asterisks to markdown list items (but preserve double asterisks for bold)
-    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, '- $3')
+    .replace(/^(\s*)(?<!\*)\*(?!\*)(\s+)(.+)$/gm, (match, indent, space, text) => {
+      // Skip if line contains HTML or already processed bullets
+      if (match.includes('<div') || match.includes('</div>') || match.includes('bullet-item')) {
+        return match;
+      }
+      return `${indent}- ${text}`;
+    })
     
     // Add spacing between different numbered sections
     .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
