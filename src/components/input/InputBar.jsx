@@ -360,7 +360,9 @@ const InputBar = ({
           letterSpacing: '0.02em',
           textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
         }}>
-          AI can make mistakes, make your own research
+          {uiLanguage === 'cs' ? 'AI může dělat chyby, proveďte vlastní výzkum' :
+           uiLanguage === 'ro' ? 'AI poate face greșeli, faceți propria cercetare' :
+           'AI can make mistakes, make your own research'}
         </div>
       </div>
       
