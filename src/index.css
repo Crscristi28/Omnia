@@ -13,12 +13,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* PWA & Mobile Optimizations */
+/* PWA & Mobile Optimizations with Notch/Dynamic Island Support */
 html {
   height: 100%;
   overflow: hidden; /* Prevent overscroll bounce */
   -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%; /* Prevent text scaling */
+  /* Support for notch and Dynamic Island */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 body {
@@ -31,6 +36,8 @@ body {
   -webkit-user-select: none; /* Prevent text selection issues */
   -webkit-touch-callout: none; /* Disable iOS context menu */
   -webkit-tap-highlight-color: transparent; /* Remove tap highlights */
+  /* Respect safe areas */
+  box-sizing: border-box;
 }
 
 #root {
@@ -38,6 +45,9 @@ body {
   height: 100dvh; /* Dynamic viewport height for mobile */
   overflow: hidden;
   position: relative;
+  /* Adjust for safe areas */
+  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 
 /* Disable zoom on inputs (iOS fix) */

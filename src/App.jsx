@@ -1644,7 +1644,7 @@ const handleSendWithDocuments = async (text, documents) => {
       overflow: 'hidden'
     }}>
       
-      {/* 📌 FIXED TOP BUTTONS - VŽDY VIDITELNÉ */}
+      {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -1659,6 +1659,10 @@ const handleSendWithDocuments = async (text, documents) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: isMobile ? '0 1rem' : '0 2rem',
+        paddingTop: isMobile ? 'max(1rem, env(safe-area-inset-top))' : '0',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right))',
+        minHeight: isMobile ? 'calc(60px + env(safe-area-inset-top))' : '70px',
         zIndex: 1000,
       }}>
         
@@ -1955,7 +1959,9 @@ const handleSendWithDocuments = async (text, documents) => {
           overflowY: 'auto', 
           overflowX: 'hidden',
           padding: isMobile ? '0' : '2rem',
-          paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
+          paddingTop: isMobile 
+            ? 'calc(80px + env(safe-area-inset-top))' 
+            : '100px', // Space for fixed header + notch/Dynamic Island
           paddingBottom: isMobile 
             ? `${240 + breathingOffset}px` 
             : `${200 + breathingOffset}px`, // More breathing room for scrolling
@@ -2370,8 +2376,12 @@ const handleSendWithDocuments = async (text, documents) => {
           onClick={scrollToBottom}
           style={{
             position: 'fixed',
-            bottom: isMobile ? '110px' : '120px', // Above input bar
-            right: isMobile ? '20px' : '50px',
+            bottom: isMobile 
+              ? 'calc(110px + env(safe-area-inset-bottom))' 
+              : '120px', // Above input bar + home indicator
+            right: isMobile 
+              ? 'max(20px, env(safe-area-inset-right))' 
+              : '50px',
             width: '40px',
             height: '40px',
             borderRadius: '50%',
@@ -2514,6 +2524,29 @@ const handleSendWithDocuments = async (text, documents) => {
         
         * { -webkit-tap-highlight-color: transparent; }
         @media (max-width: 768px) { input { font-size: 16px !important; } button { min-height: 44px; min-width: 44px; } }
+        
+        /* Dynamic Island & Notch Specific Optimizations */
+        @supports (top: env(safe-area-inset-top)) {
+          /* iPhone 14 Pro/15 Pro Dynamic Island */
+          @media screen and (device-width: 393px) and (device-height: 852px) {
+            .header-area { padding-top: max(1rem, env(safe-area-inset-top)); }
+          }
+          /* iPhone X/11/12/13 Notch */
+          @media screen and (device-width: 375px) and (device-height: 812px) {
+            .header-area { padding-top: max(1rem, env(safe-area-inset-top)); }
+          }
+          /* iPhone Plus models with notch */
+          @media screen and (device-width: 414px) and (device-height: 896px) {
+            .header-area { padding-top: max(1rem, env(safe-area-inset-top)); }
+          }
+        }
+        
+        /* Status bar theming for PWA */
+        @media (display-mode: standalone) {
+          body { 
+            background: linear-gradient(135deg, #000428, #004e92, #009ffd);
+          }
+        }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(26, 32, 44, 0.5); }
         ::-webkit-scrollbar-thumb { background: rgba(74, 85, 104, 0.8); border-radius: 4px; }
