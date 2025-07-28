@@ -241,6 +241,10 @@ function App() {
   // 🆕 STREAMING STATE - For controlling streaming effect
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
   
+  // 🎨 BREATHING ANIMATION - For dynamic padding during streaming
+  const [breathingOffset, setBreathingOffset] = useState(0);
+  const [pulseOpacity, setPulseOpacity] = useState(1);
+  
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
@@ -461,6 +465,27 @@ function App() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [currentChatId, messages]);
+
+  // 🎨 BREATHING ANIMATION - Dynamic padding during streaming
+  useEffect(() => {
+    if (!streaming) {
+      setBreathingOffset(0);
+      setPulseOpacity(1);
+      return;
+    }
+
+    const animate = () => {
+      const time = Date.now() / 1000; // Convert to seconds
+      const breathingValue = Math.sin(time) * 3; // ±3px breathing effect
+      const pulseValue = 0.95 + Math.sin(time * 1.2) * 0.05; // Subtle opacity pulse
+      
+      setBreathingOffset(breathingValue);
+      setPulseOpacity(pulseValue);
+    };
+
+    const animationFrame = setInterval(animate, 50); // 20fps for smooth animation
+    return () => clearInterval(animationFrame);
+  }, [streaming]);
 
   // ❌ REMOVED: Problematic auto-save useEffect that caused UI freezing
   // 📝 Chat saving moved to strategic moments (user send, stream end, chat switch, etc.)
@@ -1903,14 +1928,18 @@ const handleSendWithDocuments = async (text, documents) => {
           overflowX: 'hidden',
           padding: isMobile ? '0' : '2rem',
           paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
-          paddingBottom: isMobile ? '200px' : '160px', // Extra space on mobile for input bar
+          paddingBottom: isMobile 
+            ? `${200 + breathingOffset}px` 
+            : `${160 + breathingOffset}px`, // Breathing padding during streaming
           width: '100%',
           position: 'relative', // Create proper stacking context
           WebkitOverflowScrolling: 'touch',
           scrollBehavior: 'smooth',
           overscrollBehavior: 'none', // Prevent elastic scroll
           WebkitOverscrollBehavior: 'none', // iOS Safari support
-          touchAction: 'pan-y' // Only allow vertical scrolling
+          touchAction: 'pan-y', // Only allow vertical scrolling
+          opacity: streaming ? pulseOpacity : 1, // Subtle pulsing during streaming
+          transition: streaming ? 'none' : 'padding-bottom 0.3s ease-out, opacity 0.3s ease-out'
         }}
       >
         <div style={{ 
