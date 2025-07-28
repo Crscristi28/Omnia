@@ -1929,8 +1929,8 @@ const handleSendWithDocuments = async (text, documents) => {
           padding: isMobile ? '0' : '2rem',
           paddingTop: isMobile ? '80px' : '100px', // Space for fixed header
           paddingBottom: isMobile 
-            ? `${200 + breathingOffset}px` 
-            : `${160 + breathingOffset}px`, // Breathing padding during streaming
+            ? `${240 + breathingOffset}px` 
+            : `${200 + breathingOffset}px`, // More breathing room for scrolling
           width: '100%',
           position: 'relative', // Create proper stacking context
           WebkitOverflowScrolling: 'touch',
