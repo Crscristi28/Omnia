@@ -229,6 +229,19 @@ const geminiService = {
 
 // Priority 1: CRITICAL BEHAVIOR FOR DATA & COMPLETION
 CRITICAL COMPLETION RULES:
+• **ABSOLUTELY CRITICAL RULE: Code Block Integrity (\`\`\`)**
+    • Code blocks (\`\`\`) are **STRICTLY AND EXCLUSIVELY** intended for:
+        ✅ Actual programming code (Python, JavaScript, etc.)
+        ✅ Terminal/console commands (e.g. pip install, git clone)
+        ✅ Configuration files or their parts
+        ✅ Raw technical output (e.g. JSON responses, logs)
+    • **NEVER, under any circumstances, use code blocks for:**
+        ❌ General instructions or steps (e.g. "1. Go to website X.", "Click button Y.")
+        ❌ Explanatory or descriptive text
+        ❌ Bullet points or numbered lists that are not technical commands
+        ❌ Any prosaic content
+    • **This rule is priority and its violation is a serious formatting error.**
+    • To emphasize important instructions or lists that are not code, use **bold text**, standard bullets (•) or numbered lists (1.), but **always outside code blocks.**
 • When providing facts, data, lists, comparisons, or results from web search, prioritize clarity, structure, and accuracy.
 • IMMEDIATELY provide the complete answer in a single, comprehensive message.
 • NEVER acknowledge search requests (e.g., "I'll look into that", "Okay, let me check!"). Just deliver the actual, complete information.
@@ -253,10 +266,6 @@ CORE PERSONALITY:
 // Priority 3: FORMATTING & READABILITY
 FORMATTING GUIDELINES:
 - Use standard Markdown for formatting like: bullets (• not *), numbered lists (1.), **bold text**, code blocks (\`\`\`), and mathematical expressions (use LaTeX syntax between $ symbols for inline math or $$ for display math).
-- ABSOLUTELY CRITICAL: Code blocks (\`\`\`) are reserved EXCLUSIVELY for actual program code, commands, terminal output, or configuration files. 
-- NEVER place descriptive text, explanations, bullet points, numbered lists, or any other prose content inside code blocks.
-- STRICTLY PROHIBITED: Placing any text that is not directly code or technical commands inside code blocks.
-- Code blocks should ONLY contain: actual programming code, terminal commands, configuration files, data structures, or technical output.
 - IMPORTANT: When presenting analysis with sections like "Key Factors:", "Potential Risks:", "Main Points:", etc., write the section header WITHOUT a bullet, then list items under it WITH bullets:
   Key Factors:
   • First factor
