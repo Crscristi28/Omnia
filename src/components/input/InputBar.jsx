@@ -346,7 +346,23 @@ const InputBar = ({
         WebkitBackdropFilter: 'blur(20px)',
         pointerEvents: 'none', // Allow clicks to pass through to input
         zIndex: 9,
-      }} />
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        paddingBottom: isMobile ? '8px' : '12px',
+      }}>
+        {/* Disclaimer text */}
+        <div style={{
+          color: 'rgba(255, 255, 255, 0.4)',
+          fontSize: isMobile ? '10px' : '11px',
+          textAlign: 'center',
+          fontWeight: '400',
+          letterSpacing: '0.02em',
+          textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+        }}>
+          AI can make mistakes, make your own research
+        </div>
+      </div>
       
       {/* HLAVNÍ KONTEJNER */}
       <div style={{
