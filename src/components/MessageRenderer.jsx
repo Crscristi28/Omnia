@@ -59,6 +59,9 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
       return `${indent}- ${text}`;
     })
     
+    // Add spacing between code blocks and dash bullets to prevent inline code interpretation
+    .replace(/(\`\`\`[\s\S]*?\`\`\`)(\n)(\s*-\s+)/g, '$1\n\n$3')
+    
     // Add spacing between different numbered sections
     .replace(/(\d+\\\..*?)(\n\n?)(\d+\\\..)/g, '$1\n\n$3')
     
