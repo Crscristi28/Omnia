@@ -338,11 +338,12 @@ const InputBar = ({
         right: 0,
         height: isMobile ? '140px' : '120px',
         background: `linear-gradient(to top, 
-          rgba(0, 4, 40, 1) 0%, 
-          rgba(0, 78, 146, 0.95) 25%,
-          rgba(0, 159, 253, 0.8) 50%,
-          rgba(0, 159, 253, 0.4) 75%,
+          rgba(255, 255, 255, 0.08) 0%, 
+          rgba(255, 255, 255, 0.06) 40%,
+          rgba(255, 255, 255, 0.04) 70%,
           transparent 100%)`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         pointerEvents: 'none', // Allow clicks to pass through to input
         zIndex: 9,
       }} />
