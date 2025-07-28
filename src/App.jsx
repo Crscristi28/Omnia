@@ -245,6 +245,9 @@ function App() {
   const [breathingOffset, setBreathingOffset] = useState(0);
   const [pulseOpacity, setPulseOpacity] = useState(1);
   
+  // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
@@ -486,6 +489,31 @@ function App() {
     const animationFrame = setInterval(animate, 50); // 20fps for smooth animation
     return () => clearInterval(animationFrame);
   }, [streaming]);
+
+  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up
+  useEffect(() => {
+    const mainContent = mainContentRef.current;
+    if (!mainContent) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = mainContent;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50; // 50px threshold
+      setShowScrollToBottom(!isNearBottom);
+    };
+
+    mainContent.addEventListener('scroll', handleScroll);
+    return () => mainContent.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 🔽 SCROLL TO BOTTOM FUNCTION
+  const scrollToBottom = () => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({
+        top: mainContentRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // ❌ REMOVED: Problematic auto-save useEffect that caused UI freezing
   // 📝 Chat saving moved to strategic moments (user send, stream end, chat switch, etc.)
@@ -2336,6 +2364,52 @@ const handleSendWithDocuments = async (text, documents) => {
         </div>
       </main>
 
+      {/* 🔽 SCROLL TO BOTTOM BUTTON - Show when scrolled up */}
+      {showScrollToBottom && (
+        <button
+          onClick={scrollToBottom}
+          style={{
+            position: 'fixed',
+            bottom: isMobile ? '110px' : '120px', // Above input bar
+            right: isMobile ? '20px' : '50px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 11, // Above input bar (10) and gradient (9)
+            transition: 'all 0.3s ease',
+            animation: showScrollToBottom ? 'fadeIn 0.3s ease' : 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(96, 165, 250, 0.2)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <svg 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="rgba(255, 255, 255, 0.8)" 
+            strokeWidth="2"
+          >
+            <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+          </svg>
+        </button>
+      )}
+
       {/* 📝 INPUT BAR - WITHOUT model prop */}
       <InputBar
         input={input}
@@ -2395,6 +2469,7 @@ const handleSendWithDocuments = async (text, documents) => {
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px) translateZ(0); } 100% { opacity: 1; transform: translateY(0) translateZ(0); } }
+        @keyframes fadeIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
         @keyframes omnia-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(100, 50, 255, 0.8); transform: scale(1) translateZ(0); } 50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); transform: scale(1.05) translateZ(0); } }
         @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
         @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
