@@ -2364,12 +2364,8 @@ const handleSendWithDocuments = async (text, documents) => {
           onClick={scrollToBottom}
           style={{
             position: 'fixed',
-            bottom: isMobile 
-              ? 'calc(110px + env(safe-area-inset-bottom))' 
-              : '120px', // Above input bar + home indicator
-            right: isMobile 
-              ? 'max(20px, env(safe-area-inset-right))' 
-              : '50px',
+            bottom: isMobile ? '110px' : '120px', // Above input bar
+            right: isMobile ? '20px' : '50px',
             width: '40px',
             height: '40px',
             borderRadius: '50%',
