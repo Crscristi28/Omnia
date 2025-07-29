@@ -19,6 +19,8 @@ html {
   overflow: hidden; /* Prevent overscroll bounce */
   -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%; /* Prevent text scaling */
+  /* Clean notch/Dynamic Island support - top only */
+  padding-top: env(safe-area-inset-top);
 }
 
 body {
