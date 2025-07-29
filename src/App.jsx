@@ -477,6 +477,8 @@ function App() {
       return;
     }
 
+    let animationFrameId;
+
     const animate = () => {
       const time = Date.now() / 1000; // Convert to seconds
       const breathingValue = Math.sin(time) * 3; // ±3px breathing effect
@@ -484,10 +486,14 @@ function App() {
       
       setBreathingOffset(breathingValue);
       setPulseOpacity(pulseValue);
+
+      if (streaming) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
     };
 
-    const animationFrame = setInterval(animate, 50); // 20fps for smooth animation
-    return () => clearInterval(animationFrame);
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
   }, [streaming]);
 
   // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up
@@ -823,8 +829,6 @@ function App() {
       const userMessage = { sender: 'user', text: textInput };
       const messagesWithUser = [...messages, userMessage];
       setMessages(messagesWithUser);
-      sessionManager.saveMessages(messagesWithUser);
-
       // 💾 Strategic save point #2: Save chat after user sends message
       if (currentChatId) {
         console.log('💾 [IndexedDB] Saving chat after user message:', currentChatId);
@@ -862,7 +866,6 @@ function App() {
             
             const finalMessages = [...messagesWithUser, imageMessage];
             setMessages(finalMessages);
-            sessionManager.saveMessages(finalMessages);
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
@@ -880,7 +883,6 @@ function App() {
           
           const finalMessages = [...messagesWithUser, errorMessage];
           setMessages(finalMessages);
-          sessionManager.saveMessages(finalMessages);
           
           showNotification('Chyba při generování obrázku', 'error');
         }
@@ -929,7 +931,6 @@ function App() {
         };
         
         const finalMessages = [...messagesWithUser, finalMessage];
-        sessionManager.saveMessages(finalMessages);
 
         // 💾 Strategic save point #3: Save chat after AI completes response (Claude)
         if (currentChatId) {
@@ -967,7 +968,6 @@ function App() {
           sources: [],
           isStreaming: false
         }];
-        sessionManager.saveMessages(finalMessages);
 
         // 💾 Strategic save point #3: Save chat after AI completes response (OpenAI)
         if (currentChatId) {
@@ -1017,7 +1017,6 @@ function App() {
           sources: sources,
           isStreaming: false
         }];
-        sessionManager.saveMessages(finalMessages);
 
         // 💾 Strategic save point #3: Save chat after AI completes response (Grok)
         if (currentChatId) {
@@ -1106,7 +1105,6 @@ function App() {
           isStreaming: false
         }];
         setMessages(finalMessages);
-        sessionManager.saveMessages(finalMessages);
 
         // 💾 Strategic save point #3: Save chat after AI completes response (Gemini)
         if (currentChatId) {
