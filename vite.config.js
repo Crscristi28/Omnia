@@ -12,5 +12,24 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React
+          'vendor-react': ['react', 'react-dom'],
+          // Large UI libraries
+          'ui-markdown': ['@uiw/react-md-editor', 'remark-math', 'rehype-katex'],
+          // Database
+          'vendor-db': ['dexie'],
+          // Icons and UI
+          'vendor-ui': ['lucide-react'],
+          // AI and utilities
+          'vendor-utils': ['@google/generative-ai']
+        }
+      }
+    }
   }
 })
