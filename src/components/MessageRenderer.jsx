@@ -1,25 +1,24 @@
-import React from 'react';
-import MDEditor from '@uiw/react-md-editor';
+import React, { Suspense, lazy } from 'react';
 import '@uiw/react-md-editor/markdown-editor.css';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.css';
+
+// Lazy load markdown editor and plugins for better performance
+const MDEditor = lazy(() => import('@uiw/react-md-editor'));
+const remarkMath = lazy(() => import('remark-math'));
+const rehypeKatex = lazy(() => import('rehype-katex'));
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
   // Direct markdown rendering without regex transformations
   return (
     <div className={className}>
       <div className="markdown-container">
-        <MDEditor.Markdown 
-          source={content || ''} 
-          style={{ 
-            backgroundColor: 'transparent',
-            color: 'inherit'
-          }}
-          data-color-mode="dark"
-          remarkPlugins={[remarkMath]}
-          rehypePlugins={[rehypeKatex]}
-        />
+        <Suspense fallback={
+          <div style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+            Loading markdown...
+          </div>
+        }>
+          <LazyMarkdown content={content} />
+        </Suspense>
       </div>
       
       <style>{`
@@ -116,6 +115,36 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
         }
       `}</style>
     </div>
+  );
+};
+
+// Separate component for lazy-loaded markdown
+const LazyMarkdown = ({ content }) => {
+  const [remarkMathPlugin, setRemarkMathPlugin] = React.useState(null);
+  const [rehypeKatexPlugin, setRehypeKatexPlugin] = React.useState(null);
+
+  React.useEffect(() => {
+    // Load plugins asynchronously
+    Promise.all([
+      import('remark-math'),
+      import('rehype-katex')
+    ]).then(([remarkMathModule, rehypeKatexModule]) => {
+      setRemarkMathPlugin(() => remarkMathModule.default);
+      setRehypeKatexPlugin(() => rehypeKatexModule.default);
+    });
+  }, []);
+
+  return (
+    <MDEditor.Markdown 
+      source={content || ''} 
+      style={{ 
+        backgroundColor: 'transparent',
+        color: 'inherit'
+      }}
+      data-color-mode="dark"
+      remarkPlugins={remarkMathPlugin ? [remarkMathPlugin] : []}
+      rehypePlugins={rehypeKatexPlugin ? [rehypeKatexPlugin] : []}
+    />
   );
 };
 

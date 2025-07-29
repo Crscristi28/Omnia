@@ -20,8 +20,10 @@ export default defineConfig({
         manualChunks: {
           // Core React
           'vendor-react': ['react', 'react-dom'],
-          // Large UI libraries
-          'ui-markdown': ['@uiw/react-md-editor', 'remark-math', 'rehype-katex'],
+          // Markdown editor core
+          'markdown-editor': ['@uiw/react-md-editor'],
+          // Math rendering
+          'markdown-math': ['remark-math', 'rehype-katex', 'katex'],
           // Database
           'vendor-db': ['dexie'],
           // Icons and UI
