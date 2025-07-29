@@ -10,7 +10,7 @@ const GlassInputContainer = ({ children }) => {
       backdropFilter: 'blur(20px)',
       padding: isMobile ? '1.2rem' : '1.6rem',
       borderTop: '1px solid rgba(255,255,255,0.1)',
-      paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom, 1rem) + 1.2rem)' : '1.6rem',
+      paddingBottom: isMobile ? '2.2rem' : '1.6rem',
       zIndex: 10,
       flexShrink: 0
     }}>

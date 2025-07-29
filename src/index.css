@@ -19,11 +19,8 @@ html {
   overflow: hidden; /* Prevent overscroll bounce */
   -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%; /* Prevent text scaling */
-  /* Support for notch and Dynamic Island */
+  /* Support for notch and Dynamic Island - top only */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
 }
 
 body {
@@ -45,9 +42,7 @@ body {
   height: 100dvh; /* Dynamic viewport height for mobile */
   overflow: hidden;
   position: relative;
-  /* Adjust for safe areas */
-  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* Simple height without bottom safe-area */
 }
 
 /* Disable zoom on inputs (iOS fix) */

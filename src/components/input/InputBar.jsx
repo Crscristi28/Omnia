@@ -383,10 +383,10 @@ const InputBar = ({
         right: 0,
         padding: isMobile ? '0.5rem' : '1.5rem',
         paddingBottom: isMobile 
-          ? (isKeyboardOpen ? 'max(0.5rem, env(safe-area-inset-bottom))' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
-          : 'max(1.5rem, env(safe-area-inset-bottom))',
-        paddingLeft: 'max(0.5rem, env(safe-area-inset-left))',
-        paddingRight: 'max(0.5rem, env(safe-area-inset-right))',
+          ? (isKeyboardOpen ? '0.5rem' : '1rem')
+          : '1.5rem',
+        paddingLeft: '0.5rem',
+        paddingRight: '0.5rem',
         zIndex: 10,
         transform: isMobile && isKeyboardOpen ? 'translateY(0)' : 'none',
       }}>
@@ -718,7 +718,7 @@ const InputBar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
+            padding: '0.5rem',
             animation: 'fadeIn 0.3s ease',
             cursor: 'pointer',
           }}
@@ -726,7 +726,7 @@ const InputBar = ({
           {/* Close hint text */}
           <div style={{
             position: 'absolute',
-            top: 'calc(env(safe-area-inset-top, 20px) + 20px)',
+            top: '40px',
             left: '50%',
             transform: 'translateX(-50%)',
             color: 'rgba(255, 255, 255, 0.8)',
