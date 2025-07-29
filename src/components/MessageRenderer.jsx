@@ -1,24 +1,25 @@
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
+import MDEditor from '@uiw/react-md-editor';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import '@uiw/react-md-editor/markdown-editor.css';
 import 'katex/dist/katex.css';
 
-// Lazy load markdown editor and plugins for better performance
-const MDEditor = lazy(() => import('@uiw/react-md-editor'));
-const remarkMath = lazy(() => import('remark-math'));
-const rehypeKatex = lazy(() => import('rehype-katex'));
-
 const MessageRenderer = ({ content, className = "text-white" }) => {
-  // Direct markdown rendering without regex transformations
+  // Direct markdown rendering without lazy loading to prevent content jumping
   return (
     <div className={className}>
       <div className="markdown-container">
-        <Suspense fallback={
-          <div style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-            Loading markdown...
-          </div>
-        }>
-          <LazyMarkdown content={content} />
-        </Suspense>
+        <MDEditor.Markdown 
+          source={content || ''} 
+          style={{ 
+            backgroundColor: 'transparent',
+            color: 'inherit'
+          }}
+          data-color-mode="dark"
+          remarkPlugins={[remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+        />
       </div>
       
       <style>{`
@@ -118,47 +119,5 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
   );
 };
 
-// Separate component for lazy-loaded markdown  
-const LazyMarkdown = ({ content }) => {
-  const [remarkMathPlugin, setRemarkMathPlugin] = React.useState(null);
-  const [rehypeKatexPlugin, setRehypeKatexPlugin] = React.useState(null);
-  const [MDEditorComponent, setMDEditorComponent] = React.useState(null);
-
-  React.useEffect(() => {
-    // Load all components and plugins asynchronously
-    Promise.all([
-      import('@uiw/react-md-editor'),
-      import('remark-math'),
-      import('rehype-katex')
-    ]).then(([mdEditorModule, remarkMathModule, rehypeKatexModule]) => {
-      setMDEditorComponent(() => mdEditorModule.default);
-      setRemarkMathPlugin(() => remarkMathModule.default);
-      setRehypeKatexPlugin(() => rehypeKatexModule.default);
-    }).catch(error => {
-      console.error('Failed to load markdown components:', error);
-    });
-  }, []);
-
-  if (!MDEditorComponent) {
-    return (
-      <div style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-        Loading markdown...
-      </div>
-    );
-  }
-
-  return (
-    <MDEditorComponent.Markdown 
-      source={content || ''} 
-      style={{ 
-        backgroundColor: 'transparent',
-        color: 'inherit'
-      }}
-      data-color-mode="dark"
-      remarkPlugins={remarkMathPlugin ? [remarkMathPlugin] : []}
-      rehypePlugins={rehypeKatexPlugin ? [rehypeKatexPlugin] : []}
-    />
-  );
-};
 
 export default MessageRenderer;
