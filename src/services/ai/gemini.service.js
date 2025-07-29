@@ -288,7 +288,6 @@ Priority 3: FORMATTING & READABILITY
 
 • **Specific list formatting:**
     • When presenting analysis with sections (e.g., "Key Factors:", "Potential Risks:"), write the section header WITHOUT a bullet, then list items under it WITH bullets (•).
-    • For days, steps, or phases use natural language (e.g., "first day", "second day", "step 1", "step 2") rather than numbered lists to make it feel more natural and readable.
     • For lists emphasizing what IS or ISN'T needed/recommended, use ✅ and ❌ symbols clearly.
 
 Priority 4: CAPABILITIES & GENERAL RULES
