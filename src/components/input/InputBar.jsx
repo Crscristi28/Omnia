@@ -383,10 +383,8 @@ const InputBar = ({
         right: 0,
         padding: isMobile ? '0.5rem' : '1.5rem',
         paddingBottom: isMobile 
-          ? (isKeyboardOpen ? '0.5rem' : '1rem')
+          ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
           : '1.5rem',
-        paddingLeft: '0.5rem',
-        paddingRight: '0.5rem',
         zIndex: 10,
         transform: isMobile && isKeyboardOpen ? 'translateY(0)' : 'none',
       }}>
