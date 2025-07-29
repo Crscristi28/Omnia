@@ -307,21 +307,6 @@ app.post('/google-tts', async (req, res) => {
   }
 });
 
-// Sonar search endpoint
-app.post('/sonar-search', async (req, res) => {
-  try {
-    const { query, language } = req.body;
-    
-    // Fallback implementation
-    res.json({
-      success: false,
-      message: 'Sonar search not configured for local development'
-    });
-  } catch (error) {
-    console.error('Sonar search error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 // Claude web search endpoint
 app.post('/claude-web-search', async (req, res) => {
@@ -345,6 +330,5 @@ app.listen(port, () => {
   console.log('  - POST /elevenlabs-tts');
   console.log('  - POST /elevenlabs-stt');
   console.log('  - POST /google-tts');
-  console.log('  - POST /sonar-search');
   console.log('  - POST /claude-web-search');
 });

@@ -10,7 +10,7 @@ import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 
 // 🔧 IMPORT SERVICES (MODULAR)
-import { claudeService, openaiService, sonarService, grokService, geminiService } from './services/ai';
+import { claudeService, openaiService, grokService, geminiService } from './services/ai';
 import { elevenLabsService } from './services/voice';
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
@@ -981,40 +981,6 @@ function App() {
           await processVoiceResponse(responseText, detectedLang);
         }
       }
-      else if (model === 'sonar') {
-        const searchResult = await sonarService.search(textInput, showNotification, detectedLang);
-        responseText = searchResult.success ? searchResult.result : searchResult.message;
-        
-        // 🆕 STREAMING: Use streaming effect for Sonar too
-        const stopFn = streamMessageWithEffect(
-          responseText,
-          setMessages,
-          messagesWithUser,
-          mainContentRef.current,
-          [] // Sonar doesn't have sources yet
-        );
-        setStopStreamingRef(() => stopFn);
-        
-        const finalMessages = [...messagesWithUser, { 
-          sender: 'bot', 
-          text: responseText,
-          sources: [],
-          isStreaming: false
-        }];
-        sessionManager.saveMessages(finalMessages);
-
-        // 💾 Strategic save point #3: Save chat after AI completes response (Sonar)
-        if (currentChatId) {
-          console.log('💾 [IndexedDB] Saving chat after Sonar response:', currentChatId);
-          await chatDB.saveChat(currentChatId, finalMessages);
-          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
-        }
-        
-        if (fromVoice && showVoiceScreen && responseText) {
-          console.log('🎵 Sonar response complete, processing voice...');
-          await processVoiceResponse(responseText, detectedLang);
-        }
-      }
       else if (model === 'grok-3') {
         let streamingSources = []; // Add this to capture sources during streaming
         
@@ -1697,7 +1663,7 @@ const handleSendWithDocuments = async (text, documents) => {
                        flex items-center gap-1.5 font-medium transition-all duration-200 outline-none
                        hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
           >
-            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'sonar' ? 'o3' : model === 'grok-3' ? 'o4' : 'o5'}</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'grok-3' ? 'o3' : 'o4'}</span>
             <ChevronDown size={14} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.9)' }} />
           </button>
 
@@ -1792,42 +1758,6 @@ const handleSendWithDocuments = async (text, documents) => {
               </button>
               
               <button
-                onClick={() => { setModel('sonar'); setShowModelDropdown(false); }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: model === 'sonar' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
-                }}
-                onMouseEnter={(e) => {
-                  if (model !== 'sonar') {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (model !== 'sonar') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                <span style={{ fontWeight: '500' }}>Omnia Sonar</span>
-                <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '12px',
-                  color: 'rgba(156, 163, 175, 1)',
-                  fontWeight: '400',
-                }}>o3</span>
-              </button>
-              
-              <button
                 onClick={() => { setModel('grok-3'); setShowModelDropdown(false); }}
                 style={{
                   display: 'flex',
@@ -1860,7 +1790,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   fontSize: '12px',
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
-                }}>o4</span>
+                }}>o3</span>
               </button>
               
               <button
@@ -1896,7 +1826,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   fontSize: '12px',
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
-                }}>o5</span>
+                }}>o4</span>
               </button>
             </div>
           )}

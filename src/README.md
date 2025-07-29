@@ -14,7 +14,7 @@ src/
 │   ├── voice/       # Voice-specific components
 │   └── sources/     # Sources modal components
 ├── services/
-│   ├── ai/          # AI service providers (Claude, OpenAI, Sonar)
+│   ├── ai/          # AI service providers (Claude, OpenAI, Grok, Gemini)
 │   ├── voice/       # Voice/audio services (ElevenLabs)
 │   └── storage/     # Data persistence services
 ├── utils/
@@ -31,7 +31,7 @@ src/
 ### Clean Modular Imports
 ```javascript
 // AI Services
-import { claudeService, openaiService, sonarService } from './services/ai';
+import { claudeService, openaiService, grokService, geminiService } from './services/ai';
 
 // Voice Services
 import { elevenLabsService } from './services/voice';
