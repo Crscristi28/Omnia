@@ -1120,6 +1120,11 @@ function App() {
           messagesWithUser,
           (text, isStreaming, streamSources = []) => {
             // Direct message update without streamWithEffect
+            console.log('🔍 GEMINI STREAM UPDATE:', { 
+              textLength: text.length, 
+              isStreaming, 
+              preview: text.slice(-100) 
+            });
             setMessages([
               ...messagesWithUser,
               { 
