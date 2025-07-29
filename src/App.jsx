@@ -1118,24 +1118,7 @@ function App() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (text, isStreaming, streamSources = []) => {
-            // Direct message update without streamWithEffect
-            console.log('🔍 GEMINI STREAM UPDATE:', { 
-              textLength: text.length, 
-              isStreaming, 
-              preview: text.slice(-100) 
-            });
-            setMessages([
-              ...messagesWithUser,
-              { 
-                sender: 'bot', 
-                text: text, 
-                isStreaming: isStreaming,
-                sources: streamSources
-              }
-            ]);
-            setStreaming(isStreaming);
-          },
+          null,
           () => {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
