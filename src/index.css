@@ -21,6 +21,8 @@ html {
   -webkit-text-size-adjust: 100%; /* Prevent text scaling */
   /* Clean notch/Dynamic Island support - top only */
   padding-top: env(safe-area-inset-top);
+  /* Match app background for seamless notch integration */
+  background: linear-gradient(135deg, #000428, #004e92, #009ffd);
 }
 
 body {
