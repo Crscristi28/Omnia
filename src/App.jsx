@@ -1383,6 +1383,15 @@ const handleSendWithDocuments = async (text, documents) => {
   };
   setMessages(prev => [...prev, userMessage]);
   
+  // Scroll to user's message after sending
+  setTimeout(() => {
+    smartScrollToBottom(mainContentRef.current, {
+      behavior: 'smooth',
+      force: true,
+      delay: 100
+    });
+  }, 100);
+  
   setLoading(true);
   setStreaming(true);
   
