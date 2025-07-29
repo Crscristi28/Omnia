@@ -6,6 +6,28 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.css';
 
 const MessageRenderer = ({ content, className = "text-white" }) => {
+  // TEMPORARY: Disable all regex transformations for testing
+  const DISABLE_REGEX_TRANSFORMS = true;
+  
+  if (DISABLE_REGEX_TRANSFORMS) {
+    return (
+      <div className={className}>
+        <div className="markdown-container">
+          <MDEditor.Markdown 
+            source={content || ''} 
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'inherit'
+            }}
+            data-color-mode="dark"
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          />
+        </div>
+      </div>
+    );
+  }
+  
   // 🚀 CUSTOM FORMATTING: Control spacing and structure (from deploy 3cc2168)
   // Skip processing if content already contains processed HTML
   if ((content || '').includes('bullet-item')) {

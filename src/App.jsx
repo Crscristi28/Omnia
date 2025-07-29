@@ -1118,8 +1118,17 @@ function App() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (text, isStreaming) => {
-            // 🔄 CLAUDE PATTERN: Just track streaming state, don't update UI
+          (text, isStreaming, streamSources = []) => {
+            // Direct message update without streamWithEffect
+            setMessages([
+              ...messagesWithUser,
+              { 
+                sender: 'bot', 
+                text: text, 
+                isStreaming: isStreaming,
+                sources: streamSources
+              }
+            ]);
             setStreaming(isStreaming);
           },
           () => {
@@ -1131,27 +1140,18 @@ function App() {
         );
         
         responseText = result.text;
-        const sources = result.sources || []; // Use final sources directly
+        const sources = result.sources || [];
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // 🔄 CLAUDE PATTERN: Use streamMessageWithEffect for final rendering
-        const stopFn = streamMessageWithEffect(
-          responseText,
-          setMessages,
-          messagesWithUser,
-          mainContentRef.current,
-          sources
-        );
-        setStopStreamingRef(() => stopFn);
-        
-        // 🔄 CLAUDE PATTERN: Save messages immediately like other models
+        // Direct final message update (no streamWithEffect)
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
           sources: sources,
           isStreaming: false
         }];
+        setMessages(finalMessages);
         sessionManager.saveMessages(finalMessages);
 
         // 💾 Strategic save point #3: Save chat after AI completes response (Gemini)
