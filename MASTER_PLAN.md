@@ -15,10 +15,18 @@ Omnia is an advanced AI assistant platform that provides seamless access to mult
 - **Benefits**: Cross-device sync, cloud backup, collaborative features
 
 ### **Phase 2: Firebase Implementation Plan**
+
+**🔄 Parallel Development Strategy:**
+- **Production**: Continue running on Vercel (omnia-peach.vercel.app)
+- **Development**: New Firebase branch (omnia-firebase.web.app)
+- **Zero-risk migration**: Users stay on stable Vercel until Firebase ready
+- **Easy comparison**: Test both platforms side-by-side
+
 1. **Firebase Setup**
    - Project initialization with Firestore + Auth
    - Environment configuration (dev/prod)
    - Security rules setup
+   - Separate Firebase project for testing
 
 2. **Authentication System**
    - Google Sign-in integration
@@ -68,6 +76,11 @@ Backend Services
 - ✅ **Full Gemini memory**: Unlimited chat history with smart document filtering
 - ✅ **Battery optimization**: Removed duplicate localStorage writes
 - ✅ **Prompt optimization**: 22% shorter, more effective Gemini system prompt
+
+#### **🐛 Known Issues to Fix:**
+- ❌ **Document state persistence**: New chat button clears text but documents remain in context
+- ❌ **Document memory leak**: AI remembers previous chat documents in new conversations
+- 🔧 **Need**: Proper document state cleanup on new chat creation
 
 ---
 

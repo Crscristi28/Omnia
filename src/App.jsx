@@ -758,6 +758,10 @@ function App() {
     setMessages([]);
     setUserLanguage('cs');
     
+    // 📄 Clear document states to prevent context leakage
+    setActiveDocumentContexts([]);
+    setUploadedDocuments([]);
+    
     // Create new chat ID for history tracking
     setCurrentChatId(chatDB.generateChatId());
     
