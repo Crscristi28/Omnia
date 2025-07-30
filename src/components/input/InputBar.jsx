@@ -312,7 +312,6 @@ const InputBar = ({
         file: file // Store file for later upload
       };
       setPendingDocuments(prev => [...prev, docChip]);
-      setShowPlusMenu(false); // Close menu after selection
       
       // Clear the file input for next time
       event.target.value = '';

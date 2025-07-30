@@ -198,12 +198,7 @@ const mobileAudioManager = new MobileAudioManager();
 
 // 🆕 SENTENCE SPLITTER (UNCHANGED)
 
-// ✅ CONSOLE CLEANUP: Disable console.logs in production
-if (process.env.NODE_ENV === 'production') {
-  console.log = () => {};
-  console.warn = () => {};
-  // Keep console.error for debugging critical issues
-}
+// ✅ CONSOLE CLEANUP: Vite automatically removes console.log in production builds
 
 function App() {
   // 📊 BASIC STATE (UNCHANGED)
@@ -291,7 +286,7 @@ function App() {
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('touchstart', handleUserInteraction);
     };
-  }, []);
+  }, [userHasInteracted]);
 
   // ⚙️ INITIALIZATION (UNCHANGED)
   useEffect(() => {
