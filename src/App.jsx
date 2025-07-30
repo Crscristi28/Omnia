@@ -197,10 +197,6 @@ class MobileAudioManager {
 const mobileAudioManager = new MobileAudioManager();
 
 // 🆕 SENTENCE SPLITTER (UNCHANGED)
-function splitIntoSentences(text) {
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-  return sentences.map(s => s.trim()).filter(s => s.length > 0);
-}
 
 // ✅ CONSOLE CLEANUP: Disable console.logs in production
 if (process.env.NODE_ENV === 'production') {
@@ -235,7 +231,6 @@ function App() {
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
   // 🔗 SOURCES STATE (UNCHANGED)
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
@@ -2191,7 +2186,13 @@ const handleSendWithDocuments = async (text, documents) => {
                                   borderRadius: '8px'
                                 }}
                                 onLoad={(e) => {
-                                  // Clean up URL after image loads
+                                  // Clean up URL after image loads to prevent memory leak
+                                  setTimeout(() => {
+                                    URL.revokeObjectURL(e.target.src);
+                                  }, 1000);
+                                }}
+                                onError={(e) => {
+                                  // Clean up URL even on error
                                   setTimeout(() => {
                                     URL.revokeObjectURL(e.target.src);
                                   }, 1000);

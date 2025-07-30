@@ -430,6 +430,10 @@ const InputBar = ({
                           url: fileUrl,
                           name: doc.name
                         });
+                        // Clean up URL after 30 seconds (preview should be done by then)
+                        setTimeout(() => {
+                          URL.revokeObjectURL(fileUrl);
+                        }, 30000);
                       }
                     }, 500);
                   };
@@ -505,6 +509,18 @@ const InputBar = ({
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover'
+                          }}
+                          onLoad={(e) => {
+                            // Clean up URL after thumbnail loads to prevent memory leak
+                            setTimeout(() => {
+                              URL.revokeObjectURL(e.target.src);
+                            }, 1000);
+                          }}
+                          onError={(e) => {
+                            // Clean up URL on error too
+                            setTimeout(() => {
+                              URL.revokeObjectURL(e.target.src);
+                            }, 1000);
                           }}
                         />
                       ) : (

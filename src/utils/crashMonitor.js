@@ -6,6 +6,7 @@ class CrashMonitor {
     this.startTime = Date.now();
     this.events = [];
     this.maxEvents = 100; // Keep last 100 events
+    this.memoryCheckInterval = null; // Track interval for cleanup
     this.setupErrorHandlers();
     this.log('MONITOR_INIT', {
       timestamp: new Date().toISOString(),
@@ -75,11 +76,13 @@ class CrashMonitor {
       this.log('APP_CLOSING', {
         sessionDuration: Date.now() - this.startTime
       });
+      // Cleanup intervals before page unload
+      this.destroy();
     });
 
     // Memory warnings (if available)
     if ('memory' in performance) {
-      setInterval(() => {
+      this.memoryCheckInterval = setInterval(() => {
         const memory = performance.memory;
         if (memory.usedJSHeapSize > memory.jsHeapSizeLimit * 0.9) {
           this.log('MEMORY_WARNING', {
@@ -171,6 +174,17 @@ class CrashMonitor {
     sessionStorage.removeItem('omnia-crash-log');
     this.events = [];
     this.log('LOGS_CLEARED');
+  }
+
+  // Cleanup method to prevent memory leaks
+  destroy() {
+    if (this.memoryCheckInterval) {
+      clearInterval(this.memoryCheckInterval);
+      this.memoryCheckInterval = null;
+      this.log('MONITOR_DESTROYED', { 
+        sessionDuration: Date.now() - this.startTime 
+      });
+    }
   }
 
   // Track specific IndexedDB operations
