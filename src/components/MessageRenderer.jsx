@@ -30,6 +30,18 @@ const preprocessStreamingText = (text) => {
 };
 
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
+  const prevStreamingRef = React.useRef(isStreaming);
+  
+  // Detect transition from streaming to final
+  React.useEffect(() => {
+    if (prevStreamingRef.current && !isStreaming) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      return () => clearTimeout(timer);
+    }
+    prevStreamingRef.current = isStreaming;
+  }, [isStreaming]);
   
   
   if (isStreaming) {
@@ -68,12 +80,15 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   // Final render with full markdown parsing
   return (
     <div className={className}>
-      <div className="markdown-container">
+      <div className={`markdown-container ${isTransitioning ? 'transitioning' : ''}`}>
         <MDEditor.Markdown 
           source={content} 
           style={{ 
             backgroundColor: 'transparent',
-            color: 'inherit'
+            color: 'inherit',
+            opacity: isTransitioning ? 0 : 1,
+            transform: isTransitioning ? 'translateY(5px)' : 'translateY(0)',
+            transition: 'all 0.3s ease'
           }}
           data-color-mode="dark"
           remarkPlugins={[remarkMath, remarkGfm]}
