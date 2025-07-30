@@ -17,6 +17,7 @@ import { elevenLabsService } from './services/voice';
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import chatDB from './services/storage/chatDB'; // 💾 IndexedDB for chat history
+import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
@@ -299,6 +300,13 @@ function App() {
 
   // ⚙️ INITIALIZATION (UNCHANGED)
   useEffect(() => {
+    // Track PWA mode
+    if (window.navigator.standalone) {
+      crashMonitor.trackPWAEvent('standalone_mode', { source: 'iOS' });
+    } else if (window.matchMedia('(display-mode: standalone)').matches) {
+      crashMonitor.trackPWAEvent('standalone_mode', { source: 'PWA' });
+    }
+    
     const { isNewSession, messages: savedMessages } = sessionManager.initSession();
     
     if (!isNewSession && savedMessages.length > 0) {
@@ -430,11 +438,13 @@ function App() {
   };
 
   const handleSelectChat = async (chatId) => {
+    crashMonitor.trackChatOperation('switch_chat_start', { fromChatId: currentChatId, toChatId: chatId });
     try {
       // ✅ SAVE POINT #2: Save current chat before switching
       if (currentChatId && messages.length > 0) {
         console.log('🔄 [MONITOR] Saving current chat before switch:', currentChatId);
         await chatDB.saveChat(currentChatId, messages);
+        crashMonitor.trackIndexedDB('save', currentChatId, true);
         console.log('✅ [MONITOR] Current chat saved successfully');
       }
       
@@ -445,16 +455,28 @@ function App() {
       if (chatData) {
         setMessages(chatData.messages);
         setCurrentChatId(chatId);
+        crashMonitor.trackIndexedDB('load', chatId, true);
+        crashMonitor.trackChatOperation('switch_chat_success', { 
+          chatId, 
+          messageCount: chatData.messages.length,
+          title: chatData.title 
+        });
         console.log('✅ [MONITOR] Chat loaded successfully:', {
           chatId,
           messageCount: chatData.messages.length,
           title: chatData.title
         });
       } else {
+        crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
         console.warn('⚠️ [MONITOR] Chat not found:', chatId);
       }
       
     } catch (error) {
+      crashMonitor.trackChatOperation('switch_chat_failed', { 
+        error: error.message, 
+        fromChatId: currentChatId, 
+        toChatId: chatId 
+      });
       console.error('❌ [MONITOR] Chat switch failed:', error);
       // Fallback to sessionStorage
       if (messages.length > 0) {
@@ -749,11 +771,13 @@ function App() {
 
   // 🔧 UTILITY FUNCTIONS (UNCHANGED)
   const handleNewChat = async () => {
+    crashMonitor.trackChatOperation('new_chat_start', { currentChatId, messageCount: messages.length });
     try {
       // ✅ SAVE POINT #2: Save current chat before creating new
       if (currentChatId && messages.length > 0) {
         console.log('💾 [MONITOR] Saving before new chat:', currentChatId);
         await chatDB.saveChat(currentChatId, messages);
+        crashMonitor.trackIndexedDB('save', currentChatId, true);
         console.log('✅ [MONITOR] Current chat saved before new chat');
       }
 
@@ -787,9 +811,11 @@ function App() {
       const newChatId = chatDB.generateChatId();
       setCurrentChatId(newChatId);
       
+      crashMonitor.trackChatOperation('new_chat_success', { newChatId });
       console.log('🆕 [MONITOR] New chat prepared:', newChatId);
       
     } catch (error) {
+      crashMonitor.trackChatOperation('new_chat_failed', { error: error.message });
       console.error('❌ [MONITOR] New chat preparation failed:', error);
       // Fallback - still create new chat but without IndexedDB save
       const newChatId = chatDB.generateChatId();
@@ -830,6 +856,13 @@ function App() {
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
+    
+    crashMonitor.trackChatOperation('send_message_start', { 
+      model, 
+      messageLength: textInput.length, 
+      fromVoice,
+      currentChatId 
+    });
     
     // Variables for final save point
     let responseText = '';
@@ -872,8 +905,10 @@ function App() {
         try {
           console.log('🆕 [MONITOR] Creating new chat:', currentChatId);
           await chatDB.saveChat(currentChatId, [userMessage]);
+          crashMonitor.trackIndexedDB('create_chat', currentChatId, true);
           console.log('✅ [MONITOR] New chat created successfully');
         } catch (error) {
+          crashMonitor.trackIndexedDB('create_chat', currentChatId, false, error);
           console.error('❌ [MONITOR] Failed to create new chat:', error);
           // Continue with session-only mode
         }
@@ -1149,6 +1184,11 @@ function App() {
       }
 
     } catch (err) {
+      crashMonitor.trackChatOperation('send_message_failed', { 
+        error: err.message, 
+        model, 
+        stack: err.stack 
+      });
       console.error('💥 API call error:', err);
       showNotification(err.message, 'error');
     } finally {
@@ -1174,9 +1214,16 @@ function App() {
           await chatDB.saveChat(currentChatId, finalMessages);
           await loadChatHistories();
           
+          crashMonitor.trackIndexedDB('save_conversation', currentChatId, true);
+          crashMonitor.trackChatOperation('send_message_success', { 
+            model, 
+            responseLength: responseText.length,
+            sourcesCount: sourcesToSave?.length || 0 
+          });
           console.log('✅ [MONITOR] Conversation saved successfully');
           
         } catch (error) {
+          crashMonitor.trackIndexedDB('save_conversation', currentChatId, false, error);
           console.error('❌ [MONITOR] IndexedDB save failed:', {
             error: error.message,
             stack: error.stack,
@@ -1193,6 +1240,12 @@ function App() {
           sessionManager.saveCurrentChatId(currentChatId);
           console.log('🔄 [MONITOR] Fallback to sessionStorage completed');
         }
+      } else if (responseText) {
+        crashMonitor.trackChatOperation('send_message_success', { 
+          model, 
+          responseLength: responseText.length,
+          fromVoice: true 
+        });
       }
     }
   };
