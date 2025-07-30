@@ -1204,10 +1204,10 @@ function App() {
             { sender: 'bot', text: responseText, sources: sourcesToSave || [] }
           ];
           
-          await chatDB.saveChat(currentChatId, finalMessages);
-          await loadChatHistories();
+          // ❌ REMOVED: zbytečné save po každé zprávě - save jen na 4 místech!
+          // ❌ REMOVED: zbytečné loadChatHistories - aktualizuje se jen při switch
           
-          crashMonitor.trackIndexedDB('save_conversation', currentChatId, true);
+          crashMonitor.trackIndexedDB('conversation_updated', currentChatId, true);
           crashMonitor.trackChatOperation('send_message_success', { 
             model, 
             responseLength: responseText.length,
@@ -2489,7 +2489,10 @@ const handleSendWithDocuments = async (text, documents) => {
         chatHistory={chatHistories}
         onSelectChat={handleSelectChat}
         currentChatId={currentChatId}
-        onChatDeleted={loadChatHistories}
+        onChatDeleted={() => {
+          // Chat historie se aktualizuje jen při příštím otevření sidebaru
+          console.log('🗑️ Chat deleted - historie se aktualizuje lazy');
+        }}
       />
 
       {/* 🎤 VOICE SCREEN - UNCHANGED */}

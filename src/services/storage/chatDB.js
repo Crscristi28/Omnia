@@ -157,19 +157,21 @@ const chatDB = {
   // 📋 Get chat titles only (fast loading)
   async getChatTitles() {
     try {
+      // Only load metadata - NO messages array to prevent mobile crashes
       const chats = await db.chats
         .orderBy('updatedAt')
         .reverse()
-        .limit(50)
+        .limit(20) // Reduced from 50 to 20 for better mobile performance
         .toArray();
       
-      // Return metadata only
+      // Return metadata only - explicitly exclude messages
       return chats.map(chat => ({
         id: chat.id,
         title: chat.title,
         updatedAt: chat.updatedAt,
         messageCount: chat.messageCount,
         createdAt: chat.createdAt
+        // messages are NOT included - lazy loaded only when chat is selected
       }));
       
     } catch (error) {
