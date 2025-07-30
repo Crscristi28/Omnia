@@ -90,6 +90,9 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         /* Stabilize text rendering to prevent jumping */
         .markdown-container {
           min-height: 1.6em; /* Prevent height fluctuations */
+          max-width: 65ch; /* Limit line length to prevent jumping */
+          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
         
         /* Ensure consistent spacing for all paragraph content */
