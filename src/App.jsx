@@ -1149,9 +1149,28 @@ function App() {
           name: doc.name 
         }));
         
+        // Add streaming support for Gemini
+        let streamingText = '';
+        let streamingSources = [];
+        
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          null,
+          (text, isStreaming, sources) => {
+            // Update message during streaming
+            streamingText = text;
+            if (sources) {
+              streamingSources = sources;
+            }
+            
+            const streamingMessage = {
+              sender: 'bot',
+              text: streamingText,
+              sources: streamingSources,
+              isStreaming: isStreaming
+            };
+            
+            setMessages([...messagesWithUser, streamingMessage]);
+          },
           () => {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
@@ -1166,7 +1185,7 @@ function App() {
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // Direct final message update (no streamWithEffect)
+        // Final message update with isStreaming: false
         const finalMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
