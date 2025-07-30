@@ -2231,8 +2231,8 @@ const handleSendWithDocuments = async (text, documents) => {
                 <div 
                   className="p-4"
                   style={{
-                    width: '100%',
-                    maxWidth: isMobile ? '70%' : '100%', // Test with 70% on mobile to see clear difference
+                    width: isMobile ? '95%' : '100%', // Use width instead of maxWidth
+                    margin: isMobile ? '0 auto' : '0', // Center the container on mobile
                     fontSize: isMobile ? '1rem' : '0.95rem',
                     lineHeight: isMobile ? '1.3' : '1.6',
                     whiteSpace: 'pre-wrap',
