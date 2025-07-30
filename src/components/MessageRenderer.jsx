@@ -6,25 +6,6 @@ import rehypeKatex from 'rehype-katex';
 import '@uiw/react-md-editor/markdown-editor.css';
 import 'katex/dist/katex.css';
 
-// Pre-process content to fix bullet points and formatting
-const preprocessMarkdown = (text) => {
-  if (!text) return '';
-  
-  let processed = text;
-  
-  // Fix bullet points - add newline before bullets if missing
-  processed = processed.replace(/([^\n])\n•/g, '$1\n\n•');
-  processed = processed.replace(/([^\n])\n\*/g, '$1\n\n*');
-  processed = processed.replace(/([^\n])\n-/g, '$1\n\n-');
-  
-  // Convert bullet symbols to markdown dashes for better compatibility
-  processed = processed.replace(/^\s*•\s+/gm, '- ');
-  
-  // Fix numbered lists spacing
-  processed = processed.replace(/([^\n])\n(\d+\.)/g, '$1\n\n$2');
-  
-  return processed;
-};
 
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
   // During streaming: render as plain text to prevent markdown re-parsing
@@ -44,15 +25,12 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
     );
   }
   
-  // Pre-process content for better markdown parsing
-  const processedContent = preprocessMarkdown(content);
-  
   // Final render with full markdown parsing
   return (
     <div className={className}>
       <div className="markdown-container">
         <MDEditor.Markdown 
-          source={processedContent} 
+          source={content} 
           style={{ 
             backgroundColor: 'transparent',
             color: 'inherit'
@@ -109,13 +87,14 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           margin-bottom: 0.5rem !important;
         }
         
-        /* Bullet item styling for consistent rendering */
-        .markdown-container .bullet-item {
-          margin-left: 1.5rem !important;
-          text-indent: -1.5rem !important;
-          margin-bottom: 0.5rem !important;
-          line-height: 1.6 !important;
-          display: block !important;
+        /* Stabilize text rendering to prevent jumping */
+        .markdown-container {
+          min-height: 1.6em; /* Prevent height fluctuations */
+        }
+        
+        /* Ensure consistent spacing for all paragraph content */
+        .markdown-container p:not(:last-child) {
+          margin-bottom: 1rem !important;
         }
         
         /* Code block styling */
