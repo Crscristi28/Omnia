@@ -2232,7 +2232,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   className="p-4"
                   style={{
                     width: '100%',
-                    maxWidth: isMobile ? '95%' : '100%', // Limit width on MOBILE to prevent jumping
+                    maxWidth: isMobile ? '70%' : '100%', // Test with 70% on mobile to see clear difference
                     fontSize: isMobile ? '1rem' : '0.95rem',
                     lineHeight: isMobile ? '1.3' : '1.6',
                     whiteSpace: 'pre-wrap',
