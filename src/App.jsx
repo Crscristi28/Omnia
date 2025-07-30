@@ -1149,27 +1149,19 @@ function App() {
           name: doc.name 
         }));
         
-        // Add streaming support for Gemini
-        let streamingText = '';
+        // Show typing indicator while collecting full response
+        const typingMessage = {
+          sender: 'bot',
+          text: '',
+          isTyping: true,
+          sources: []
+        };
+        setMessages([...messagesWithUser, typingMessage]);
         
+        // Collect full response without showing partial text
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (text, isStreaming, sources) => {
-            // Update message during streaming
-            streamingText = text;
-            if (sources) {
-              streamingSources = sources;
-            }
-            
-            const streamingMessage = {
-              sender: 'bot',
-              text: streamingText,
-              sources: streamingSources,
-              isStreaming: isStreaming
-            };
-            
-            setMessages([...messagesWithUser, streamingMessage]);
-          },
+          null, // No streaming updates to UI
           () => {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
@@ -2344,6 +2336,7 @@ const handleSendWithDocuments = async (text, documents) => {
                   <MessageRenderer 
                     content={msg.text || ''}
                     className="text-white"
+                    isTyping={msg.isTyping}
                   />
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
