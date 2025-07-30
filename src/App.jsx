@@ -389,6 +389,8 @@ function App() {
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
   const handleSidebarOpen = () => {
     setShowChatSidebar(true);
+    // LAZY LOADING: Načti jména chatů teprve když se otevře sidebar
+    loadChatHistories();
   };
 
   const handleSidebarClose = () => {
@@ -405,7 +407,7 @@ function App() {
     }
     handleNewChat();
     setCurrentChatId(chatDB.generateChatId());
-    loadChatHistories();
+    // ❌ REMOVED: loadChatHistories() - historie se aktualizuje lazy
     // Note: sidebar stays open
   };
 
@@ -477,9 +479,9 @@ function App() {
     }
   };
 
-  // 🔄 INITIALIZATION - Load chat history on mount
+  // 🔄 INITIALIZATION - NO chat loading on mount (lazy loading)
   React.useEffect(() => {
-    loadChatHistories();
+    // ❌ REMOVED: loadChatHistories() - načte se až při otevření sidebaru
     if (!currentChatId) {
       setCurrentChatId(chatDB.generateChatId());
     }
@@ -2490,8 +2492,8 @@ const handleSendWithDocuments = async (text, documents) => {
         onSelectChat={handleSelectChat}
         currentChatId={currentChatId}
         onChatDeleted={() => {
-          // Chat historie se aktualizuje jen při příštím otevření sidebaru
-          console.log('🗑️ Chat deleted - historie se aktualizuje lazy');
+          // Historie se aktualizuje lazy při příštím otevření sidebaru
+          console.log('🗑️ Chat deleted - lazy update on next sidebar open');
         }}
       />
 

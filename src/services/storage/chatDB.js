@@ -157,22 +157,25 @@ const chatDB = {
   // 📋 Get chat titles only (fast loading)
   async getChatTitles() {
     try {
-      // Only load metadata - NO messages array to prevent mobile crashes
-      const chats = await db.chats
+      // TRUE lazy loading - use each() to prevent loading messages into memory
+      const chatTitles = [];
+      await db.chats
         .orderBy('updatedAt')
         .reverse()
         .limit(20) // Reduced from 50 to 20 for better mobile performance
-        .toArray();
+        .each(chat => {
+          // Only extract metadata - messages never loaded into memory
+          chatTitles.push({
+            id: chat.id,
+            title: chat.title,
+            updatedAt: chat.updatedAt,
+            messageCount: chat.messageCount,
+            createdAt: chat.createdAt
+            // messages are NEVER touched - true lazy loading
+          });
+        });
       
-      // Return metadata only - explicitly exclude messages
-      return chats.map(chat => ({
-        id: chat.id,
-        title: chat.title,
-        updatedAt: chat.updatedAt,
-        messageCount: chat.messageCount,
-        createdAt: chat.createdAt
-        // messages are NOT included - lazy loaded only when chat is selected
-      }));
+      return chatTitles;
       
     } catch (error) {
       console.error('❌ [MONITOR] Error loading chat titles:', error);
