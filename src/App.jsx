@@ -1151,7 +1151,6 @@ function App() {
         
         // Add streaming support for Gemini
         let streamingText = '';
-        let streamingSources = [];
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
