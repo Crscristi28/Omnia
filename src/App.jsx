@@ -389,8 +389,8 @@ function App() {
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
   const handleSidebarOpen = () => {
     setShowChatSidebar(true);
-    // LAZY LOADING: Načti jména chatů teprve když se otevře sidebar
-    loadChatHistories();
+    // LAZY LOADING: Načti JEN metadata chatů (názvy) - BEZ celých zpráv
+    loadChatTitles();
   };
 
   const handleSidebarClose = () => {
@@ -411,17 +411,17 @@ function App() {
     // Note: sidebar stays open
   };
 
-  // 📚 CHAT HISTORY FUNCTIONS - Updated for IndexedDB
-  const loadChatHistories = async () => {
+  // 📚 CHAT TITLES FUNCTION - Only metadata, no full messages
+  const loadChatTitles = async () => {
     try {
-      console.log('📋 [MONITOR] Loading chat titles...');
+      console.log('📋 [MONITOR] Loading chat titles only (metadata)...');
       const startTime = performance.now();
       
-      const titles = await chatDB.getChatTitles(); // Load titles only
+      const titles = await chatDB.getChatTitles(); // ONLY titles/metadata - NO messages
       setChatHistories(titles);
       
       const loadTime = performance.now() - startTime;
-      console.log(`✅ [MONITOR] Loaded ${titles.length} chat titles in ${loadTime.toFixed(2)}ms`);
+      console.log(`✅ [MONITOR] Loaded ${titles.length} chat titles (metadata only) in ${loadTime.toFixed(2)}ms`);
       
     } catch (error) {
       console.error('❌ [MONITOR] Error loading chat titles:', error);
