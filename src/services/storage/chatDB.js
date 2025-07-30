@@ -28,6 +28,8 @@ const chatDB = {
   // 💾 Save a single chat (not all chats at once!)
   async saveChat(chatId, messages, title = null) {
     try {
+      console.log(`💾 [MONITOR] Starting save for chat ${chatId}`);
+      
       const chatData = {
         id: chatId,
         title: title || this.generateChatTitle(messages),
@@ -46,11 +48,15 @@ const chatDB = {
       // Save/update the chat
       await db.chats.put(chatData);
       
-      console.log('💾 Chat saved to IndexedDB:', chatId);
+      console.log(`✅ [MONITOR] Chat saved successfully: ${chatId}`);
       return chatData;
       
     } catch (error) {
-      console.error('❌ Error saving chat to IndexedDB:', error);
+      console.error(`❌ [MONITOR] Error saving chat ${chatId}:`, {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
       throw error;
     }
   },
@@ -145,6 +151,30 @@ const chatDB = {
     } catch (error) {
       console.error('❌ Error clearing chats:', error);
       return false;
+    }
+  },
+
+  // 📋 Get chat titles only (fast loading)
+  async getChatTitles() {
+    try {
+      const chats = await db.chats
+        .orderBy('updatedAt')
+        .reverse()
+        .limit(50)
+        .toArray();
+      
+      // Return metadata only
+      return chats.map(chat => ({
+        id: chat.id,
+        title: chat.title,
+        updatedAt: chat.updatedAt,
+        messageCount: chat.messageCount,
+        createdAt: chat.createdAt
+      }));
+      
+    } catch (error) {
+      console.error('❌ [MONITOR] Error loading chat titles:', error);
+      return [];
     }
   },
 

@@ -201,6 +201,13 @@ function splitIntoSentences(text) {
   return sentences.map(s => s.trim()).filter(s => s.length > 0);
 }
 
+// ✅ CONSOLE CLEANUP: Disable console.logs in production
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => {};
+  console.warn = () => {};
+  // Keep console.error for debugging critical issues
+}
+
 function App() {
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
@@ -407,43 +414,54 @@ function App() {
   // 📚 CHAT HISTORY FUNCTIONS - Updated for IndexedDB
   const loadChatHistories = async () => {
     try {
-      console.log('📋 [IndexedDB] Loading chat history...');
+      console.log('📋 [MONITOR] Loading chat titles...');
       const startTime = performance.now();
       
-      const histories = await chatDB.getAllChats();
-      setChatHistories(histories);
+      const titles = await chatDB.getChatTitles(); // Load titles only
+      setChatHistories(titles);
       
       const loadTime = performance.now() - startTime;
-      console.log(`📋 [IndexedDB] Loaded ${histories.length} chats in ${loadTime.toFixed(2)}ms`);
+      console.log(`✅ [MONITOR] Loaded ${titles.length} chat titles in ${loadTime.toFixed(2)}ms`);
       
     } catch (error) {
-      console.error('❌ [IndexedDB] Error loading chat histories:', error);
+      console.error('❌ [MONITOR] Error loading chat titles:', error);
       setChatHistories([]); // Fallback to empty array
     }
   };
 
   const handleSelectChat = async (chatId) => {
     try {
-      // 💾 Save current chat before switching (strategic save point #1)
+      // ✅ SAVE POINT #2: Save current chat before switching
       if (currentChatId && messages.length > 0) {
-        console.log('💾 [IndexedDB] Saving current chat before switch:', currentChatId);
+        console.log('🔄 [MONITOR] Saving current chat before switch:', currentChatId);
         await chatDB.saveChat(currentChatId, messages);
+        console.log('✅ [MONITOR] Current chat saved successfully');
       }
       
       // 📖 Load selected chat
-      console.log('📖 [IndexedDB] Loading chat:', chatId);
+      console.log('📖 [MONITOR] Loading chat:', chatId);
       const chatData = await chatDB.getChat(chatId);
       
       if (chatData) {
         setMessages(chatData.messages);
         setCurrentChatId(chatId);
-        console.log(`📖 [IndexedDB] Loaded chat with ${chatData.messages.length} messages`);
+        console.log('✅ [MONITOR] Chat loaded successfully:', {
+          chatId,
+          messageCount: chatData.messages.length,
+          title: chatData.title
+        });
       } else {
-        console.warn('⚠️ [IndexedDB] Chat not found:', chatId);
+        console.warn('⚠️ [MONITOR] Chat not found:', chatId);
       }
       
     } catch (error) {
-      console.error('❌ [IndexedDB] Error in handleSelectChat:', error);
+      console.error('❌ [MONITOR] Chat switch failed:', error);
+      // Fallback to sessionStorage
+      if (messages.length > 0) {
+        sessionManager.saveMessages(messages);
+        sessionManager.saveCurrentChatId(currentChatId);
+        console.log('🔄 [MONITOR] Fallback to sessionStorage completed');
+      }
     }
   };
 
@@ -457,11 +475,12 @@ function App() {
 
   // 💾 Strategic save point #5: Save chat before page unload
   React.useEffect(() => {
-    const handleBeforeUnload = async () => {
+    const handleBeforeUnload = () => {
       if (currentChatId && messages.length > 0) {
-        console.log('💾 [IndexedDB] Saving chat before page unload:', currentChatId);
-        // Note: Can't await in beforeunload, but chatDB.saveChat handles async internally
-        chatDB.saveChat(currentChatId, messages);
+        console.log('🚪 [MONITOR] App closing - saving to sessionStorage');
+        // Synchronní backup do sessionStorage
+        sessionManager.saveMessages(messages);
+        sessionManager.saveCurrentChatId(currentChatId);
       }
     };
 
@@ -730,42 +749,52 @@ function App() {
 
   // 🔧 UTILITY FUNCTIONS (UNCHANGED)
   const handleNewChat = async () => {
-    // 💾 Strategic save point #4: Save current chat before creating new chat (main button)
-    if (currentChatId && messages.length > 0) {
-      console.log('💾 [IndexedDB] Saving current chat before new chat (main button):', currentChatId);
-      await chatDB.saveChat(currentChatId, messages);
-    }
+    try {
+      // ✅ SAVE POINT #2: Save current chat before creating new
+      if (currentChatId && messages.length > 0) {
+        console.log('💾 [MONITOR] Saving before new chat:', currentChatId);
+        await chatDB.saveChat(currentChatId, messages);
+        console.log('✅ [MONITOR] Current chat saved before new chat');
+      }
 
-    // 🆕 STREAMING: Stop any ongoing streaming
-    if (stopStreamingRef) {
-      stopStreamingRef();
-      setStopStreamingRef(null);
+      // 🆕 STREAMING: Stop any ongoing streaming
+      if (stopStreamingRef) {
+        stopStreamingRef();
+        setStopStreamingRef(null);
+      }
+      
+      mobileAudioManager.stop();
+      setIsAudioPlaying(false);
+      currentAudioRef.current = null;
+      
+      if (streaming) setStreaming(false);
+      if (isListening) setIsListening(false);
+      if (isRecordingSTT) stopSTTRecording();
+      
+      // 🔗 Close sources modal on new chat
+      setSourcesModalOpen(false);
+      setCurrentSources([]);
+      
+      sessionManager.clearSession();
+      setMessages([]);
+      setUserLanguage('cs');
+      
+      // 📄 Clear document states to prevent context leakage
+      setActiveDocumentContexts([]);
+      setUploadedDocuments([]);
+    
+      // Create new chat ID for history tracking
+      const newChatId = chatDB.generateChatId();
+      setCurrentChatId(newChatId);
+      
+      console.log('🆕 [MONITOR] New chat prepared:', newChatId);
+      
+    } catch (error) {
+      console.error('❌ [MONITOR] New chat preparation failed:', error);
+      // Fallback - still create new chat but without IndexedDB save
+      const newChatId = chatDB.generateChatId();
+      setCurrentChatId(newChatId);
     }
-    
-    mobileAudioManager.stop();
-    setIsAudioPlaying(false);
-    currentAudioRef.current = null;
-    
-    if (streaming) setStreaming(false);
-    if (isListening) setIsListening(false);
-    if (isRecordingSTT) stopSTTRecording();
-    
-    // 🔗 Close sources modal on new chat
-    setSourcesModalOpen(false);
-    setCurrentSources([]);
-    
-    sessionManager.clearSession();
-    setMessages([]);
-    setUserLanguage('cs');
-    
-    // 📄 Clear document states to prevent context leakage
-    setActiveDocumentContexts([]);
-    setUploadedDocuments([]);
-    
-    // Create new chat ID for history tracking
-    setCurrentChatId(chatDB.generateChatId());
-    
-    // showNotification(t('newChatCreated'), 'success');
   };
 
   const convertMessagesForOpenAI = (messages) => {
@@ -802,6 +831,10 @@ function App() {
   const handleSend = async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
     
+    // Variables for final save point
+    let responseText = '';
+    let sourcesToSave = [];
+    
     // 🆕 STREAMING: Stop any ongoing streaming
     if (stopStreamingRef) {
       stopStreamingRef();
@@ -833,12 +866,19 @@ function App() {
       const userMessage = { sender: 'user', text: textInput };
       const messagesWithUser = [...messages, userMessage];
       setMessages(messagesWithUser);
-      // 💾 Strategic save point #2: Save chat after user sends message
-      if (currentChatId) {
-        console.log('💾 [IndexedDB] Saving chat after user message:', currentChatId);
-        await chatDB.saveChat(currentChatId, messagesWithUser);
-        loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
+
+      // ✅ SAVE POINT #1: Create new chat if this is the first message
+      if (messages.length === 0 && currentChatId) {
+        try {
+          console.log('🆕 [MONITOR] Creating new chat:', currentChatId);
+          await chatDB.saveChat(currentChatId, [userMessage]);
+          console.log('✅ [MONITOR] New chat created successfully');
+        } catch (error) {
+          console.error('❌ [MONITOR] Failed to create new chat:', error);
+          // Continue with session-only mode
+        }
       }
+      // ❌ REMOVED: Save after user message (to prevent race conditions)
 
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
@@ -896,7 +936,7 @@ function App() {
         return;
       }
 
-      let responseText = '';
+      // Using global responseText variable
 
       if (model === 'claude') {
         let finalText = '';
@@ -915,6 +955,8 @@ function App() {
         
         finalText = finalText || result.text;
         sources = result.sources || [];
+        responseText = finalText;
+        sourcesToSave = sources;
         
         // 🆕 STREAMING: Use streaming effect for final text
         const stopFn = streamMessageWithEffect(
@@ -936,12 +978,7 @@ function App() {
         
         const finalMessages = [...messagesWithUser, finalMessage];
 
-        // 💾 Strategic save point #3: Save chat after AI completes response (Claude)
-        if (currentChatId) {
-          console.log('💾 [IndexedDB] Saving chat after Claude response:', currentChatId);
-          await chatDB.saveChat(currentChatId, finalMessages);
-          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
-        }
+        // ❌ REMOVED: Save after Claude response (to prevent race conditions)
         
         if (fromVoice && showVoiceScreen && finalText) {
           console.log('🎵 Claude complete, instant voice playback...');
@@ -955,6 +992,7 @@ function App() {
         
         const response = await openaiService.sendMessage(openAIMessages, detectedLang);
         responseText = (typeof response === 'object' && response.text) ? response.text : response;
+        sourcesToSave = [];
         
         // 🆕 STREAMING: Use streaming effect for GPT too
         const stopFn = streamMessageWithEffect(
@@ -973,12 +1011,7 @@ function App() {
           isStreaming: false
         }];
 
-        // 💾 Strategic save point #3: Save chat after AI completes response (OpenAI)
-        if (currentChatId) {
-          console.log('💾 [IndexedDB] Saving chat after OpenAI response:', currentChatId);
-          await chatDB.saveChat(currentChatId, finalMessages);
-          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
-        }
+        // ❌ REMOVED: Save after OpenAI response (to prevent race conditions)
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
@@ -1002,6 +1035,7 @@ function App() {
         
         responseText = result.text;
         const sources = streamingSources.length > 0 ? streamingSources : (result.sources || []);
+        sourcesToSave = sources;
         
         console.log('🎯 GROK FINAL SOURCES:', sources);
         
@@ -1022,12 +1056,7 @@ function App() {
           isStreaming: false
         }];
 
-        // 💾 Strategic save point #3: Save chat after AI completes response (Grok)
-        if (currentChatId) {
-          console.log('💾 [IndexedDB] Saving chat after Grok response:', currentChatId);
-          await chatDB.saveChat(currentChatId, finalMessages);
-          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
-        }
+        // ❌ REMOVED: Save after Grok response (to prevent race conditions)
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Grok response complete, processing voice...');
@@ -1098,6 +1127,7 @@ function App() {
         
         responseText = result.text;
         const sources = result.sources || [];
+        sourcesToSave = sources;
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
@@ -1110,12 +1140,7 @@ function App() {
         }];
         setMessages(finalMessages);
 
-        // 💾 Strategic save point #3: Save chat after AI completes response (Gemini)
-        if (currentChatId) {
-          console.log('💾 [IndexedDB] Saving chat after Gemini response:', currentChatId);
-          await chatDB.saveChat(currentChatId, finalMessages);
-          loadChatHistories(); // 🔄 Refresh sidebar to show updated chat
-        }
+        // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
@@ -1130,6 +1155,45 @@ function App() {
       setLoading(false);
       setStreaming(false);
       setIsSearching(false);
+      
+      // ✅ SINGLE SAVE POINT - Only save when conversation is complete
+      if (currentChatId && responseText && !fromVoice) {
+        try {
+          console.log('💾 [MONITOR] Saving completed conversation:', {
+            chatId: currentChatId,
+            messageCount: messages.length + 2, // user + AI
+            model: model,
+            timestamp: new Date().toISOString()
+          });
+          
+          const finalMessages = [...messages, 
+            { sender: 'user', text: textInput },
+            { sender: 'bot', text: responseText, sources: sourcesToSave || [] }
+          ];
+          
+          await chatDB.saveChat(currentChatId, finalMessages);
+          await loadChatHistories();
+          
+          console.log('✅ [MONITOR] Conversation saved successfully');
+          
+        } catch (error) {
+          console.error('❌ [MONITOR] IndexedDB save failed:', {
+            error: error.message,
+            stack: error.stack,
+            chatId: currentChatId,
+            timestamp: new Date().toISOString()
+          });
+          
+          // ✅ FALLBACK: Save to sessionStorage
+          const fallbackMessages = [...messages,
+            { sender: 'user', text: textInput },
+            { sender: 'bot', text: responseText }
+          ];
+          sessionManager.saveMessages(fallbackMessages);
+          sessionManager.saveCurrentChatId(currentChatId);
+          console.log('🔄 [MONITOR] Fallback to sessionStorage completed');
+        }
+      }
     }
   };
 

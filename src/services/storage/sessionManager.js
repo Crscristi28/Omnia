@@ -41,10 +41,17 @@ const sessionManager = {
   // 💾 Save current session messages (temporary, not persistent history)
   saveMessages(messages) {
     try {
-      localStorage.setItem('omnia-memory', JSON.stringify(messages));
-      console.log('💾 Messages saved to localStorage');
+      const data = JSON.stringify(messages);
+      if (data.length > 4 * 1024 * 1024) { // 4MB limit
+        console.warn('⚠️ [MONITOR] Message data too large, truncating');
+        const truncated = messages.slice(-20); // Keep last 20 messages
+        localStorage.setItem('omnia-memory', JSON.stringify(truncated));
+      } else {
+        localStorage.setItem('omnia-memory', data);
+      }
+      console.log(`💾 [MONITOR] Saved ${messages.length} messages to localStorage`);
     } catch (error) {
-      console.error('❌ Error saving messages:', error);
+      console.error('❌ [MONITOR] Failed to save messages:', error);
     }
   },
 
@@ -73,6 +80,26 @@ const sessionManager = {
 
   getSelectedModel() {
     return localStorage.getItem('omnia-selected-model');
+  },
+
+  // 💾 Save current chat ID for recovery
+  saveCurrentChatId(chatId) {
+    try {
+      sessionStorage.setItem('omnia-current-chat-id', chatId);
+      console.log('💾 [MONITOR] Current chat ID saved to session');
+    } catch (error) {
+      console.error('❌ [MONITOR] Failed to save chat ID:', error);
+    }
+  },
+
+  // 📖 Get current chat ID
+  getCurrentChatId() {
+    try {
+      return sessionStorage.getItem('omnia-current-chat-id');
+    } catch (error) {
+      console.error('❌ [MONITOR] Failed to get chat ID:', error);
+      return null;
+    }
   }
 
   // ❌ REMOVED: All chat history methods moved to chatDB.js

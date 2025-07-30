@@ -1,6 +1,7 @@
 import React from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import '@uiw/react-md-editor/markdown-editor.css';
 import 'katex/dist/katex.css';
@@ -17,7 +18,7 @@ const MessageRenderer = ({ content, className = "text-white" }) => {
             color: 'inherit'
           }}
           data-color-mode="dark"
-          remarkPlugins={[remarkMath]}
+          remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex]}
         />
       </div>
