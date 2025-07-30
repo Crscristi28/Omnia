@@ -90,9 +90,16 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         /* Stabilize text rendering to prevent jumping */
         .markdown-container {
           min-height: 1.6em; /* Prevent height fluctuations */
-          max-width: 65ch; /* Limit line length to prevent jumping */
-          word-wrap: break-word;
-          overflow-wrap: break-word;
+        }
+        
+        /* Limit width on the actual text content */
+        .w-md-editor-text,
+        .w-md-editor-text-container,
+        .w-md-editor-text-input,
+        .w-md-editor-text-textarea {
+          max-width: 65ch !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
         }
         
         /* Ensure consistent spacing for all paragraph content */
