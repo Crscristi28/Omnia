@@ -423,7 +423,7 @@ const SimpleVoiceRecorder = ({
       console.log('🔇 Stopping listening - audio playing');
       stopListening();
     }
-  }, [isAudioPlaying, isListening, stopListening]);
+  }, [isAudioPlaying, isListening]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
