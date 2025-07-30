@@ -7,6 +7,18 @@ import '@uiw/react-md-editor/markdown-editor.css';
 import 'katex/dist/katex.css';
 
 
+// Lightweight preprocessing for better visual during streaming
+const preprocessStreamingText = (text) => {
+  if (!text) return '';
+  
+  // Quick replacements for common patterns
+  return text
+    .replace(/^•\s+/gm, '- ')  // Bullet points at line start
+    .replace(/\n•\s+/g, '\n- ') // Bullet points after newline
+    .replace(/^\*\s+/gm, '- ') // Asterisk bullets
+    .replace(/\n\*\s+/g, '\n- '); // Asterisk after newline
+};
+
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
   // During streaming: render as plain text to prevent markdown re-parsing
   // After completion: render as markdown for proper formatting
@@ -17,10 +29,24 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         <div className="streaming-text" style={{ 
           whiteSpace: 'pre-wrap',
           lineHeight: '1.6',
-          color: 'inherit'
+          color: 'inherit',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
+          fontSize: 'inherit'
         }}>
-          {content || ''}
+          {preprocessStreamingText(content)}
         </div>
+        
+        <style>{`
+          .streaming-text {
+            opacity: 0.95;
+            transition: opacity 0.2s ease;
+          }
+          
+          /* Style bullet points during streaming */
+          .streaming-text:not(:empty) {
+            padding-left: 0.5rem;
+          }
+        `}</style>
       </div>
     );
   }
