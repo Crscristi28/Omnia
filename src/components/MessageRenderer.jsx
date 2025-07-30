@@ -29,7 +29,7 @@ const preprocessStreamingText = (text) => {
   return processed;
 };
 
-const MessageRenderer = ({ content, className = "text-white", isStreaming = false, isTyping = false }) => {
+const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
   const [isTransitioning, setIsTransitioning] = React.useState(false);
   const prevStreamingRef = React.useRef(isStreaming);
   
@@ -43,52 +43,6 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
     prevStreamingRef.current = isStreaming;
   }, [isStreaming]);
   
-  // Show typing indicator
-  if (isTyping) {
-    return (
-      <div className={className}>
-        <div className="typing-indicator" style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          padding: '8px 0'
-        }}>
-          <span className="typing-dot"></span>
-          <span className="typing-dot"></span>
-          <span className="typing-dot"></span>
-        </div>
-        
-        <style>{`
-          .typing-dot {
-            width: 8px;
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            animation: typingAnimation 1.4s infinite ease-in-out;
-          }
-          
-          .typing-dot:nth-child(1) {
-            animation-delay: -0.32s;
-          }
-          
-          .typing-dot:nth-child(2) {
-            animation-delay: -0.16s;
-          }
-          
-          @keyframes typingAnimation {
-            0%, 80%, 100% {
-              opacity: 0.6;
-              transform: scale(1);
-            }
-            40% {
-              opacity: 1;
-              transform: scale(1.2);
-            }
-          }
-        `}</style>
-      </div>
-    );
-  }
   
   if (isStreaming) {
     return (

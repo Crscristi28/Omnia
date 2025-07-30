@@ -1149,14 +1149,7 @@ function App() {
           name: doc.name 
         }));
         
-        // Show typing indicator while collecting full response
-        const typingMessage = {
-          sender: 'bot',
-          text: '',
-          isTyping: true,
-          sources: []
-        };
-        setMessages([...messagesWithUser, typingMessage]);
+        // Don't update UI during streaming - collect full response first
         
         // Collect full response without showing partial text
         const result = await geminiService.sendMessage(
@@ -2336,7 +2329,6 @@ const handleSendWithDocuments = async (text, documents) => {
                   <MessageRenderer 
                     content={msg.text || ''}
                     className="text-white"
-                    isTyping={msg.isTyping}
                   />
                   
                   {/* 🔘 ACTION BUTTONS - Moved below message */}
