@@ -6,13 +6,53 @@ import rehypeKatex from 'rehype-katex';
 import '@uiw/react-md-editor/markdown-editor.css';
 import 'katex/dist/katex.css';
 
-const MessageRenderer = ({ content, className = "text-white" }) => {
-  // Direct markdown rendering without lazy loading to prevent content jumping
+// Pre-process content to fix bullet points and formatting
+const preprocessMarkdown = (text) => {
+  if (!text) return '';
+  
+  let processed = text;
+  
+  // Fix bullet points - add newline before bullets if missing
+  processed = processed.replace(/([^\n])\n•/g, '$1\n\n•');
+  processed = processed.replace(/([^\n])\n\*/g, '$1\n\n*');
+  processed = processed.replace(/([^\n])\n-/g, '$1\n\n-');
+  
+  // Convert bullet symbols to markdown dashes for better compatibility
+  processed = processed.replace(/^\s*•\s+/gm, '- ');
+  
+  // Fix numbered lists spacing
+  processed = processed.replace(/([^\n])\n(\d+\.)/g, '$1\n\n$2');
+  
+  return processed;
+};
+
+const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
+  // During streaming: render as plain text to prevent markdown re-parsing
+  // After completion: render as markdown for proper formatting
+  
+  if (isStreaming) {
+    return (
+      <div className={className}>
+        <div className="streaming-text" style={{ 
+          whiteSpace: 'pre-wrap',
+          lineHeight: '1.6',
+          color: 'inherit'
+        }}>
+          {content || ''}
+        </div>
+      </div>
+    );
+  }
+  
+  // Pre-process content for better markdown parsing
+  const processedContent = preprocessMarkdown(content);
+  
+  // Final render with full markdown parsing
   return (
     <div className={className}>
       <div className="markdown-container">
         <MDEditor.Markdown 
-          source={content || ''} 
+          source={processedContent} 
           style={{ 
             backgroundColor: 'transparent',
             color: 'inherit'
