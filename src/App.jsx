@@ -253,6 +253,9 @@ function App() {
   
   // 🔄 PWA UPDATE STATE - For handling app updates
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
+  
+  // 🧪 DEBUG: Manual trigger for testing (temporary)
+  const [debugUpdateTest, setDebugUpdateTest] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
   
   // 📄 Smart document context management - tracks which documents AI can currently see
@@ -1817,6 +1820,29 @@ const handleModelChange = useCallback((newModel) => {
           title={t('chatHistory')}
         >
           <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
+        </button>
+
+        {/* 🧪 DEBUG: PWA Update Test Button */}
+        <button
+          onClick={() => setShowUpdatePrompt(true)}
+          style={{
+            width: isMobile ? 40 : 44,
+            height: isMobile ? 40 : 44,
+            borderRadius: '12px',
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            color: '#60A5FA',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            marginLeft: '8px'
+          }}
+          title="Test PWA Update"
+        >
+          PWA
         </button>
 
         {/* MODEL SELECTOR - uprostřed */}
