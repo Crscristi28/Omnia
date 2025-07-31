@@ -254,8 +254,6 @@ function App() {
   // 🔄 PWA UPDATE STATE - For handling app updates
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   
-  // 🧪 DEBUG: Manual trigger for testing (temporary)
-  const [debugUpdateTest, setDebugUpdateTest] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
   
   // 📄 Smart document context management - tracks which documents AI can currently see
@@ -277,8 +275,10 @@ function App() {
 
   // 🔄 PWA UPDATE EVENT LISTENERS
   useEffect(() => {
+    console.log('🔍 Setting up PWA event listeners...');
+    
     const handleUpdateAvailable = () => {
-      console.log('🔄 PWA update available!');
+      console.log('🔥 PWA UPDATE EVENT TRIGGERED!');
       setShowUpdatePrompt(true);
     };
 
@@ -290,6 +290,19 @@ function App() {
     // Listen for PWA update events
     window.addEventListener('pwa-update-available', handleUpdateAvailable);
     window.addEventListener('pwa-offline-ready', handleOfflineReady);
+
+    // 🧪 DEBUG: Test if SW is registered
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        console.log('🔧 Service Worker registrations:', registrations.length);
+        registrations.forEach((registration, index) => {
+          console.log(`SW ${index}:`, registration.scope);
+        });
+      });
+    }
+
+    // 🧪 DEBUG: Check if updatePWA is available
+    console.log('🔧 window.updatePWA available:', !!window.updatePWA);
 
     return () => {
       window.removeEventListener('pwa-update-available', handleUpdateAvailable);
@@ -422,12 +435,22 @@ function App() {
     setShowUpdatePrompt(false);
     if (window.updatePWA) {
       window.updatePWA();
+    } else {
+      console.warn('⚠️ window.updatePWA not available');
+      // Fallback: reload page
+      window.location.reload();
     }
   };
 
   const handleDismissUpdate = () => {
     console.log('⏭️ PWA update dismissed');
     setShowUpdatePrompt(false);
+  };
+
+  // 🧪 DEBUG: Manual trigger real update event
+  const triggerUpdateEvent = () => {
+    console.log('🧪 Manually triggering update event...');
+    window.dispatchEvent(new CustomEvent('pwa-update-available'));
   };
 
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
@@ -1822,27 +1845,27 @@ const handleModelChange = useCallback((newModel) => {
           <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
         </button>
 
-        {/* 🧪 DEBUG: PWA Update Test Button */}
+        {/* 🧪 DEBUG: Real PWA Event Test Button */}
         <button
-          onClick={() => setShowUpdatePrompt(true)}
+          onClick={triggerUpdateEvent}
           style={{
             width: isMobile ? 40 : 44,
             height: isMobile ? 40 : 44,
             borderRadius: '12px',
-            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            color: '#60A5FA',
+            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+            color: '#22C55E',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '12px',
+            fontSize: '10px',
             fontWeight: 'bold',
             marginLeft: '8px'
           }}
-          title="Test PWA Update"
+          title="Trigger PWA Update Event"
         >
-          PWA
+          ⚡
         </button>
 
         {/* MODEL SELECTOR - uprostřed */}
