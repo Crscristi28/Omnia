@@ -281,10 +281,17 @@ function App() {
 
   // 🔄 PWA UPDATE EVENT LISTENERS
   useEffect(() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    
     console.log('🔍 Setting up PWA event listeners...');
+    console.log('📱 Mobile device:', isMobile);
+    console.log('📱 PWA mode:', isPWA);
+    console.log('📱 User agent:', navigator.userAgent);
     
     const handleUpdateAvailable = () => {
       console.log('🔥 PWA UPDATE EVENT TRIGGERED!');
+      console.log('📱 Mobile:', isMobile, 'PWA:', isPWA);
       setShowUpdatePrompt(true);
     };
 

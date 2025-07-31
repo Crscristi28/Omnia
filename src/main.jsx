@@ -9,11 +9,22 @@ import { registerSW } from 'virtual:pwa-register'
 // Register Service Worker with update handling
 const updateSW = registerSW({
   onNeedRefresh() {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    
     console.log('🔥 PWA UPDATE NEEDED - DISPATCHING EVENT!');
+    console.log('📱 Device info:', { isMobile, isPWA, userAgent: navigator.userAgent });
+    console.log('📱 Document state:', document.readyState);
+    console.log('📱 Window focused:', document.hasFocus());
+    
     // Store the update function globally immediately
     window.pendingUpdateSW = updateSW;
+    
     // Dispatch custom event for update notification
-    window.dispatchEvent(new CustomEvent('pwa-update-available'));
+    console.log('📱 Dispatching pwa-update-available event...');
+    const event = new CustomEvent('pwa-update-available');
+    window.dispatchEvent(event);
+    console.log('📱 Event dispatched:', event);
   },
   onOfflineReady() {
     console.log('🔄 PWA ready to work offline');

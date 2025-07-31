@@ -100,6 +100,14 @@ const UpdatePrompt = ({
             e.target.style.color = 'rgba(255, 255, 255, 0.6)';
             e.target.style.background = 'transparent';
           }}
+          onTouchStart={(e) => {
+            e.target.style.color = '#ffffff';
+            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+          }}
+          onTouchEnd={(e) => {
+            e.target.style.color = 'rgba(255, 255, 255, 0.6)';
+            e.target.style.background = 'transparent';
+          }}
         >
           <X size={14} />
         </button>
@@ -146,6 +154,14 @@ const UpdatePrompt = ({
             e.target.style.transform = 'translateY(0)';
             e.target.style.boxShadow = 'none';
           }}
+          onTouchStart={(e) => {
+            e.target.style.transform = 'translateY(-1px)';
+            e.target.style.boxShadow = '0 5px 15px rgba(59, 130, 246, 0.4)';
+          }}
+          onTouchEnd={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = 'none';
+          }}
         >
           <Download size={14} />
           {t.updateButton}
@@ -169,6 +185,14 @@ const UpdatePrompt = ({
             e.target.style.color = '#ffffff';
           }}
           onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.color = 'rgba(255, 255, 255, 0.8)';
+          }}
+          onTouchStart={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+            e.target.style.color = '#ffffff';
+          }}
+          onTouchEnd={(e) => {
             e.target.style.background = 'transparent';
             e.target.style.color = 'rgba(255, 255, 255, 0.8)';
           }}
