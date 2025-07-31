@@ -21,7 +21,7 @@ import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton } from './components/ui';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, UpdatePrompt } from './components/ui';
 import { VoiceScreen } from './components/chat';
 import MessageRenderer from './components/MessageRenderer';
 
@@ -250,6 +250,9 @@ function App() {
   
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
+  
+  // 🔄 PWA UPDATE STATE - For handling app updates
+  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
   
   // 📄 Smart document context management - tracks which documents AI can currently see
@@ -268,6 +271,28 @@ function App() {
   useEffect(() => {
     sessionManager.saveSelectedModel(model);
   }, [model]);
+
+  // 🔄 PWA UPDATE EVENT LISTENERS
+  useEffect(() => {
+    const handleUpdateAvailable = () => {
+      console.log('🔄 PWA update available!');
+      setShowUpdatePrompt(true);
+    };
+
+    const handleOfflineReady = () => {
+      console.log('✅ PWA ready to work offline');
+      // Optional: Show offline ready notification
+    };
+
+    // Listen for PWA update events
+    window.addEventListener('pwa-update-available', handleUpdateAvailable);
+    window.addEventListener('pwa-offline-ready', handleOfflineReady);
+
+    return () => {
+      window.removeEventListener('pwa-update-available', handleUpdateAvailable);
+      window.removeEventListener('pwa-offline-ready', handleOfflineReady);
+    };
+  }, []);
 
   // 🆕 AUDIO INITIALIZATION (UNCHANGED)
   useEffect(() => {
@@ -386,6 +411,20 @@ function App() {
     console.log('🔗 Closing sources modal');
     setSourcesModalOpen(false);
     setCurrentSources([]);
+  };
+
+  // 🔄 PWA UPDATE HANDLERS
+  const handlePWAUpdate = () => {
+    console.log('🔄 Updating PWA...');
+    setShowUpdatePrompt(false);
+    if (window.updatePWA) {
+      window.updatePWA();
+    }
+  };
+
+  const handleDismissUpdate = () => {
+    console.log('⏭️ PWA update dismissed');
+    setShowUpdatePrompt(false);
   };
 
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
@@ -2603,6 +2642,14 @@ const handleModelChange = useCallback((newModel) => {
         button { -webkit-user-select: none; user-select: none; }
         input:focus { outline: none !important; }
       `}</style>
+      
+      {/* 🔄 PWA UPDATE PROMPT */}
+      <UpdatePrompt
+        isVisible={showUpdatePrompt}
+        onUpdateClick={handlePWAUpdate}
+        onDismiss={handleDismissUpdate}
+        uiLanguage={uiLanguage}
+      />
     </div>
   );
 };
