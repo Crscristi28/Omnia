@@ -864,27 +864,27 @@ function App() {
     setIsAudioPlaying(false);
     currentAudioRef.current = null;
 
-    if (!fromVoice) setInput(prev => '');
-    setLoading(prev => true);
+    if (!fromVoice) setInput('');
+    setLoading(true);
 
     try {
       const userMessage = { sender: 'user', text: textInput };
-      setMessages(prevMessages => {
-        const messagesWithUser = [...prevMessages, userMessage];
-        
-        // ✅ SAVE POINT #1: Create new chat if this is the first message
-        if (prevMessages.length === 0 && currentChatId) {
-          chatDB.saveChat(currentChatId, [userMessage]).then(() => {
-            crashMonitor.trackIndexedDB('create_chat', currentChatId, true);
-            console.log('✅ [MONITOR] New chat created successfully');
-          }).catch(error => {
-            crashMonitor.trackIndexedDB('create_chat', currentChatId, false, error);
-            console.error('❌ [MONITOR] Failed to create new chat:', error);
-          });
+      const messagesWithUser = [...messages, userMessage];
+      setMessages(messagesWithUser);
+
+      // ✅ SAVE POINT #1: Create new chat if this is the first message
+      if (messages.length === 0 && currentChatId) {
+        try {
+          console.log('🆕 [MONITOR] Creating new chat:', currentChatId);
+          await chatDB.saveChat(currentChatId, [userMessage]);
+          crashMonitor.trackIndexedDB('create_chat', currentChatId, true);
+          console.log('✅ [MONITOR] New chat created successfully');
+        } catch (error) {
+          crashMonitor.trackIndexedDB('create_chat', currentChatId, false, error);
+          console.error('❌ [MONITOR] Failed to create new chat:', error);
+          // Continue with session-only mode
         }
-        
-        return messagesWithUser;
-      });
+      }
       // ❌ REMOVED: Save after user message (to prevent race conditions)
 
       // 🎨 IMAGE GENERATION MODE
@@ -915,7 +915,8 @@ function App() {
               isStreaming: false
             };
             
-            setMessages(prevMessages => [...prevMessages, imageMessage]);
+            const finalMessages = [...messagesWithUser, imageMessage];
+            setMessages(finalMessages);
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
@@ -931,7 +932,8 @@ function App() {
             isStreaming: false
           };
           
-          setMessages(prevMessages => [...prevMessages, errorMessage]);
+          const finalMessages = [...messagesWithUser, errorMessage];
+          setMessages(finalMessages);
           
           showNotification('Chyba při generování obrázku', 'error');
         }
@@ -1146,7 +1148,7 @@ function App() {
           sources: sources,
           isStreaming: false
         }];
-        setMessages(prevMessages => [...prevMessages.slice(0, -1), finalMessage]);
+        setMessages(finalMessages);
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
@@ -1165,8 +1167,8 @@ function App() {
       console.error('💥 API call error:', err);
       showNotification(err.message, 'error');
     } finally {
-      setLoading(prev => false);
-      setStreaming(prev => false);
+      setLoading(false);
+      setStreaming(false);
       setIsSearching(false);
       
       // ✅ SINGLE SAVE POINT - Only save when conversation is complete
@@ -1221,7 +1223,7 @@ function App() {
         });
       }
     }
-  }, [model, currentChatId, userLanguage, isImageMode, uploadedDocuments, stopStreamingRef]);
+  }, [input, loading, model, currentChatId, messages, stopStreamingRef, userLanguage, isImageMode, uploadedDocuments]);
 
   const handleTranscript = useCallback(async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
