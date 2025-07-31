@@ -10,6 +10,22 @@
   }
 }
 
+/* 🎨 Breathing animation for streaming - Pure CSS for performance */
+@keyframes subtle-breathing {
+  0%, 100% { 
+    transform: translateY(0px);
+    opacity: 0.95;
+  }
+  50% { 
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+}
+
+.streaming-breathing {
+  animation: subtle-breathing 3s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;

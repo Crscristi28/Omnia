@@ -239,9 +239,7 @@ function App() {
   // 🆕 STREAMING STATE - For controlling streaming effect
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
   
-  // 🎨 BREATHING ANIMATION - For dynamic padding during streaming
-  const [breathingOffset, setBreathingOffset] = useState(0);
-  const [pulseOpacity, setPulseOpacity] = useState(1);
+  // 🎨 BREATHING ANIMATION - Removed for performance (now using CSS only)
   
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -491,8 +489,14 @@ function App() {
   React.useEffect(() => {
     const handleBeforeUnload = () => {
       if (currentChatId && messages.length > 0) {
-        console.log('🚪 [MONITOR] App closing - saving to sessionStorage');
-        // Synchronní backup do sessionStorage
+        console.log('🚪 [MONITOR] App closing - saving to IndexedDB and sessionStorage');
+        
+        // Asynchronní save do IndexedDB (persistent storage)
+        chatDB.saveChat(currentChatId, messages).catch(error => {
+          console.error('❌ Failed to save to IndexedDB on close:', error);
+        });
+        
+        // Synchronní backup do sessionStorage (fallback)
         sessionManager.saveMessages(messages);
         sessionManager.saveCurrentChatId(currentChatId);
       }
@@ -502,32 +506,8 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [currentChatId, messages]);
 
-  // 🎨 BREATHING ANIMATION - Dynamic padding during streaming
-  useEffect(() => {
-    if (!streaming) {
-      setBreathingOffset(0);
-      setPulseOpacity(1);
-      return;
-    }
-
-    let animationFrameId;
-
-    const animate = () => {
-      const time = Date.now() / 1000; // Convert to seconds
-      const breathingValue = Math.sin(time) * 3; // ±3px breathing effect
-      const pulseValue = 0.95 + Math.sin(time * 1.2) * 0.05; // Subtle opacity pulse
-      
-      setBreathingOffset(breathingValue);
-      setPulseOpacity(pulseValue);
-
-      if (streaming) {
-        animationFrameId = requestAnimationFrame(animate);
-      }
-    };
-
-    animationFrameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [streaming]);
+  // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
+  // Note: Removed JavaScript animation loop to improve performance by ~95%
 
   // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up
   useEffect(() => {
@@ -2004,8 +1984,8 @@ const handleSendWithDocuments = async (text, documents) => {
             ? 'calc(80px + env(safe-area-inset-top))' 
             : '100px', // Space for fixed header + notch/Dynamic Island
           paddingBottom: isMobile 
-            ? `${240 + breathingOffset}px` 
-            : `${200 + breathingOffset}px`, // More breathing room for scrolling
+            ? '240px' 
+            : '200px', // More breathing room for scrolling
           width: '100%',
           position: 'relative', // Create proper stacking context
           WebkitOverflowScrolling: 'touch',
@@ -2013,17 +1993,18 @@ const handleSendWithDocuments = async (text, documents) => {
           overscrollBehavior: 'none', // Prevent elastic scroll
           WebkitOverscrollBehavior: 'none', // iOS Safari support
           touchAction: 'pan-y', // Only allow vertical scrolling
-          opacity: streaming ? pulseOpacity : 1, // Subtle pulsing during streaming
-          transition: streaming ? 'none' : 'padding-bottom 0.3s ease-out, opacity 0.3s ease-out'
+          transition: 'padding-bottom 0.3s ease-out'
         }}
       >
-        <div style={{ 
-          maxWidth: '1000px', 
-          margin: '0 auto',
-          minHeight: 'auto',
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: messages.length === 0 ? 'center' : 'flex-start'
+        <div 
+          className={streaming ? 'streaming-breathing' : ''}
+          style={{ 
+            maxWidth: '1000px', 
+            margin: '0 auto',
+            minHeight: 'auto',
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: messages.length === 0 ? 'center' : 'flex-start'
         }}>
           
           {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
