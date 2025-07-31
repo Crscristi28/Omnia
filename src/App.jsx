@@ -829,6 +829,12 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    inputRef.current = input;
+    messagesRef.current = messages;
+    uploadedDocumentsRef.current = uploadedDocuments;
+  }, [input, messages, uploadedDocuments]);
+
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = useCallback(async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
