@@ -34,6 +34,58 @@
 - Sync status indikátor v UI
 - Error handling pro failed syncs
 
+**🎯 BONUS: CHAT SAVE ON APP CLOSE FIX!**
+**PŘESNĚ TAK!** 🎯 Teď je perfektní čas to vyřešit!
+
+## 💡 **Proč to teď bude fungovat:**
+
+### **Předtím:**
+- ❌ Žádný Service Worker
+- ❌ beforeunload = nespolehlivé pro async
+- ❌ IndexedDB save se nestihla
+
+### **Teď máš:**
+- ✅ **Service Worker** - může dokončit operace
+- ✅ **Background Sync** (zítra) - perfektní pro toto
+- ✅ **Offline support** - cache první, sync později
+
+## 🔧 **Řešení HNED:**
+
+```javascript
+// V Service Worker (sw.js):
+self.addEventListener('sync', async (event) => {
+  if (event.tag === 'save-chat') {
+    event.waitUntil(
+      // IndexedDB save se DOKONČÍ i po zavření!
+      saveToIndexedDB()
+    );
+  }
+});
+
+// V App.jsx:
+window.addEventListener('beforeunload', () => {
+  if ('serviceWorker' in navigator && 'sync' in self.registration) {
+    // Zaregistruj sync event
+    navigator.serviceWorker.ready.then(reg => {
+      reg.sync.register('save-chat');
+    });
+  }
+});
+```
+
+## 🚀 **Nebo ještě jednodušší:**
+
+Díky PWA improvements můžeš použít **Page Visibility API** spolehlivěji:
+
+```javascript
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden) {
+    // Uložit když user přepne pryč
+    await chatDB.saveChat(); // Teď se to stihne!
+  }
+});
+```
+
 **Odhad času:** 3-4 hodiny
 
 ---
