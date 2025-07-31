@@ -21,7 +21,7 @@ import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, UpdatePrompt } from './components/ui';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, UpdatePrompt, OfflineIndicator } from './components/ui';
 import { VoiceScreen } from './components/chat';
 import MessageRenderer from './components/MessageRenderer';
 
@@ -33,6 +33,9 @@ import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
+
+// 📶 HOOKS - For offline detection
+import { useOnlineStatus } from './hooks/useOnlineStatus';
 
 // 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
 const welcomeTexts = {
@@ -254,6 +257,9 @@ function App() {
   // 🔄 PWA UPDATE STATE - For handling app updates
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   
+  // 📶 ONLINE STATUS - For offline detection
+  const { isOnline, isOffline, connectionType, connectionInfo } = useOnlineStatus();
+  
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
   
   // 📄 Smart document context management - tracks which documents AI can currently see
@@ -452,11 +458,6 @@ function App() {
     setShowUpdatePrompt(false);
   };
 
-  // 🧪 DEBUG: Manual trigger real update event
-  const triggerUpdateEvent = () => {
-    console.log('🧪 Manually triggering update event...');
-    window.dispatchEvent(new CustomEvent('pwa-update-available'));
-  };
 
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
   const handleSidebarOpen = () => {
@@ -914,6 +915,13 @@ function App() {
     const finalTextInput = textInput || currentInput;
     
     if (!finalTextInput.trim() || loading) return;
+    
+    // 📶 Check if offline - prevent sending
+    if (isOffline) {
+      console.warn('📵 Cannot send message - device is offline');
+      // You could show a toast notification here
+      return;
+    }
     
     crashMonitor.trackChatOperation('send_message_start', { 
       model, 
@@ -1767,7 +1775,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Clear input after sending
     setInput('');
   }
-}, [loading, streaming, model, uploadedDocuments, messages, currentChatId, userLanguage]);
+}, [loading, streaming, model, uploadedDocuments, messages, currentChatId, userLanguage, isOffline]);
 
 // 🎯 MODEL CHANGE HANDLER - Optimized with useCallback
 const handleModelChange = useCallback((newModel) => {
@@ -1848,29 +1856,6 @@ const handleModelChange = useCallback((newModel) => {
           title={t('chatHistory')}
         >
           <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
-        </button>
-
-        {/* 🧪 DEBUG: Real PWA Event Test Button */}
-        <button
-          onClick={triggerUpdateEvent}
-          style={{
-            width: isMobile ? 40 : 44,
-            height: isMobile ? 40 : 44,
-            borderRadius: '12px',
-            backgroundColor: 'rgba(34, 197, 94, 0.2)',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-            color: '#22C55E',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            marginLeft: '8px'
-          }}
-          title="Trigger PWA Update Event"
-        >
-          ⚡
         </button>
 
         {/* MODEL SELECTOR - uprostřed */}
@@ -2703,6 +2688,15 @@ const handleModelChange = useCallback((newModel) => {
         onUpdateClick={handlePWAUpdate}
         onDismiss={handleDismissUpdate}
         uiLanguage={uiLanguage}
+      />
+      
+      {/* 📶 OFFLINE INDICATOR */}
+      <OfflineIndicator
+        isOnline={isOnline}
+        connectionType={connectionType}
+        connectionInfo={connectionInfo}
+        uiLanguage={uiLanguage}
+        position="top-left"
       />
     </div>
   );
