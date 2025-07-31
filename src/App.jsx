@@ -836,16 +836,18 @@ function App() {
   }, [input, messages, uploadedDocuments]);
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
-  const handleSend = useCallback(async (textInput = currentInput, fromVoice = false) => {
+  const handleSend = useCallback(async (textInput, fromVoice = false) => {
     const currentInput = inputRef.current;
     const currentMessages = messagesRef.current;
     const currentDocuments = uploadedDocumentsRef.current;
     
-    if (!textInput.trim() || loading) return;
+    const finalTextInput = textInput || currentInput;
+    
+    if (!finalTextInput.trim() || loading) return;
     
     crashMonitor.trackChatOperation('send_message_start', { 
       model, 
-      messageLength: textInput.length, 
+      messageLength: finalTextInput.length, 
       fromVoice,
       currentChatId 
     });
@@ -869,7 +871,7 @@ function App() {
       });
     }, 100);
 
-    const detectedLang = detectLanguage(textInput);
+    const detectedLang = detectLanguage(finalTextInput);
     if (detectedLang !== userLanguage) {
       setUserLanguage(detectedLang);
     }
@@ -882,7 +884,7 @@ function App() {
     setLoading(true);
 
     try {
-      const userMessage = { sender: 'user', text: textInput };
+      const userMessage = { sender: 'user', text: finalTextInput };
       const messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
@@ -910,7 +912,7 @@ function App() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              prompt: textInput,
+              prompt: finalTextInput,
               imageCount: 1
             })
           });
@@ -924,7 +926,7 @@ function App() {
           if (result.success && result.images && result.images.length > 0) {
             const imageMessage = {
               sender: 'bot',
-              text: `🎨 Generated image for: "${textInput}"`,
+              text: `🎨 Generated image for: "${finalTextInput}"`,
               image: result.images[0], // Contains base64, mimeType, etc.
               isStreaming: false
             };
@@ -1093,7 +1095,7 @@ function App() {
 
         // Update timestamps for mentioned documents
         currentActiveDocs = currentActiveDocs.map(doc => {
-          if (textInput.toLowerCase().includes(doc.name.toLowerCase())) {
+          if (finalTextInput.toLowerCase().includes(doc.name.toLowerCase())) {
             return { 
               ...doc, 
               lastAccessedTimestamp: Date.now(), 
@@ -1117,7 +1119,7 @@ function App() {
           const isRecentlyMentioned = messagesSinceLastAccess <= 7 || timeSinceLastAccess < 15 * 60 * 1000;
           
           // Rule 3: Explicit forget command (optional feature)
-          const explicitlyForget = textInput.toLowerCase().includes(`zapomeň na ${doc.name.toLowerCase()}`);
+          const explicitlyForget = finalTextInput.toLowerCase().includes(`zapomeň na ${doc.name.toLowerCase()}`);
           if (explicitlyForget) {
             // showNotification(`Zapomínám na dokument "${doc.name}".`, 'info');
             return false;
@@ -1196,7 +1198,7 @@ function App() {
           });
           
           const finalMessages = [...currentMessages, 
-            { sender: 'user', text: textInput },
+            { sender: 'user', text: finalTextInput },
             { sender: 'bot', text: responseText, sources: sourcesToSave || [] }
           ];
           
@@ -1222,7 +1224,7 @@ function App() {
           
           // ✅ FALLBACK: Save to sessionStorage
           const fallbackMessages = [...currentMessages,
-            { sender: 'user', text: textInput },
+            { sender: 'user', text: finalTextInput },
             { sender: 'bot', text: responseText }
           ];
           sessionManager.saveMessages(fallbackMessages);
