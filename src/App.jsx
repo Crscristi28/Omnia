@@ -433,10 +433,15 @@ function App() {
   const handlePWAUpdate = () => {
     console.log('🔄 Updating PWA...');
     setShowUpdatePrompt(false);
-    if (window.updatePWA) {
-      window.updatePWA();
+    
+    // Try multiple sources for update function
+    const updateFn = window.updatePWA || window.pendingUpdateSW;
+    
+    if (updateFn) {
+      console.log('✅ Found update function, executing...');
+      updateFn();
     } else {
-      console.warn('⚠️ window.updatePWA not available');
+      console.warn('⚠️ No update function available, falling back to reload');
       // Fallback: reload page
       window.location.reload();
     }

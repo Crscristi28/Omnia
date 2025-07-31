@@ -10,6 +10,8 @@ import { registerSW } from 'virtual:pwa-register'
 const updateSW = registerSW({
   onNeedRefresh() {
     console.log('🔥 PWA UPDATE NEEDED - DISPATCHING EVENT!');
+    // Store the update function globally immediately
+    window.pendingUpdateSW = updateSW;
     // Dispatch custom event for update notification
     window.dispatchEvent(new CustomEvent('pwa-update-available'));
   },
@@ -20,13 +22,16 @@ const updateSW = registerSW({
   },
   onRegistered(registration) {
     console.log('✅ PWA Service Worker registered:', registration);
+    // Make updateSW globally available for manual updates
+    window.updatePWA = updateSW;
+    console.log('🔧 window.updatePWA is now available');
   },
   onRegisterError(error) {
     console.error('❌ PWA Service Worker registration failed:', error);
   }
 });
 
-// Make updateSW globally available for manual updates
+// Immediate fallback
 window.updatePWA = updateSW;
 
 createRoot(document.getElementById('root')).render(
