@@ -836,7 +836,11 @@ function App() {
   }, [input, messages, uploadedDocuments]);
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
-  const handleSend = useCallback(async (textInput = input, fromVoice = false) => {
+  const handleSend = useCallback(async (textInput = currentInput, fromVoice = false) => {
+    const currentInput = inputRef.current;
+    const currentMessages = messagesRef.current;
+    const currentDocuments = uploadedDocumentsRef.current;
+    
     if (!textInput.trim() || loading) return;
     
     crashMonitor.trackChatOperation('send_message_start', { 
@@ -879,11 +883,11 @@ function App() {
 
     try {
       const userMessage = { sender: 'user', text: textInput };
-      const messagesWithUser = [...messages, userMessage];
+      const messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
       // ✅ SAVE POINT #1: Create new chat if this is the first message
-      if (messages.length === 0 && currentChatId) {
+      if (currentMessages.length === 0 && currentChatId) {
         try {
           console.log('🆕 [MONITOR] Creating new chat:', currentChatId);
           await chatDB.saveChat(currentChatId, [userMessage]);
@@ -1191,7 +1195,7 @@ function App() {
             timestamp: new Date().toISOString()
           });
           
-          const finalMessages = [...messages, 
+          const finalMessages = [...currentMessages, 
             { sender: 'user', text: textInput },
             { sender: 'bot', text: responseText, sources: sourcesToSave || [] }
           ];
@@ -1217,7 +1221,7 @@ function App() {
           });
           
           // ✅ FALLBACK: Save to sessionStorage
-          const fallbackMessages = [...messages,
+          const fallbackMessages = [...currentMessages,
             { sender: 'user', text: textInput },
             { sender: 'bot', text: responseText }
           ];
@@ -1233,7 +1237,7 @@ function App() {
         });
       }
     }
-  }, [input, loading, model, currentChatId, messages, stopStreamingRef, userLanguage, isImageMode, uploadedDocuments]);
+  }, []);
 
   const handleTranscript = useCallback(async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
