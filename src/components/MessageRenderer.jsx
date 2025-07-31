@@ -55,7 +55,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           fontSize: 'inherit',
           opacity: 0.9
         }}>
-          {preprocessStreamingText(content)}
+          {content}
         </div>
         
         <style>{`
