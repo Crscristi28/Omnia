@@ -213,6 +213,10 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
+  const inputRef = useRef();
+  const messagesRef = useRef();
+  const uploadedDocumentsRef = useRef();
+  
   // 🎤 VOICE STATE (UNCHANGED)
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
