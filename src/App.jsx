@@ -5,7 +5,7 @@
 // 🎯 UNCHANGED: Všechny původní importy a funkčnost
 // 🆕 STREAMING: Added streamingUtils import
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 
@@ -826,7 +826,7 @@ function App() {
   };
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
-  const handleSend = async (textInput = input, fromVoice = false) => {
+  const handleSend = useCallback(async (textInput = input, fromVoice = false) => {
     if (!textInput.trim() || loading) return;
     
     crashMonitor.trackChatOperation('send_message_start', { 
@@ -1223,9 +1223,9 @@ function App() {
         });
       }
     }
-  };
+  }, [input, loading, model, currentChatId, messages, stopStreamingRef, userLanguage, isImageMode, uploadedDocuments]);
 
-  const handleTranscript = async (text, confidence = 1.0) => {
+  const handleTranscript = useCallback(async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
     
     const detectedLang = detectLanguage(text);
@@ -1237,7 +1237,7 @@ function App() {
     } else {
       setInput(text);
     }
-  };
+  }, [showVoiceScreen, handleSend]);
 
 
   // 📄 HANDLE FILE CLICK - Actually open/download files
@@ -1461,7 +1461,7 @@ const handleDocumentUpload = async (event) => {
 };
 
 // 📄 HANDLE SEND WITH DOCUMENTS
-const handleSendWithDocuments = async (text, documents) => {
+const handleSendWithDocuments = useCallback(async (text, documents) => {
   console.log('📤 Sending with documents:', text, documents);
   
   if (!text.trim() && documents.length === 0) return;
@@ -1681,7 +1681,13 @@ const handleSendWithDocuments = async (text, documents) => {
     // Clear input after sending
     setInput('');
   }
-};
+}, [loading, streaming, model, uploadedDocuments, messages, currentChatId, userLanguage]);
+
+// 🎯 MODEL CHANGE HANDLER - Optimized with useCallback
+const handleModelChange = useCallback((newModel) => {
+  setModel(newModel);
+  setShowModelDropdown(false);
+}, []);
 
 // 🎨 JSX RENDER  
   return (
@@ -1789,7 +1795,7 @@ const handleSendWithDocuments = async (text, documents) => {
               zIndex: 1001,
             }}>
               <button
-                onClick={() => { setModel('claude'); setShowModelDropdown(false); }}
+                onClick={() => handleModelChange('claude')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1825,7 +1831,7 @@ const handleSendWithDocuments = async (text, documents) => {
               </button>
               
               <button
-                onClick={() => { setModel('gpt-4o'); setShowModelDropdown(false); }}
+                onClick={() => handleModelChange('gpt-4o')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1861,7 +1867,7 @@ const handleSendWithDocuments = async (text, documents) => {
               </button>
               
               <button
-                onClick={() => { setModel('grok-3'); setShowModelDropdown(false); }}
+                onClick={() => handleModelChange('grok-3')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1897,7 +1903,7 @@ const handleSendWithDocuments = async (text, documents) => {
               </button>
               
               <button
-                onClick={() => { setModel('gemini-2.5-flash'); setShowModelDropdown(false); }}
+                onClick={() => handleModelChange('gemini-2.5-flash')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
