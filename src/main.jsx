@@ -9,6 +9,7 @@ import { registerSW } from 'virtual:pwa-register'
 // Register Service Worker with update handling
 const updateSW = registerSW({
   onNeedRefresh() {
+    console.log('🔥 PWA UPDATE NEEDED - DISPATCHING EVENT!');
     // Dispatch custom event for update notification
     window.dispatchEvent(new CustomEvent('pwa-update-available'));
   },

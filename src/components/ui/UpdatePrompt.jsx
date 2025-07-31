@@ -13,9 +13,9 @@ const UpdatePrompt = ({
 }) => {
   const texts = {
     cs: {
-      title: 'Nová verze dostupná!',
+      title: 'Nová verze dostupná! 🚀',
       message: 'Aktualizujte aplikaci pro nejnovější funkce a opravy.',
-      updateButton: 'Aktualizovat',
+      updateButton: 'Aktualizovat teď',
       dismissButton: 'Později'
     },
     en: {
