@@ -36,6 +36,17 @@ const updateSW = registerSW({
     // Make updateSW globally available for manual updates
     window.updatePWA = updateSW;
     console.log('🔧 window.updatePWA is now available');
+    
+    // 📱 Mobile: Check for updates when app becomes visible (battery-friendly)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          console.log('📱 Mobile app visible - checking for updates...');
+          registration.update();
+        }
+      });
+    }
   },
   onRegisterError(error) {
     console.error('❌ PWA Service Worker registration failed:', error);

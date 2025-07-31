@@ -12,6 +12,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,ttf}'],
         skipWaiting: false,
         clientsClaim: false,
+        navigateFallback: null, // Disable navigation fallback for better updates
+        mode: 'production', // Force production mode for better update detection
         maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
         runtimeCaching: [
           // API calls - Network first with fallback
