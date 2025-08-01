@@ -1509,9 +1509,15 @@ const handleDocumentUpload = async (event) => {
 
 // 📄 HANDLE SEND WITH DOCUMENTS
 const handleSendWithDocuments = useCallback(async (text, documents) => {
+  const currentMessages = messagesRef.current;
+  const currentDocuments = uploadedDocumentsRef.current;
+  const currentLoading = loading;
+  const currentStreaming = streaming;
+  
   console.log('📤 Sending with documents:', text, documents);
   
   if (!text.trim() && documents.length === 0) return;
+  if (currentLoading || currentStreaming) return;
   
   // Add user message to chat immediately (with document info)
   const userMessage = {
@@ -1614,11 +1620,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const detectedLang = detectLanguage(text || 'Dokument');
       setUserLanguage(detectedLang);
       
-      // Get current messages for AI
-      const currentMessages = [...messages, userMessage];
+      // Get current messages for AI  
+      const messagesWithUser = [...currentMessages, userMessage];
       
       // Get current uploaded documents (including newly processed ones)
-      const allDocuments = [...uploadedDocuments, ...processedDocuments];
+      const allDocuments = [...currentDocuments, ...processedDocuments];
       
       // Combine existing and new documents BEFORE sending to AI
       const newActiveDocuments = processedDocuments.map(doc => ({
@@ -1626,7 +1632,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         name: doc.name,
         uploadTimestamp: Date.now(),
         lastAccessedTimestamp: Date.now(),
-        lastAccessedMessageIndex: currentMessages.length
+        lastAccessedMessageIndex: messagesWithUser.length
       }));
       
       const allActiveDocuments = [...activeDocumentContexts, ...newActiveDocuments];
@@ -1640,7 +1646,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           return { 
             ...doc, 
             lastAccessedTimestamp: Date.now(), 
-            lastAccessedMessageIndex: currentMessages.length 
+            lastAccessedMessageIndex: messagesWithUser.length 
           };
         }
         return doc;
@@ -1650,8 +1656,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       filteredActiveDocs = filteredActiveDocs.filter(doc => {
         const timeSinceUpload = Date.now() - doc.uploadTimestamp;
         const timeSinceLastAccess = Date.now() - doc.lastAccessedTimestamp;
-        const messagesSinceUpload = currentMessages.length - doc.lastAccessedMessageIndex;
-        const messagesSinceLastAccess = currentMessages.length - doc.lastAccessedMessageIndex;
+        const messagesSinceUpload = messagesWithUser.length - doc.lastAccessedMessageIndex;
+        const messagesSinceLastAccess = messagesWithUser.length - doc.lastAccessedMessageIndex;
         
         // Rule 1: Very recent upload (5 messages OR 10 minutes from upload)
         const isVeryRecentUpload = messagesSinceUpload <= 5 || timeSinceUpload < 10 * 60 * 1000;
@@ -1706,12 +1712,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Update activeDocumentContexts with the filtered list
       setActiveDocumentContexts(filteredActiveDocs);
       
-      const currentMessagesWithUser = [...messages, userMessage];
+      // Use already calculated messagesWithUser
       
       const stopFn = streamMessageWithEffect(
         result.text,
         setMessages,
-        currentMessagesWithUser,
+        messagesWithUser,
         mainContentRef.current,
         result.sources || []
       );
@@ -1728,7 +1734,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Clear input after sending
     setInput('');
   }
-}, [loading, streaming, model, uploadedDocuments, messages, currentChatId, userLanguage, isOffline]);
+}, []);
 
 // 🎯 MODEL CHANGE HANDLER - Optimized with useCallback
 const handleModelChange = useCallback((newModel) => {
