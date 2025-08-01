@@ -1690,9 +1690,20 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         return msg;
       });
       
+      // Add hidden context message for AI when sending documents
+      const hiddenContextMessage = {
+        sender: 'system',
+        text: `📄 User uploaded ${processedDocuments.length} document(s) for analysis. AI has full access to the document(s) and should analyze them.`,
+        timestamp: new Date(),
+        isHidden: true
+      };
+      
+      // Add to messages context but don't display to user
+      const messagesWithHiddenContext = [...messagesForAI, hiddenContextMessage];
+      
       // Send to Gemini with FILTERED documents only
       const result = await geminiService.sendMessage(
-        messagesForAI,
+        messagesWithHiddenContext,
         (chunk) => {
           updateStreamingMessage(chunk, true);
         },
