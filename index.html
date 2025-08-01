@@ -31,24 +31,28 @@
 <body>
   <div id="root"></div>
   
-  <!-- iOS PWA Viewport Fix -->
+  <!-- iOS Viewport Fix -->
   <script>
-    // Fix iOS PWA zoom issues
-    if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-      // Force viewport reset on PWA load
-      document.addEventListener('DOMContentLoaded', () => {
-        const viewport = document.querySelector('meta[name=viewport]');
-        if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no');
-        }
-        
-        // Force zoom reset
-        document.body.style.zoom = '1';
-        document.documentElement.style.zoom = '1';
-        
-        console.log('📱 PWA viewport reset applied');
-      });
-    }
+    // Fix iOS zoom issues for all modes (browser + PWA)
+    document.addEventListener('DOMContentLoaded', () => {
+      // Force viewport reset
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no');
+      }
+      
+      // Force zoom reset
+      document.body.style.zoom = '1';
+      document.documentElement.style.zoom = '1';
+      
+      // Additional Safari fix
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        document.body.style.transform = 'scale(1)';
+        document.body.style.transformOrigin = '0 0';
+      }
+      
+      console.log('📱 Viewport reset applied for domain:', window.location.hostname);
+    });
   </script>
   
   <script type="module" src="/src/main.jsx"></script>
