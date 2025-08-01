@@ -96,6 +96,38 @@ const chatDB = {
     }
   },
 
+  // 📄 Get chat messages with pagination (batch loading)
+  async getChatMessages(chatId, offset = 0, limit = 15) {
+    try {
+      const chat = await db.chats.get(chatId);
+      if (!chat || !chat.messages) {
+        console.warn(`⚠️ Chat or messages not found:`, chatId);
+        return { messages: [], totalCount: 0, hasMore: false };
+      }
+
+      const totalCount = chat.messages.length;
+      const startIndex = Math.max(0, totalCount - offset - limit);
+      const endIndex = totalCount - offset;
+      
+      // Get messages in reverse order (newest first, but return oldest to newest for display)
+      const messages = chat.messages.slice(startIndex, endIndex);
+      const hasMore = startIndex > 0;
+
+      console.log(`📄 Loaded ${messages.length} messages from IndexedDB (${startIndex}-${endIndex}/${totalCount}):`, chatId);
+      
+      return {
+        messages,
+        totalCount,
+        hasMore,
+        loadedRange: { start: startIndex, end: endIndex }
+      };
+      
+    } catch (error) {
+      console.error('❌ Error getting chat messages from IndexedDB:', error);
+      return { messages: [], totalCount: 0, hasMore: false };
+    }
+  },
+
   // 🗑️ Delete a specific chat
   async deleteChat(chatId) {
     try {

@@ -246,6 +246,11 @@ function App() {
   // 🆕 STREAMING STATE - For controlling streaming effect
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
   
+  // 📄 BATCH LOADING STATE - For pagination
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
+  const [currentMessageOffset, setCurrentMessageOffset] = useState(0);
+  
   // 🎨 BREATHING ANIMATION - Removed for performance (now using CSS only)
   
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
@@ -466,24 +471,35 @@ function App() {
         console.log('✅ [MONITOR] Current chat saved successfully');
       }
       
-      // 📖 Load selected chat
-      console.log('📖 [MONITOR] Loading chat:', chatId);
-      const chatData = await chatDB.getChat(chatId);
+      // 📖 Load selected chat with batch loading (last 15 messages)
+      console.log('📖 [MONITOR] Loading chat with batch loading:', chatId);
+      const chatData = await chatDB.getChatMessages(chatId, 0, 15);
       
-      if (chatData) {
+      if (chatData && chatData.messages.length > 0) {
         setMessages(chatData.messages);
         setCurrentChatId(chatId);
+        setHasMoreMessages(chatData.hasMore);
+        setCurrentMessageOffset(chatData.messages.length);
         crashMonitor.trackIndexedDB('load', chatId, true);
         crashMonitor.trackChatOperation('switch_chat_success', { 
           chatId, 
           messageCount: chatData.messages.length,
-          title: chatData.title 
+          totalMessages: chatData.totalCount,
+          hasMore: chatData.hasMore
         });
-        console.log('✅ [MONITOR] Chat loaded successfully:', {
+        console.log('✅ [MONITOR] Chat loaded successfully (batch):', {
           chatId,
-          messageCount: chatData.messages.length,
-          title: chatData.title
+          loadedMessages: chatData.messages.length,
+          totalMessages: chatData.totalCount,
+          hasMore: chatData.hasMore
         });
+      } else if (chatData && chatData.messages.length === 0) {
+        // Empty chat - start fresh
+        setMessages([]);
+        setCurrentChatId(chatId);
+        setHasMoreMessages(false);
+        setCurrentMessageOffset(0);
+        console.log('🆕 [MONITOR] Starting with empty chat:', chatId);
       } else {
         crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
         console.warn('⚠️ [MONITOR] Chat not found:', chatId);
@@ -502,6 +518,40 @@ function App() {
         sessionManager.saveCurrentChatId(currentChatId);
         console.log('🔄 [MONITOR] Fallback to sessionStorage completed');
       }
+    }
+  };
+
+  // 📄 LOAD OLDER MESSAGES - When user scrolls to top
+  const loadOlderMessages = async () => {
+    if (!currentChatId || !hasMoreMessages || loadingOlderMessages) {
+      return;
+    }
+
+    setLoadingOlderMessages(true);
+    try {
+      console.log('📄 Loading older messages...', { chatId: currentChatId, offset: currentMessageOffset });
+      
+      const olderData = await chatDB.getChatMessages(currentChatId, currentMessageOffset, 15);
+      
+      if (olderData && olderData.messages.length > 0) {
+        // Prepend older messages to current messages
+        setMessages(prev => [...olderData.messages, ...prev]);
+        setCurrentMessageOffset(prev => prev + olderData.messages.length);
+        setHasMoreMessages(olderData.hasMore);
+        
+        console.log('✅ Loaded older messages:', {
+          loadedCount: olderData.messages.length,
+          totalOffset: currentMessageOffset + olderData.messages.length,
+          hasMore: olderData.hasMore
+        });
+      } else {
+        setHasMoreMessages(false);
+        console.log('🔚 No more older messages to load');
+      }
+    } catch (error) {
+      console.error('❌ Error loading older messages:', error);
+    } finally {
+      setLoadingOlderMessages(false);
     }
   };
 
@@ -537,7 +587,7 @@ function App() {
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%
 
-  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up
+  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up + Load older messages when scrolled to top
   useEffect(() => {
     const mainContent = mainContentRef.current;
     if (!mainContent) return;
@@ -545,12 +595,20 @@ function App() {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50; // 50px threshold
+      const isAtTop = scrollTop <= 50; // 50px from top
+      
       setShowScrollToBottom(!isNearBottom);
+      
+      // Load older messages when scrolled to top
+      if (isAtTop && hasMoreMessages && !loadingOlderMessages) {
+        console.log('🔝 User scrolled to top - loading older messages...');
+        loadOlderMessages();
+      }
     };
 
     mainContent.addEventListener('scroll', handleScroll);
     return () => mainContent.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [hasMoreMessages, loadingOlderMessages]);
 
   // 🔽 SCROLL TO BOTTOM FUNCTION
   const scrollToBottom = () => {
@@ -806,6 +864,11 @@ function App() {
       // 📄 Clear document states to prevent context leakage
       setActiveDocumentContexts([]);
       setUploadedDocuments([]);
+      
+      // 📄 Reset batch loading state for new chat
+      setHasMoreMessages(false);
+      setCurrentMessageOffset(0);
+      setLoadingOlderMessages(false);
     
       // Create new chat ID for history tracking
       const newChatId = chatDB.generateChatId();
@@ -2123,6 +2186,34 @@ const handleModelChange = useCallback((newModel) => {
                 }}>
                   {welcomeTexts[uiLanguage]?.subtitle || welcomeTexts.cs.subtitle}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* 📄 LOADING OLDER MESSAGES INDICATOR */}
+          {loadingOlderMessages && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '1rem',
+              color: '#666',
+              fontSize: '0.9rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid #f3f3f3',
+                  borderTop: '2px solid #666',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                {t('loadingOlderMessages') || 'Načítám starší zprávy...'}
               </div>
             </div>
           )}
