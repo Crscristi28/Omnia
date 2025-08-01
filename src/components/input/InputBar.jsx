@@ -562,6 +562,12 @@ const InputBar = ({
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onClick={(e) => {
+                // iOS PWA fix - ensure focus on click
+                if (isMobile && window.navigator.standalone) {
+                  e.target.focus();
+                }
+              }}
               onKeyDown={handleKeyDown}
               placeholder={isLoading ? t('omniaPreparingResponse') : t('chatPlaceholder')}
               disabled={isLoading}
