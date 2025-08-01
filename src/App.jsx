@@ -1676,7 +1676,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       });
       
       // Prepare messages for AI - if user sent only documents without text, add document context
-      const messagesForAI = currentMessages.map(msg => {
+      const messagesForAI = messagesWithUser.map(msg => {
         if (msg === userMessage && !text.trim() && processedDocuments.length > 0) {
           return {
             ...msg,
