@@ -21,7 +21,7 @@ import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, UpdatePrompt, OfflineIndicator } from './components/ui';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator } from './components/ui';
 import { VoiceScreen } from './components/chat';
 import MessageRenderer from './components/MessageRenderer';
 
@@ -255,7 +255,6 @@ function App() {
   const [isImageMode, setIsImageMode] = useState(false);
   
   // 🔄 PWA UPDATE STATE - For handling app updates
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   
   // 📶 ONLINE STATUS - For offline detection
   const { isOnline, isOffline, connectionType, connectionInfo } = useOnlineStatus();
@@ -289,38 +288,7 @@ function App() {
     console.log('📱 PWA mode:', isPWA);
     console.log('📱 User agent:', navigator.userAgent);
     
-    const handleUpdateAvailable = () => {
-      console.log('🔥 PWA UPDATE EVENT TRIGGERED!');
-      console.log('📱 Mobile:', isMobile, 'PWA:', isPWA);
-      setShowUpdatePrompt(true);
-    };
-
-    const handleOfflineReady = () => {
-      console.log('✅ PWA ready to work offline');
-      // Optional: Show offline ready notification
-    };
-
-    // Listen for PWA update events
-    window.addEventListener('pwa-update-available', handleUpdateAvailable);
-    window.addEventListener('pwa-offline-ready', handleOfflineReady);
-
-    // 🧪 DEBUG: Test if SW is registered
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        console.log('🔧 Service Worker registrations:', registrations.length);
-        registrations.forEach((registration, index) => {
-          console.log(`SW ${index}:`, registration.scope);
-        });
-      });
-    }
-
-    // 🧪 DEBUG: Check if updatePWA is available
-    console.log('🔧 window.updatePWA available:', !!window.updatePWA);
-
-    return () => {
-      window.removeEventListener('pwa-update-available', handleUpdateAvailable);
-      window.removeEventListener('pwa-offline-ready', handleOfflineReady);
-    };
+    // Service Worker is now handled automatically
   }, []);
 
   // 🆕 AUDIO INITIALIZATION (UNCHANGED)
@@ -442,28 +410,6 @@ function App() {
     setCurrentSources([]);
   };
 
-  // 🔄 PWA UPDATE HANDLERS
-  const handlePWAUpdate = () => {
-    console.log('🔄 Updating PWA...');
-    setShowUpdatePrompt(false);
-    
-    // Try multiple sources for update function
-    const updateFn = window.updatePWA || window.pendingUpdateSW;
-    
-    if (updateFn) {
-      console.log('✅ Found update function, executing...');
-      updateFn();
-    } else {
-      console.warn('⚠️ No update function available, falling back to reload');
-      // Fallback: reload page
-      window.location.reload();
-    }
-  };
-
-  const handleDismissUpdate = () => {
-    console.log('⏭️ PWA update dismissed');
-    setShowUpdatePrompt(false);
-  };
 
 
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
@@ -2689,13 +2635,6 @@ const handleModelChange = useCallback((newModel) => {
         input:focus { outline: none !important; }
       `}</style>
       
-      {/* 🔄 PWA UPDATE PROMPT */}
-      <UpdatePrompt
-        isVisible={showUpdatePrompt}
-        onUpdateClick={handlePWAUpdate}
-        onDismiss={handleDismissUpdate}
-        uiLanguage={uiLanguage}
-      />
       
       {/* 📶 OFFLINE INDICATOR */}
       <OfflineIndicator
