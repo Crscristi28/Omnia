@@ -652,22 +652,26 @@ function App() {
     console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
     console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 30: ${allMessages.length % 30}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
     
+    // 💾 AUTO-SAVE - každých 30 zpráv (bez cleanup!)
     if (allMessages.length % 30 === 0 && allMessages.length > 0) {
       console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 30!`);
       try {
         await chatDB.saveChatV2(chatId, allMessages);
         console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
-        
-        // RAM cleanup - ponech jen posledních 50 zpráv
-        const beforeCleanup = allMessages.length;
-        const cleanedMessages = allMessages.slice(-50);
-        console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
-        console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
-        console.log(`📊 [RAM-STATUS] Current messages in memory: ${cleanedMessages.length}`);
-        return cleanedMessages; // Return cleaned messages
       } catch (error) {
-        console.error(`❌ [AUTO-SAVE] FAILED - NO CLEANUP:`, error);
+        console.error(`❌ [AUTO-SAVE] FAILED:`, error);
       }
+    }
+    
+    // 🧹 RAM CLEANUP - samostatně, jen když dosáhne 45 zpráv
+    if (allMessages.length >= 45) {
+      console.log(`🧹 [RAM-CLEANUP] Reached cleanup threshold: ${allMessages.length} >= 45, cleaning up...`);
+      const beforeCleanup = allMessages.length;
+      const cleanedMessages = allMessages.slice(-30); // Keep last 30
+      console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 30 messages in RAM`);
+      console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 30} messages moved to DB only`);
+      console.log(`📊 [RAM-STATUS] Current messages in memory: ${cleanedMessages.length}`);
+      return cleanedMessages; // Return cleaned messages
     }
     
     return allMessages; // No cleanup, return original
