@@ -326,11 +326,7 @@ function App() {
       crashMonitor.trackPWAEvent('standalone_mode', { source: 'PWA' });
     }
     
-    const { isNewSession, messages: savedMessages } = sessionManager.initSession();
-    
-    if (!isNewSession && savedMessages.length > 0) {
-      setMessages(savedMessages);
-    }
+    // Session management removed - using only IndexedDB for chat persistence
 
     const savedUILanguage = sessionManager.getUILanguage();
     if (savedUILanguage && uiTexts[savedUILanguage]) {
@@ -541,12 +537,8 @@ function App() {
         toChatId: chatId 
       });
       console.error('❌ [MONITOR] Chat switch failed:', error);
-      // Fallback to sessionStorage
-      if (messages.length > 0) {
-        sessionManager.saveMessages(messages);
-        sessionManager.saveCurrentChatId(currentChatId);
-        console.log('🔄 [MONITOR] Fallback to sessionStorage completed');
-      }
+      // No localStorage fallback - IndexedDB only
+      console.log('🔄 [MONITOR] Chat switch failed, no fallback used');
     }
   };
 
@@ -603,8 +595,7 @@ function App() {
           console.error('❌ Failed to save to IndexedDB on close:', error);
         });
         
-        // Synchronní backup do sessionStorage (fallback)
-        sessionManager.saveMessages(messages);
+        // Save current chat ID to sessionStorage for recovery
         sessionManager.saveCurrentChatId(currentChatId);
       }
     };
@@ -1345,14 +1336,9 @@ function App() {
             timestamp: new Date().toISOString()
           });
           
-          // ✅ FALLBACK: Save to sessionStorage
-          const fallbackMessages = [...currentMessages,
-            { sender: 'user', text: finalTextInput },
-            { sender: 'bot', text: responseText }
-          ];
-          sessionManager.saveMessages(fallbackMessages);
+          // No localStorage fallback - IndexedDB save failed but we continue
           sessionManager.saveCurrentChatId(currentChatId);
-          console.log('🔄 [MONITOR] Fallback to sessionStorage completed');
+          console.log('🔄 [MONITOR] IndexedDB save failed, no fallback used');
         }
       } else if (responseText) {
         crashMonitor.trackChatOperation('send_message_success', { 

@@ -24,7 +24,7 @@ const ChatHistory = ({
   const loadChatHistories = async () => {
     setLoading(true);
     try {
-      const histories = await chatDB.getAllChats();
+      const histories = await chatDB.getChatTitles();
       setChatHistories(histories);
     } catch (error) {
       console.error('Error loading chat histories:', error);
