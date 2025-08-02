@@ -9,12 +9,23 @@ class ChatDatabase extends Dexie {
   constructor() {
     super('OmniaChatDB');
     
-    // Define schema
+    // V1 Schema (OLD - monolithic)
     this.version(1).stores({
-      // Chats table: stores individual chat conversations
+      chats: 'id, title, createdAt, updatedAt, messageCount'
+    });
+    
+    // V2 Schema (NEW - normalized)
+    this.version(2).stores({
       chats: 'id, title, createdAt, updatedAt, messageCount',
-      // Settings could be added later if needed
-      // settings: 'key, value'
+      messages: '++id, chatId, timestamp, sender, text, type, attachments'
+    }).upgrade(tx => {
+      console.log('🚀 [CHAT-DB-V2] Upgrading database to version 2...');
+      console.log('🗑️ [CHAT-DB-V2] Clearing all old data for clean start...');
+      
+      // Clear all old data - fresh start
+      return tx.chats.clear().then(() => {
+        console.log('✅ [CHAT-DB-V2] Database cleared, ready for normalized schema!');
+      });
     });
   }
 }
@@ -27,13 +38,17 @@ const chatDB = {
   
   // 💾 Save a single chat (not all chats at once!)
   async saveChat(chatId, messages, title = null) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
     try {
-      console.log(`💾 [MONITOR] Starting save for chat ${chatId}`);
+      console.log(`💾 [CHAT-DB-V1] Starting save for chat ${chatId}`);
+      console.log(`📊 [CHAT-DB-V1] Messages to save: ${messages.length}, Memory: ${Math.round(memBefore/1024/1024)}MB`);
       
       const chatData = {
         id: chatId,
         title: title || this.generateChatTitle(messages),
-        messages: messages, // Full message array for this chat
+        messages: messages, // Full message array for this chat - OLD MONOLITHIC APPROACH
         createdAt: Date.now(), // Will be updated if chat exists
         updatedAt: Date.now(),
         messageCount: messages.length
@@ -43,12 +58,22 @@ const chatDB = {
       const existingChat = await db.chats.get(chatId);
       if (existingChat) {
         chatData.createdAt = existingChat.createdAt; // Keep original creation time
+        console.log(`🔄 [CHAT-DB-V1] Updating existing chat, original date: ${new Date(existingChat.createdAt).toLocaleString()}`);
+      } else {
+        console.log(`🆕 [CHAT-DB-V1] Creating new chat: ${chatId}`);
       }
 
       // Save/update the chat
       await db.chats.put(chatData);
       
-      console.log(`✅ [MONITOR] Chat saved successfully: ${chatId}`);
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
+      console.log(`✅ [CHAT-DB-V1] Chat saved successfully: ${chatId}`);
+      console.log(`⚡ [CHAT-DB-V1] Save duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`💾 [CHAT-DB-V1] Data size: ${Math.round(JSON.stringify(chatData).length / 1024)}KB`);
+      
       return chatData;
       
     } catch (error) {
@@ -81,27 +106,46 @@ const chatDB = {
 
   // 📖 Get specific chat with full messages
   async getChat(chatId) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
     try {
+      console.log(`📖 [CHAT-DB-V1] Loading chat: ${chatId}`);
+      
       const chat = await db.chats.get(chatId);
+      
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
       if (chat) {
-        console.log(`📖 Loaded chat from IndexedDB:`, chatId);
+        console.log(`✅ [CHAT-DB-V1] Chat loaded: ${chatId}`);
+        console.log(`📊 [CHAT-DB-V1] Messages loaded: ${chat.messages?.length || 0}, Memory delta: ${memDelta}MB`);
+        console.log(`⚡ [CHAT-DB-V1] Load duration: ${duration}ms`);
+        console.log(`💾 [CHAT-DB-V1] Data size: ${Math.round(JSON.stringify(chat).length / 1024)}KB`);
+        console.warn(`⚠️ [CHAT-DB-V1] WARNING: Loading ALL ${chat.messages?.length} messages into memory!`);
         return chat;
       } else {
-        console.warn(`⚠️ Chat not found in IndexedDB:`, chatId);
+        console.warn(`❌ [CHAT-DB-V1] Chat not found: ${chatId}`);
         return null;
       }
     } catch (error) {
-      console.error('❌ Error getting chat from IndexedDB:', error);
+      console.error(`❌ [CHAT-DB-V1] Error getting chat ${chatId}:`, error);
       return null;
     }
   },
 
   // 📄 Get chat messages with pagination (batch loading)
   async getChatMessages(chatId, offset = 0, limit = 15) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
     try {
-      const chat = await db.chats.get(chatId);
+      console.log(`📄 [CHAT-DB-V1] Getting messages: ${chatId}, offset: ${offset}, limit: ${limit}`);
+      
+      const chat = await db.chats.get(chatId); // ⚠️ PROBLEM: Loads ALL messages!
       if (!chat || !chat.messages) {
-        console.warn(`⚠️ Chat or messages not found:`, chatId);
+        console.warn(`❌ [CHAT-DB-V1] Chat or messages not found: ${chatId}`);
         return { messages: [], totalCount: 0, hasMore: false };
       }
 
@@ -113,7 +157,13 @@ const chatDB = {
       const messages = chat.messages.slice(startIndex, endIndex);
       const hasMore = startIndex > 0;
 
-      console.log(`📄 Loaded ${messages.length} messages from IndexedDB (${startIndex}-${endIndex}/${totalCount}):`, chatId);
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+
+      console.log(`✅ [CHAT-DB-V1] Messages loaded: ${messages.length} (${startIndex}-${endIndex}/${totalCount})`);
+      console.log(`⚡ [CHAT-DB-V1] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.error(`🚨 [CHAT-DB-V1] FAKE PAGINATION: Loaded ALL ${totalCount} messages, returned only ${messages.length}!`);
       
       return {
         messages,
@@ -123,7 +173,7 @@ const chatDB = {
       };
       
     } catch (error) {
-      console.error('❌ Error getting chat messages from IndexedDB:', error);
+      console.error(`❌ [CHAT-DB-V1] Error getting messages ${chatId}:`, error);
       return { messages: [], totalCount: 0, hasMore: false };
     }
   },
@@ -152,6 +202,144 @@ const chatDB = {
     } catch (error) {
       console.error('❌ Error updating chat metadata:', error);
       return false;
+    }
+  },
+
+  // 🚀 NEW V2 API METHODS - Normalized Schema
+
+  // 💾 Save individual message (V2 - efficient)
+  async saveMessage(chatId, message) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
+    try {
+      console.log(`💾 [CHAT-DB-V2] Saving message: ${message.sender}, ChatId: ${chatId}`);
+      
+      // Prepare message for storage
+      const messageRecord = {
+        chatId: chatId,
+        timestamp: message.timestamp || Date.now(),
+        sender: message.sender,
+        text: message.text,
+        type: message.type || 'text',
+        attachments: message.attachments || null
+      };
+      
+      // Save message to messages table
+      const messageId = await db.messages.add(messageRecord);
+      
+      // Update chat metadata
+      const existingChat = await db.chats.get(chatId);
+      if (existingChat) {
+        await db.chats.update(chatId, {
+          updatedAt: Date.now(),
+          messageCount: existingChat.messageCount + 1
+        });
+        console.log(`🔄 [CHAT-DB-V2] Updated existing chat metadata: ${chatId}`);
+      } else {
+        // Create new chat
+        await db.chats.add({
+          id: chatId,
+          title: this.generateChatTitle([message]),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          messageCount: 1
+        });
+        console.log(`🆕 [CHAT-DB-V2] Created new chat: ${chatId}`);
+      }
+      
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
+      console.log(`✅ [CHAT-DB-V2] Message saved: ID ${messageId}`);
+      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`🎯 [CHAT-DB-V2] EFFICIENT: Single message insert, no arrays!`);
+      
+      return messageId;
+      
+    } catch (error) {
+      console.error(`❌ [CHAT-DB-V2] Error saving message:`, error);
+      throw error;
+    }
+  },
+
+  // 📖 Get latest messages (V2 - bottom-first)
+  async getLatestMessages(chatId, limit = 50) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
+    try {
+      console.log(`📖 [CHAT-DB-V2] Getting latest ${limit} messages for: ${chatId}`);
+      
+      // Get messages in reverse order (newest first)
+      const messages = await db.messages
+        .where('chatId').equals(chatId)
+        .orderBy('timestamp')
+        .reverse()
+        .limit(limit)
+        .toArray();
+      
+      // Reverse to display oldest to newest (normal chat order)
+      const orderedMessages = messages.reverse();
+      
+      // Get total count
+      const totalCount = await db.messages.where('chatId').equals(chatId).count();
+      
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
+      console.log(`✅ [CHAT-DB-V2] Latest messages loaded: ${orderedMessages.length}/${totalCount}`);
+      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`🎯 [CHAT-DB-V2] TRUE PAGINATION: Only ${orderedMessages.length} messages in memory!`);
+      
+      return {
+        messages: orderedMessages,
+        totalCount,
+        hasMore: totalCount > limit,
+        loadedRange: { start: Math.max(0, totalCount - limit), end: totalCount }
+      };
+      
+    } catch (error) {
+      console.error(`❌ [CHAT-DB-V2] Error getting latest messages:`, error);
+      return { messages: [], totalCount: 0, hasMore: false };
+    }
+  },
+
+  // 📄 Get messages before specific message (V2 - scroll up)
+  async getMessagesBefore(chatId, beforeTimestamp, limit = 15) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
+    try {
+      console.log(`📄 [CHAT-DB-V2] Getting ${limit} messages before timestamp ${beforeTimestamp}`);
+      
+      // Get older messages
+      const messages = await db.messages
+        .where('chatId').equals(chatId)
+        .and(msg => msg.timestamp < beforeTimestamp)
+        .orderBy('timestamp')
+        .reverse()
+        .limit(limit)
+        .toArray();
+      
+      // Reverse to display oldest to newest
+      const orderedMessages = messages.reverse();
+      
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
+      console.log(`✅ [CHAT-DB-V2] Older messages loaded: ${orderedMessages.length}`);
+      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`🎯 [CHAT-DB-V2] SMART LOADING: Only requested messages loaded!`);
+      
+      return orderedMessages;
+      
+    } catch (error) {
+      console.error(`❌ [CHAT-DB-V2] Error getting messages before:`, error);
+      return [];
     }
   },
 
@@ -188,7 +376,12 @@ const chatDB = {
 
   // 📋 Get chat titles only (fast loading)
   async getChatTitles() {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
     try {
+      console.log(`📋 [CHAT-DB-V1] Loading chat titles...`);
+      
       // TRUE lazy loading - use each() to prevent loading messages into memory
       const chatTitles = [];
       await db.chats
@@ -207,10 +400,18 @@ const chatDB = {
           });
         });
       
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
+      console.log(`✅ [CHAT-DB-V1] Chat titles loaded: ${chatTitles.length}`);
+      console.log(`⚡ [CHAT-DB-V1] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`🎯 [CHAT-DB-V1] GOOD: True lazy loading, messages never touched!`);
+      
       return chatTitles;
       
     } catch (error) {
-      console.error('❌ [MONITOR] Error loading chat titles:', error);
+      console.error(`❌ [CHAT-DB-V1] Error loading chat titles:`, error);
       return [];
     }
   },
@@ -239,12 +440,14 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   window.omniaDB = {
     async showStats() {
       const stats = await chatDB.getStats();
+      const messageCount = await db.messages.count();
       console.table([{
         'Chat Count': stats.chatCount,
+        'Message Count': messageCount,
         'Total Size': stats.totalSize,
-        'Database': 'IndexedDB (OmniaChatDB)'
+        'Database': 'IndexedDB (OmniaChatDB V2)'
       }]);
-      return stats;
+      return { ...stats, messageCount };
     },
     
     async showAllChats() {
@@ -263,27 +466,75 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     async clearAll() {
       const confirmed = confirm('🚨 Really delete ALL chat history? This cannot be undone!');
       if (confirmed) {
-        await chatDB.clearAllChats();
-        console.log('🧹 All chats cleared from IndexedDB');
+        await db.chats.clear();
+        await db.messages.clear();
+        console.log('🧹 All chats and messages cleared from IndexedDB V2');
         return true;
       }
       return false;
     },
     
-    async saveTestChat() {
+    // V1 Test (old way)
+    async saveTestChatV1() {
       const testMessages = [
-        { sender: 'user', text: 'Test user message' },
-        { sender: 'bot', text: 'Test AI response' }
+        { sender: 'user', text: 'Test user message V1' },
+        { sender: 'bot', text: 'Test AI response V1' }
       ];
       const chatId = chatDB.generateChatId();
       await chatDB.saveChat(chatId, testMessages);
-      console.log('✅ Test chat saved:', chatId);
+      console.log('✅ Test chat V1 saved:', chatId);
       return chatId;
+    },
+    
+    // V2 Test (new way)
+    async saveTestChatV2() {
+      const chatId = chatDB.generateChatId();
+      console.log('🚀 Testing V2 API...');
+      
+      // Save messages individually
+      await chatDB.saveMessage(chatId, { sender: 'user', text: 'Test user message V2' });
+      await chatDB.saveMessage(chatId, { sender: 'bot', text: 'Test AI response V2' });
+      
+      console.log('✅ Test chat V2 saved:', chatId);
+      return chatId;
+    },
+    
+    // Compare V1 vs V2 performance
+    async comparePerformance() {
+      console.log('🏁 Performance comparison V1 vs V2...');
+      
+      const messages = Array.from({ length: 100 }, (_, i) => ({
+        sender: i % 2 === 0 ? 'user' : 'bot',
+        text: `Test message ${i + 1} with some content to make it realistic`,
+        timestamp: Date.now() - (100 - i) * 1000
+      }));
+      
+      // Test V1
+      const startV1 = performance.now();
+      const chatIdV1 = chatDB.generateChatId();
+      await chatDB.saveChat(chatIdV1, messages);
+      const durationV1 = Math.round(performance.now() - startV1);
+      
+      // Test V2
+      const startV2 = performance.now();
+      const chatIdV2 = chatDB.generateChatId();
+      for (const message of messages) {
+        await chatDB.saveMessage(chatIdV2, message);
+      }
+      const durationV2 = Math.round(performance.now() - startV2);
+      
+      console.table([
+        { Version: 'V1 (Monolithic)', Duration: `${durationV1}ms`, ChatId: chatIdV1 },
+        { Version: 'V2 (Normalized)', Duration: `${durationV2}ms`, ChatId: chatIdV2 }
+      ]);
+      
+      return { v1: durationV1, v2: durationV2, chatIdV1, chatIdV2 };
     }
   };
   
-  console.log('🐛 Development mode: IndexedDB debugging available');
-  console.log('📋 Commands: omniaDB.showStats(), omniaDB.showAllChats(), omniaDB.clearAll(), omniaDB.saveTestChat()');
+  console.log('🐛 Development mode: IndexedDB V2 debugging available');
+  console.log('📋 V1 Commands: omniaDB.saveTestChatV1(), omniaDB.showStats(), omniaDB.clearAll()');
+  console.log('🚀 V2 Commands: omniaDB.saveTestChatV2(), omniaDB.comparePerformance()');
 }
 
 export default chatDB;
