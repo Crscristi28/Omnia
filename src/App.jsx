@@ -630,7 +630,11 @@ function App() {
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
   const checkAutoSave = async (allMessages) => {
-    if (!currentChatId || allMessages.length === 0) return allMessages;
+    console.log(`🚨 [DEBUG] checkAutoSave() CALLED! Messages: ${allMessages.length}`);
+    if (!currentChatId || allMessages.length === 0) {
+      console.log(`⚠️ [DEBUG] Early return: chatId=${currentChatId ? 'EXISTS' : 'NULL'}, length=${allMessages.length}`);
+      return allMessages;
+    }
     
     console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
     console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${currentChatId ? 'EXISTS' : 'NULL'}`);
