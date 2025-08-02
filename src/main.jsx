@@ -19,12 +19,10 @@ registerSW({
   onRegistered(registration) {
     console.log('✅ PWA Service Worker registered:', registration);
     
-    // Check for updates every 60 seconds
-    setInterval(() => {
-      registration.update().then(() => {
-        console.log('🔍 PWA checking for updates...');
-      });
-    }, 60000);
+    // Check for updates once on app startup
+    registration.update().then(() => {
+      console.log('🔍 PWA checked for updates on startup');
+    });
   },
   onRegisterError(error) {
     console.error('❌ PWA Service Worker registration failed:', error);
