@@ -1001,8 +1001,10 @@ function App() {
       setMessages(messagesWithUser);
 
       // 🔄 AUTO-SAVE + RAM CLEANUP - každých 50 zpráv
-      if (messagesWithUser.length >= 50 && currentChatId) {
-        console.log(`🔄 [AUTO-SAVE] Trigger: ${messagesWithUser.length} messages reached 50+`);
+      console.log(`📊 [AUTO-SAVE-CHECK] Current messages: ${messagesWithUser.length}, Checking auto-save condition...`);
+      
+      if (messagesWithUser.length % 50 === 0 && messagesWithUser.length > 0 && currentChatId) {
+        console.log(`🔄 [AUTO-SAVE] Trigger: ${messagesWithUser.length} messages - exact multiple of 50!`);
         try {
           await chatDB.saveChatV2(currentChatId, messagesWithUser);
           console.log(`✅ [AUTO-SAVE] SUCCESS: ${messagesWithUser.length} messages saved to DB`);
@@ -1654,8 +1656,10 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   });
 
   // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
-  if (currentMessagesWithUser.length >= 50 && currentChatId) {
-    console.log(`🔄 [DOC-AUTO-SAVE] Trigger: ${currentMessagesWithUser.length} messages reached 50+`);
+  console.log(`📊 [DOC-AUTO-SAVE-CHECK] Current messages: ${currentMessagesWithUser.length}, Checking auto-save condition...`);
+  
+  if (currentMessagesWithUser.length % 50 === 0 && currentMessagesWithUser.length > 0 && currentChatId) {
+    console.log(`🔄 [DOC-AUTO-SAVE] Trigger: ${currentMessagesWithUser.length} messages - exact multiple of 50!`);
     try {
       await chatDB.saveChatV2(currentChatId, currentMessagesWithUser);
       console.log(`✅ [DOC-AUTO-SAVE] SUCCESS: ${currentMessagesWithUser.length} messages saved to DB`);
