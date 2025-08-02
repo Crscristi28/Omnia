@@ -1002,19 +1002,20 @@ function App() {
 
       // 🔄 AUTO-SAVE + RAM CLEANUP - každých 50 zpráv
       console.log(`📊 [AUTO-SAVE-CHECK] Current messages: ${messagesWithUser.length}, Checking auto-save condition...`);
+      console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${messagesWithUser.length}, Modulo 10: ${messagesWithUser.length % 10}, ChatID: ${currentChatId ? 'EXISTS' : 'NULL'}`);
       
-      if (messagesWithUser.length % 50 === 0 && messagesWithUser.length > 0 && currentChatId) {
-        console.log(`🔄 [AUTO-SAVE] Trigger: ${messagesWithUser.length} messages - exact multiple of 50!`);
+      if (messagesWithUser.length % 10 === 0 && messagesWithUser.length > 0 && currentChatId) {
+        console.log(`🔄 [AUTO-SAVE] Trigger: ${messagesWithUser.length} messages - exact multiple of 10!`);
         try {
           await chatDB.saveChatV2(currentChatId, messagesWithUser);
           console.log(`✅ [AUTO-SAVE] SUCCESS: ${messagesWithUser.length} messages saved to DB`);
           
-          // RAM cleanup - ponech jen posledních 50 zpráv
+          // RAM cleanup - ponech jen posledních 10 zpráv (TEST)
           const beforeCleanup = messagesWithUser.length;
-          messagesWithUser = messagesWithUser.slice(-50); // Update reference
+          messagesWithUser = messagesWithUser.slice(-10); // Update reference
           setMessages(messagesWithUser);
-          console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
-          console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
+          console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 10 messages in RAM`);
+          console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 10} messages moved to DB only`);
           console.log(`📊 [RAM-STATUS] Current messages in memory: ${messagesWithUser.length}`);
         } catch (error) {
           console.error(`❌ [AUTO-SAVE] FAILED - NO CLEANUP:`, error);
@@ -1022,19 +1023,19 @@ function App() {
         }
       }
 
-      // 🧹 SCROLL-CLEANUP - když user píše po scrollování (má víc než 50 v RAM)  
-      else if (messagesWithUser.length > 50 && currentChatId && !loading) {
+      // 🧹 SCROLL-CLEANUP - když user píše po scrollování (má víc než 10 v RAM)  
+      else if (messagesWithUser.length > 10 && currentChatId && !loading) {
         console.log(`🔄 [SCROLL-CLEANUP] User typing after scroll: ${messagesWithUser.length} messages in RAM`);
         try {
           await chatDB.saveChatV2(currentChatId, messagesWithUser);
           console.log(`✅ [SCROLL-CLEANUP] Saved all ${messagesWithUser.length} messages`);
           
-          // STRIKTNĚ jen posledních 50 + scroll na bottom
+          // STRIKTNĚ jen posledních 10 + scroll na bottom (TEST)
           const beforeCleanup = messagesWithUser.length;
-          messagesWithUser = messagesWithUser.slice(-50); // Update reference
+          messagesWithUser = messagesWithUser.slice(-10); // Update reference
           setMessages(messagesWithUser);
           scrollToBottom();
-          console.log(`🧹 [SCROLL-CLEANUP] ${beforeCleanup} → 50 messages MAX`);
+          console.log(`🧹 [SCROLL-CLEANUP] ${beforeCleanup} → 10 messages MAX`);
           console.log(`📊 [RAM-STATUS] Current messages in memory: ${messagesWithUser.length}`);
         } catch (error) {
           console.error(`❌ [SCROLL-CLEANUP] Failed:`, error);
