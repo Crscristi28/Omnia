@@ -493,6 +493,16 @@ function App() {
           totalMessages: chatData.totalCount,
           hasMore: chatData.hasMore
         });
+        
+        // Scroll to bottom after loading chat (show newest messages)
+        setTimeout(() => {
+          if (mainContentRef.current) {
+            mainContentRef.current.scrollTo({
+              top: mainContentRef.current.scrollHeight,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
         setMessages([]);
