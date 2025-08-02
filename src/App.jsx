@@ -629,20 +629,20 @@ function App() {
   }, [hasMoreMessages, loadingOlderMessages]);
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
-  const checkAutoSave = async (allMessages) => {
-    console.log(`🚨 [DEBUG] checkAutoSave() CALLED! Messages: ${allMessages.length}`);
-    if (!currentChatId || allMessages.length === 0) {
-      console.log(`⚠️ [DEBUG] Early return: chatId=${currentChatId ? 'EXISTS' : 'NULL'}, length=${allMessages.length}`);
+  const checkAutoSave = async (allMessages, chatId = currentChatId) => {
+    console.log(`🚨 [DEBUG] checkAutoSave() CALLED! Messages: ${allMessages.length}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
+    if (!chatId || allMessages.length === 0) {
+      console.log(`⚠️ [DEBUG] Early return: chatId=${chatId ? 'EXISTS' : 'NULL'}, length=${allMessages.length}`);
       return allMessages;
     }
     
     console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
-    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${currentChatId ? 'EXISTS' : 'NULL'}`);
+    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
     
     if (allMessages.length % 10 === 0 && allMessages.length > 0) {
       console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 10!`);
       try {
-        await chatDB.saveChatV2(currentChatId, allMessages);
+        await chatDB.saveChatV2(chatId, allMessages);
         console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
         
         // RAM cleanup - ponech jen posledních 10 zpráv (TEST)
@@ -1080,7 +1080,7 @@ function App() {
             const finalMessages = [...messagesWithUser, imageMessage];
             
             // 🔄 Check auto-save after image generation
-            const cleanedMessages = await checkAutoSave(finalMessages);
+            const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
             setMessages(cleanedMessages);
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
@@ -1100,7 +1100,7 @@ function App() {
           const finalMessages = [...messagesWithUser, errorMessage];
           
           // 🔄 Check auto-save after error message
-          const cleanedMessages = await checkAutoSave(finalMessages);
+          const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
           setMessages(cleanedMessages);
           
           showNotification('Chyba při generování obrázku', 'error');
@@ -1318,7 +1318,7 @@ function App() {
         }];
         
         // 🔄 Check auto-save after AI response
-        const cleanedMessages = await checkAutoSave(finalMessages);
+        const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
         setMessages(cleanedMessages);
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
