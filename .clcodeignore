@@ -26,3 +26,9 @@ coverage/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Ignore all markdown files
+**/*.md
+
+# TypeScript declarations - only types, no implementation
+**/*.d.ts
