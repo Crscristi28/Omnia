@@ -105,78 +105,37 @@ const chatDB = {
     }
   },
 
-  // 📖 Get specific chat with full messages
+  // 🚨 DISABLED V1 METHOD - Use V2 getLatestMessages() instead
   async getChat(chatId) {
-    const startTime = performance.now();
-    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    const error = new Error(`🚨 [CHAT-DB-V1] getChat() is DISABLED! Use getLatestMessages(chatId, limit) instead.
     
-    try {
-      console.log(`📖 [CHAT-DB-V1] Loading chat: ${chatId}`);
-      
-      const chat = await db.chats.get(chatId);
-      
-      const duration = Math.round(performance.now() - startTime);
-      const memAfter = performance.memory?.usedJSHeapSize || 0;
-      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
-      
-      if (chat) {
-        console.log(`✅ [CHAT-DB-V1] Chat loaded: ${chatId}`);
-        console.log(`📊 [CHAT-DB-V1] Messages loaded: ${chat.messages?.length || 0}, Memory delta: ${memDelta}MB`);
-        console.log(`⚡ [CHAT-DB-V1] Load duration: ${duration}ms`);
-        console.log(`💾 [CHAT-DB-V1] Data size: ${Math.round(JSON.stringify(chat).length / 1024)}KB`);
-        console.warn(`⚠️ [CHAT-DB-V1] WARNING: Loading ALL ${chat.messages?.length} messages into memory!`);
-        return chat;
-      } else {
-        console.warn(`❌ [CHAT-DB-V1] Chat not found: ${chatId}`);
-        return null;
-      }
-    } catch (error) {
-      console.error(`❌ [CHAT-DB-V1] Error getting chat ${chatId}:`, error);
-      return null;
-    }
+    V1: chatDB.getChat(chatId) → loads ALL messages (memory crash risk)
+    V2: chatDB.getLatestMessages(chatId, 50) → loads only latest 50 messages
+    
+    CallStack will show you where this was called from.`);
+    
+    console.error(`🚨 [CHAT-DB-V1] DISABLED METHOD CALLED: getChat(${chatId})`);
+    console.error('🔄 [CHAT-DB-V1] Use getLatestMessages() instead!');
+    console.trace('📍 [CHAT-DB-V1] Called from:');
+    
+    throw error;
   },
 
-  // 📄 Get chat messages with pagination (batch loading)
+  // 🚨 DISABLED V1 METHOD - Use V2 methods instead
   async getChatMessages(chatId, offset = 0, limit = 15) {
-    const startTime = performance.now();
-    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    const error = new Error(`🚨 [CHAT-DB-V1] getChatMessages() is DISABLED! Use V2 methods instead.
     
-    try {
-      console.log(`📄 [CHAT-DB-V1] Getting messages: ${chatId}, offset: ${offset}, limit: ${limit}`);
-      
-      const chat = await db.chats.get(chatId); // ⚠️ PROBLEM: Loads ALL messages!
-      if (!chat || !chat.messages) {
-        console.warn(`❌ [CHAT-DB-V1] Chat or messages not found: ${chatId}`);
-        return { messages: [], totalCount: 0, hasMore: false };
-      }
-
-      const totalCount = chat.messages.length;
-      const startIndex = Math.max(0, totalCount - offset - limit);
-      const endIndex = totalCount - offset;
-      
-      // Get messages in reverse order (newest first, but return oldest to newest for display)
-      const messages = chat.messages.slice(startIndex, endIndex);
-      const hasMore = startIndex > 0;
-
-      const duration = Math.round(performance.now() - startTime);
-      const memAfter = performance.memory?.usedJSHeapSize || 0;
-      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
-
-      console.log(`✅ [CHAT-DB-V1] Messages loaded: ${messages.length} (${startIndex}-${endIndex}/${totalCount})`);
-      console.log(`⚡ [CHAT-DB-V1] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.error(`🚨 [CHAT-DB-V1] FAKE PAGINATION: Loaded ALL ${totalCount} messages, returned only ${messages.length}!`);
-      
-      return {
-        messages,
-        totalCount,
-        hasMore,
-        loadedRange: { start: startIndex, end: endIndex }
-      };
-      
-    } catch (error) {
-      console.error(`❌ [CHAT-DB-V1] Error getting messages ${chatId}:`, error);
-      return { messages: [], totalCount: 0, hasMore: false };
-    }
+    V1: chatDB.getChatMessages(chatId, offset, limit) → FAKE pagination (loads ALL messages!)
+    V2: chatDB.getLatestMessages(chatId, limit) → TRUE pagination from database
+    V2: chatDB.getMessagesBefore(chatId, timestamp, limit) → TRUE scroll loading
+    
+    CallStack will show you where this was called from.`);
+    
+    console.error(`🚨 [CHAT-DB-V1] DISABLED METHOD CALLED: getChatMessages(${chatId}, ${offset}, ${limit})`);
+    console.error('🔄 [CHAT-DB-V1] Use V2 methods instead!');
+    console.trace('📍 [CHAT-DB-V1] Called from:');
+    
+    throw error;
   },
 
   // 🗑️ Delete a specific chat
