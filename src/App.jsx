@@ -554,14 +554,27 @@ function App() {
       
       if (olderMessages && olderMessages.length > 0) {
         // Prepend older messages to current messages
-        setMessages(prev => [...olderMessages, ...prev]);
+        const allMessages = [...olderMessages, ...messages];
+        
+        // 🪟 WINDOW MANAGEMENT - Sliding window to prevent RAM overflow
+        if (allMessages.length > 80) {
+          console.log(`🪟 [WINDOW-MGMT] Too many messages: ${allMessages.length} > 80, applying sliding window...`);
+          // Keep only the latest 80 messages around current scroll position
+          const trimmedMessages = allMessages.slice(-80);
+          setMessages(trimmedMessages);
+          console.log(`🧹 [WINDOW-MGMT] Trimmed ${allMessages.length} → 80 messages in RAM`);
+        } else {
+          setMessages(allMessages);
+        }
+        
         setHasMoreMessages(olderMessages.length === 15); // If we got less than requested, no more messages
         
         console.log('✅ [MONITOR-V2] V2 Older messages loaded:', {
           loadedCount: olderMessages.length,
           beforeTimestamp: oldestMessage.timestamp,
           hasMore: olderMessages.length === 15,
-          totalInDOM: messages.length + olderMessages.length
+          totalInDOM: allMessages.length > 80 ? 80 : allMessages.length,
+          actualTotal: allMessages.length
         });
       } else {
         setHasMoreMessages(false);
@@ -637,19 +650,19 @@ function App() {
     }
     
     console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
-    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
+    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 30: ${allMessages.length % 30}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
     
-    if (allMessages.length % 10 === 0 && allMessages.length > 0) {
-      console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 10!`);
+    if (allMessages.length % 30 === 0 && allMessages.length > 0) {
+      console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 30!`);
       try {
         await chatDB.saveChatV2(chatId, allMessages);
         console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
         
-        // RAM cleanup - ponech jen posledních 10 zpráv (TEST)
+        // RAM cleanup - ponech jen posledních 50 zpráv
         const beforeCleanup = allMessages.length;
-        const cleanedMessages = allMessages.slice(-10);
-        console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 10 messages in RAM`);
-        console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 10} messages moved to DB only`);
+        const cleanedMessages = allMessages.slice(-50);
+        console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
+        console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
         console.log(`📊 [RAM-STATUS] Current messages in memory: ${cleanedMessages.length}`);
         return cleanedMessages; // Return cleaned messages
       } catch (error) {
