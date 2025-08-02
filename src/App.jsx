@@ -467,36 +467,27 @@ function App() {
         console.log('✅ [MONITOR-V2] Current chat saved successfully');
       }
       
-      // 📖 Load selected chat - check if batch loading is needed
-      console.log('📖 [MONITOR] Loading chat:', chatId);
+      // 📖 Load selected chat - V2 BOTTOM-FIRST LOADING
+      console.log('📖 [MONITOR-V2] Loading chat with V2 API:', chatId);
       
-      // First get chat metadata to check message count
-      const fullChatData = await chatDB.getChat(chatId);
-      if (!fullChatData) {
-        crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
-        console.warn('⚠️ [MONITOR] Chat not found:', chatId);
+      // V2: Always load latest 50 messages (bottom-first)
+      const chatData = await chatDB.getLatestMessages(chatId, 50);
+      if (!chatData || chatData.messages.length === 0) {
+        crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found or empty'));
+        console.warn('⚠️ [MONITOR-V2] Chat not found or empty:', chatId);
         return;
       }
       
-      let chatData;
-      // Use batch loading only for very long chats (200+ messages)
-      if (fullChatData.messages.length > 200) {
-        console.log('📄 [MONITOR] Using batch loading for long chat:', fullChatData.messages.length, 'messages');
-        chatData = await chatDB.getChatMessages(chatId, 0, 50); // Load more for long chats
-      } else {
-        console.log('💬 [MONITOR] Loading full chat:', fullChatData.messages.length, 'messages');
-        chatData = {
-          messages: fullChatData.messages,
-          totalCount: fullChatData.messages.length,
-          hasMore: false
-        };
-      }
+      console.log(`✅ [MONITOR-V2] V2 Loading successful: ${chatData.messages.length}/${chatData.totalCount} messages`);
+      console.log(`🎯 [MONITOR-V2] BOTTOM-FIRST: Chat opens on latest messages, ${chatData.hasMore ? 'has' : 'no'} older messages`);
+      
+      // V2 chatData structure is already correct: { messages, totalCount, hasMore, loadedRange }
       
       if (chatData && chatData.messages.length > 0) {
         setMessages(chatData.messages);
         setCurrentChatId(chatId);
         setHasMoreMessages(chatData.hasMore);
-        setCurrentMessageOffset(chatData.messages.length);
+        // V2: No offset tracking needed - using timestamp-based pagination
         crashMonitor.trackIndexedDB('load', chatId, true);
         crashMonitor.trackChatOperation('switch_chat_success', { 
           chatId, 
@@ -504,11 +495,12 @@ function App() {
           totalMessages: chatData.totalCount,
           hasMore: chatData.hasMore
         });
-        console.log('✅ [MONITOR] Chat loaded successfully (batch):', {
+        console.log('✅ [MONITOR-V2] Chat loaded successfully with V2 API:', {
           chatId,
           loadedMessages: chatData.messages.length,
           totalMessages: chatData.totalCount,
-          hasMore: chatData.hasMore
+          hasMore: chatData.hasMore,
+          loadedRange: chatData.loadedRange
         });
         
         // Scroll to bottom after loading chat (show newest messages)
@@ -523,7 +515,7 @@ function App() {
         setMessages([]);
         setCurrentChatId(chatId);
         setHasMoreMessages(false);
-        setCurrentMessageOffset(0);
+        // V2: No offset tracking needed
         console.log('🆕 [MONITOR] Starting with empty chat:', chatId);
       } else {
         crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
@@ -550,24 +542,32 @@ function App() {
 
     setLoadingOlderMessages(true);
     try {
-      console.log('📄 Loading older messages...', { chatId: currentChatId, offset: currentMessageOffset });
+      // V2: Get timestamp of oldest message for true pagination
+      const oldestMessage = messages[0];
+      if (!oldestMessage || !oldestMessage.timestamp) {
+        console.warn('⚠️ [MONITOR-V2] No oldest message timestamp for pagination');
+        setLoadingOlderMessages(false);
+        return;
+      }
+
+      console.log('📄 [MONITOR-V2] Loading older messages before timestamp:', oldestMessage.timestamp);
       
-      const olderData = await chatDB.getChatMessages(currentChatId, currentMessageOffset, 15);
+      const olderMessages = await chatDB.getMessagesBefore(currentChatId, oldestMessage.timestamp, 15);
       
-      if (olderData && olderData.messages.length > 0) {
+      if (olderMessages && olderMessages.length > 0) {
         // Prepend older messages to current messages
-        setMessages(prev => [...olderData.messages, ...prev]);
-        setCurrentMessageOffset(prev => prev + olderData.messages.length);
-        setHasMoreMessages(olderData.hasMore);
+        setMessages(prev => [...olderMessages, ...prev]);
+        setHasMoreMessages(olderMessages.length === 15); // If we got less than requested, no more messages
         
-        console.log('✅ Loaded older messages:', {
-          loadedCount: olderData.messages.length,
-          totalOffset: currentMessageOffset + olderData.messages.length,
-          hasMore: olderData.hasMore
+        console.log('✅ [MONITOR-V2] V2 Older messages loaded:', {
+          loadedCount: olderMessages.length,
+          beforeTimestamp: oldestMessage.timestamp,
+          hasMore: olderMessages.length === 15,
+          totalInDOM: messages.length + olderMessages.length
         });
       } else {
         setHasMoreMessages(false);
-        console.log('🔚 No more older messages to load');
+        console.log('🔚 [MONITOR-V2] No more older messages to load');
       }
     } catch (error) {
       console.error('❌ Error loading older messages:', error);
@@ -887,7 +887,7 @@ function App() {
       
       // 📄 Reset batch loading state for new chat
       setHasMoreMessages(false);
-      setCurrentMessageOffset(0);
+      // V2: No offset tracking needed
       setLoadingOlderMessages(false);
     
       // Create new chat ID for history tracking
