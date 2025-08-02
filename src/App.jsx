@@ -1028,6 +1028,14 @@ function App() {
     setLoading(true);
 
     try {
+      // 🎯 ENSURE CHAT ID EXISTS - guarantee we have chatId for auto-save
+      let activeChatId = currentChatId;
+      if (!activeChatId) {
+        activeChatId = chatDB.generateChatId();
+        setCurrentChatId(activeChatId);
+        console.log('🔧 [CHAT-ID-FIX] Generated new chatId:', activeChatId);
+      }
+      
       const userMessage = { sender: 'user', text: finalTextInput };
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
@@ -1035,14 +1043,14 @@ function App() {
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
       // ✅ SAVE POINT #1: Create new chat if this is the first message
-      if (currentMessages.length === 0 && currentChatId) {
+      if (currentMessages.length === 0 && activeChatId) {
         try {
-          console.log('🆕 [MONITOR-V2] Creating new chat:', currentChatId);
-          await chatDB.saveChatV2(currentChatId, [userMessage]);
-          crashMonitor.trackIndexedDB('create_chat', currentChatId, true);
+          console.log('🆕 [MONITOR-V2] Creating new chat:', activeChatId);
+          await chatDB.saveChatV2(activeChatId, [userMessage]);
+          crashMonitor.trackIndexedDB('create_chat', activeChatId, true);
           console.log('✅ [MONITOR-V2] New chat created successfully');
         } catch (error) {
-          crashMonitor.trackIndexedDB('create_chat', currentChatId, false, error);
+          crashMonitor.trackIndexedDB('create_chat', activeChatId, false, error);
           console.error('❌ [MONITOR] Failed to create new chat:', error);
           // Continue with session-only mode
         }
@@ -1080,7 +1088,7 @@ function App() {
             const finalMessages = [...messagesWithUser, imageMessage];
             
             // 🔄 Check auto-save after image generation
-            const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
+            const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
             setMessages(cleanedMessages);
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
@@ -1100,7 +1108,7 @@ function App() {
           const finalMessages = [...messagesWithUser, errorMessage];
           
           // 🔄 Check auto-save after error message
-          const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
+          const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
           setMessages(cleanedMessages);
           
           showNotification('Chyba při generování obrázku', 'error');
@@ -1318,7 +1326,7 @@ function App() {
         }];
         
         // 🔄 Check auto-save after AI response
-        const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
+        const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
         setMessages(cleanedMessages);
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
