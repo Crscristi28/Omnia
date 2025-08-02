@@ -497,12 +497,13 @@ function App() {
         // Scroll to bottom after loading chat (show newest messages)
         setTimeout(() => {
           if (mainContentRef.current) {
+            console.log('📍 Scrolling to bottom after chat load...');
             mainContentRef.current.scrollTo({
               top: mainContentRef.current.scrollHeight,
-              behavior: 'smooth'
+              behavior: 'auto' // Use auto instead of smooth for immediate positioning
             });
           }
-        }, 100);
+        }, 200); // Increase timeout to ensure DOM is updated
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
         setMessages([]);
