@@ -471,9 +471,30 @@ function App() {
         console.log('✅ [MONITOR] Current chat saved successfully');
       }
       
-      // 📖 Load selected chat with batch loading (last 15 messages)
-      console.log('📖 [MONITOR] Loading chat with batch loading:', chatId);
-      const chatData = await chatDB.getChatMessages(chatId, 0, 15);
+      // 📖 Load selected chat - check if batch loading is needed
+      console.log('📖 [MONITOR] Loading chat:', chatId);
+      
+      // First get chat metadata to check message count
+      const fullChatData = await chatDB.getChat(chatId);
+      if (!fullChatData) {
+        crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
+        console.warn('⚠️ [MONITOR] Chat not found:', chatId);
+        return;
+      }
+      
+      let chatData;
+      // Use batch loading only for very long chats (200+ messages)
+      if (fullChatData.messages.length > 200) {
+        console.log('📄 [MONITOR] Using batch loading for long chat:', fullChatData.messages.length, 'messages');
+        chatData = await chatDB.getChatMessages(chatId, 0, 50); // Load more for long chats
+      } else {
+        console.log('💬 [MONITOR] Loading full chat:', fullChatData.messages.length, 'messages');
+        chatData = {
+          messages: fullChatData.messages,
+          totalCount: fullChatData.messages.length,
+          hasMore: false
+        };
+      }
       
       if (chatData && chatData.messages.length > 0) {
         setMessages(chatData.messages);
@@ -498,12 +519,9 @@ function App() {
         setTimeout(() => {
           if (mainContentRef.current) {
             console.log('📍 Scrolling to bottom after chat load...');
-            mainContentRef.current.scrollTo({
-              top: mainContentRef.current.scrollHeight,
-              behavior: 'auto' // Use auto instead of smooth for immediate positioning
-            });
+            mainContentRef.current.scrollTop = mainContentRef.current.scrollHeight;
           }
-        }, 200); // Increase timeout to ensure DOM is updated
+        }, 500); // Increase timeout for mobile
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
         setMessages([]);
@@ -605,8 +623,8 @@ function App() {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50; // 50px threshold
-      const isAtTop = scrollTop <= 50; // 50px from top
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // Increase threshold for mobile
+      const isAtTop = scrollTop <= 100; // Increase threshold for mobile
       
       setShowScrollToBottom(!isNearBottom);
       
