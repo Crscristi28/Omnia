@@ -181,16 +181,25 @@ const chatDB = {
         return;
       }
 
-      // Clear existing messages for this chat (clean slate)
-      await db.messages.where('chatId').equals(chatId).delete();
-      console.log(`🧹 [CHAT-DB-V2] Cleared existing messages for chat: ${chatId}`);
+      // Get existing messages to avoid duplicates (append-only, no data loss)
+      const existingMessages = await db.messages.where('chatId').equals(chatId).toArray();
+      const existingTimestamps = new Set(existingMessages.map(msg => msg.timestamp));
+      console.log(`📋 [CHAT-DB-V2] Found ${existingMessages.length} existing messages for chat: ${chatId}`);
 
-      // Save each message individually (V2 way) - without chat metadata update to avoid recursion
+      // Save only NEW messages (append-only to prevent data loss)
       const messageIds = [];
+      let newMessageCount = 0;
       for (const message of messages) {
+        const timestamp = message.timestamp || Date.now();
+        
+        // Skip if message already exists (prevent duplicates)
+        if (existingTimestamps.has(timestamp)) {
+          continue;
+        }
+        
         const messageRecord = {
           chatId: chatId,
-          timestamp: message.timestamp || Date.now(),
+          timestamp: timestamp,
           sender: message.sender,
           text: message.text,
           type: message.type || 'text',
@@ -198,15 +207,21 @@ const chatDB = {
         };
         const messageId = await db.messages.add(messageRecord);
         messageIds.push(messageId);
+        newMessageCount++;
       }
+      
+      console.log(`✅ [CHAT-DB-V2] APPEND-ONLY: Added ${newMessageCount} new messages, preserved ${existingMessages.length} existing`)
 
-      // Update chat metadata with final count and title
+      // Calculate total message count (existing + new)
+      const totalMessageCount = existingMessages.length + newMessageCount;
+
+      // Update chat metadata with correct total count and title
       const chatData = {
         id: chatId,
         title: title || this.generateChatTitle(messages),
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        messageCount: messages.length
+        messageCount: totalMessageCount
       };
 
       const existingChat = await db.chats.get(chatId);
@@ -215,12 +230,12 @@ const chatDB = {
         await db.chats.update(chatId, {
           title: chatData.title,
           updatedAt: chatData.updatedAt,
-          messageCount: chatData.messageCount
+          messageCount: totalMessageCount
         });
-        console.log(`🔄 [CHAT-DB-V2] Updated existing chat metadata: ${chatId}`);
+        console.log(`🔄 [CHAT-DB-V2] Updated existing chat metadata: ${chatId}, total messages: ${totalMessageCount}`);
       } else {
         await db.chats.add(chatData);
-        console.log(`🆕 [CHAT-DB-V2] Created new chat metadata: ${chatId}`);
+        console.log(`🆕 [CHAT-DB-V2] Created new chat metadata: ${chatId}, total messages: ${totalMessageCount}`);
       }
 
       const duration = Math.round(performance.now() - startTime);
@@ -229,9 +244,9 @@ const chatDB = {
 
       console.log(`✅ [CHAT-DB-V2] Chat conversion completed: ${chatId}`);
       console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`🎯 [CHAT-DB-V2] V1→V2 CONVERSION: ${messages.length} messages saved individually`);
+      console.log(`🎯 [CHAT-DB-V2] APPEND-ONLY: ${newMessageCount} new messages added, ${totalMessageCount} total messages`);
 
-      return { chatId, messageIds, messageCount: messages.length };
+      return { chatId, messageIds, messageCount: totalMessageCount };
 
     } catch (error) {
       console.error(`❌ [CHAT-DB-V2] Error in V1→V2 conversion:`, error);

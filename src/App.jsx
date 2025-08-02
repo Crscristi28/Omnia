@@ -503,8 +503,11 @@ function App() {
           loadedRange: chatData.loadedRange
         });
         
-        // 🎯 FLEXBOX: Chat opens on bottom automatically - no scrolling needed!
-        console.log('🎯 [UX-FIXED] Chat opened on bottom via flexbox - no scroll animation needed');
+        // 🎯 SCROLL FIX: Ensure chat opens at bottom after V2 loading
+        setTimeout(() => {
+          scrollToBottom();
+          console.log('🎯 [UX-FIXED] Chat scrolled to bottom after V2 loading');
+        }, 100);
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
         setMessages([]);
@@ -994,8 +997,48 @@ function App() {
 
     try {
       const userMessage = { sender: 'user', text: finalTextInput };
-      const messagesWithUser = [...currentMessages, userMessage];
+      let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
+
+      // 🔄 AUTO-SAVE + RAM CLEANUP - každých 50 zpráv
+      if (messagesWithUser.length >= 50 && currentChatId) {
+        console.log(`🔄 [AUTO-SAVE] Trigger: ${messagesWithUser.length} messages reached 50+`);
+        try {
+          await chatDB.saveChatV2(currentChatId, messagesWithUser);
+          console.log(`✅ [AUTO-SAVE] SUCCESS: ${messagesWithUser.length} messages saved to DB`);
+          
+          // RAM cleanup - ponech jen posledních 50 zpráv
+          const beforeCleanup = messagesWithUser.length;
+          messagesWithUser = messagesWithUser.slice(-50); // Update reference
+          setMessages(messagesWithUser);
+          console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
+          console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
+          console.log(`📊 [RAM-STATUS] Current messages in memory: ${messagesWithUser.length}`);
+        } catch (error) {
+          console.error(`❌ [AUTO-SAVE] FAILED - NO CLEANUP:`, error);
+          // Pokud save selže, neděláme cleanup!
+        }
+      }
+
+      // 🧹 SCROLL-CLEANUP - když user píše po scrollování (má víc než 50 v RAM)  
+      else if (messagesWithUser.length > 50 && currentChatId && !loading) {
+        console.log(`🔄 [SCROLL-CLEANUP] User typing after scroll: ${messagesWithUser.length} messages in RAM`);
+        try {
+          await chatDB.saveChatV2(currentChatId, messagesWithUser);
+          console.log(`✅ [SCROLL-CLEANUP] Saved all ${messagesWithUser.length} messages`);
+          
+          // STRIKTNĚ jen posledních 50 + scroll na bottom
+          const beforeCleanup = messagesWithUser.length;
+          messagesWithUser = messagesWithUser.slice(-50); // Update reference
+          setMessages(messagesWithUser);
+          scrollToBottom();
+          console.log(`🧹 [SCROLL-CLEANUP] ${beforeCleanup} → 50 messages MAX`);
+          console.log(`📊 [RAM-STATUS] Current messages in memory: ${messagesWithUser.length}`);
+        } catch (error) {
+          console.error(`❌ [SCROLL-CLEANUP] Failed:`, error);
+          // Pokud save selže, neděláme cleanup!
+        }
+      }
 
       // ✅ SAVE POINT #1: Create new chat if this is the first message
       if (currentMessages.length === 0 && currentChatId) {
@@ -1603,7 +1646,31 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       file: doc.file // Store the actual file for later access
     }))
   };
-  setMessages(prev => [...prev, userMessage]);
+  // Add message and get current state
+  let currentMessagesWithUser;
+  setMessages(prev => {
+    currentMessagesWithUser = [...prev, userMessage];
+    return currentMessagesWithUser;
+  });
+
+  // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
+  if (currentMessagesWithUser.length >= 50 && currentChatId) {
+    console.log(`🔄 [DOC-AUTO-SAVE] Trigger: ${currentMessagesWithUser.length} messages reached 50+`);
+    try {
+      await chatDB.saveChatV2(currentChatId, currentMessagesWithUser);
+      console.log(`✅ [DOC-AUTO-SAVE] SUCCESS: ${currentMessagesWithUser.length} messages saved to DB`);
+      
+      // RAM cleanup - ponech jen posledních 50 zpráv
+      const beforeCleanup = currentMessagesWithUser.length;
+      currentMessagesWithUser = currentMessagesWithUser.slice(-50);
+      setMessages(currentMessagesWithUser);
+      console.log(`🧹 [DOC-RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
+      console.log(`💾 [DOC-RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
+      console.log(`📊 [DOC-RAM-STATUS] Current messages in memory: ${currentMessagesWithUser.length}`);
+    } catch (error) {
+      console.error(`❌ [DOC-AUTO-SAVE] FAILED - NO CLEANUP:`, error);
+    }
+  }
   
   // Scroll to user's message after sending
   setTimeout(() => {
@@ -1693,8 +1760,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const detectedLang = detectLanguage(text || 'Dokument');
       setUserLanguage(detectedLang);
       
-      // Get current messages for AI  
-      const messagesWithUser = [...currentMessages, userMessage];
+      // Use the cleaned messages if cleanup happened, otherwise use current
+      const messagesWithUser = currentMessagesWithUser || [...currentMessages, userMessage];
       
       // Get current uploaded documents (including newly processed ones)
       const allDocuments = [...currentDocuments, ...processedDocuments];
