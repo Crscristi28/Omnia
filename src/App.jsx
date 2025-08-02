@@ -628,6 +628,34 @@ function App() {
     return () => mainContent.removeEventListener('scroll', handleScroll);
   }, [hasMoreMessages, loadingOlderMessages]);
 
+  // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
+  const checkAutoSave = async (allMessages) => {
+    if (!currentChatId || allMessages.length === 0) return allMessages;
+    
+    console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
+    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${currentChatId ? 'EXISTS' : 'NULL'}`);
+    
+    if (allMessages.length % 10 === 0 && allMessages.length > 0) {
+      console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 10!`);
+      try {
+        await chatDB.saveChatV2(currentChatId, allMessages);
+        console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
+        
+        // RAM cleanup - ponech jen posledních 10 zpráv (TEST)
+        const beforeCleanup = allMessages.length;
+        const cleanedMessages = allMessages.slice(-10);
+        console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 10 messages in RAM`);
+        console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 10} messages moved to DB only`);
+        console.log(`📊 [RAM-STATUS] Current messages in memory: ${cleanedMessages.length}`);
+        return cleanedMessages; // Return cleaned messages
+      } catch (error) {
+        console.error(`❌ [AUTO-SAVE] FAILED - NO CLEANUP:`, error);
+      }
+    }
+    
+    return allMessages; // No cleanup, return original
+  };
+
   // 🔽 SCROLL TO BOTTOM FUNCTION
   const scrollToBottom = () => {
     if (mainContentRef.current) {
@@ -1000,48 +1028,7 @@ function App() {
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
-      // 🔄 AUTO-SAVE + RAM CLEANUP - každých 50 zpráv
-      console.log(`📊 [AUTO-SAVE-CHECK] Current messages: ${messagesWithUser.length}, Checking auto-save condition...`);
-      console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${messagesWithUser.length}, Modulo 10: ${messagesWithUser.length % 10}, ChatID: ${currentChatId ? 'EXISTS' : 'NULL'}`);
-      
-      if (messagesWithUser.length % 10 === 0 && messagesWithUser.length > 0 && currentChatId) {
-        console.log(`🔄 [AUTO-SAVE] Trigger: ${messagesWithUser.length} messages - exact multiple of 10!`);
-        try {
-          await chatDB.saveChatV2(currentChatId, messagesWithUser);
-          console.log(`✅ [AUTO-SAVE] SUCCESS: ${messagesWithUser.length} messages saved to DB`);
-          
-          // RAM cleanup - ponech jen posledních 10 zpráv (TEST)
-          const beforeCleanup = messagesWithUser.length;
-          messagesWithUser = messagesWithUser.slice(-10); // Update reference
-          setMessages(messagesWithUser);
-          console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 10 messages in RAM`);
-          console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 10} messages moved to DB only`);
-          console.log(`📊 [RAM-STATUS] Current messages in memory: ${messagesWithUser.length}`);
-        } catch (error) {
-          console.error(`❌ [AUTO-SAVE] FAILED - NO CLEANUP:`, error);
-          // Pokud save selže, neděláme cleanup!
-        }
-      }
-
-      // 🧹 SCROLL-CLEANUP - když user píše po scrollování (má víc než 10 v RAM)  
-      else if (messagesWithUser.length > 10 && currentChatId && !loading) {
-        console.log(`🔄 [SCROLL-CLEANUP] User typing after scroll: ${messagesWithUser.length} messages in RAM`);
-        try {
-          await chatDB.saveChatV2(currentChatId, messagesWithUser);
-          console.log(`✅ [SCROLL-CLEANUP] Saved all ${messagesWithUser.length} messages`);
-          
-          // STRIKTNĚ jen posledních 10 + scroll na bottom (TEST)
-          const beforeCleanup = messagesWithUser.length;
-          messagesWithUser = messagesWithUser.slice(-10); // Update reference
-          setMessages(messagesWithUser);
-          scrollToBottom();
-          console.log(`🧹 [SCROLL-CLEANUP] ${beforeCleanup} → 10 messages MAX`);
-          console.log(`📊 [RAM-STATUS] Current messages in memory: ${messagesWithUser.length}`);
-        } catch (error) {
-          console.error(`❌ [SCROLL-CLEANUP] Failed:`, error);
-          // Pokud save selže, neděláme cleanup!
-        }
-      }
+      // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
       // ✅ SAVE POINT #1: Create new chat if this is the first message
       if (currentMessages.length === 0 && currentChatId) {
@@ -1087,7 +1074,10 @@ function App() {
             };
             
             const finalMessages = [...messagesWithUser, imageMessage];
-            setMessages(finalMessages);
+            
+            // 🔄 Check auto-save after image generation
+            const cleanedMessages = await checkAutoSave(finalMessages);
+            setMessages(cleanedMessages);
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
@@ -1104,7 +1094,10 @@ function App() {
           };
           
           const finalMessages = [...messagesWithUser, errorMessage];
-          setMessages(finalMessages);
+          
+          // 🔄 Check auto-save after error message
+          const cleanedMessages = await checkAutoSave(finalMessages);
+          setMessages(cleanedMessages);
           
           showNotification('Chyba při generování obrázku', 'error');
         }
@@ -1319,7 +1312,10 @@ function App() {
           sources: sources,
           isStreaming: false
         }];
-        setMessages(finalMessages);
+        
+        // 🔄 Check auto-save after AI response
+        const cleanedMessages = await checkAutoSave(finalMessages);
+        setMessages(cleanedMessages);
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
