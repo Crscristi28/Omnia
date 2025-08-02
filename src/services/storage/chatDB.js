@@ -206,6 +206,80 @@ const chatDB = {
     }
   },
 
+  // 🔄 V1 → V2 MIGRATION HELPERS
+
+  // 💾 Save multiple messages at once (V1 compatibility → V2 implementation)
+  async saveChatV2(chatId, messages, title = null) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
+    try {
+      console.log(`🚀 [CHAT-DB-V2] Converting V1 saveChat to V2 format: ${chatId}`);
+      console.log(`📊 [CHAT-DB-V2] Messages to convert: ${messages.length}`);
+      
+      if (messages.length === 0) {
+        console.log(`⚠️ [CHAT-DB-V2] No messages to save for chat: ${chatId}`);
+        return;
+      }
+
+      // Clear existing messages for this chat (clean slate)
+      await db.messages.where('chatId').equals(chatId).delete();
+      console.log(`🧹 [CHAT-DB-V2] Cleared existing messages for chat: ${chatId}`);
+
+      // Save each message individually (V2 way) - without chat metadata update to avoid recursion
+      const messageIds = [];
+      for (const message of messages) {
+        const messageRecord = {
+          chatId: chatId,
+          timestamp: message.timestamp || Date.now(),
+          sender: message.sender,
+          text: message.text,
+          type: message.type || 'text',
+          attachments: message.attachments || null
+        };
+        const messageId = await db.messages.add(messageRecord);
+        messageIds.push(messageId);
+      }
+
+      // Update chat metadata with final count and title
+      const chatData = {
+        id: chatId,
+        title: title || this.generateChatTitle(messages),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        messageCount: messages.length
+      };
+
+      const existingChat = await db.chats.get(chatId);
+      if (existingChat) {
+        chatData.createdAt = existingChat.createdAt;
+        await db.chats.update(chatId, {
+          title: chatData.title,
+          updatedAt: chatData.updatedAt,
+          messageCount: chatData.messageCount
+        });
+        console.log(`🔄 [CHAT-DB-V2] Updated existing chat metadata: ${chatId}`);
+      } else {
+        await db.chats.add(chatData);
+        console.log(`🆕 [CHAT-DB-V2] Created new chat metadata: ${chatId}`);
+      }
+
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+
+      console.log(`✅ [CHAT-DB-V2] Chat conversion completed: ${chatId}`);
+      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`🎯 [CHAT-DB-V2] V1→V2 CONVERSION: ${messages.length} messages saved individually`);
+
+      return { chatId, messageIds, messageCount: messages.length };
+
+    } catch (error) {
+      console.error(`❌ [CHAT-DB-V2] Error in V1→V2 conversion:`, error);
+      throw error;
+    }
+  },
+
   // 🚀 NEW V2 API METHODS - Normalized Schema
 
   // 💾 Save individual message (V2 - efficient)

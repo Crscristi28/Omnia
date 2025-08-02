@@ -429,8 +429,8 @@ function App() {
     // Same as handleSidebarNewChat but keeps sidebar open
     // 💾 Strategic save point #4: Save chat before creating new chat
     if (currentChatId && messages.length > 0) {
-      console.log('💾 [IndexedDB] Saving current chat before new chat (sidebar):', currentChatId);
-      await chatDB.saveChat(currentChatId, messages);
+      console.log('💾 [IndexedDB-V2] Saving current chat before new chat (sidebar):', currentChatId);
+      await chatDB.saveChatV2(currentChatId, messages);
     }
     handleNewChat();
     setCurrentChatId(chatDB.generateChatId());
@@ -461,10 +461,10 @@ function App() {
     try {
       // ✅ SAVE POINT #2: Save current chat before switching
       if (currentChatId && messages.length > 0) {
-        console.log('🔄 [MONITOR] Saving current chat before switch:', currentChatId);
-        await chatDB.saveChat(currentChatId, messages);
+        console.log('🔄 [MONITOR-V2] Saving current chat before switch:', currentChatId);
+        await chatDB.saveChatV2(currentChatId, messages);
         crashMonitor.trackIndexedDB('save', currentChatId, true);
-        console.log('✅ [MONITOR] Current chat saved successfully');
+        console.log('✅ [MONITOR-V2] Current chat saved successfully');
       }
       
       // 📖 Load selected chat - check if batch loading is needed
@@ -591,8 +591,8 @@ function App() {
         console.log('🚪 [MONITOR] App closing - saving to IndexedDB and sessionStorage');
         
         // Asynchronní save do IndexedDB (persistent storage)
-        chatDB.saveChat(currentChatId, messages).catch(error => {
-          console.error('❌ Failed to save to IndexedDB on close:', error);
+        chatDB.saveChatV2(currentChatId, messages).catch(error => {
+          console.error('❌ Failed to save to IndexedDB V2 on close:', error);
         });
         
         // Save current chat ID to sessionStorage for recovery
@@ -853,10 +853,10 @@ function App() {
     try {
       // ✅ SAVE POINT #2: Save current chat before creating new
       if (currentChatId && messages.length > 0) {
-        console.log('💾 [MONITOR] Saving before new chat:', currentChatId);
-        await chatDB.saveChat(currentChatId, messages);
+        console.log('💾 [MONITOR-V2] Saving before new chat:', currentChatId);
+        await chatDB.saveChatV2(currentChatId, messages);
         crashMonitor.trackIndexedDB('save', currentChatId, true);
-        console.log('✅ [MONITOR] Current chat saved before new chat');
+        console.log('✅ [MONITOR-V2] Current chat saved before new chat');
       }
 
       // 🆕 STREAMING: Stop any ongoing streaming
@@ -1005,10 +1005,10 @@ function App() {
       // ✅ SAVE POINT #1: Create new chat if this is the first message
       if (currentMessages.length === 0 && currentChatId) {
         try {
-          console.log('🆕 [MONITOR] Creating new chat:', currentChatId);
-          await chatDB.saveChat(currentChatId, [userMessage]);
+          console.log('🆕 [MONITOR-V2] Creating new chat:', currentChatId);
+          await chatDB.saveChatV2(currentChatId, [userMessage]);
           crashMonitor.trackIndexedDB('create_chat', currentChatId, true);
-          console.log('✅ [MONITOR] New chat created successfully');
+          console.log('✅ [MONITOR-V2] New chat created successfully');
         } catch (error) {
           crashMonitor.trackIndexedDB('create_chat', currentChatId, false, error);
           console.error('❌ [MONITOR] Failed to create new chat:', error);
