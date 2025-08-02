@@ -602,7 +602,7 @@ function App() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [currentChatId, messages]);
+  }, [currentChatId, messages]); // 🔍 TESTING: Keeping messages dependency to see if saves are actually happening
 
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%

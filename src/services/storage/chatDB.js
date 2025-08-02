@@ -42,8 +42,9 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`💾 [CHAT-DB-V1] Starting save for chat ${chatId}`);
+      console.log(`💾 [CHAT-DB-V1] *** ACTUAL DATABASE SAVE OPERATION *** for chat ${chatId}`);
       console.log(`📊 [CHAT-DB-V1] Messages to save: ${messages.length}, Memory: ${Math.round(memBefore/1024/1024)}MB`);
+      console.trace('💾 [CHAT-DB-V1] CALL STACK - Where was this called from?');
       
       const chatData = {
         id: chatId,
