@@ -503,13 +503,8 @@ function App() {
           loadedRange: chatData.loadedRange
         });
         
-        // Scroll to bottom after loading chat (show newest messages)
-        setTimeout(() => {
-          if (mainContentRef.current) {
-            console.log('📍 Scrolling to bottom after chat load...');
-            mainContentRef.current.scrollTop = mainContentRef.current.scrollHeight;
-          }
-        }, 500); // Increase timeout for mobile
+        // 🎯 FLEXBOX: Chat opens on bottom automatically - no scrolling needed!
+        console.log('🎯 [UX-FIXED] Chat opened on bottom via flexbox - no scroll animation needed');
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
         setMessages([]);
@@ -2152,7 +2147,7 @@ const handleModelChange = useCallback((newModel) => {
             minHeight: 'auto',
             display: 'flex', 
             flexDirection: 'column',
-            justifyContent: messages.length === 0 ? 'center' : 'flex-start'
+            justifyContent: messages.length === 0 ? 'center' : 'flex-end'
         }}>
           
           {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
