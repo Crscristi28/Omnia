@@ -17,7 +17,7 @@ class ChatDatabase extends Dexie {
     // V2 Schema (NEW - normalized)
     this.version(2).stores({
       chats: 'id, title, createdAt, updatedAt, messageCount',
-      messages: '++id, chatId, timestamp, sender, text, type, attachments'
+      messages: '++id, chatId, timestamp, sender, text, type, attachments, [chatId+timestamp]'
     }).upgrade(tx => {
       console.log('🚀 [CHAT-DB-V2] Upgrading database to version 2...');
       console.log('🗑️ [CHAT-DB-V2] Clearing all old data for clean start...');
@@ -347,11 +347,11 @@ const chatDB = {
     try {
       console.log(`📖 [CHAT-DB-V2] Getting latest ${limit} messages for: ${chatId}`);
       
-      // Get messages in reverse order (newest first)
+      // Get messages using compound index [chatId+timestamp] for efficient querying
       const messages = await db.messages
-        .where('chatId').equals(chatId)
-        .orderBy('timestamp')
-        .reverse()
+        .where('[chatId+timestamp]')
+        .between([chatId, Dexie.minKey], [chatId, Dexie.maxKey])
+        .reverse() // newest first
         .limit(limit)
         .toArray();
       
@@ -390,12 +390,11 @@ const chatDB = {
     try {
       console.log(`📄 [CHAT-DB-V2] Getting ${limit} messages before timestamp ${beforeTimestamp}`);
       
-      // Get older messages
+      // Get older messages using compound index
       const messages = await db.messages
-        .where('chatId').equals(chatId)
-        .and(msg => msg.timestamp < beforeTimestamp)
-        .orderBy('timestamp')
-        .reverse()
+        .where('[chatId+timestamp]')
+        .between([chatId, Dexie.minKey], [chatId, beforeTimestamp], false, true) // exclude beforeTimestamp
+        .reverse() // newest first within older range
         .limit(limit)
         .toArray();
       
