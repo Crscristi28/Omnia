@@ -671,11 +671,11 @@ function App() {
     }
     
     console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
-    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 30: ${allMessages.length % 30}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
+    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
     
-    // 💾 AUTO-SAVE - každých 30 zpráv (bez cleanup!)
-    if (allMessages.length % 30 === 0 && allMessages.length > 0) {
-      console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 30!`);
+    // 💾 AUTO-SAVE - každých 10 zpráv (bez cleanup!)
+    if (allMessages.length % 10 === 0 && allMessages.length > 0) {
+      console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 10!`);
       try {
         await chatDB.saveChatV2(chatId, allMessages);
         console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
@@ -1088,20 +1088,7 @@ function App() {
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
-      // ✅ SAVE POINT #1: Create new chat if this is the first message
-      if (currentMessages.length === 0 && activeChatId) {
-        try {
-          console.log('🆕 [MONITOR-V2] Creating new chat:', activeChatId);
-          await chatDB.saveChatV2(activeChatId, [userMessage]);
-          crashMonitor.trackIndexedDB('create_chat', activeChatId, true);
-          console.log('✅ [MONITOR-V2] New chat created successfully');
-        } catch (error) {
-          crashMonitor.trackIndexedDB('create_chat', activeChatId, false, error);
-          console.error('❌ [MONITOR] Failed to create new chat:', error);
-          // Continue with session-only mode
-        }
-      }
-      // ❌ REMOVED: Save after user message (to prevent race conditions)
+      // ✅ REMOVED: First message save logic - using only auto-save every 10 messages
 
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
