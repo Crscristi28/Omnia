@@ -1414,7 +1414,7 @@ function App() {
         });
       }
     }
-  }, []);
+  }, [model, isImageMode]);
 
   const handleTranscript = useCallback(async (text, confidence = 1.0) => {
     console.log('🎙️ Voice transcript received:', { text, confidence });
@@ -1915,7 +1915,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Clear input after sending
     setInput('');
   }
-}, []);
+}, [model, isImageMode]);
 
 // 🎯 MODEL CHANGE HANDLER - Optimized with useCallback
 const handleModelChange = useCallback((newModel) => {
