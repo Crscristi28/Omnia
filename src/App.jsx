@@ -438,10 +438,24 @@ function App() {
 
   const handleNewChatKeepSidebar = async () => {
     // Same as handleSidebarNewChat but keeps sidebar open
-    // 💾 Strategic save point #4: Save chat before creating new chat
+    // 💾 SMART POJISTKA: Save only NEW messages to prevent duplicates
     if (currentChatId && messages.length > 0) {
-      console.log('💾 [IndexedDB-V2] Saving current chat before new chat (sidebar):', currentChatId);
-      await chatDB.saveChatV2(currentChatId, messages);
+      console.log('💾 [SMART-SAVE] Checking for unsaved messages before sidebar new chat:', currentChatId);
+      
+      // Get existing message count from database
+      const existingData = await chatDB.getLatestMessages(currentChatId, 1);
+      const lastSavedCount = existingData.totalCount || 0;
+      const currentCount = messages.length;
+      
+      // Save only NEW messages since last save
+      if (currentCount > lastSavedCount) {
+        const unsavedMessages = messages.slice(lastSavedCount);
+        console.log(`💾 [SMART-SAVE] Saving ${unsavedMessages.length} new messages (${lastSavedCount} already saved)`);
+        await chatDB.saveChatV2(currentChatId, unsavedMessages);
+        console.log('✅ [SMART-SAVE] New messages protected before sidebar new chat');
+      } else {
+        console.log('✅ [SMART-SAVE] All messages already protected - no duplicates');
+      }
     }
     handleNewChat();
     const newKeepSidebarId = chatDB.generateChatId();
@@ -919,12 +933,25 @@ function App() {
   const handleNewChat = async () => {
     crashMonitor.trackChatOperation('new_chat_start', { currentChatId, messageCount: messages.length });
     try {
-      // ✅ SAVE POINT #2: Save current chat before creating new
+      // ✅ SMART POJISTKA: Save only NEW messages to prevent duplicates
       if (currentChatId && messages.length > 0) {
-        console.log('💾 [MONITOR-V2] Saving before new chat:', currentChatId);
-        await chatDB.saveChatV2(currentChatId, messages);
-        crashMonitor.trackIndexedDB('save', currentChatId, true);
-        console.log('✅ [MONITOR-V2] Current chat saved before new chat');
+        console.log('💾 [SMART-SAVE] Checking for unsaved messages before new chat:', currentChatId);
+        
+        // Get existing message count from database
+        const existingData = await chatDB.getLatestMessages(currentChatId, 1);
+        const lastSavedCount = existingData.totalCount || 0;
+        const currentCount = messages.length;
+        
+        // Save only NEW messages since last save
+        if (currentCount > lastSavedCount) {
+          const unsavedMessages = messages.slice(lastSavedCount);
+          console.log(`💾 [SMART-SAVE] Saving ${unsavedMessages.length} new messages (${lastSavedCount} already saved)`);
+          await chatDB.saveChatV2(currentChatId, unsavedMessages);
+          crashMonitor.trackIndexedDB('save', currentChatId, true);
+          console.log('✅ [SMART-SAVE] New messages protected before new chat');
+        } else {
+          console.log('✅ [SMART-SAVE] All messages already protected - no duplicates');
+        }
       }
 
       // 🆕 STREAMING: Stop any ongoing streaming
