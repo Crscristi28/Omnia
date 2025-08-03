@@ -1752,7 +1752,6 @@ const handleDocumentUpload = async (event) => {
     const hiddenContextMessage = {
       sender: 'system',
       text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). AI má plný přístup k dokumentu a může jej analyzovat.`,
-      timestamp: new Date(),
       isHidden: true
     };
 
@@ -1787,7 +1786,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const userMessage = {
     sender: 'user',
     text: text.trim(), // Keep empty if no text - no default message
-    timestamp: new Date(),
     attachedFiles: safeDocuments.map(doc => ({
       name: doc.name,
       size: doc.size,
@@ -1992,7 +1990,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const hiddenContextMessage = {
         sender: 'system',
         text: `📄 User uploaded ${processedDocuments.length} document(s) for analysis. AI has full access to the document(s) and should analyze them.`,
-        timestamp: new Date(),
         isHidden: true
       };
       
@@ -2029,8 +2026,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         sender: 'bot',
         text: cleanedText,
         sources: result.sources || [],
-        isStreaming: false,
-        timestamp: new Date()
+        isStreaming: false
       }];
       
       // Check auto-save after AI response
