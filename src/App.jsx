@@ -241,7 +241,18 @@ function App() {
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
   const [currentChatId, setCurrentChatId] = useState(null);
+  const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
+
+  // 🔧 Helper functions for safe chatId management
+  const updateCurrentChatId = (newId) => {
+    setCurrentChatId(newId);
+    currentChatIdRef.current = newId;
+  };
+
+  const getSafeChatId = () => {
+    return currentChatId || currentChatIdRef.current;
+  };
   
   // 🆕 STREAMING STATE - For controlling streaming effect
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
@@ -435,7 +446,7 @@ function App() {
     handleNewChat();
     const newKeepSidebarId = chatDB.generateChatId();
     console.log('🔴 [DEBUG] handleNewChatKeepSidebar - setting new chatId:', newKeepSidebarId);
-    setCurrentChatId(newKeepSidebarId);
+    updateCurrentChatId(newKeepSidebarId);
     // ❌ REMOVED: loadChatHistories() - historie se aktualizuje lazy
     // Note: sidebar stays open
   };
@@ -487,7 +498,7 @@ function App() {
       
       if (chatData && chatData.messages.length > 0) {
         setMessages(chatData.messages);
-        setCurrentChatId(chatId);
+        updateCurrentChatId(chatId);
         setHasMoreMessages(chatData.hasMore);
         // V2: No offset tracking needed - using timestamp-based pagination
         crashMonitor.trackIndexedDB('load', chatId, true);
@@ -513,7 +524,7 @@ function App() {
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
         setMessages([]);
-        setCurrentChatId(chatId);
+        updateCurrentChatId(chatId);
         setHasMoreMessages(false);
         // V2: No offset tracking needed
         console.log('🆕 [MONITOR] Starting with empty chat:', chatId);
@@ -597,7 +608,7 @@ function App() {
     if (!currentChatId) {
       const newId = chatDB.generateChatId();
       console.log('🔴 [DEBUG] useEffect generating NEW chatId (initial):', newId);
-      setCurrentChatId(newId);
+      updateCurrentChatId(newId);
     } else {
       console.log('🔴 [DEBUG] useEffect - using existing chatId:', currentChatId);
     }
@@ -949,7 +960,7 @@ function App() {
     
       // Create new chat ID for history tracking
       const newChatId = chatDB.generateChatId();
-      setCurrentChatId(newChatId);
+      updateCurrentChatId(newChatId);
       
       crashMonitor.trackChatOperation('new_chat_success', { newChatId });
       console.log('🆕 [MONITOR] New chat prepared:', newChatId);
@@ -959,7 +970,7 @@ function App() {
       console.error('❌ [MONITOR] New chat preparation failed:', error);
       // Fallback - still create new chat but without IndexedDB save
       const newChatId = chatDB.generateChatId();
-      setCurrentChatId(newChatId);
+      updateCurrentChatId(newChatId);
     }
   };
 
@@ -1056,19 +1067,19 @@ function App() {
 
     try {
       // 🔴 [DEBUG] Track currentChatId state at handleSend start
-      console.log("🔴 [DEBUG] handleSend start - currentChatId:", currentChatId);
+      console.log("🔴 [DEBUG] handleSend start - currentChatId:", currentChatId, "ref:", currentChatIdRef.current);
       
-      // 🎯 ENSURE CHAT ID EXISTS - guarantee we have chatId for auto-save
-      let activeChatId = currentChatId;
-      console.log("🔴 [DEBUG] activeChatId after assignment:", activeChatId);
+      // 🎯 ENSURE CHAT ID EXISTS - use safe getter to prevent race condition
+      let activeChatId = getSafeChatId();
+      console.log("🔴 [DEBUG] activeChatId from getSafeChatId():", activeChatId);
       
       if (!activeChatId) {
         activeChatId = chatDB.generateChatId();
-        setCurrentChatId(activeChatId);
-        console.log('🔴 [DEBUG] CREATING NEW CHAT - currentChatId was null! New chatId:', activeChatId);
+        updateCurrentChatId(activeChatId);
+        console.log('🔴 [DEBUG] CREATING NEW CHAT - no chatId found! New chatId:', activeChatId);
         console.trace('🔍 [DEBUG] New chat creation call stack:');
       } else {
-        console.log('🔴 [DEBUG] Using existing chatId:', activeChatId);
+        console.log('🔴 [DEBUG] Using existing safe chatId:', activeChatId);
       }
       
       const userMessage = { sender: 'user', text: finalTextInput };
