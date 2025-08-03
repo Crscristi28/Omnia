@@ -993,6 +993,51 @@ function App() {
     }
   };
 
+  // Gemini markdown preprocessing helper (without regex)
+  const fixGeminiMarkdown = (text) => {
+    const lines = text.split('\n');
+    const fixed = [];
+    let lastNumbered = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      
+      // Fix duplicate numbering (1. then 1. again)
+      if (trimmed.match(/^\d+\./)) {
+        const num = parseInt(trimmed.match(/^(\d+)/)[1]);
+        if (num === 1 && lastNumbered > 0 && i > 0 && lines[i-1].trim() === '') {
+          // Found duplicate 1. after empty line - fix it
+          const correctedLine = line.replace(/^(\s*)\d+/, `$1${lastNumbered + 1}`);
+          fixed.push(correctedLine);
+          lastNumbered++;
+        } else {
+          fixed.push(line);
+          lastNumbered = num;
+        }
+      }
+      // Fix empty bullets
+      else if (trimmed === '•') {
+        // Skip empty bullet line
+        continue;
+      }
+      // Fix nested bullets with extra spacing
+      else if (trimmed.startsWith('•') && i > 0 && lines[i-1].trim() === '•') {
+        // Remove extra indentation from nested bullets
+        fixed.push('• ' + trimmed.substring(1).trim());
+      }
+      else {
+        fixed.push(line);
+        // Reset counter if not a numbered line
+        if (!trimmed.match(/^\d+\./) && trimmed !== '') {
+          lastNumbered = 0;
+        }
+      }
+    }
+    
+    return fixed.join('\n');
+  };
+
   const convertMessagesForOpenAI = (messages) => {
     return messages.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -1363,7 +1408,8 @@ function App() {
           documentsToPassToGemini
         );
         
-        responseText = result.text;
+        // Apply Gemini markdown preprocessing
+        responseText = fixGeminiMarkdown(result.text);
         const sources = result.sources || [];
         sourcesToSave = sources;
         
@@ -1928,10 +1974,13 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Update activeDocumentContexts with the filtered list
       setActiveDocumentContexts(filteredActiveDocs);
       
+      // Apply Gemini markdown preprocessing to document upload response
+      const cleanedText = fixGeminiMarkdown(result.text);
+      
       // Add final message - same as regular Gemini chat (no streaming effect)
       const finalMessages = [...messagesWithUser, {
         sender: 'bot',
-        text: result.text,
+        text: cleanedText,
         sources: result.sources || [],
         isStreaming: false,
         timestamp: new Date()
