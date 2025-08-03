@@ -628,25 +628,42 @@ function App() {
     }
   }, []);
 
-  // 💾 Strategic save point #5: Save chat before page unload
+  // 💾 Strategic save point #5: Save chat on page visibility change (more reliable than beforeunload)
   React.useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (currentChatId && messages.length > 0) {
-        console.log('🚪 [MONITOR] App closing - saving to IndexedDB and sessionStorage');
+    const handleVisibilityChange = () => {
+      // Only save when page becomes hidden AND it's not just opening a document viewer
+      if (document.hidden && currentChatId && messages.length > 0) {
+        console.log('👁️ [MONITOR] Page hidden - saving to IndexedDB and sessionStorage');
         
-        // Asynchronní save do IndexedDB (persistent storage)
         chatDB.saveChatV2(currentChatId, messages).catch(error => {
-          console.error('❌ Failed to save to IndexedDB V2 on close:', error);
+          console.error('❌ Failed to save to IndexedDB V2 on visibility change:', error);
         });
         
-        // Save current chat ID to sessionStorage for recovery
         sessionManager.saveCurrentChatId(currentChatId);
       }
     };
 
+    const handleBeforeUnload = () => {
+      // Keep minimal beforeunload for actual page closing
+      if (currentChatId && messages.length > 0) {
+        console.log('🚪 [MONITOR] App closing - final save');
+        chatDB.saveChatV2(currentChatId, messages).catch(error => {
+          console.error('❌ Failed to save to IndexedDB V2 on close:', error);
+        });
+        sessionManager.saveCurrentChatId(currentChatId);
+      }
+    };
+
+    // Use visibilitychange as primary save trigger (doesn't interfere with document viewing)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Keep beforeunload as backup for actual page close
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [currentChatId, messages]); // 🔍 TESTING: Keeping messages dependency to see if saves are actually happening
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [currentChatId, messages]);
 
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%
@@ -1512,7 +1529,7 @@ function App() {
   }, [showVoiceScreen, handleSend]);
 
 
-  // 📄 HANDLE FILE CLICK - Actually open/download files
+  // 📄 HANDLE FILE CLICK - Actually open/download files  
   const handleFileClick = (filename, file) => {
     console.log('📄 File clicked:', filename, file);
     
@@ -1525,10 +1542,22 @@ function App() {
       // Create blob URL for the file
       const fileUrl = URL.createObjectURL(file);
       
+      // 🛡️ PREVENT STATE LOSS: Monitor document viewer window to preserve chat state
+      
       // Check if it's an image
       if (file.type.startsWith('image/')) {
         // For images, open in new tab for viewing
-        window.open(fileUrl, '_blank');
+        const newWindow = window.open(fileUrl, '_blank');
+        
+        // 🛡️ Monitor new window to detect when it closes
+        if (newWindow) {
+          const checkClosed = setInterval(() => {
+            if (newWindow.closed) {
+              clearInterval(checkClosed);
+              console.log('🔄 Document viewer closed - state preserved');
+            }
+          }, 1000);
+        }
         // showNotification(`Obrázek ${filename} otevřen`, 'success');
       } else {
         // For documents (PDF, etc.), try to open in new tab
@@ -1547,6 +1576,13 @@ function App() {
           link.click();
           // showNotification(`Dokument ${filename} stažen`, 'success');
         } else {
+          // 🛡️ Monitor new window to detect when it closes
+          const checkClosed = setInterval(() => {
+            if (newWindow.closed) {
+              clearInterval(checkClosed);
+              console.log('🔄 Document viewer closed - state preserved');
+            }
+          }, 1000);
           // showNotification(`Dokument ${filename} otevřen`, 'success');
         }
       }
