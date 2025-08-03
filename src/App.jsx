@@ -1775,9 +1775,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const currentLoading = loading;
   const currentStreaming = streaming;
   
-  console.log('📤 Sending with documents:', text, documents);
+  // 🛡️ Safety check: Ensure documents is always an array
+  const safeDocuments = documents || [];
   
-  if (!text.trim() && documents.length === 0) return;
+  console.log('📤 Sending with documents:', text, safeDocuments);
+  
+  if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;
   
   // Add user message to chat immediately (with document info)
@@ -1785,7 +1788,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     sender: 'user',
     text: text.trim(), // Keep empty if no text - no default message
     timestamp: new Date(),
-    attachedFiles: documents.map(doc => ({
+    attachedFiles: safeDocuments.map(doc => ({
       name: doc.name,
       size: doc.size,
       file: doc.file // Store the actual file for later access
@@ -1835,7 +1838,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Process documents first and collect them
     const processedDocuments = [];
     
-    for (const doc of documents) {
+    for (const doc of safeDocuments) {
       if (doc.file) {
         // Validate file format before processing
         const supportedTypes = [
