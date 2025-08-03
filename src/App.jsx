@@ -583,13 +583,13 @@ function App() {
         // Prepend older messages to current messages
         const allMessages = [...olderMessages, ...messages];
         
-        // 🪟 WINDOW MANAGEMENT - Sliding window to prevent RAM overflow
-        if (allMessages.length > 80) {
-          console.log(`🪟 [WINDOW-MGMT] Too many messages: ${allMessages.length} > 80, applying sliding window...`);
-          // Keep only the latest 80 messages around current scroll position
-          const trimmedMessages = allMessages.slice(-80);
+        // 🪟 SLIDING WINDOW - Keep max 50 messages in RAM for optimal performance
+        if (allMessages.length > 50) {
+          console.log(`🪟 [SLIDING-WINDOW] Too many messages: ${allMessages.length} > 50, applying sliding window...`);
+          // Keep only the latest 50 messages for sliding window approach
+          const trimmedMessages = allMessages.slice(-50);
           setMessages(trimmedMessages);
-          console.log(`🧹 [WINDOW-MGMT] Trimmed ${allMessages.length} → 80 messages in RAM`);
+          console.log(`🧹 [SLIDING-WINDOW] Trimmed ${allMessages.length} → 50 messages in RAM`);
         } else {
           setMessages(allMessages);
         }
@@ -600,7 +600,7 @@ function App() {
           loadedCount: olderMessages.length,
           beforeTimestamp: oldestMessage.timestamp,
           hasMore: olderMessages.length === 15,
-          totalInDOM: allMessages.length > 80 ? 80 : allMessages.length,
+          totalInDOM: allMessages.length > 50 ? 50 : allMessages.length,
           actualTotal: allMessages.length
         });
       } else {
@@ -698,16 +698,8 @@ function App() {
       }
     }
     
-    // 🧹 RAM CLEANUP - samostatně, jen když dosáhne 45 zpráv
-    if (allMessages.length >= 45) {
-      console.log(`🧹 [RAM-CLEANUP] Reached cleanup threshold: ${allMessages.length} >= 45, cleaning up...`);
-      const beforeCleanup = allMessages.length;
-      const cleanedMessages = allMessages.slice(-30); // Keep last 30
-      console.log(`🧹 [RAM-CLEANUP] ${beforeCleanup} → 30 messages in RAM`);
-      console.log(`💾 [RAM-CLEANUP] ${beforeCleanup - 30} messages moved to DB only`);
-      console.log(`📊 [RAM-STATUS] Current messages in memory: ${cleanedMessages.length}`);
-      return cleanedMessages; // Return cleaned messages
-    }
+    // 🪟 SLIDING WINDOW - Memory management handled by loadOlderMessages only
+    // Removed fixed RAM cleanup to prevent conflicts with scroll loading
     
     return allMessages; // No cleanup, return original
   };
