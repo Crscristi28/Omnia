@@ -433,7 +433,9 @@ function App() {
       await chatDB.saveChatV2(currentChatId, messages);
     }
     handleNewChat();
-    setCurrentChatId(chatDB.generateChatId());
+    const newKeepSidebarId = chatDB.generateChatId();
+    console.log('🔴 [DEBUG] handleNewChatKeepSidebar - setting new chatId:', newKeepSidebarId);
+    setCurrentChatId(newKeepSidebarId);
     // ❌ REMOVED: loadChatHistories() - historie se aktualizuje lazy
     // Note: sidebar stays open
   };
@@ -590,8 +592,14 @@ function App() {
   // 🔄 INITIALIZATION - NO chat loading on mount (lazy loading)
   React.useEffect(() => {
     // ❌ REMOVED: loadChatHistories() - načte se až při otevření sidebaru
+    console.log('🔴 [DEBUG] useEffect init - currentChatId at mount:', currentChatId);
+    
     if (!currentChatId) {
-      setCurrentChatId(chatDB.generateChatId());
+      const newId = chatDB.generateChatId();
+      console.log('🔴 [DEBUG] useEffect generating NEW chatId (initial):', newId);
+      setCurrentChatId(newId);
+    } else {
+      console.log('🔴 [DEBUG] useEffect - using existing chatId:', currentChatId);
     }
   }, []);
 
@@ -643,9 +651,11 @@ function App() {
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
   const checkAutoSave = async (allMessages, chatId = currentChatId) => {
-    console.log(`🚨 [DEBUG] checkAutoSave() CALLED! Messages: ${allMessages.length}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
+    console.log(`🔴 [DEBUG] checkAutoSave() CALLED! Messages: ${allMessages.length}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
+    console.log(`🔴 [DEBUG] Auto-save - currentChatId from state: ${currentChatId}, passed chatId: ${chatId}`);
+    
     if (!chatId || allMessages.length === 0) {
-      console.log(`⚠️ [DEBUG] Early return: chatId=${chatId ? 'EXISTS' : 'NULL'}, length=${allMessages.length}`);
+      console.log(`🔴 [DEBUG] Early return: chatId=${chatId ? 'EXISTS' : 'NULL'}, length=${allMessages.length}`);
       return allMessages;
     }
     
@@ -1045,12 +1055,20 @@ function App() {
     setLoading(true);
 
     try {
+      // 🔴 [DEBUG] Track currentChatId state at handleSend start
+      console.log("🔴 [DEBUG] handleSend start - currentChatId:", currentChatId);
+      
       // 🎯 ENSURE CHAT ID EXISTS - guarantee we have chatId for auto-save
       let activeChatId = currentChatId;
+      console.log("🔴 [DEBUG] activeChatId after assignment:", activeChatId);
+      
       if (!activeChatId) {
         activeChatId = chatDB.generateChatId();
         setCurrentChatId(activeChatId);
-        console.log('🔧 [CHAT-ID-FIX] Generated new chatId:', activeChatId);
+        console.log('🔴 [DEBUG] CREATING NEW CHAT - currentChatId was null! New chatId:', activeChatId);
+        console.trace('🔍 [DEBUG] New chat creation call stack:');
+      } else {
+        console.log('🔴 [DEBUG] Using existing chatId:', activeChatId);
       }
       
       const userMessage = { sender: 'user', text: finalTextInput };
