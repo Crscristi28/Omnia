@@ -1906,6 +1906,31 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Add to messages context but don't display to user
       const messagesWithHiddenContext = [...messagesForAI, hiddenContextMessage];
       
+      // Real-time streaming update function for document uploads
+      const updateStreamingMessage = (chunk, isStreaming) => {
+        if (isStreaming) {
+          // Update the last message (AI response) with streaming chunk
+          setMessages(prev => {
+            const newMessages = [...prev];
+            const lastMsg = newMessages[newMessages.length - 1];
+            
+            if (lastMsg && lastMsg.sender === 'bot') {
+              // Update existing AI message
+              lastMsg.text = chunk;
+            } else {
+              // Create new AI message
+              newMessages.push({
+                sender: 'bot',
+                text: chunk,
+                timestamp: new Date(),
+                isStreaming: true
+              });
+            }
+            return newMessages;
+          });
+        }
+      };
+      
       // Send to Gemini with FILTERED documents only
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
