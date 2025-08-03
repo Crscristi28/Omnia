@@ -27,8 +27,9 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Ignore all markdown files
+# Ignore all markdown files except CLAUDE.md 
 **/*.md
+!CLAUDE.md
 
 # TypeScript declarations - only types, no implementation
 **/*.d.ts
