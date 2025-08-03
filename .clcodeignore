@@ -47,3 +47,54 @@ pnpm-lock.yaml
 # Log files
 *.log
 logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test files and directories  
+**/*.test.*
+**/*.spec.*
+__tests__/
+tests/
+test/
+*.test.js
+*.test.ts
+
+# Documentation
+docs/
+documentation/
+*.rst
+
+# Configuration and environment
+.env*
+*.config.js
+*.config.ts
+webpack.config.*
+rollup.config.*
+vite.config.*
+
+# Large vendor/library files
+vendor/
+lib/
+libs/
+public/assets/
+static/assets/
+
+# Font files
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.otf
+
+# CSS frameworks (usually large)
+bootstrap.*
+tailwind.*
+bulma.*
+
+# Minified or bundled files
+bundle.*
+chunk.*
+vendor.*
