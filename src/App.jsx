@@ -1926,16 +1926,24 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         return isVeryRecentUpload || isRecentlyMentioned;
       });
       
-      // Prepare messages for AI - if user sent only documents without text, add document context
+      // Prepare messages for AI - ALWAYS add document context when documents are present
       const messagesForAI = messagesWithUser.map(msg => {
-        if (msg === userMessage && !text.trim() && processedDocuments.length > 0) {
+        if (msg === userMessage && processedDocuments.length > 0) {
+          // If user provided text, keep it and add document references
+          // If no text, just add document references
+          const documentReferences = processedDocuments.map(doc => {
+            const isImage = doc.name.match(/\.(png|jpe?g|gif|webp)$/i);
+            const emoji = isImage ? '🖼️' : '📄';
+            return `${emoji} ${doc.name}`;
+          }).join('\n');
+          
+          const combinedText = text.trim() 
+            ? `${text.trim()}\n\n${documentReferences}`
+            : documentReferences;
+          
           return {
             ...msg,
-            text: processedDocuments.map(doc => {
-              const isImage = doc.name.match(/\.(png|jpe?g|gif|webp)$/i);
-              const emoji = isImage ? '🖼️' : '📄';
-              return `${emoji} ${doc.name}`;
-            }).join('\n')
+            text: combinedText
           };
         }
         return msg;
