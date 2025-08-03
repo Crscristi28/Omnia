@@ -262,10 +262,12 @@ const InputBar = ({
   }, [isMobile]);
 
   const handleSendMessage = () => {
-    if (pendingDocuments.length > 0 && onSendWithDocuments) {
-      // Send with documents
-      onSendWithDocuments(input, pendingDocuments);
-      setPendingDocuments([]); // Clear chips after sending
+    if (pendingDocuments.length > 0) {
+      // Send with documents (regardless of whether there's text or not)
+      if (onSendWithDocuments) {
+        onSendWithDocuments(input, pendingDocuments);
+        setPendingDocuments([]); // Clear chips after sending
+      }
     } else if (input.trim() && onSend) {
       // Regular text-only send
       onSend();
