@@ -1778,6 +1778,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const safeDocuments = documents || [];
   
   console.log('📤 Sending with documents:', text, safeDocuments);
+  console.log('🔍 DEBUG - text.trim():', `"${text.trim()}"`, 'length:', text.trim().length);
+  console.log('🔍 DEBUG - safeDocuments.length:', safeDocuments.length);
   
   if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;
@@ -1977,6 +1979,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           const combinedText = text.trim() 
             ? `${text.trim()}\n\n${documentReferences}`
             : documentReferences;
+          
+          console.log('🔍 DEBUG - AI message preparation:');
+          console.log('   - Original text:', `"${text.trim()}"`);
+          console.log('   - Document references:', documentReferences);
+          console.log('   - Combined text for AI:', `"${combinedText}"`);
           
           return {
             ...msg,
