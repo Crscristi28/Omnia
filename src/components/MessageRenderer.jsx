@@ -114,20 +114,20 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           color: #facc15 !important;
         }
         
-        /* List styling for proper indentation */
+        /* List styling - COMPACT for better formatting */
         .markdown-container ul {
-          margin-left: 1.5rem !important;
+          margin-left: 1rem !important;
           padding-left: 0 !important;
           list-style-position: outside !important;
         }
         .markdown-container ol {
           margin-left: 0 !important;
-          padding-left: 1.5rem !important;
+          padding-left: 1rem !important;
           list-style-position: outside !important;
         }
         .markdown-container li {
-          margin-bottom: 0.5rem !important;
-          padding-left: 0.5rem !important;
+          margin-bottom: 0.25rem !important;
+          padding-left: 0.25rem !important;
         }
         .markdown-container ul li {
           list-style-type: disc !important;
@@ -136,10 +136,10 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           list-style-type: decimal !important;
         }
         
-        /* Styling for bullet points (•) that aren't converted to markdown lists */
+        /* Paragraph styling - COMPACT for better formatting */
         .markdown-container p {
-          line-height: 1.6 !important;
-          margin-bottom: 0.5rem !important;
+          line-height: 1.4 !important;
+          margin-bottom: 0.25rem !important;
         }
         
         /* Stabilize text rendering to prevent jumping */
@@ -147,9 +147,9 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           min-height: 1.6em; /* Prevent height fluctuations */
         }
         
-        /* Ensure consistent spacing for all paragraph content */
+        /* Paragraph spacing - COMPACT for better formatting */
         .markdown-container p:not(:last-child) {
-          margin-bottom: 1rem !important;
+          margin-bottom: 0.5rem !important;
         }
         
         /* Code block styling */
