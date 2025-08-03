@@ -1906,37 +1906,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Add to messages context but don't display to user
       const messagesWithHiddenContext = [...messagesForAI, hiddenContextMessage];
       
-      // Real-time streaming update function for document uploads
-      const updateStreamingMessage = (chunk, isStreaming) => {
-        if (isStreaming) {
-          // Update the last message (AI response) with streaming chunk
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastMsg = newMessages[newMessages.length - 1];
-            
-            if (lastMsg && lastMsg.sender === 'bot') {
-              // Update existing AI message
-              lastMsg.text = chunk;
-            } else {
-              // Create new AI message
-              newMessages.push({
-                sender: 'bot',
-                text: chunk,
-                timestamp: new Date(),
-                isStreaming: true
-              });
-            }
-            return newMessages;
-          });
-        }
-      };
+      // No streaming for document uploads - same as regular Gemini chat
       
       // Send to Gemini with FILTERED documents only
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
-        (chunk) => {
-          updateStreamingMessage(chunk, true);
-        },
+        null, // No streaming updates - get full response at once
         (searchMsg) => {
           setIsSearching(true);
           setTimeout(() => setIsSearching(false), 3000);
@@ -1953,16 +1928,18 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Update activeDocumentContexts with the filtered list
       setActiveDocumentContexts(filteredActiveDocs);
       
-      // Use already calculated messagesWithUser
+      // Add final message - same as regular Gemini chat (no streaming effect)
+      const finalMessages = [...messagesWithUser, {
+        sender: 'bot',
+        text: result.text,
+        sources: result.sources || [],
+        isStreaming: false,
+        timestamp: new Date()
+      }];
       
-      const stopFn = streamMessageWithEffect(
-        result.text,
-        setMessages,
-        messagesWithUser,
-        mainContentRef.current,
-        result.sources || []
-      );
-      setStopStreamingRef(() => stopFn);
+      // Check auto-save after AI response
+      const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
+      setMessages(cleanedMessages);
     }
     
   } catch (error) {
