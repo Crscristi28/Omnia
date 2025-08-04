@@ -1,4 +1,5 @@
 export { default as CopyButton } from './CopyButton.jsx';
+export { default as ImageContextMenu } from './ImageContextMenu.jsx';
 export { default as NewChatButton } from './NewChatButton.jsx';
 export { default as OfflineIndicator } from './OfflineIndicator.jsx';
 export { default as OmniaArrowButton } from './OmniaArrowButton.jsx';
