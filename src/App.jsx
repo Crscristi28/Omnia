@@ -1201,7 +1201,7 @@ function App() {
                 name: `generated-image-${Date.now()}.png`,
                 size: 0, // Generated images don't have size
                 type: result.images[0].mimeType,
-                base64: `data:${result.images[0].mimeType};base64,${result.images[0].base64}`,
+                base64: result.images[0].base64, // Already contains data: prefix
                 isGenerated: true // Flag to distinguish from uploaded files
               }],
               isStreaming: false
