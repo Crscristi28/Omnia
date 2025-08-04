@@ -2480,7 +2480,7 @@ const handleModelChange = useCallback((newModel) => {
                     </div>
                   )}
                   
-                  {/* File attachments as separate cards */}
+                  {/* File attachments - separate display for generated vs uploaded */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div style={{
                       display: 'flex',
@@ -2488,7 +2488,60 @@ const handleModelChange = useCallback((newModel) => {
                       gap: '0.5rem',
                       width: '100%'
                     }}>
-                      {msg.attachments.map((attachment, index) => (
+                      {msg.attachments.map((attachment, index) => {
+                        // Generated images display as large standalone images
+                        if (attachment.isGenerated && attachment.type && attachment.type.startsWith('image/')) {
+                          return (
+                            <div
+                              key={index}
+                              style={{
+                                marginTop: '1rem',
+                                marginBottom: '1rem',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                maxWidth: '100%'
+                              }}
+                            >
+                              <img 
+                                src={attachment.base64}
+                                alt={attachment.name}
+                                onClick={() => {
+                                  setPreviewImage({
+                                    url: attachment.base64,
+                                    name: attachment.name
+                                  });
+                                }}
+                                style={{
+                                  maxWidth: isMobile ? '280px' : '400px',
+                                  width: '100%',
+                                  height: 'auto',
+                                  borderRadius: '12px',
+                                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.transform = 'scale(1.02)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.transform = 'scale(1)';
+                                }}
+                                onLoad={() => {
+                                  // Scroll to show the generated image
+                                  setTimeout(() => {
+                                    smartScrollToBottom(mainContentRef.current, {
+                                      behavior: 'smooth',
+                                      force: true
+                                    });
+                                  }, 100);
+                                }}
+                              />
+                            </div>
+                          );
+                        }
+                        
+                        // Upload attachments display as compact cards
+                        return (
                         <div
                           key={index}
                           onClick={() => {
@@ -2579,7 +2632,8 @@ const handleModelChange = useCallback((newModel) => {
                           </div>
                           
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
