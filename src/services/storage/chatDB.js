@@ -27,6 +27,15 @@ class ChatDatabase extends Dexie {
         console.log('✅ [CHAT-DB-V2] Database cleared, ready for normalized schema!');
       });
     });
+    
+    // V3 Schema (ATTACHMENT FIX - add image column)
+    this.version(3).stores({
+      chats: 'id, title, createdAt, updatedAt, messageCount',
+      messages: '++id, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp]'
+    }).upgrade(tx => {
+      console.log('🚀 [CHAT-DB-V3] Upgrading database to version 3 - adding image column...');
+      console.log('✅ [CHAT-DB-V3] Schema updated to support Imagen images persistence!');
+    });
   }
 }
 
@@ -203,7 +212,8 @@ const chatDB = {
           sender: message.sender,
           text: message.text,
           type: message.type || 'text',
-          attachments: message.attachments || null
+          attachments: message.attachments || null,
+          image: message.image || null  // Fix: Save Imagen images too
         };
         const messageId = await db.messages.add(messageRecord);
         messageIds.push(messageId);

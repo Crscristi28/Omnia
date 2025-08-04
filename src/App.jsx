@@ -1193,10 +1193,17 @@ function App() {
           const result = await response.json();
           
           if (result.success && result.images && result.images.length > 0) {
+            const t = getTranslation(detectedLang);
             const imageMessage = {
               sender: 'bot',
-              text: `🎨 Generated image for: "${finalTextInput}"`,
-              image: result.images[0], // Contains base64, mimeType, etc.
+              text: `${t('imageGenerated')} "${finalTextInput}"`,
+              attachments: [{
+                name: `generated-image-${Date.now()}.png`,
+                size: 0, // Generated images don't have size
+                type: result.images[0].mimeType,
+                base64: `data:${result.images[0].mimeType};base64,${result.images[0].base64}`,
+                isGenerated: true // Flag to distinguish from uploaded files
+              }],
               isStreaming: false
             };
             
@@ -1537,47 +1544,16 @@ function App() {
     setPreviewImage(null);
   };
 
-  // 📄 HANDLE FILE CLICK - Actually open/download files  
-  const handleFileClick = (filename, file) => {
-    console.log('📄 File clicked:', filename, file);
-    
-    if (!file) {
-      showNotification(`Soubor ${filename} není dostupný`, 'error');
-      return;
-    }
-    
-    try {
-      // Create blob URL for the file
-      const fileUrl = URL.createObjectURL(file);
-      
-      // Check if it's an image
-      if (file.type.startsWith('image/')) {
-        // For images, show in fullscreen preview modal
-        setPreviewImage({
-          url: fileUrl,
-          name: filename
-        });
-        // Clean up URL after 30 seconds (preview should be done by then)
-        setTimeout(() => {
-          URL.revokeObjectURL(fileUrl);
-        }, 30000);
-      } else {
-        // For documents (PDF, etc.), show in fullscreen preview modal
-        setPreviewImage({
-          url: fileUrl,
-          name: filename
-        });
-        // Clean up URL after 30 seconds (preview should be done by then)
-        setTimeout(() => {
-          URL.revokeObjectURL(fileUrl);
-        }, 30000);
-      }
-      
-    } catch (error) {
-      console.error('Failed to open file:', error);
-      showNotification(`Chyba při otevírání souboru ${filename}`, 'error');
-    }
+  // 🔄 Helper function to convert File object to base64 string
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
+
 
   // Custom code component for syntax highlighting
 // 🚀 OMNIA - APP.JSX PART 3/3 - JSX RENDER (REDESIGNED podle fotky)
@@ -1765,15 +1741,34 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;
   
-  // Add user message to chat immediately (with document info)
+  // Convert File objects to base64 for persistent storage
+  const attachmentsPromises = safeDocuments.map(async (doc) => {
+    try {
+      const base64Data = await convertFileToBase64(doc.file);
+      return {
+        name: doc.name,
+        size: doc.size,
+        type: doc.file.type,
+        base64: base64Data // Store as base64 string, not File object
+      };
+    } catch (error) {
+      console.error('Failed to convert file to base64:', error);
+      return {
+        name: doc.name,
+        size: doc.size,
+        type: doc.file.type,
+        base64: null // Fallback for failed conversion
+      };
+    }
+  });
+  
+  const attachments = await Promise.all(attachmentsPromises);
+  
+  // Add user message to chat immediately (with persistent attachment data)
   const userMessage = {
     sender: 'user',
     text: text.trim(), // Keep empty if no text - no default message
-    attachedFiles: safeDocuments.map(doc => ({
-      name: doc.name,
-      size: doc.size,
-      file: doc.file // Store the actual file for later access
-    }))
+    attachments: attachments // Use new persistent base64 format
   };
   // Add message and get current state
   let currentMessagesWithUser;
@@ -2486,17 +2481,23 @@ const handleModelChange = useCallback((newModel) => {
                   )}
                   
                   {/* File attachments as separate cards */}
-                  {msg.attachedFiles && msg.attachedFiles.length > 0 && (
+                  {msg.attachments && msg.attachments.length > 0 && (
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '0.5rem',
                       width: '100%'
                     }}>
-                      {msg.attachedFiles.map((file, index) => (
+                      {msg.attachments.map((attachment, index) => (
                         <div
                           key={index}
-                          onClick={() => handleFileClick(file.name, file.file)}
+                          onClick={() => {
+                            // Show attachment in preview modal using base64 data
+                            setPreviewImage({
+                              url: attachment.base64,
+                              name: attachment.name
+                            });
+                          }}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -2538,31 +2539,19 @@ const handleModelChange = useCallback((newModel) => {
                             overflow: 'hidden',
                             position: 'relative'
                           }}>
-                            {file.file && file.file.type.startsWith('image/') ? (
+                            {attachment.type && attachment.type.startsWith('image/') ? (
                               <img 
-                                src={URL.createObjectURL(file.file)}
-                                alt={file.name}
+                                src={attachment.base64}
+                                alt={attachment.name}
                                 style={{
                                   width: '100%',
                                   height: '100%',
                                   objectFit: 'cover',
                                   borderRadius: '8px'
                                 }}
-                                onLoad={(e) => {
-                                  // Clean up URL after image loads to prevent memory leak
-                                  setTimeout(() => {
-                                    URL.revokeObjectURL(e.target.src);
-                                  }, 1000);
-                                }}
-                                onError={(e) => {
-                                  // Clean up URL even on error
-                                  setTimeout(() => {
-                                    URL.revokeObjectURL(e.target.src);
-                                  }, 1000);
-                                }}
                               />
                             ) : (
-                              file.name.match(/\.(png|jpe?g|gif|webp)$/i) ? '🖼️' : '📄'
+                              attachment.name.match(/\.(png|jpe?g|gif|webp)$/i) ? '🖼️' : '📄'
                             )}
                           </div>
                           
@@ -2579,13 +2568,13 @@ const handleModelChange = useCallback((newModel) => {
                               whiteSpace: 'nowrap',
                               marginBottom: '0.2rem'
                             }}>
-                              {file.name}
+                              {attachment.name}
                             </div>
                             <div style={{
                               fontSize: '0.8rem',
                               opacity: 0.7
                             }}>
-                              {file.size}
+                              {attachment.size ? `${Math.round(attachment.size / 1024)} KB` : 'Generated'}
                             </div>
                           </div>
                           
@@ -2625,63 +2614,6 @@ const handleModelChange = useCallback((newModel) => {
                     </span>
                   </div>
                   
-                  {/* 🎨 GENERATED IMAGE - Display if message contains image */}
-                  {msg.image && (
-                    <div style={{
-                      marginTop: '1rem',
-                      marginBottom: '1rem',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      maxWidth: '100%'
-                    }}>
-                      <img 
-                        src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
-                        alt={`Generated image for: ${msg.text}`}
-                        onClick={() => {
-                          // Show generated image in fullscreen preview modal
-                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
-                          setPreviewImage({
-                            url: imageUrl,
-                            name: `Generated: ${msg.text.slice(0, 30)}...`
-                          });
-                        }}
-                        style={{
-                          maxWidth: isMobile ? '280px' : '400px',
-                          width: '100%',
-                          height: 'auto',
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = 'scale(1.02)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = 'scale(1)';
-                        }}
-                        onLoad={() => {
-                          // Scroll to show the generated image
-                          setTimeout(() => {
-                            smartScrollToBottom(mainContentRef.current, {
-                              behavior: 'smooth',
-                              force: true
-                            });
-                          }, 100);
-                        }}
-                      />
-                      {msg.image.enhancedPrompt && msg.image.enhancedPrompt !== msg.text && (
-                        <div style={{
-                          marginTop: '0.5rem',
-                          fontSize: '0.85rem',
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          fontStyle: 'italic'
-                        }}>
-                          Enhanced prompt: {msg.image.enhancedPrompt}
-                        </div>
-                      )}
-                    </div>
-                  )}
                   
                   <MessageRenderer 
                     content={msg.text || ''}

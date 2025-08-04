@@ -47,7 +47,8 @@ export const uiTexts = {
     deepSearch: "Hluboké vyhledávání",
     generateImage: "Vytvořit obrázek",
     plusMenu: "Plus menu (již brzy)",
-    chatPlaceholder: "Chatujte s Omnia..."
+    chatPlaceholder: "Chatujte s Omnia...",
+    imageGenerated: "🎨 Vygenerovaný obrázek pro:"
   },
   en: {
     newChat: "New chat",
@@ -94,7 +95,8 @@ export const uiTexts = {
     deepSearch: "Deep Search",
     generateImage: "Generate Image",
     plusMenu: "Plus Menu (Coming Soon)",
-    chatPlaceholder: "Chat with Omnia..."
+    chatPlaceholder: "Chat with Omnia...",
+    imageGenerated: "🎨 Generated image for:"
   },
   ro: {
     newChat: "Chat nou",
@@ -141,7 +143,8 @@ export const uiTexts = {
     deepSearch: "Căutare avansată",
     generateImage: "Generează imagine",
     plusMenu: "Meniu plus (în curând)",
-    chatPlaceholder: "Conversează cu Omnia..."
+    chatPlaceholder: "Conversează cu Omnia...",
+    imageGenerated: "🎨 Imagine generată pentru:"
   }
 };
 
