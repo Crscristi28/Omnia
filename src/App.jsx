@@ -2674,44 +2674,13 @@ const handleModelChange = useCallback((newModel) => {
                       <img 
                         src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
                         alt={`Generated image for: ${msg.text}`}
-                        onClick={(e) => {
-                          // Only show preview if not a long press
-                          if (!e.target.longPressDetected) {
-                            const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
-                            setPreviewImage({
-                              url: imageUrl,
-                              name: `Generated: ${msg.text.slice(0, 30)}...`
-                            });
-                          }
-                        }}
-                        onTouchStart={(e) => {
-                          // Start long press timer
-                          e.target.longPressTimer = setTimeout(() => {
-                            e.target.longPressDetected = true;
-                            console.log('🔥 Long press detected on Imagen - native context menu should appear');
-                          }, 500); // 500ms for long press
-                          e.target.longPressDetected = false;
-                        }}
-                        onTouchEnd={(e) => {
-                          // Clear long press timer
-                          if (e.target.longPressTimer) {
-                            clearTimeout(e.target.longPressTimer);
-                          }
-                          // Reset long press flag after short delay
-                          setTimeout(() => {
-                            e.target.longPressDetected = false;
-                          }, 100);
-                        }}
-                        onTouchMove={(e) => {
-                          // Cancel long press if user moves finger
-                          if (e.target.longPressTimer) {
-                            clearTimeout(e.target.longPressTimer);
-                            e.target.longPressDetected = false;
-                          }
-                        }}
-                        onContextMenu={(e) => {
-                          // Allow native context menu (don't prevent default)
-                          console.log('📱 Context menu triggered - native save/share menu');
+                        onClick={() => {
+                          // Show generated image in fullscreen preview modal
+                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                          setPreviewImage({
+                            url: imageUrl,
+                            name: `Generated: ${msg.text.slice(0, 30)}...`
+                          });
                         }}
                         style={{
                           maxWidth: isMobile ? '280px' : '400px',
