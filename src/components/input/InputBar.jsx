@@ -166,11 +166,12 @@ const InputBar = ({
   isRecording,
   isAudioPlaying,
   isImageMode = false,
-  uiLanguage = 'cs'
+  uiLanguage = 'cs',
+  previewImage,
+  setPreviewImage
 }) => {
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null); // For fullscreen photo preview
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
@@ -292,13 +293,6 @@ const InputBar = ({
     }
   };
 
-  // Close photo preview and cleanup
-  const closePreview = () => {
-    if (previewImage?.url) {
-      URL.revokeObjectURL(previewImage.url);
-    }
-    setPreviewImage(null);
-  };
 
   // Handle document upload to chips ONLY
   const handleDocumentUploadToChips = (event) => {
@@ -725,69 +719,6 @@ const InputBar = ({
         </div>
       </div>
 
-      {/* 🖼️ FULLSCREEN PHOTO PREVIEW OVERLAY */}
-      {previewImage && (
-        <div
-          onClick={closePreview}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.95)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.5rem',
-            animation: 'fadeIn 0.3s ease',
-            cursor: 'pointer',
-          }}
-        >
-          {/* Close hint text */}
-          <div style={{
-            position: 'absolute',
-            top: '40px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            color: 'rgba(255, 255, 255, 0.8)',
-            fontSize: '14px',
-            fontWeight: '500',
-            textAlign: 'center',
-            zIndex: 1,
-          }}>
-            {previewImage.name}
-            <br />
-            <span style={{ fontSize: '12px', opacity: 0.6 }}>
-              Tap to close
-            </span>
-          </div>
-
-          {/* Image container */}
-          <img 
-            src={previewImage.url}
-            alt={previewImage.name}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking image
-            style={{
-              maxWidth: '90%',
-              maxHeight: '80%',
-              objectFit: 'contain',
-              borderRadius: '12px',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-              animation: 'fadeIn 0.3s ease',
-              transform: 'scale(1)',
-              transition: 'transform 0.2s ease',
-            }}
-            onLoad={(e) => {
-              // Subtle scale animation on load
-              e.target.style.transform = 'scale(0.95)';
-              setTimeout(() => {
-                e.target.style.transform = 'scale(1)';
-              }, 50);
-            }}
-          />
-        </div>
-      )}
 
     </>
   );

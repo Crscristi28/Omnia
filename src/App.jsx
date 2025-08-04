@@ -224,6 +224,7 @@ function App() {
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null); // For fullscreen photo preview
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
   // 🆕 MODEL SWITCH STATE FOR VOICE (UNCHANGED)
@@ -1528,6 +1529,13 @@ function App() {
     }
   }, [showVoiceScreen, handleSend]);
 
+  // Close photo preview and cleanup
+  const closePreview = () => {
+    if (previewImage?.url) {
+      URL.revokeObjectURL(previewImage.url);
+    }
+    setPreviewImage(null);
+  };
 
   // 📄 HANDLE FILE CLICK - Actually open/download files  
   const handleFileClick = (filename, file) => {
@@ -1542,55 +1550,28 @@ function App() {
       // Create blob URL for the file
       const fileUrl = URL.createObjectURL(file);
       
-      // 🛡️ PREVENT STATE LOSS: Monitor document viewer window to preserve chat state
-      
       // Check if it's an image
       if (file.type.startsWith('image/')) {
-        // For images, open in new tab for viewing
-        const newWindow = window.open(fileUrl, '_blank');
-        
-        // 🛡️ Monitor new window to detect when it closes
-        if (newWindow) {
-          const checkClosed = setInterval(() => {
-            if (newWindow.closed) {
-              clearInterval(checkClosed);
-              console.log('🔄 Document viewer closed - state preserved');
-            }
-          }, 1000);
-        }
-        // showNotification(`Obrázek ${filename} otevřen`, 'success');
+        // For images, show in fullscreen preview modal
+        setPreviewImage({
+          url: fileUrl,
+          name: filename
+        });
+        // Clean up URL after 30 seconds (preview should be done by then)
+        setTimeout(() => {
+          URL.revokeObjectURL(fileUrl);
+        }, 30000);
       } else {
-        // For documents (PDF, etc.), try to open in new tab
-        // If browser can display it, it will show inline
-        // Otherwise it will download
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.download = filename;
-        link.target = '_blank';
-        
-        // Try to open in new tab first
-        const newWindow = window.open(fileUrl, '_blank');
-        
-        if (!newWindow) {
-          // If popup blocked, fall back to download
-          link.click();
-          // showNotification(`Dokument ${filename} stažen`, 'success');
-        } else {
-          // 🛡️ Monitor new window to detect when it closes
-          const checkClosed = setInterval(() => {
-            if (newWindow.closed) {
-              clearInterval(checkClosed);
-              console.log('🔄 Document viewer closed - state preserved');
-            }
-          }, 1000);
-          // showNotification(`Dokument ${filename} otevřen`, 'success');
-        }
+        // For documents (PDF, etc.), show in fullscreen preview modal
+        setPreviewImage({
+          url: fileUrl,
+          name: filename
+        });
+        // Clean up URL after 30 seconds (preview should be done by then)
+        setTimeout(() => {
+          URL.revokeObjectURL(fileUrl);
+        }, 30000);
       }
-      
-      // Clean up URL after some time
-      setTimeout(() => {
-        URL.revokeObjectURL(fileUrl);
-      }, 10000);
       
     } catch (error) {
       console.error('Failed to open file:', error);
@@ -2657,19 +2638,12 @@ const handleModelChange = useCallback((newModel) => {
                         src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
                         alt={`Generated image for: ${msg.text}`}
                         onClick={() => {
-                          // Create a temporary link to open image in new tab/native viewer
-                          const link = document.createElement('a');
-                          link.href = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
-                          link.download = `omnia-image-${Date.now()}.png`;
-                          link.target = '_blank';
-                          
-                          // For iOS, this opens in native viewer
-                          if (isMobile) {
-                            window.open(link.href, '_blank');
-                          } else {
-                            // For desktop, download the image
-                            link.click();
-                          }
+                          // Show generated image in fullscreen preview modal
+                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                          setPreviewImage({
+                            url: imageUrl,
+                            name: `Generated: ${msg.text.slice(0, 30)}...`
+                          });
                         }}
                         style={{
                           maxWidth: isMobile ? '280px' : '400px',
@@ -2864,6 +2838,8 @@ const handleModelChange = useCallback((newModel) => {
         isAudioPlaying={isAudioPlaying}
         isImageMode={isImageMode}
         uiLanguage={uiLanguage}
+        previewImage={previewImage}
+        setPreviewImage={setPreviewImage}
       />
 
       {/* 📋 CHAT SIDEBAR - NEW! */}
@@ -2986,6 +2962,69 @@ const handleModelChange = useCallback((newModel) => {
         input:focus { outline: none !important; }
       `}</style>
       
+      {/* 🖼️ FULLSCREEN PHOTO PREVIEW OVERLAY */}
+      {previewImage && (
+        <div
+          onClick={closePreview}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.5rem',
+            animation: 'fadeIn 0.3s ease',
+            cursor: 'pointer',
+          }}
+        >
+          {/* Close hint text */}
+          <div style={{
+            position: 'absolute',
+            top: '40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: 'rgba(255, 255, 255, 0.8)',
+            fontSize: '14px',
+            fontWeight: '500',
+            textAlign: 'center',
+            zIndex: 1,
+          }}>
+            {previewImage.name}
+            <br />
+            <span style={{ fontSize: '12px', opacity: 0.6 }}>
+              Tap to close
+            </span>
+          </div>
+
+          {/* Image container */}
+          <img 
+            src={previewImage.url}
+            alt={previewImage.name}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking image
+            style={{
+              maxWidth: '90%',
+              maxHeight: '80%',
+              objectFit: 'contain',
+              borderRadius: '12px',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+              animation: 'fadeIn 0.3s ease',
+              transform: 'scale(1)',
+              transition: 'transform 0.2s ease',
+            }}
+            onLoad={(e) => {
+              // Subtle scale animation on load
+              e.target.style.transform = 'scale(0.95)';
+              setTimeout(() => {
+                e.target.style.transform = 'scale(1)';
+              }, 50);
+            }}
+          />
+        </div>
+      )}
       
       {/* 📶 OFFLINE INDICATOR */}
       <OfflineIndicator
