@@ -2474,54 +2474,6 @@ const handleModelChange = useCallback((newModel) => {
                     </div>
                   )}
                   
-                  {/* 🎨 GENERATED IMAGE - Display if message contains image */}
-                  {msg.image && (
-                    <div style={{
-                      marginTop: '1rem',
-                      marginBottom: '1rem',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      maxWidth: '100%'
-                    }}>
-                      <img 
-                        src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
-                        alt={`Generated image for: ${msg.text}`}
-                        onClick={() => {
-                          // Show generated image in fullscreen preview modal
-                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
-                          setPreviewImage({
-                            url: imageUrl,
-                            name: `Generated: ${msg.text.slice(0, 30)}...`
-                          });
-                        }}
-                        style={{
-                          maxWidth: isMobile ? '280px' : '400px',
-                          width: '100%',
-                          height: 'auto',
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = 'scale(1.02)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = 'scale(1)';
-                        }}
-                        onLoad={() => {
-                          // Scroll to show the generated image
-                          setTimeout(() => {
-                            smartScrollToBottom(mainContentRef.current, {
-                              behavior: 'smooth',
-                              force: true
-                            });
-                          }, 100);
-                        }}
-                      />
-                    </div>
-                  )}
-                  
                   {/* File attachments - separate display for generated vs uploaded */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div style={{
@@ -2710,6 +2662,53 @@ const handleModelChange = useCallback((newModel) => {
                     </span>
                   </div>
                   
+                  {/* 🎨 GENERATED IMAGE - Display if message contains image */}
+                  {msg.image && (
+                    <div style={{
+                      marginTop: '1rem',
+                      marginBottom: '1rem',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      maxWidth: '100%'
+                    }}>
+                      <img 
+                        src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
+                        alt={`Generated image for: ${msg.text}`}
+                        onClick={() => {
+                          // Show generated image in fullscreen preview modal
+                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                          setPreviewImage({
+                            url: imageUrl,
+                            name: `Generated: ${msg.text.slice(0, 30)}...`
+                          });
+                        }}
+                        style={{
+                          maxWidth: isMobile ? '280px' : '400px',
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'scale(1.02)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                        onLoad={() => {
+                          // Scroll to show the generated image
+                          setTimeout(() => {
+                            smartScrollToBottom(mainContentRef.current, {
+                              behavior: 'smooth',
+                              force: true
+                            });
+                          }, 100);
+                        }}
+                      />
+                    </div>
+                  )}
                   
                   <MessageRenderer 
                     content={msg.text || ''}
