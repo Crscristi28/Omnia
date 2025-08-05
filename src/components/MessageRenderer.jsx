@@ -114,42 +114,60 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           color: #facc15 !important;
         }
         
-        /* List styling - COMPACT for better formatting */
-        .markdown-container ul {
-          margin-left: 1rem !important;
-          padding-left: 0 !important;
-          list-style-position: outside !important;
+        /* List styling - CONSISTENT and STABLE formatting */
+        .markdown-container .w-md-editor-text ul,
+        .markdown-container .w-md-editor-text ol {
+          margin: 0.5rem 0;
+          padding-left: 1.5rem;
+          list-style-position: inside;
         }
-        .markdown-container ol {
-          margin-left: 0 !important;
-          padding-left: 1rem !important;
-          list-style-position: outside !important;
+        .markdown-container .w-md-editor-text li {
+          margin-bottom: 0.25rem;
+          padding-left: 0;
+          line-height: 1.5;
         }
-        .markdown-container li {
-          margin-bottom: 0.25rem !important;
-          padding-left: 0.25rem !important;
+        .markdown-container .w-md-editor-text ul li {
+          list-style-type: disc;
         }
-        .markdown-container ul li {
-          list-style-type: disc !important;
+        .markdown-container .w-md-editor-text ol li {
+          list-style-type: decimal;
         }
-        .markdown-container ol li {
-          list-style-type: decimal !important;
+        /* Nested lists */
+        .markdown-container .w-md-editor-text ul ul,
+        .markdown-container .w-md-editor-text ol ol,
+        .markdown-container .w-md-editor-text ul ol,
+        .markdown-container .w-md-editor-text ol ul {
+          margin: 0.25rem 0;
+          padding-left: 1rem;
         }
         
-        /* Paragraph styling - COMPACT for better formatting */
-        .markdown-container p {
-          line-height: 1.4 !important;
-          margin-bottom: 0.25rem !important;
+        /* Paragraph styling - STABLE formatting */
+        .markdown-container .w-md-editor-text p {
+          line-height: 1.5;
+          margin: 0.5rem 0;
+        }
+        .markdown-container .w-md-editor-text p:first-child {
+          margin-top: 0;
+        }
+        .markdown-container .w-md-editor-text p:last-child {
+          margin-bottom: 0;
         }
         
-        /* Stabilize text rendering to prevent jumping */
+        /* Container stability - prevent layout shifts */
         .markdown-container {
-          min-height: 1.6em; /* Prevent height fluctuations */
+          min-height: 1.5em;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
         }
         
-        /* Paragraph spacing - COMPACT for better formatting */
-        .markdown-container p:not(:last-child) {
-          margin-bottom: 0.5rem !important;
+        /* List and paragraph spacing coordination */
+        .markdown-container .w-md-editor-text p + ul,
+        .markdown-container .w-md-editor-text p + ol {
+          margin-top: 0.25rem;
+        }
+        .markdown-container .w-md-editor-text ul + p,
+        .markdown-container .w-md-editor-text ol + p {
+          margin-top: 0.5rem;
         }
         
         /* Code block styling */
