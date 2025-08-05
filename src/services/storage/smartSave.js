@@ -1,4 +1,4 @@
-import { chatDB } from './chatDB.js';
+import chatDB from './chatDB.js';
 
 /**
  * Smart incremental save - saves only NEW messages to prevent duplicates
