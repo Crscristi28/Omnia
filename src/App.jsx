@@ -602,8 +602,9 @@ function App() {
     }
   };
 
-  // 🔄 INITIALIZATION - Load messages for existing chat
+  // 🔄 INITIALIZATION - NO chat loading on mount (lazy loading)
   React.useEffect(() => {
+    // ❌ REMOVED: loadChatHistories() - načte se až při otevření sidebaru
     console.log('🔴 [DEBUG] useEffect init - currentChatId at mount:', currentChatId);
     
     if (!currentChatId) {
@@ -611,9 +612,7 @@ function App() {
       console.log('🔴 [DEBUG] useEffect generating NEW chatId (initial):', newId);
       updateCurrentChatId(newId);
     } else {
-      console.log('🔴 [DEBUG] useEffect - loading existing chat:', currentChatId);
-      // 🚨 CRITICAL FIX: Load messages for existing chat
-      handleSelectChat(currentChatId);
+      console.log('🔴 [DEBUG] useEffect - using existing chatId:', currentChatId);
     }
   }, []);
 
