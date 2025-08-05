@@ -17,6 +17,7 @@ import { elevenLabsService } from './services/voice';
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
 import { sessionManager } from './services/storage';
 import chatDB from './services/storage/chatDB'; // 💾 IndexedDB for chat history
+import { smartIncrementalSave } from './services/storage/smartSave.js';
 import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
@@ -449,22 +450,7 @@ function App() {
     // Same as handleSidebarNewChat but keeps sidebar open
     // 💾 SMART POJISTKA: Save only NEW messages to prevent duplicates
     if (currentChatId && messages.length > 0) {
-      console.log('💾 [SMART-SAVE] Checking for unsaved messages before sidebar new chat:', currentChatId);
-      
-      // Get existing message count from database
-      const existingData = await chatDB.getLatestMessages(currentChatId, 1);
-      const lastSavedCount = existingData.totalCount || 0;
-      const currentCount = messages.length;
-      
-      // Save only NEW messages since last save
-      if (currentCount > lastSavedCount) {
-        const unsavedMessages = messages.slice(lastSavedCount);
-        console.log(`💾 [SMART-SAVE] Saving ${unsavedMessages.length} new messages (${lastSavedCount} already saved)`);
-        await chatDB.saveChatV2(currentChatId, unsavedMessages);
-        console.log('✅ [SMART-SAVE] New messages protected before sidebar new chat');
-      } else {
-        console.log('✅ [SMART-SAVE] All messages already protected - no duplicates');
-      }
+      await smartIncrementalSave(currentChatId, messages);
     }
     handleNewChat();
     const newKeepSidebarId = chatDB.generateChatId();
@@ -498,8 +484,10 @@ function App() {
       // ✅ SAVE POINT #2: Save current chat before switching
       if (currentChatId && messages.length > 0) {
         console.log('🔄 [MONITOR-V2] Saving current chat before switch:', currentChatId);
-        await chatDB.saveChatV2(currentChatId, messages);
-        crashMonitor.trackIndexedDB('save', currentChatId, true);
+        const wasSaved = await smartIncrementalSave(currentChatId, messages);
+        if (wasSaved) {
+          crashMonitor.trackIndexedDB('save', currentChatId, true);
+        }
         console.log('✅ [MONITOR-V2] Current chat saved successfully');
       }
       
@@ -644,7 +632,7 @@ function App() {
       if (document.hidden && currentChatId && messages.length > 0) {
         console.log('👁️ [MONITOR] Page hidden - saving to IndexedDB and sessionStorage');
         
-        chatDB.saveChatV2(currentChatId, messages).catch(error => {
+        smartIncrementalSave(currentChatId, messages).catch(error => {
           console.error('❌ Failed to save to IndexedDB V2 on visibility change:', error);
         });
         
@@ -656,7 +644,7 @@ function App() {
       // Keep minimal beforeunload for actual page closing
       if (currentChatId && messages.length > 0) {
         console.log('🚪 [MONITOR] App closing - final save');
-        chatDB.saveChatV2(currentChatId, messages).catch(error => {
+        smartIncrementalSave(currentChatId, messages).catch(error => {
           console.error('❌ Failed to save to IndexedDB V2 on close:', error);
         });
         sessionManager.saveCurrentChatId(currentChatId);
@@ -717,7 +705,7 @@ function App() {
     if (allMessages.length % 10 === 0 && allMessages.length > 0) {
       console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 10!`);
       try {
-        await chatDB.saveChatV2(chatId, allMessages);
+        await smartIncrementalSave(chatId, allMessages);
         console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
       } catch (error) {
         console.error(`❌ [AUTO-SAVE] FAILED:`, error);
@@ -953,22 +941,9 @@ function App() {
     try {
       // ✅ SMART POJISTKA: Save only NEW messages to prevent duplicates
       if (currentChatId && messages.length > 0) {
-        console.log('💾 [SMART-SAVE] Checking for unsaved messages before new chat:', currentChatId);
-        
-        // Get existing message count from database
-        const existingData = await chatDB.getLatestMessages(currentChatId, 1);
-        const lastSavedCount = existingData.totalCount || 0;
-        const currentCount = messages.length;
-        
-        // Save only NEW messages since last save
-        if (currentCount > lastSavedCount) {
-          const unsavedMessages = messages.slice(lastSavedCount);
-          console.log(`💾 [SMART-SAVE] Saving ${unsavedMessages.length} new messages (${lastSavedCount} already saved)`);
-          await chatDB.saveChatV2(currentChatId, unsavedMessages);
+        const wasSaved = await smartIncrementalSave(currentChatId, messages);
+        if (wasSaved) {
           crashMonitor.trackIndexedDB('save', currentChatId, true);
-          console.log('✅ [SMART-SAVE] New messages protected before new chat');
-        } else {
-          console.log('✅ [SMART-SAVE] All messages already protected - no duplicates');
         }
       }
 
@@ -1785,7 +1760,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   if (currentMessagesWithUser.length % 50 === 0 && currentMessagesWithUser.length > 0 && currentChatId) {
     console.log(`🔄 [DOC-AUTO-SAVE] Trigger: ${currentMessagesWithUser.length} messages - exact multiple of 50!`);
     try {
-      await chatDB.saveChatV2(currentChatId, currentMessagesWithUser);
+      await smartIncrementalSave(currentChatId, currentMessagesWithUser);
       console.log(`✅ [DOC-AUTO-SAVE] SUCCESS: ${currentMessagesWithUser.length} messages saved to DB`);
       
       // RAM cleanup - ponech jen posledních 50 zpráv
