@@ -117,14 +117,14 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         /* List styling - CONSISTENT and STABLE formatting */
         .markdown-container .w-md-editor-text ul,
         .markdown-container .w-md-editor-text ol {
-          margin: 0.5rem 0;
+          margin: 0.75rem 0;
           padding-left: 1.5rem;
           list-style-position: inside;
         }
         .markdown-container .w-md-editor-text li {
-          margin-bottom: 0.25rem;
-          padding-left: 0;
-          line-height: 1.5;
+          margin-bottom: 0.5rem;
+          padding-left: 0.25rem;
+          line-height: 1.6;
         }
         .markdown-container .w-md-editor-text ul li {
           list-style-type: disc;
@@ -132,13 +132,23 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         .markdown-container .w-md-editor-text ol li {
           list-style-type: decimal;
         }
+        /* Ensure bullets are properly sized and positioned */
+        .markdown-container .w-md-editor-text ul li::marker {
+          font-size: 1em;
+          color: inherit;
+        }
+        .markdown-container .w-md-editor-text ol li::marker {
+          font-size: 1em;
+          color: inherit;
+          font-weight: normal;
+        }
         /* Nested lists */
         .markdown-container .w-md-editor-text ul ul,
         .markdown-container .w-md-editor-text ol ol,
         .markdown-container .w-md-editor-text ul ol,
         .markdown-container .w-md-editor-text ol ul {
-          margin: 0.25rem 0;
-          padding-left: 1rem;
+          margin: 0.5rem 0;
+          padding-left: 1.25rem;
         }
         
         /* Paragraph styling - STABLE formatting */
