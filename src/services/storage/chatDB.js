@@ -590,48 +590,9 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     }
   };
   
-  // 🚀 VIRTUALIZATION: Get message IDs only (lightweight)
-  chatDB.getMessageIds = async function(chatId, limit = 1000) {
-    try {
-      console.log(`📋 [VIRTUALIZATION] Getting message IDs for chat: ${chatId}, limit: ${limit}`);
-      
-      const ids = await this.messages
-        .where('[chatId+timestamp]')
-        .between([chatId, 0], [chatId, Date.now()])
-        .reverse() // Latest first
-        .limit(limit)
-        .primaryKeys();
-      
-      console.log(`✅ [VIRTUALIZATION] Retrieved ${ids.length} message IDs`);
-      return ids;
-    } catch (error) {
-      console.error('❌ [VIRTUALIZATION] Failed to get message IDs:', error);
-      return [];
-    }
-  };
-
-  // 🚀 VIRTUALIZATION: Batch load messages by IDs
-  chatDB.getMessagesByIds = async function(ids) {
-    try {
-      if (!ids || ids.length === 0) return [];
-      
-      console.log(`📋 [VIRTUALIZATION] Batch loading ${ids.length} messages`);
-      
-      const messages = await this.messages.bulkGet(ids);
-      const validMessages = messages.filter(msg => msg !== undefined);
-      
-      console.log(`✅ [VIRTUALIZATION] Loaded ${validMessages.length}/${ids.length} messages`);
-      return validMessages;
-    } catch (error) {
-      console.error('❌ [VIRTUALIZATION] Failed to batch load messages:', error);
-      return [];
-    }
-  };
-
   console.log('🐛 Development mode: IndexedDB V2 debugging available');
   console.log('📋 V1 Commands: omniaDB.saveTestChatV1(), omniaDB.showStats(), omniaDB.clearAll()');
   console.log('🚀 V2 Commands: omniaDB.saveTestChatV2(), omniaDB.comparePerformance()');
-  console.log('🎯 VIRTUALIZATION Commands: omniaDB.getMessageIds(chatId), omniaDB.getMessagesByIds(ids)');
 }
 
 export default chatDB;

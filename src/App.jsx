@@ -22,14 +22,15 @@ import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, OfflineIndicator, ImageContextMenu } from './components/ui';
-import { VoiceScreen, VirtualizedChatContainer } from './components/chat';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
+import { VoiceScreen } from './components/chat';
+import MessageRenderer from './components/MessageRenderer';
 
 // 🆕 IMPORT INPUT BAR (MODULAR)
 import { InputBar } from './components/input';
 
 // 🔗 IMPORT SOURCES COMPONENTS (UNCHANGED)
-import { SourcesModal } from './components/sources';
+import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
@@ -579,8 +580,16 @@ function App() {
         // Prepend older messages to current messages
         const allMessages = [...olderMessages, ...messages];
         
-        // ✅ VIRTUALIZATION: No sliding window needed - let VirtualizedChatContainer handle rendering
-        setMessages(allMessages);
+        // 🪟 SLIDING WINDOW - Keep max 50 messages in RAM for optimal performance
+        if (allMessages.length > 50) {
+          console.log(`🪟 [SLIDING-WINDOW] Too many messages: ${allMessages.length} > 50, applying sliding window...`);
+          // Keep only the latest 50 messages for sliding window approach
+          const trimmedMessages = allMessages.slice(-50);
+          setMessages(trimmedMessages);
+          console.log(`🧹 [SLIDING-WINDOW] Trimmed ${allMessages.length} → 50 messages in RAM`);
+        } else {
+          setMessages(allMessages);
+        }
         
         setHasMoreMessages(olderMessages.length === 15); // If we got less than requested, no more messages
         
@@ -703,8 +712,10 @@ function App() {
       }
     }
     
-    // ✅ VIRTUALIZATION: No sliding window trim needed - VirtualizedChatContainer handles memory
-    return allMessages;
+    // 🪟 SLIDING WINDOW - Memory management handled by loadOlderMessages only
+    // Removed fixed RAM cleanup to prevent conflicts with scroll loading
+    
+    return allMessages; // No cleanup, return original
   };
 
   // 🔽 SCROLL TO BOTTOM FUNCTION
@@ -1752,8 +1763,13 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       await smartIncrementalSave(currentChatId, currentMessagesWithUser);
       console.log(`✅ [DOC-AUTO-SAVE] SUCCESS: ${currentMessagesWithUser.length} messages saved to DB`);
       
-      // ✅ VIRTUALIZATION: No RAM cleanup needed - VirtualizedChatContainer handles memory
-      console.log(`📊 [DOC-VIRTUALIZATION] Messages saved to DB, virtualization handles display`);
+      // RAM cleanup - ponech jen posledních 50 zpráv
+      const beforeCleanup = currentMessagesWithUser.length;
+      currentMessagesWithUser = currentMessagesWithUser.slice(-50);
+      setMessages(currentMessagesWithUser);
+      console.log(`🧹 [DOC-RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
+      console.log(`💾 [DOC-RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
+      console.log(`📊 [DOC-RAM-STATUS] Current messages in memory: ${currentMessagesWithUser.length}`);
     } catch (error) {
       console.error(`❌ [DOC-AUTO-SAVE] FAILED - NO CLEANUP:`, error);
     }
@@ -2398,23 +2414,366 @@ const handleModelChange = useCallback((newModel) => {
             </div>
           )}
 
-          {/* 🚀 VIRTUALIZED CHAT MESSAGES - High performance rendering */}
-          <VirtualizedChatContainer
-            chatId={currentChatId}
-            streaming={streaming}
-            isMobile={isMobile}
-            onImageClick={setPreviewImage}
-            onSourcesClick={handleSourcesClick}
-            onAudioStart={() => setIsAudioPlaying(true)}
-            onAudioEnd={() => setIsAudioPlaying(false)}
-            onLongPress={(data) => setImageContextMenu({
-              isOpen: true,
-              imageData: data.imageData,
-              imageName: data.imageName,
-              position: data.position
-            })}
-            scrollContainer={mainContentRef.current}
-          />
+          {/* 💬 CHAT MESSAGES - UNCHANGED styling */}
+          {messages.filter(msg => !msg.isHidden).map((msg, idx) => (
+            <div key={idx} data-sender={msg.sender} style={{
+              display: 'flex',
+              justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+              marginBottom: '2rem',
+              animation: 'fadeInUp 0.4s ease-out',
+              paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
+              paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem'
+            }}>
+              {msg.sender === 'user' ? (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: '0.8rem',
+                  width: '100%',
+                  paddingLeft: isMobile ? '5%' : '25%',
+                  paddingRight: isMobile ? '5%' : '0'
+                }}>
+                  {/* User text bubble */}
+                  {msg.text && (
+                    <div style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                      padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
+                      borderRadius: '25px 25px 8px 25px',
+                      fontSize: isMobile ? '1rem' : '0.95rem',
+                      lineHeight: isMobile ? '1.3' : '1.6', 
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      backdropFilter: 'blur(10px)',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      maxWidth: '100%'
+                    }}>
+                      <MessageRenderer 
+                        content={msg.text || ''}
+                        className="user-message-content"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* File attachments - separate display for generated vs uploaded */}
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem',
+                      width: '100%'
+                    }}>
+                      {msg.attachments.map((attachment, index) => {
+                        // Generated images display as large standalone images
+                        if (attachment.isGenerated && attachment.type && attachment.type.startsWith('image/')) {
+                          return (
+                            <div
+                              key={index}
+                              style={{
+                                marginTop: '1rem',
+                                marginBottom: '1rem',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                maxWidth: '100%'
+                              }}
+                            >
+                              <img 
+                                src={attachment.base64}
+                                alt={attachment.name}
+                                onClick={() => {
+                                  setPreviewImage({
+                                    url: attachment.base64,
+                                    name: attachment.name
+                                  });
+                                }}
+                                style={{
+                                  maxWidth: isMobile ? '280px' : '400px',
+                                  width: '100%',
+                                  height: 'auto',
+                                  borderRadius: '12px',
+                                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.transform = 'scale(1.02)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.transform = 'scale(1)';
+                                }}
+                                onLoad={() => {
+                                  // Scroll to show the generated image
+                                  setTimeout(() => {
+                                    smartScrollToBottom(mainContentRef.current, {
+                                      behavior: 'smooth',
+                                      force: true
+                                    });
+                                  }, 100);
+                                }}
+                              />
+                            </div>
+                          );
+                        }
+                        
+                        // Upload attachments display as compact cards
+                        return (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            // Show attachment in preview modal using base64 data
+                            setPreviewImage({
+                              url: attachment.base64,
+                              name: attachment.name
+                            });
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.8rem',
+                            padding: '1rem',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            color: 'white',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+                          }}
+                        >
+                          {/* File icon/thumbnail */}
+                          <div style={{
+                            width: '48px',
+                            height: '48px',
+                            backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '20px',
+                            flexShrink: 0,
+                            overflow: 'hidden',
+                            position: 'relative'
+                          }}>
+                            {attachment.type && attachment.type.startsWith('image/') ? (
+                              <img 
+                                src={attachment.base64}
+                                alt={attachment.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                  borderRadius: '8px'
+                                }}
+                              />
+                            ) : (
+                              attachment.name.match(/\.(png|jpe?g|gif|webp)$/i) ? '🖼️' : '📄'
+                            )}
+                          </div>
+                          
+                          {/* File info */}
+                          <div style={{
+                            flex: 1,
+                            minWidth: 0
+                          }}>
+                            <div style={{
+                              fontWeight: '500',
+                              fontSize: '0.95rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              marginBottom: '0.2rem'
+                            }}>
+                              {attachment.name}
+                            </div>
+                            <div style={{
+                              fontSize: '0.8rem',
+                              opacity: 0.7
+                            }}>
+                              {attachment.size ? `${Math.round(attachment.size / 1024)} KB` : 'Generated'}
+                            </div>
+                          </div>
+                          
+                        </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div 
+                  className="p-4"
+                  style={{
+                    width: isMobile ? '95%' : '100%', // Use width instead of maxWidth
+                    margin: isMobile ? '0 auto' : '0', // Center the container on mobile
+                    fontSize: isMobile ? '1rem' : '0.95rem',
+                    lineHeight: isMobile ? '1.3' : '1.6',
+                    whiteSpace: 'pre-wrap',
+                    color: '#FFFFFF',
+                    textAlign: 'left'
+                  }}>
+                  <div style={{ 
+                    fontSize: '0.75rem', 
+                    opacity: 0.7, 
+                    marginBottom: '0.8rem',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    paddingBottom: '0.6rem'
+                  }}>
+                    <span style={{ 
+                      fontWeight: '600', 
+                      color: '#a0aec0', 
+                      display: 'flex', 
+                      alignItems: 'center' 
+                    }}>
+                      <ChatOmniaLogo size={18} />
+                      Omnia {msg.isStreaming ? ' • streaming' : ''}
+                    </span>
+                  </div>
+                  
+                  {/* 🎨 GENERATED IMAGE - Display if message contains image */}
+                  {msg.image && (
+                    <div style={{
+                      marginTop: '1rem',
+                      marginBottom: '1rem',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      maxWidth: '100%'
+                    }}>
+                      <img 
+                        src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
+                        alt={`Generated image for: ${msg.text}`}
+                        onClick={(e) => {
+                          // Only show preview if not a long press
+                          if (!e.target.longPressDetected) {
+                            const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                            setPreviewImage({
+                              url: imageUrl,
+                              name: `Generated: ${msg.text.slice(0, 30)}...`
+                            });
+                          }
+                        }}
+                        onTouchStart={(e) => {
+                          // Start long press timer
+                          const startTime = Date.now();
+                          const startX = e.touches[0].clientX;
+                          const startY = e.touches[0].clientY;
+                          
+                          e.target.longPressTimer = setTimeout(() => {
+                            e.target.longPressDetected = true;
+                            
+                            // Show context menu
+                            setImageContextMenu({
+                              isOpen: true,
+                              imageData: `data:${msg.image.mimeType};base64,${msg.image.base64}`,
+                              imageName: `generated-image-${Date.now()}.png`,
+                              position: { x: startX, y: startY }
+                            });
+                            
+                            console.log('🔥 Long press detected - showing context menu');
+                          }, 500); // 500ms for long press
+                          
+                          e.target.longPressDetected = false;
+                        }}
+                        onTouchEnd={(e) => {
+                          // Clear long press timer
+                          if (e.target.longPressTimer) {
+                            clearTimeout(e.target.longPressTimer);
+                          }
+                          // Reset long press flag after short delay
+                          setTimeout(() => {
+                            e.target.longPressDetected = false;
+                          }, 100);
+                        }}
+                        onTouchMove={(e) => {
+                          // Cancel long press if user moves finger too much
+                          if (e.target.longPressTimer) {
+                            const currentX = e.touches[0].clientX;
+                            const currentY = e.touches[0].clientY;
+                            const startX = e.touches[0].pageX; // Will need to store this properly
+                            const startY = e.touches[0].pageY;
+                            
+                            // Cancel if moved more than 10px
+                            const distance = Math.sqrt((currentX - startX) ** 2 + (currentY - startY) ** 2);
+                            if (distance > 10) {
+                              clearTimeout(e.target.longPressTimer);
+                              e.target.longPressDetected = false;
+                            }
+                          }
+                        }}
+                        style={{
+                          maxWidth: isMobile ? '280px' : '400px',
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'scale(1.02)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                        onLoad={() => {
+                          // Scroll to show the generated image
+                          setTimeout(() => {
+                            smartScrollToBottom(mainContentRef.current, {
+                              behavior: 'smooth',
+                              force: true
+                            });
+                          }, 100);
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  <MessageRenderer 
+                    content={msg.text || ''}
+                    className="text-white"
+                  />
+                  
+                  {/* 🔘 ACTION BUTTONS - Moved below message */}
+                  {!msg.isStreaming && (
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '10px', 
+                      marginTop: '1rem',
+                      paddingTop: '0.8rem',
+                      justifyContent: 'flex-start'
+                    }}>
+                      <SourcesButton 
+                        sources={msg.sources || []}
+                        onClick={() => handleSourcesClick(msg.sources || [])}
+                        language={detectLanguage(msg.text)}
+                      />
+                      <VoiceButton 
+                        text={msg.text} 
+                        onAudioStart={() => setIsAudioPlaying(true)}
+                        onAudioEnd={() => setIsAudioPlaying(false)}
+                      />
+                      <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
           
           {/* ⏳ LOADING INDICATOR - UNCHANGED */}
           {(loading || streaming) && (
