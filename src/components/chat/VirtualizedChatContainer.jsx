@@ -21,7 +21,7 @@ const VirtualizedChatContainer = forwardRef(({
   // For now, use the passed messages directly instead of the hook
   // TODO: Eventually migrate fully to hook-based approach
   
-  // 🔍 DEBUG: Log messages received from App.jsx
+  // 🔍 STEP 1: Comprehensive debug logging
   console.log('🎯 [VIRTUOSO] VirtualizedChatContainer received:', {
     chatId,
     messagesCount: messages.length,
@@ -29,10 +29,26 @@ const VirtualizedChatContainer = forwardRef(({
     streaming
   });
   
-  const messageIds = messages.map((msg, idx) => msg.id || `msg-${idx}`);
-  const messageData = new Map(messages.map((msg, idx) => [msg.id || `msg-${idx}`, msg]));
+  // 🔧 STEP 3: Fix ID generation consistency 
+  const messagesWithIds = messages.map((msg, idx) => ({
+    ...msg,
+    id: msg.id || `msg_${idx}_${Date.now()}`
+  }));
+  
+  const messageIds = messagesWithIds.map(msg => msg.id);
+  const messageData = new Map(messagesWithIds.map(msg => [msg.id, msg]));
   const hasMoreMessages = false; // Will be implemented later
   const loadingOlderMessages = false;
+  
+  // 📋 COMPREHENSIVE DEBUG: Log everything
+  console.log('📋 [VIRTUOSO] FULL DEBUG:', {
+    originalMessages: messages,
+    messagesWithIds: messagesWithIds,
+    messageIds: messageIds,
+    messageDataSize: messageData.size,
+    isHiddenValues: messages.map(m => ({ sender: m.sender, isHidden: m.isHidden, hasId: !!m.id })),
+    firstMessageData: messageData.get(messageIds[0])
+  });
 
   // Loading indicator component
   const LoadingIndicator = () => (
@@ -110,10 +126,18 @@ const VirtualizedChatContainer = forwardRef(({
     getCachedMessageCount: () => messageData.size
   }), [messageIds.length, messageData.size]);
 
-  // Filter out hidden messages for virtualization
+  // 🔧 STEP 2: Fix hidden message filter condition
   const visibleMessageIds = messageIds.filter(id => {
     const message = messageData.get(id);
-    return message && !message.isHidden;
+    const isVisible = message && message.isHidden !== true; // ✅ FIXED: explicit check
+    console.log('🔍 [FILTER DEBUG]:', { id, hasMessage: !!message, isHidden: message?.isHidden, isVisible });
+    return isVisible;
+  });
+  
+  console.log('📊 [VIRTUOSO] FILTER RESULTS:', {
+    totalIds: messageIds.length,
+    visibleIds: visibleMessageIds.length,
+    visibleMessageIds: visibleMessageIds
   });
 
   return (
