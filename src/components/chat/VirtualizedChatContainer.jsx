@@ -142,26 +142,57 @@ const VirtualizedChatContainer = forwardRef(({
 
   return (
     <div className={`virtualized-chat-container ${className}`} style={{ height: '100%' }}>
-      {/* Apply streaming breathing effect to entire container */}
-      <div className={streaming ? 'streaming-breathing' : ''} style={{ height: '100%' }}>
-        <Virtuoso
-          data={visibleMessageIds}
-          itemContent={renderMessage}
-          startReached={handleStartReached}
-          followOutput="smooth"
-          alignToBottom
-          defaultItemHeight={100}
-          overscan={5}
-          components={{
-            Header: () => loadingOlderMessages && hasMoreMessages ? <LoadingIndicator /> : null
-          }}
-          style={{
-            height: '100%',
-            maxWidth: '1000px',
-            margin: '0 auto',
-            padding: '0 1rem'
-          }}
-        />
+      {/* 🧪 TEMPORARY: Bypass Virtuoso for testing */}
+      <div className={streaming ? 'streaming-breathing' : ''} style={{ 
+        height: '100%', 
+        overflowY: 'auto',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        padding: '0 1rem'
+      }}>
+        {/* 🔬 DIRECT RENDERING TEST - Skip Virtuoso */}
+        {visibleMessageIds.map((messageId, index) => {
+          const message = messageData.get(messageId);
+          console.log('🧪 [DIRECT RENDER]:', { messageId, message });
+          
+          if (!message) {
+            return (
+              <div key={messageId} style={{ color: 'red', padding: '1rem' }}>
+                ❌ Missing message data for ID: {messageId}
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={messageId}
+              style={{
+                animation: 'fadeInUp 0.4s ease-out',
+                marginBottom: '2rem',
+                border: '1px solid lime', // 🔍 DEBUG: Green border to see if rendered
+                padding: '0.5rem'
+              }}
+            >
+              <div style={{ color: 'cyan', fontSize: '12px', marginBottom: '0.5rem' }}>
+                🧪 DEBUG: ID={messageId}, sender={message.sender}
+              </div>
+              <ChatMessage
+                message={message}
+                isMobile={isMobile}
+                onImageClick={onImageClick}
+                onSourcesClick={onSourcesClick}
+                onAudioStart={onAudioStart}
+                onAudioEnd={onAudioEnd}
+                onLongPress={onLongPress}
+                scrollContainer={scrollContainer}
+              />
+            </div>
+          );
+        })}
+        
+        <div style={{ color: 'yellow', padding: '1rem', border: '1px solid yellow' }}>
+          🧪 RENDER TEST: {visibleMessageIds.length} messages rendered
+        </div>
       </div>
 
       {/* Preserve CSS animations */}
