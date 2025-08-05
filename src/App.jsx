@@ -2401,6 +2401,7 @@ const handleModelChange = useCallback((newModel) => {
           {/* 🚀 VIRTUALIZED CHAT MESSAGES - High performance rendering */}
           <VirtualizedChatContainer
             chatId={currentChatId}
+            messages={messages}
             streaming={streaming}
             isMobile={isMobile}
             onImageClick={setPreviewImage}
