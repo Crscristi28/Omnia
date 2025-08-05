@@ -9,7 +9,6 @@ import ChatMessage from './ChatMessage';
  */
 const VirtualizedChatContainer = forwardRef(({
   chatId,
-  messages = [], // Use messages from App.jsx state
   streaming,
   isMobile,
   onImageClick,
@@ -18,12 +17,19 @@ const VirtualizedChatContainer = forwardRef(({
   scrollContainer,
   className = ''
 }, ref) => {
-  // For now, use the passed messages directly instead of the hook
-  // TODO: Eventually migrate fully to hook-based approach
-  const messageIds = messages.map((msg, idx) => msg.id || `msg-${idx}`);
-  const messageData = new Map(messages.map((msg, idx) => [msg.id || `msg-${idx}`, msg]));
-  const hasMoreMessages = false; // Will be implemented later
-  const loadingOlderMessages = false;
+  const {
+    messageIds,
+    messageData,
+    hasMoreMessages,
+    loadingOlderMessages,
+    loadOlderMessages,
+    addMessage,
+    updateStreamingMessage,
+    startStreaming,
+    updateStreamingContent,
+    finishStreaming,
+    getCurrentStreamingId
+  } = useChatMessages(chatId);
 
   // Loading indicator component
   const LoadingIndicator = () => (
@@ -89,17 +95,23 @@ const VirtualizedChatContainer = forwardRef(({
     );
   }, [messageData, isMobile, onImageClick, onCopy, onShare]);
 
-  // Start reached callback for loading older messages (simplified for now)
+  // Start reached callback for loading older messages
   const handleStartReached = useCallback(() => {
-    // TODO: Implement with proper hook integration
-    console.log('📜 [VIRTUOSO] Start reached - older messages loading disabled temporarily');
-  }, []);
+    if (hasMoreMessages && !loadingOlderMessages) {
+      loadOlderMessages();
+    }
+  }, [hasMoreMessages, loadingOlderMessages, loadOlderMessages]);
 
-  // Expose basic methods to parent component via ref
+  // Expose methods to parent component via ref
   React.useImperativeHandle(ref, () => ({
+    addMessage,
+    startStreaming,
+    updateStreamingContent,
+    finishStreaming,
+    getCurrentStreamingId,
     getMessageCount: () => messageIds.length,
     getCachedMessageCount: () => messageData.size
-  }), [messageIds.length, messageData.size]);
+  }), [addMessage, startStreaming, updateStreamingContent, finishStreaming, getCurrentStreamingId, messageIds.length, messageData.size]);
 
   // Filter out hidden messages for virtualization
   const visibleMessageIds = messageIds.filter(id => {
