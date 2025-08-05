@@ -20,6 +20,15 @@ const VirtualizedChatContainer = forwardRef(({
 }, ref) => {
   // For now, use the passed messages directly instead of the hook
   // TODO: Eventually migrate fully to hook-based approach
+  
+  // 🔍 DEBUG: Log messages received from App.jsx
+  console.log('🎯 [VIRTUOSO] VirtualizedChatContainer received:', {
+    chatId,
+    messagesCount: messages.length,
+    messages: messages.slice(0, 3), // Show first 3 messages for debugging
+    streaming
+  });
+  
   const messageIds = messages.map((msg, idx) => msg.id || `msg-${idx}`);
   const messageData = new Map(messages.map((msg, idx) => [msg.id || `msg-${idx}`, msg]));
   const hasMoreMessages = false; // Will be implemented later
