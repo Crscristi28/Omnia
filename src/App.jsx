@@ -2829,7 +2829,7 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
             initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
             followOutput="smooth"
             style={{ 
-              height: 'calc(100vh - 400px)', // Celá obrazovka mínus header + input bar
+              height: 'calc(100vh - 320px)', // Zmenšený offset pro větší prostor
               width: '100%',
               minHeight: '300px'
             }}
