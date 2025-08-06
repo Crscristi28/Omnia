@@ -2826,9 +2826,13 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
               )}
             </div>
           )}
-            initialTopMostItemIndex={{ index: messages.filter(msg => !msg.isHidden).length - 1, align: 'end' }}
+            initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
             followOutput="smooth"
-            style={{ height: '400px', width: '100%' }}
+            style={{ 
+              height: 'calc(100vh - 400px)', // Celá obrazovka mínus header + input bar
+              width: '100%',
+              minHeight: '300px'
+            }}
           />
           
           {/* ⏳ LOADING INDICATOR - UNCHANGED */}
