@@ -2029,6 +2029,9 @@ const handleModelChange = useCallback((newModel) => {
   setShowModelDropdown(false);
 }, []);
 
+// 🔍 DEBUG: Zkontroluj data pro Virtuoso
+console.log('Aktuální zprávy pro Virtuoso:', messages.filter(msg => !msg.isHidden));
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
