@@ -2826,7 +2826,7 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
               )}
             </div>
           )}
-            initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
+            initialTopMostItemIndex={{ index: messages.filter(msg => !msg.isHidden).length - 1, align: 'end' }}
             followOutput="smooth"
             style={{ height: '400px', width: '100%' }}
           />
