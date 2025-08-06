@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
+import { Virtuoso } from 'react-virtuoso';
 
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, grokService, geminiService } from './services/ai';
@@ -298,6 +299,7 @@ function App() {
   const endOfMessagesRef = useRef(null);
   const sttRecorderRef = useRef(null);
   const mainContentRef = useRef(null);
+  const virtuosoRef = useRef(null);
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -2337,7 +2339,9 @@ const handleModelChange = useCallback((newModel) => {
           overscrollBehavior: 'none', // Prevent elastic scroll
           WebkitOverscrollBehavior: 'none', // iOS Safari support
           touchAction: 'pan-y', // Only allow vertical scrolling
-          transition: 'padding-bottom 0.3s ease-out'
+          transition: 'padding-bottom 0.3s ease-out',
+          display: 'flex', // Důležité: Nastav mainContentRef jako flex kontejner
+          flexDirection: 'column' // Pro vertikální vyplnění Virtuoso
         }}
       >
         <div 
@@ -2429,9 +2433,12 @@ const handleModelChange = useCallback((newModel) => {
             </div>
           )}
 
-          {/* 💬 CHAT MESSAGES - UNCHANGED styling */}
-          {messages.filter(msg => !msg.isHidden).map((msg, idx) => (
-            <div key={msg.id || `fallback_${idx}`} data-sender={msg.sender} style={{
+          {/* 💬 CHAT MESSAGES - NYNÍ S VIRTUOSO */}
+          <Virtuoso
+            ref={virtuosoRef}
+            data={messages.filter(msg => !msg.isHidden)}
+            itemContent={(index, msg) => (
+            <div key={msg.id || `fallback_${index}`} data-sender={msg.sender} style={{
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
@@ -2788,7 +2795,11 @@ const handleModelChange = useCallback((newModel) => {
                 </div>
               )}
             </div>
-          ))}
+          )}
+            initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
+            followOutput="smooth"
+            style={{ flex: 1 }}
+          />
           
           {/* ⏳ LOADING INDICATOR - UNCHANGED */}
           {(loading || streaming) && (
