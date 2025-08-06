@@ -617,18 +617,43 @@ function App() {
     }
   };
 
-  // 🔄 INITIALIZATION - NO chat loading on mount (lazy loading)
+  // 🔄 INITIALIZATION - Load messages for current chat on mount
   React.useEffect(() => {
-    // ❌ REMOVED: loadChatHistories() - načte se až při otevření sidebaru
-    console.log('🔴 [DEBUG] useEffect init - currentChatId at mount:', currentChatId);
+    const initializeChat = async () => {
+      console.log('🔴 [DEBUG] useEffect init - currentChatId at mount:', currentChatId);
+      
+      let chatIdToUse = currentChatId;
+      
+      if (!chatIdToUse) {
+        const newId = chatDB.generateChatId();
+        console.log('🔴 [DEBUG] useEffect generating NEW chatId (initial):', newId);
+        updateCurrentChatId(newId);
+        chatIdToUse = newId;
+      } else {
+        console.log('🔴 [DEBUG] useEffect - using existing chatId:', chatIdToUse);
+      }
+      
+      // 🚀 NOVÉ: Automatické načítání zpráv při startu aplikace
+      try {
+        console.log('📖 [INIT] Loading initial messages for chat:', chatIdToUse);
+        const chatData = await chatDB.getLatestMessages(chatIdToUse, 50);
+        
+        if (chatData && chatData.messages && chatData.messages.length > 0) {
+          console.log('✅ [INIT] Loaded', chatData.messages.length, 'initial messages');
+          setMessages(chatData.messages);
+          setHasMoreMessages(chatData.hasMore);
+        } else {
+          console.log('📭 [INIT] No initial messages found - starting with empty chat');
+          setMessages([]);
+          setHasMoreMessages(false);
+        }
+      } catch (error) {
+        console.error('❌ [INIT] Error loading initial messages:', error);
+        setMessages([]); // V případě chyby zajisti prázdné pole
+      }
+    };
     
-    if (!currentChatId) {
-      const newId = chatDB.generateChatId();
-      console.log('🔴 [DEBUG] useEffect generating NEW chatId (initial):', newId);
-      updateCurrentChatId(newId);
-    } else {
-      console.log('🔴 [DEBUG] useEffect - using existing chatId:', currentChatId);
-    }
+    initializeChat();
   }, []);
 
   // 💾 Strategic save point #5: Save chat on page visibility change (more reliable than beforeunload)
