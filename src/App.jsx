@@ -2475,7 +2475,8 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
               marginBottom: '2rem',
               animation: 'fadeInUp 0.4s ease-out',
               paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
-              paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem'
+              paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
+              minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
             }}>
               {msg.sender === 'user' ? (
                 <div style={{
