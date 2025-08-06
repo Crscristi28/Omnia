@@ -38,6 +38,9 @@ import { ChatSidebar } from './components/layout';
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 
+// 🆔 HELPER FUNCTION: Generate unique message ID for Virtuoso
+const generateMessageId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
 // 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
 const welcomeTexts = {
   cs: { 
@@ -580,16 +583,17 @@ function App() {
         // Prepend older messages to current messages
         const allMessages = [...olderMessages, ...messages];
         
+        // 🚨 VIRTUOSO PREP: DISABLED RAM TRIM - Virtuoso needs full message array
         // 🪟 SLIDING WINDOW - Keep max 50 messages in RAM for optimal performance
-        if (allMessages.length > 50) {
-          console.log(`🪟 [SLIDING-WINDOW] Too many messages: ${allMessages.length} > 50, applying sliding window...`);
-          // Keep only the latest 50 messages for sliding window approach
-          const trimmedMessages = allMessages.slice(-50);
-          setMessages(trimmedMessages);
-          console.log(`🧹 [SLIDING-WINDOW] Trimmed ${allMessages.length} → 50 messages in RAM`);
-        } else {
+        // if (allMessages.length > 50) {
+        //   console.log(`🪟 [SLIDING-WINDOW] Too many messages: ${allMessages.length} > 50, applying sliding window...`);
+        //   // Keep only the latest 50 messages for sliding window approach
+        //   const trimmedMessages = allMessages.slice(-50);
+        //   setMessages(trimmedMessages);
+        //   console.log(`🧹 [SLIDING-WINDOW] Trimmed ${allMessages.length} → 50 messages in RAM`);
+        // } else {
           setMessages(allMessages);
-        }
+        // }
         
         setHasMoreMessages(olderMessages.length === 15); // If we got less than requested, no more messages
         
@@ -1147,7 +1151,11 @@ function App() {
         console.log('🔴 [DEBUG] Using existing safe chatId:', activeChatId);
       }
       
-      const userMessage = { sender: 'user', text: finalTextInput };
+      const userMessage = { 
+  id: generateMessageId(),
+  sender: 'user', 
+  text: finalTextInput 
+};
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
@@ -1252,6 +1260,7 @@ function App() {
         
         // Save final messages with sources
         const finalMessage = { 
+          id: generateMessageId(),
           sender: 'bot', 
           text: finalText,
           sources: sources,
@@ -1287,6 +1296,7 @@ function App() {
         setStopStreamingRef(() => stopFn);
         
         const finalMessages = [...messagesWithUser, { 
+          id: generateMessageId(),
           sender: 'bot', 
           text: responseText,
           sources: [],
@@ -1332,6 +1342,7 @@ function App() {
         setStopStreamingRef(() => stopFn);
         
         const finalMessages = [...messagesWithUser, { 
+          id: generateMessageId(),
           sender: 'bot', 
           text: responseText,
           sources: sources,
@@ -1461,8 +1472,8 @@ function App() {
           });
           
           const finalMessages = [...currentMessages, 
-            { sender: 'user', text: finalTextInput },
-            { sender: 'bot', text: responseText, sources: sourcesToSave || [] }
+            { id: generateMessageId(), sender: 'user', text: finalTextInput },
+            { id: generateMessageId(), sender: 'bot', text: responseText, sources: sourcesToSave || [] }
           ];
           
           // ❌ REMOVED: zbytečné save po každé zprávě - save jen na 4 místech!
@@ -1684,6 +1695,7 @@ const handleDocumentUpload = async (event) => {
 
     // Add hidden context message for AI (not visible to user)
     const hiddenContextMessage = {
+      id: generateMessageId(),
       sender: 'system',
       text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). AI má plný přístup k dokumentu a může jej analyzovat.`,
       isHidden: true
@@ -1763,13 +1775,14 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       await smartIncrementalSave(currentChatId, currentMessagesWithUser);
       console.log(`✅ [DOC-AUTO-SAVE] SUCCESS: ${currentMessagesWithUser.length} messages saved to DB`);
       
+      // 🚨 VIRTUOSO PREP: DISABLED RAM CLEANUP - Virtuoso needs full message array
       // RAM cleanup - ponech jen posledních 50 zpráv
-      const beforeCleanup = currentMessagesWithUser.length;
-      currentMessagesWithUser = currentMessagesWithUser.slice(-50);
-      setMessages(currentMessagesWithUser);
-      console.log(`🧹 [DOC-RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
-      console.log(`💾 [DOC-RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
-      console.log(`📊 [DOC-RAM-STATUS] Current messages in memory: ${currentMessagesWithUser.length}`);
+      // const beforeCleanup = currentMessagesWithUser.length;
+      // currentMessagesWithUser = currentMessagesWithUser.slice(-50);
+      // setMessages(currentMessagesWithUser);
+      // console.log(`🧹 [DOC-RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
+      // console.log(`💾 [DOC-RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
+      // console.log(`📊 [DOC-RAM-STATUS] Current messages in memory: ${currentMessagesWithUser.length}`);
     } catch (error) {
       console.error(`❌ [DOC-AUTO-SAVE] FAILED - NO CLEANUP:`, error);
     }
@@ -1948,6 +1961,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // Add hidden context message for AI when sending documents
       const hiddenContextMessage = {
+        id: generateMessageId(),
         sender: 'system',
         text: `📄 User uploaded ${processedDocuments.length} document(s) for analysis. AI has full access to the document(s) and should analyze them.`,
         isHidden: true
@@ -1983,6 +1997,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // Add final message - same as regular Gemini chat (no streaming effect)
       const finalMessages = [...messagesWithUser, {
+        id: generateMessageId(),
         sender: 'bot',
         text: cleanedText,
         sources: result.sources || [],
@@ -2416,7 +2431,7 @@ const handleModelChange = useCallback((newModel) => {
 
           {/* 💬 CHAT MESSAGES - UNCHANGED styling */}
           {messages.filter(msg => !msg.isHidden).map((msg, idx) => (
-            <div key={idx} data-sender={msg.sender} style={{
+            <div key={msg.id || `fallback_${idx}`} data-sender={msg.sender} style={{
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
