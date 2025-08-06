@@ -2370,9 +2370,7 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
           overscrollBehavior: 'none', // Prevent elastic scroll
           WebkitOverscrollBehavior: 'none', // iOS Safari support
           touchAction: 'pan-y', // Only allow vertical scrolling
-          transition: 'padding-bottom 0.3s ease-out',
-          display: 'flex', // Důležité: Nastav mainContentRef jako flex kontejner
-          flexDirection: 'column' // Pro vertikální vyplnění Virtuoso
+          transition: 'padding-bottom 0.3s ease-out'
         }}
       >
         <div 
@@ -2830,7 +2828,7 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
           )}
             initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
             followOutput="smooth"
-            style={{ flex: 1 }}
+            style={{ height: 'auto', width: '100%' }}
           />
           
           {/* ⏳ LOADING INDICATOR - UNCHANGED */}
