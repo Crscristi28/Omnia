@@ -272,9 +272,6 @@ function App() {
   const [stopStreamingRef, setStopStreamingRef] = useState(null);
   
   // 📄 BATCH LOADING STATE - For pagination
-  const [hasMoreMessages, setHasMoreMessages] = useState(false);
-  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
-  const [currentMessageOffset, setCurrentMessageOffset] = useState(0);
   
   // 🎨 BREATHING ANIMATION - Removed for performance (now using CSS only)
   
@@ -2366,33 +2363,6 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
             </div>
           )}
 
-          {/* 📄 LOADING OLDER MESSAGES INDICATOR */}
-          {loadingOlderMessages && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: '1rem',
-              color: '#666',
-              fontSize: '0.9rem'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <div style={{
-                  width: '16px',
-                  height: '16px',
-                  border: '2px solid #f3f3f3',
-                  borderTop: '2px solid #666',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }}></div>
-                {t('loadingOlderMessages') || 'Načítám starší zprávy...'}
-              </div>
-            </div>
-          )}
 
           {/* 💬 CHAT MESSAGES - NYNÍ S VIRTUOSO */}
           <Virtuoso
