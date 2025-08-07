@@ -752,10 +752,9 @@ function App() {
   // 🔽 SCROLL TO BOTTOM FUNCTION - Using Virtuoso API
   const scrollToBottom = () => {
     if (virtuosoRef.current) {
-      const filteredMessages = messages.filter(msg => !msg.isHidden);
-      const lastIndex = Math.max(0, filteredMessages.length - 1);
-      virtuosoRef.current.scrollToIndex({
-        index: lastIndex,
+      // Use scrollTo with large number to ensure bottom
+      virtuosoRef.current.scrollTo({
+        top: 999999,
         behavior: 'smooth'
       });
     }
