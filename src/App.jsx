@@ -749,11 +749,13 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔽 SCROLL TO BOTTOM FUNCTION
+  // 🔽 SCROLL TO BOTTOM FUNCTION - Using Virtuoso API
   const scrollToBottom = () => {
-    if (mainContentRef.current) {
-      mainContentRef.current.scrollTo({
-        top: mainContentRef.current.scrollHeight,
+    if (virtuosoRef.current) {
+      const filteredMessages = messages.filter(msg => !msg.isHidden);
+      const lastIndex = Math.max(0, filteredMessages.length - 1);
+      virtuosoRef.current.scrollToIndex({
+        index: lastIndex,
         behavior: 'smooth'
       });
     }
@@ -2898,58 +2900,6 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
             atBottomStateChange={(atBottom) => {
               setShowScrollToBottom(!atBottom);
             }}
-            components={{
-              Footer: () => showScrollToBottom ? (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  padding: '1rem',
-                  position: 'sticky',
-                  bottom: 0,
-                  background: 'transparent',
-                  pointerEvents: 'none'
-                }}>
-                  <button
-                    onClick={scrollToBottom}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      border: 'none',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      backdropFilter: 'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
-                      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.3s ease',
-                      pointerEvents: 'auto'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(96, 165, 250, 0.2)';
-                      e.currentTarget.style.transform = 'scale(1.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                  >
-                    <svg 
-                      width="20" 
-                      height="20" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="rgba(255, 255, 255, 0.8)" 
-                      strokeWidth="2"
-                    >
-                      <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
-                    </svg>
-                  </button>
-                </div>
-              ) : null
-            }}
             style={{ 
               height: 'calc(100vh - 320px)', // Zmenšený offset pro větší prostor
               width: '100%',
@@ -2962,6 +2912,51 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
         </div>
       </main>
 
+      {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay */}
+      {showScrollToBottom && (
+        <button
+          onClick={scrollToBottom}
+          style={{
+            position: 'fixed',
+            bottom: isMobile ? '110px' : '120px', // Above input bar
+            right: isMobile ? '20px' : '50px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 11, // Above input bar (10) and gradient (9)
+            transition: 'all 0.3s ease',
+            animation: showScrollToBottom ? 'fadeIn 0.3s ease' : 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(96, 165, 250, 0.2)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <svg 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="rgba(255, 255, 255, 0.8)" 
+            strokeWidth="2"
+          >
+            <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+          </svg>
+        </button>
+      )}
 
       {/* 📝 INPUT BAR - WITHOUT model prop */}
       <InputBar
