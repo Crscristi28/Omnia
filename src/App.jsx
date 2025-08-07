@@ -510,6 +510,7 @@ function App() {
       // V2 chatData structure is already correct: { messages, totalCount, hasMore, loadedRange }
       
       if (chatData && chatData.messages.length > 0) {
+        // 🧹 Replace previous chat with new chat (clears memory of old chat)
         setMessages(chatData.messages);
         updateCurrentChatId(chatId);
         setHasMoreMessages(chatData.hasMore);
