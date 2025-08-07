@@ -1144,11 +1144,7 @@ function App() {
     
     // Scroll to user's message after sending
     setTimeout(() => {
-      smartScrollToBottom(mainContentRef.current, {
-        behavior: 'smooth',
-        force: true,
-        delay: 100
-      });
+      scrollToBottom();
     }, 100);
 
     const detectedLang = detectLanguage(finalTextInput);
@@ -1819,11 +1815,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   
   // Scroll to user's message after sending
   setTimeout(() => {
-    smartScrollToBottom(mainContentRef.current, {
-      behavior: 'smooth',
-      force: true,
-      delay: 100
-    });
+    scrollToBottom();
   }, 100);
   
   setLoading(true);
@@ -2627,10 +2619,7 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
                                 onLoad={() => {
                                   // Scroll to show the generated image
                                   setTimeout(() => {
-                                    smartScrollToBottom(mainContentRef.current, {
-                                      behavior: 'smooth',
-                                      force: true
-                                    });
+                                    scrollToBottom();
                                   }, 100);
                                 }}
                               />
@@ -2854,10 +2843,7 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
                         onLoad={() => {
                           // Scroll to show the generated image
                           setTimeout(() => {
-                            smartScrollToBottom(mainContentRef.current, {
-                              behavior: 'smooth',
-                              force: true
-                            });
+                            scrollToBottom();
                           }, 100);
                         }}
                       />
