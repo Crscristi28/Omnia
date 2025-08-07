@@ -496,8 +496,8 @@ function App() {
       // 📖 Load selected chat - V2 BOTTOM-FIRST LOADING
       console.log('📖 [MONITOR-V2] Loading chat with V2 API:', chatId);
       
-      // V2: Always load latest 50 messages (bottom-first)
-      const chatData = await chatDB.getLatestMessages(chatId, 50);
+      // V2: Load ALL messages for chat (unlimited - Virtuoso optimized)
+      const chatData = await chatDB.getAllMessagesForChat(chatId);
       if (!chatData || chatData.messages.length === 0) {
         crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found or empty'));
         console.warn('⚠️ [MONITOR-V2] Chat not found or empty:', chatId);
@@ -577,7 +577,7 @@ function App() {
       // 🚀 NOVÉ: Automatické načítání zpráv při startu aplikace
       try {
         console.log('📖 [INIT] Loading initial messages for chat:', chatIdToUse);
-        const chatData = await chatDB.getLatestMessages(chatIdToUse, 50);
+        const chatData = await chatDB.getAllMessagesForChat(chatIdToUse);
         
         if (chatData && chatData.messages && chatData.messages.length > 0) {
           console.log('✅ [INIT] Loaded', chatData.messages.length, 'initial messages');

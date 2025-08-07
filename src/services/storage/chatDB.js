@@ -366,6 +366,43 @@ const chatDB = {
     }
   },
 
+  // 📚 Get ALL messages for a chat (unlimited - for Virtuoso)
+  async getAllMessagesForChat(chatId) {
+    const startTime = performance.now();
+    const memBefore = performance.memory?.usedJSHeapSize || 0;
+    
+    try {
+      console.log(`📚 [CHAT-DB-FULL] Getting ALL messages for: ${chatId}`);
+      
+      // Get ALL messages using compound index [chatId+timestamp] for efficient querying
+      const messages = await db.messages
+        .where('[chatId+timestamp]')
+        .between([chatId, Dexie.minKey], [chatId, Dexie.maxKey])
+        .toArray(); // No reverse, no limit - get all messages in chronological order
+      
+      const totalCount = messages.length;
+      
+      const duration = Math.round(performance.now() - startTime);
+      const memAfter = performance.memory?.usedJSHeapSize || 0;
+      const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
+      
+      console.log(`✅ [CHAT-DB-FULL] ALL messages loaded: ${totalCount} messages`);
+      console.log(`⚡ [CHAT-DB-FULL] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
+      console.log(`🎯 [CHAT-DB-FULL] COMPLETE HISTORY: All ${totalCount} messages loaded for Virtuoso!`);
+      
+      return {
+        messages: messages,
+        totalCount,
+        hasMore: false, // No more messages since we loaded everything
+        loadedRange: { start: 0, end: totalCount }
+      };
+      
+    } catch (error) {
+      console.error(`❌ [CHAT-DB-FULL] Error getting all messages:`, error);
+      return { messages: [], totalCount: 0, hasMore: false };
+    }
+  },
+
   // 📄 Get messages before specific message (V2 - scroll up)
   async getMessagesBefore(chatId, beforeTimestamp, limit = 15) {
     const startTime = performance.now();
