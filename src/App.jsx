@@ -561,61 +561,6 @@ function App() {
     }
   };
 
-  // 📄 LOAD OLDER MESSAGES - When user scrolls to top
-  const loadOlderMessages = async () => {
-    if (!currentChatId || !hasMoreMessages || loadingOlderMessages) {
-      return;
-    }
-
-    setLoadingOlderMessages(true);
-    try {
-      // V2: Get timestamp of oldest message for true pagination
-      const oldestMessage = messages[0];
-      if (!oldestMessage || !oldestMessage.timestamp) {
-        console.warn('⚠️ [MONITOR-V2] No oldest message timestamp for pagination');
-        setLoadingOlderMessages(false);
-        return;
-      }
-
-      console.log('📄 [MONITOR-V2] Loading older messages before timestamp:', oldestMessage.timestamp);
-      
-      const olderMessages = await chatDB.getMessagesBefore(currentChatId, oldestMessage.timestamp, 15);
-      
-      if (olderMessages && olderMessages.length > 0) {
-        // Prepend older messages to current messages
-        const allMessages = [...olderMessages, ...messages];
-        
-        // 🚨 VIRTUOSO PREP: DISABLED RAM TRIM - Virtuoso needs full message array
-        // 🪟 SLIDING WINDOW - Keep max 50 messages in RAM for optimal performance
-        // if (allMessages.length > 50) {
-        //   console.log(`🪟 [SLIDING-WINDOW] Too many messages: ${allMessages.length} > 50, applying sliding window...`);
-        //   // Keep only the latest 50 messages for sliding window approach
-        //   const trimmedMessages = allMessages.slice(-50);
-        //   setMessages(trimmedMessages);
-        //   console.log(`🧹 [SLIDING-WINDOW] Trimmed ${allMessages.length} → 50 messages in RAM`);
-        // } else {
-          setMessages(allMessages);
-        // }
-        
-        setHasMoreMessages(olderMessages.length === 15); // If we got less than requested, no more messages
-        
-        console.log('✅ [MONITOR-V2] V2 Older messages loaded:', {
-          loadedCount: olderMessages.length,
-          beforeTimestamp: oldestMessage.timestamp,
-          hasMore: olderMessages.length === 15,
-          totalInDOM: allMessages.length > 50 ? 50 : allMessages.length,
-          actualTotal: allMessages.length
-        });
-      } else {
-        setHasMoreMessages(false);
-        console.log('🔚 [MONITOR-V2] No more older messages to load');
-      }
-    } catch (error) {
-      console.error('❌ Error loading older messages:', error);
-    } finally {
-      setLoadingOlderMessages(false);
-    }
-  };
 
   // 🔄 INITIALIZATION - Load messages for current chat on mount
   React.useEffect(() => {
@@ -704,20 +649,14 @@ function App() {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // Increase threshold for mobile
-      const isAtTop = scrollTop <= 100; // Increase threshold for mobile
       
       setShowScrollToBottom(!isNearBottom);
       
-      // Load older messages when scrolled to top
-      if (isAtTop && hasMoreMessages && !loadingOlderMessages) {
-        console.log('🔝 User scrolled to top - loading older messages...');
-        loadOlderMessages();
-      }
     };
 
     mainContent.addEventListener('scroll', handleScroll);
     return () => mainContent.removeEventListener('scroll', handleScroll);
-  }, [hasMoreMessages, loadingOlderMessages]);
+  }, []);
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
   const checkAutoSave = async (allMessages, chatId = currentChatId) => {
