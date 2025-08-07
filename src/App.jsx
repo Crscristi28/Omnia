@@ -2895,6 +2895,9 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
           )}
             initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
             followOutput="smooth"
+            atBottomStateChange={(atBottom) => {
+              setShowScrollToBottom(!atBottom);
+            }}
             components={{
               Footer: () => showScrollToBottom ? (
                 <div style={{
