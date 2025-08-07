@@ -532,7 +532,6 @@ function App() {
         // 🎯 SCROLL FIX: Ensure chat opens at bottom after V2 loading
         setTimeout(() => {
           scrollToBottom();
-          console.log('🎯 [UX-FIXED] Chat scrolled to bottom after V2 loading');
         }, 100);
       } else if (chatData && chatData.messages.length === 0) {
         // Empty chat - start fresh
@@ -1984,10 +1983,6 @@ const handleModelChange = useCallback((newModel) => {
 }, []);
 
 // 🔍 DEBUG: Detailní analýza dat pro Virtuoso
-console.log('Všechny zprávy (před filtrem):', messages);
-console.log('Počet všech zpráv (před filtrem):', messages.length);
-console.log('Aktuální zprávy pro Virtuoso (po filtru):', messages.filter(msg => !msg.isHidden));
-console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !msg.isHidden).length);
 
 // 🎨 JSX RENDER  
   return (
