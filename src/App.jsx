@@ -2465,7 +2465,19 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
           {/* 💬 CHAT MESSAGES - NYNÍ S VIRTUOSO */}
           <Virtuoso
             ref={virtuosoRef}
-            data={messages.filter(msg => !msg.isHidden)}
+            data={React.useMemo(() => {
+              const filtered = messages.filter(msg => !msg.isHidden);
+              if (loading || streaming) {
+                return [...filtered, {
+                  id: 'loading-indicator',
+                  sender: 'bot',
+                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
+                  isLoading: true,
+                  isStreaming: streaming
+                }];
+              }
+              return filtered;
+            }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={(index, msg) => (
             <div key={msg.id || `fallback_${index}`} data-sender={msg.sender} style={{
               display: 'flex',
@@ -2476,7 +2488,62 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
               paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
               minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
             }}>
-              {msg.sender === 'user' ? (
+              {/* Special rendering for loading indicator */}
+              {msg.isLoading ? (
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'flex-start', 
+                  width: '100%',
+                  animation: 'fadeInUp 0.4s ease-out'
+                }}>
+                  <div style={{
+                    width: isMobile ? '95%' : '100%',
+                    padding: isMobile ? '1.2rem' : '1.6rem',
+                    paddingLeft: isMobile ? '1rem' : '1.2rem',
+                    fontSize: isMobile ? '1rem' : '0.95rem', 
+                    color: '#ffffff',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(10px)',
+                    textAlign: 'left'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                      <div style={{ 
+                        width: '18px', 
+                        height: '18px', 
+                        border: '2px solid rgba(255,255,255,0.3)', 
+                        borderTop: '2px solid #00ffff',
+                        borderRadius: '50%', 
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                      <span style={{ 
+                        color: msg.isStreaming ? '#00ffff' : '#a0aec0', 
+                        fontWeight: '500' 
+                      }}>
+                        {msg.isStreaming ? (
+                          <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                            <span style={{ 
+                              animation: 'pulse 1.4s ease-in-out infinite',
+                              fontSize: '24px',
+                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                            }}>●</span>
+                            <span style={{ 
+                              animation: 'pulse 1.4s ease-in-out 0.2s infinite',
+                              fontSize: '24px',
+                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                            }}>●</span>
+                            <span style={{ 
+                              animation: 'pulse 1.4s ease-in-out 0.4s infinite',
+                              fontSize: '24px',
+                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                            }}>●</span>
+                          </span>
+                        ) : msg.text}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : msg.sender === 'user' ? (
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -2835,63 +2902,6 @@ console.log('Počet zpráv pro Virtuoso (po filtru):', messages.filter(msg => !m
             }}
           />
           
-          {/* ⏳ LOADING INDICATOR - UNCHANGED */}
-          {(loading || streaming) && (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'flex-start', 
-              marginBottom: '2rem', 
-              animation: 'fadeInUp 0.4s ease-out',
-              width: '100%'
-            }}>
-              <div style={{
-                width: '100%',
-                padding: isMobile ? '1.2rem' : '1.6rem',
-                paddingLeft: isMobile ? '1rem' : '1.2rem',
-                fontSize: isMobile ? '1rem' : '0.95rem', 
-                color: '#ffffff',
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '12px',
-                backdropFilter: 'blur(10px)',
-                textAlign: 'left'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ 
-                    width: '18px', 
-                    height: '18px', 
-                    border: '2px solid rgba(255,255,255,0.3)', 
-                    borderTop: '2px solid #00ffff',
-                    borderRadius: '50%', 
-                    animation: 'spin 1s linear infinite'
-                  }}></div>
-                  <span style={{ 
-                    color: streaming ? '#00ffff' : '#a0aec0', 
-                    fontWeight: '500' 
-                  }}>
-                    {streaming ? (
-                      <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                        <span style={{ 
-                          animation: 'pulse 1.4s ease-in-out infinite',
-                          fontSize: '24px',
-                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
-                        }}>●</span>
-                        <span style={{ 
-                          animation: 'pulse 1.4s ease-in-out 0.2s infinite',
-                          fontSize: '24px',
-                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
-                        }}>●</span>
-                        <span style={{ 
-                          animation: 'pulse 1.4s ease-in-out 0.4s infinite',
-                          fontSize: '24px',
-                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
-                        }}>●</span>
-                      </span>
-                    ) : (isSearching ? t('searching') : t('thinking'))}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
           
           <div ref={endOfMessagesRef} />
         </div>
