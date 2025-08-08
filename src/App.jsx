@@ -2392,7 +2392,8 @@ const handleModelChange = useCallback((newModel) => {
             itemContent={(index, msg) => {
               // Check if this is the last user message for ref assignment
               const filteredMessages = messages.filter(m => !m.isHidden);
-              const isLastUserMsg = msg.sender === 'user' && index === filteredMessages.length - 1;
+              const lastUserIndex = filteredMessages.findLastIndex(m => m.sender === 'user');
+              const isLastUserMsg = msg.sender === 'user' && index === lastUserIndex;
               
               return (
               <div 
@@ -2809,7 +2810,7 @@ const handleModelChange = useCallback((newModel) => {
           ); // Close return statement
           }} // Close itemContent function
             initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
-            followOutput="smooth"
+            followOutput={false}
             atBottomStateChange={(atBottom) => {
               setShowScrollToBottom(!atBottom);
             }}
