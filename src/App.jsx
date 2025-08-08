@@ -694,7 +694,8 @@ function App() {
 
   // 🔽 SCROLL TO USER MESSAGE - ChatGPT style (user message to TOP viewport)
   const scrollToBottom = () => {
-    console.log('🚀 scrollToBottom called!');
+    console.log('🚀 scrollToBottom called from:');
+    console.trace(); // Show call stack
     
     if (userMessageRef.current) {
       console.log('✅ User message ref found, scrolling to TOP viewport');
