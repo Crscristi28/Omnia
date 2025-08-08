@@ -599,8 +599,8 @@ function App() {
       // Only scroll when last message is from user
       if (lastMessage && lastMessage.sender === 'user') {
         setTimeout(() => {
-          scrollToUserMessage(); // Use Virtuoso API instead of DOM scrollIntoView
-        }, 150); // Longer delay to ensure userMessageRef is set
+          scrollToUserMessage();
+        }, 50); // Shorter delay for Virtuoso API
       }
     }
   }, [messages.length]); // Trigger on new messages
@@ -692,22 +692,19 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔽 SCROLL TO USER MESSAGE - Gemini approach: scrollIntoView + offset
+  // 🔽 SCROLL TO USER MESSAGE - Pure Virtuoso API with offset
   const scrollToUserMessage = () => {
-    if (userMessageRef.current) {
-      // Step 1: Scroll user message to top of viewport
-      userMessageRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+    if (virtuosoRef.current) {
+      const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
-      // Step 2: Apply negative offset to account for wrapper padding (120px)
-      setTimeout(() => {
-        window.scrollBy({
-          top: -120, // Negative value moves viewport down by 120px
-          behavior: 'smooth'
+      if (lastUserIndex >= 0) {
+        virtuosoRef.current.scrollToIndex({
+          index: lastUserIndex,
+          align: 'start',
+          behavior: 'smooth',
+          offset: 120 // Compensates for wrapper padding - positions message below top bar
         });
-      }, 50);
+      }
     }
   };
 
