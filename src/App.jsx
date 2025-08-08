@@ -2364,7 +2364,7 @@ const handleModelChange = useCallback((newModel) => {
           {/* 💬 CHAT MESSAGES - WRAPPER WITH PADDING */}
           <div style={{ 
             flex: 1,
-            paddingTop: isMobile ? 'calc(120px + env(safe-area-inset-top))' : '120px',
+            paddingTop: '120px',
             paddingBottom: isMobile ? '280px' : '220px',
             position: 'relative',
             zIndex: 1
