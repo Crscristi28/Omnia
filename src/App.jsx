@@ -599,7 +599,7 @@ function App() {
       // Only scroll when last message is from user
       if (lastMessage && lastMessage.sender === 'user') {
         setTimeout(() => {
-          scrollToBottom(); // User message → TOP viewport
+          scrollToUserMessage(); // Use Virtuoso API instead of DOM scrollIntoView
         }, 150); // Longer delay to ensure userMessageRef is set
       }
     }
@@ -692,19 +692,34 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔽 SCROLL TO USER MESSAGE - ChatGPT style (user message to TOP viewport)
-  const scrollToBottom = () => {
-    console.log('🚀 scrollToBottom called from:');
+  // 🔽 SCROLL TO USER MESSAGE - Virtuoso API (ChatGPT style)
+  const scrollToUserMessage = () => {
+    console.log('🚀 scrollToUserMessage called from:');
     console.trace(); // Show call stack
     
-    if (userMessageRef.current) {
-      console.log('✅ User message ref found, scrolling to TOP viewport');
-      userMessageRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center' // Test: center positioning instead of start
+    const filteredMessages = messages.filter(m => !m.isHidden);
+    const lastUserIndex = filteredMessages.findLastIndex(m => m.sender === 'user');
+    
+    if (lastUserIndex >= 0 && virtuosoRef.current) {
+      console.log('✅ Found last user message at index:', lastUserIndex);
+      virtuosoRef.current.scrollToIndex({
+        index: lastUserIndex,
+        align: 'start', // ChatGPT style - user message at TOP of viewport
+        behavior: 'smooth'
       });
     } else {
-      console.log('❌ No user message ref - scroll skipped');
+      console.log('❌ No user message found or Virtuoso ref missing');
+    }
+  };
+
+  // 🔽 SCROLL TO BOTTOM - For scroll button and chat opening  
+  const scrollToBottom = () => {
+    console.log('🚀 scrollToBottom called - scrolling to last message');
+    if (virtuosoRef.current) {
+      virtuosoRef.current.scrollToIndex({ 
+        index: 'LAST',
+        behavior: 'smooth'
+      });
     }
   };
 
