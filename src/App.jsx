@@ -587,13 +587,16 @@ function App() {
     initializeChat();
   }, []);
 
-  // 🔄 AUTO-SCROLL: Scroll to user message on every message change (ChatGPT style)
+  // 🔄 AUTO-SCROLL: Scroll only when USER sends new message (ChatGPT style)
   React.useEffect(() => {
     if (messages.length > 0) {
-      // Scroll after DOM update
-      setTimeout(() => {
-        scrollToBottom();
-      }, 50); // Shorter delay for better responsiveness
+      const lastMessage = messages[messages.length - 1];
+      // Only scroll when last message is from user
+      if (lastMessage && lastMessage.sender === 'user') {
+        setTimeout(() => {
+          scrollToBottom(); // User message → TOP viewport
+        }, 50);
+      }
     }
   }, [messages.length]); // Trigger on new messages
 
@@ -1083,11 +1086,6 @@ function App() {
       stopStreamingRef();
       setStopStreamingRef(null);
     }
-    
-    // Scroll to user's message after sending
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
 
     const detectedLang = detectLanguage(finalTextInput);
     if (detectedLang !== userLanguage) {
@@ -1754,11 +1752,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       console.error(`❌ [DOC-AUTO-SAVE] FAILED - NO CLEANUP:`, error);
     }
   }
-  
-  // Scroll to user's message after sending
-  setTimeout(() => {
-    scrollToBottom();
-  }, 100);
   
   setLoading(true);
   setStreaming(true);
@@ -2538,10 +2531,7 @@ const handleModelChange = useCallback((newModel) => {
                                   e.target.style.transform = 'scale(1)';
                                 }}
                                 onLoad={() => {
-                                  // Scroll to show the generated image
-                                  setTimeout(() => {
-                                    scrollToBottom();
-                                  }, 100);
+                                  // Image loaded - scroll handled by useEffect
                                 }}
                               />
                             </div>
@@ -2762,10 +2752,7 @@ const handleModelChange = useCallback((newModel) => {
                           e.target.style.transform = 'scale(1)';
                         }}
                         onLoad={() => {
-                          // Scroll to show the generated image
-                          setTimeout(() => {
-                            scrollToBottom();
-                          }, 100);
+                          // Image loaded - scroll handled by useEffect
                         }}
                       />
                     </div>
