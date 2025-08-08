@@ -297,6 +297,7 @@ function App() {
   const sttRecorderRef = useRef(null);
   const mainContentRef = useRef(null);
   const virtuosoRef = useRef(null);
+  const userMessageRef = useRef(null); // For scrollIntoView on user messages
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -687,20 +688,19 @@ function App() {
 
   // 🔽 SCROLL TO BOTTOM FUNCTION - Using Virtuoso API
   const scrollToBottom = () => {
-    if (virtuosoRef.current && messages.length > 0) {
-      // Find the last user message index for ChatGPT-style positioning
-      const filteredMessages = messages.filter(msg => !msg.isHidden);
-      const lastUserIndex = filteredMessages.findLastIndex(msg => msg.sender === 'user');
-      
-      if (lastUserIndex >= 0) {
-        // Scroll to user message at START of viewport (ChatGPT style)
-        virtuosoRef.current.scrollToIndex({
-          index: lastUserIndex,
-          align: 'start',
-          behavior: 'smooth'
-        });
-      } else {
-        // Fallback to bottom for non-user cases (images, chat loading, etc.)
+    console.log('🚀 scrollToBottom called!');
+    
+    // Use Gemini's reliable scrollIntoView solution
+    if (userMessageRef.current) {
+      console.log('✅ User message ref found, scrolling with scrollIntoView');
+      userMessageRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start' // ChatGPT style - user message at TOP of viewport
+      });
+    } else {
+      console.log('❌ No user message ref, falling back to Virtuoso scroll');
+      // Fallback for non-user cases or when ref not ready
+      if (virtuosoRef.current) {
         virtuosoRef.current.scrollTo({
           top: 999999,
           behavior: 'smooth'
@@ -2389,8 +2389,17 @@ const handleModelChange = useCallback((newModel) => {
               }
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
-            itemContent={(index, msg) => (
-            <div key={msg.id || `fallback_${index}`} data-sender={msg.sender} style={{
+            itemContent={(index, msg) => {
+              // Check if this is the last user message for ref assignment
+              const filteredMessages = messages.filter(m => !m.isHidden);
+              const isLastUserMsg = msg.sender === 'user' && index === filteredMessages.length - 1;
+              
+              return (
+              <div 
+                key={msg.id || `fallback_${index}`} 
+                data-sender={msg.sender}
+                ref={isLastUserMsg ? userMessageRef : null}
+                style={{
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
@@ -2797,7 +2806,8 @@ const handleModelChange = useCallback((newModel) => {
                 </div>
               )}
             </div>
-          )}
+          ); // Close return statement
+          }} // Close itemContent function
             initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
             followOutput="smooth"
             atBottomStateChange={(atBottom) => {
