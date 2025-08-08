@@ -2803,6 +2803,10 @@ const handleModelChange = useCallback((newModel) => {
             style={{ 
               flex: 1, // Take remaining space in flex container
               width: '100%',
+              paddingTop: isMobile 
+                ? 'calc(80px + env(safe-area-inset-top))' 
+                : '100px', // CRITICAL: Space for header so text doesn't hide behind it
+              paddingBottom: isMobile ? '20px' : '20px',
               zIndex: 1, // Above background, below header
               position: 'relative'
             }}
