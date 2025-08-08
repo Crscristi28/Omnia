@@ -518,7 +518,6 @@ function App() {
         // 🔄 Load new chat into clean memory
         setMessages(chatData.messages);
         updateCurrentChatId(chatId);
-        setHasMoreMessages(chatData.hasMore);
         // V2: No offset tracking needed - using timestamp-based pagination
         crashMonitor.trackIndexedDB('load', chatId, true);
         crashMonitor.trackChatOperation('switch_chat_success', { 
@@ -544,7 +543,6 @@ function App() {
         console.log('🧹 [MEMORY] Clearing RAM for empty chat');
         setMessages([]);
         updateCurrentChatId(chatId);
-        setHasMoreMessages(false);
         // V2: No offset tracking needed
         console.log('🆕 [MONITOR] Starting with empty chat:', chatId);
       } else {
@@ -584,7 +582,6 @@ function App() {
       // ✅ LAZY LOADING: Don't load messages at startup - only when user selects chat
       console.log('📭 [INIT] Starting with empty app - messages load only when chat selected');
       setMessages([]);
-      setHasMoreMessages(false);
     };
     
     initializeChat();
@@ -945,10 +942,6 @@ function App() {
       setActiveDocumentContexts([]);
       setUploadedDocuments([]);
       
-      // 📄 Reset batch loading state for new chat
-      setHasMoreMessages(false);
-      // V2: No offset tracking needed
-      setLoadingOlderMessages(false);
     
       // Create new chat ID for history tracking
       const newChatId = chatDB.generateChatId();
