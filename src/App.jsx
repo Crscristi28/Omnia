@@ -2403,7 +2403,7 @@ const handleModelChange = useCallback((newModel) => {
               paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
               paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
               paddingTop: isFirstItem ? (isMobile ? 'calc(100px + env(safe-area-inset-top))' : '120px') : '0', // Space for header
-              paddingBottom: isLastItem ? (isMobile ? '160px' : '140px') : '0', // Space for input bar
+              paddingBottom: isLastItem ? (isMobile ? '200px' : '180px') : '0', // More space for input bar + gradient
               minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
             }}>
               {/* Special rendering for loading indicator */}
