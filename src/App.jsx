@@ -511,7 +511,11 @@ function App() {
       // V2 chatData structure is already correct: { messages, totalCount, hasMore, loadedRange }
       
       if (chatData && chatData.messages.length > 0) {
-        // 🧹 Replace previous chat with new chat (clears memory of old chat)
+        // 🧹 EXPLICIT MEMORY CLEAR: Remove old chat from RAM before loading new one
+        console.log('🧹 [MEMORY] Clearing RAM before loading new chat');
+        setMessages([]); // Clear old messages from memory first
+        
+        // 🔄 Load new chat into clean memory
         setMessages(chatData.messages);
         updateCurrentChatId(chatId);
         setHasMoreMessages(chatData.hasMore);
@@ -536,7 +540,8 @@ function App() {
           scrollToBottom();
         }, 100);
       } else if (chatData && chatData.messages.length === 0) {
-        // Empty chat - start fresh
+        // 🧹 MEMORY CLEAR: Empty chat - ensure RAM is clean
+        console.log('🧹 [MEMORY] Clearing RAM for empty chat');
         setMessages([]);
         updateCurrentChatId(chatId);
         setHasMoreMessages(false);
@@ -560,7 +565,7 @@ function App() {
   };
 
 
-  // 🔄 INITIALIZATION - Load messages for current chat on mount
+  // 🔄 INITIALIZATION - Create chat ID but don't load messages (lazy loading)
   React.useEffect(() => {
     const initializeChat = async () => {
       console.log('🔴 [DEBUG] useEffect init - currentChatId at mount:', currentChatId);
@@ -576,24 +581,10 @@ function App() {
         console.log('🔴 [DEBUG] useEffect - using existing chatId:', chatIdToUse);
       }
       
-      // 🚀 NOVÉ: Automatické načítání zpráv při startu aplikace
-      try {
-        console.log('📖 [INIT] Loading initial messages for chat:', chatIdToUse);
-        const chatData = await chatDB.getAllMessagesForChat(chatIdToUse);
-        
-        if (chatData && chatData.messages && chatData.messages.length > 0) {
-          console.log('✅ [INIT] Loaded', chatData.messages.length, 'initial messages');
-          setMessages(chatData.messages);
-          setHasMoreMessages(chatData.hasMore);
-        } else {
-          console.log('📭 [INIT] No initial messages found - starting with empty chat');
-          setMessages([]);
-          setHasMoreMessages(false);
-        }
-      } catch (error) {
-        console.error('❌ [INIT] Error loading initial messages:', error);
-        setMessages([]); // V případě chyby zajisti prázdné pole
-      }
+      // ✅ LAZY LOADING: Don't load messages at startup - only when user selects chat
+      console.log('📭 [INIT] Starting with empty app - messages load only when chat selected');
+      setMessages([]);
+      setHasMoreMessages(false);
     };
     
     initializeChat();
