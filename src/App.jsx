@@ -2368,20 +2368,13 @@ const handleModelChange = useCallback((newModel) => {
           {/* 💬 CHAT MESSAGES - NYNÍ S VIRTUOSO */}
           <Virtuoso
             ref={virtuosoRef}
-            components={{
-              List: React.forwardRef(({ style, children, ...props }, ref) => (
-                <div
-                  ref={ref}
-                  {...props}
-                  style={{
-                    ...style,
-                    paddingTop: isMobile ? 'calc(100px + env(safe-area-inset-top))' : '120px',
-                    paddingBottom: isMobile ? '240px' : '220px'
-                  }}
-                >
-                  {children}
-                </div>
-              ))
+            style={{ 
+              flex: 1,
+              width: '100%',
+              paddingTop: isMobile ? 'calc(120px + env(safe-area-inset-top))' : '120px',
+              paddingBottom: isMobile ? '280px' : '220px', // Extra padding on mobile
+              zIndex: 1,
+              position: 'relative'
             }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
