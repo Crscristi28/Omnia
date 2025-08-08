@@ -687,12 +687,25 @@ function App() {
 
   // 🔽 SCROLL TO BOTTOM FUNCTION - Using Virtuoso API
   const scrollToBottom = () => {
-    if (virtuosoRef.current) {
-      // Use scrollTo with large number to ensure bottom
-      virtuosoRef.current.scrollTo({
-        top: 999999,
-        behavior: 'smooth'
-      });
+    if (virtuosoRef.current && messages.length > 0) {
+      // Find the last user message index for ChatGPT-style positioning
+      const filteredMessages = messages.filter(msg => !msg.isHidden);
+      const lastUserIndex = filteredMessages.findLastIndex(msg => msg.sender === 'user');
+      
+      if (lastUserIndex >= 0) {
+        // Scroll to user message at START of viewport (ChatGPT style)
+        virtuosoRef.current.scrollToIndex({
+          index: lastUserIndex,
+          align: 'start',
+          behavior: 'smooth'
+        });
+      } else {
+        // Fallback to bottom for non-user cases (images, chat loading, etc.)
+        virtuosoRef.current.scrollTo({
+          top: 999999,
+          behavior: 'smooth'
+        });
+      }
     }
   };
 
