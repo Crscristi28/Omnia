@@ -692,23 +692,24 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔽 SCROLL TO USER MESSAGE - Virtuoso API (ChatGPT style)
+  // 🔽 SCROLL TO USER MESSAGE - Fixed position (ChatGPT style)
   const scrollToUserMessage = () => {
-    console.log('🚀 scrollToUserMessage called from:');
+    console.log('🚀 scrollToUserMessage called - scrolling to start position');
     console.trace(); // Show call stack
     
-    const filteredMessages = messages.filter(m => !m.isHidden);
-    const lastUserIndex = filteredMessages.findLastIndex(m => m.sender === 'user');
-    
-    if (lastUserIndex >= 0 && virtuosoRef.current) {
-      console.log('✅ Found last user message at index:', lastUserIndex);
-      virtuosoRef.current.scrollToIndex({
-        index: lastUserIndex,
-        align: 'start', // ChatGPT style - user message at TOP of viewport
+    if (virtuosoRef.current) {
+      // Scroll to fixed position where first message starts (under top bar padding)
+      const topPosition = isMobile 
+        ? 0  // Mobile: wrapper padding handles the offset
+        : 0; // Desktop: wrapper padding handles the offset
+        
+      console.log('✅ Scrolling to top position:', topPosition);
+      virtuosoRef.current.scrollTo({
+        top: topPosition,
         behavior: 'smooth'
       });
     } else {
-      console.log('❌ No user message found or Virtuoso ref missing');
+      console.log('❌ Virtuoso ref missing');
     }
   };
 
