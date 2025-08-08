@@ -2804,9 +2804,11 @@ const handleModelChange = useCallback((newModel) => {
               flex: 1, // Take remaining space in flex container
               width: '100%',
               paddingTop: isMobile 
-                ? 'calc(80px + env(safe-area-inset-top))' 
-                : '100px', // CRITICAL: Space for header so text doesn't hide behind it
-              paddingBottom: isMobile ? '20px' : '20px',
+                ? 'calc(100px + env(safe-area-inset-top))' // More space for mobile header
+                : '120px', // More space for desktop header
+              paddingBottom: isMobile 
+                ? '160px'  // Space for input bar + gradient
+                : '140px', // Space for input bar + gradient
               zIndex: 1, // Above background, below header
               position: 'relative'
             }}
