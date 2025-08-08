@@ -534,9 +534,14 @@ function App() {
           loadedRange: chatData.loadedRange
         });
         
-        // 🎯 SCROLL FIX: Ensure chat opens at bottom after V2 loading
+        // 🎯 SCROLL FIX: Ensure chat opens at latest messages
         setTimeout(() => {
-          scrollToBottom();
+          if (virtuosoRef.current) {
+            virtuosoRef.current.scrollToIndex({ 
+              index: 'LAST',
+              behavior: 'smooth'
+            });
+          }
         }, 100);
       } else if (chatData && chatData.messages.length === 0) {
         // 🧹 MEMORY CLEAR: Empty chat - ensure RAM is clean
@@ -595,7 +600,7 @@ function App() {
       if (lastMessage && lastMessage.sender === 'user') {
         setTimeout(() => {
           scrollToBottom(); // User message → TOP viewport
-        }, 50);
+        }, 150); // Longer delay to ensure userMessageRef is set
       }
     }
   }, [messages.length]); // Trigger on new messages
@@ -687,26 +692,18 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔽 SCROLL TO BOTTOM FUNCTION - Using Virtuoso API
+  // 🔽 SCROLL TO USER MESSAGE - ChatGPT style (user message to TOP viewport)
   const scrollToBottom = () => {
     console.log('🚀 scrollToBottom called!');
     
-    // Use Gemini's reliable scrollIntoView solution
     if (userMessageRef.current) {
-      console.log('✅ User message ref found, scrolling with scrollIntoView');
+      console.log('✅ User message ref found, scrolling to TOP viewport');
       userMessageRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'start' // ChatGPT style - user message at TOP of viewport
       });
     } else {
-      console.log('❌ No user message ref, falling back to Virtuoso scroll');
-      // Fallback for non-user cases or when ref not ready
-      if (virtuosoRef.current) {
-        virtuosoRef.current.scrollTo({
-          top: 999999,
-          behavior: 'smooth'
-        });
-      }
+      console.log('❌ No user message ref - scroll skipped');
     }
   };
 
