@@ -698,11 +698,13 @@ function App() {
       const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
       if (lastUserIndex >= 0) {
+        const scrollOffset = isMobile ? 100 : 120; // Match wrapper padding
+        
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
           align: 'start',
           behavior: 'smooth',
-          offset: 120 // Compensates for wrapper padding - positions message below top bar
+          offset: scrollOffset // Compensates for wrapper padding - positions message below top bar
         });
       }
     }
@@ -2364,7 +2366,7 @@ const handleModelChange = useCallback((newModel) => {
           {/* 💬 CHAT MESSAGES - WRAPPER WITH PADDING */}
           <div style={{ 
             flex: 1,
-            paddingTop: '120px',
+            paddingTop: isMobile ? '100px' : '120px',
             paddingBottom: isMobile ? '280px' : '220px',
             position: 'relative',
             zIndex: 1
