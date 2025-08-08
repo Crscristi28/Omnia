@@ -587,6 +587,16 @@ function App() {
     initializeChat();
   }, []);
 
+  // 🔄 AUTO-SCROLL: Scroll to user message on every message change (ChatGPT style)
+  React.useEffect(() => {
+    if (messages.length > 0) {
+      // Scroll after DOM update
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50); // Shorter delay for better responsiveness
+    }
+  }, [messages.length]); // Trigger on new messages
+
   // 💾 Strategic save point #5: Save chat on page visibility change (more reliable than beforeunload)
   React.useEffect(() => {
     const handleVisibilityChange = () => {
@@ -2374,10 +2384,10 @@ const handleModelChange = useCallback((newModel) => {
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={(index, msg) => {
-              // Check if this is the last user message for ref assignment
-              const filteredMessages = messages.filter(m => !m.isHidden);
-              const lastUserIndex = filteredMessages.findLastIndex(m => m.sender === 'user');
-              const isLastUserMsg = msg.sender === 'user' && index === lastUserIndex;
+              // Find the actual last user message in current messages
+              const allMessages = messages.filter(m => !m.isHidden);
+              const lastUserMsg = [...allMessages].reverse().find(m => m.sender === 'user');
+              const isLastUserMsg = msg.sender === 'user' && lastUserMsg && msg.id === lastUserMsg.id;
               
               return (
               <div 
