@@ -2289,11 +2289,9 @@ const handleModelChange = useCallback((newModel) => {
       {/* 🎨 MAIN CONTENT AREA */}
       <main 
         ref={mainContentRef}
-        className="scrollable"
         style={{ 
           flex: 1, 
-          overflowY: 'auto', 
-          overflowX: 'hidden',
+          overflow: 'hidden', // Remove scroll - let Virtuoso handle all scrolling
           padding: isMobile ? '0' : '2rem',
           paddingTop: isMobile 
             ? 'calc(80px + env(safe-area-inset-top))' 
@@ -2303,10 +2301,7 @@ const handleModelChange = useCallback((newModel) => {
             : '200px', // More breathing room for scrolling
           width: '100%',
           position: 'relative', // Create proper stacking context
-          WebkitOverflowScrolling: 'touch',
-          scrollBehavior: 'smooth',
-          overscrollBehavior: 'none', // Prevent elastic scroll
-          WebkitOverscrollBehavior: 'none', // iOS Safari support
+          background: 'transparent',
           touchAction: 'pan-y', // Only allow vertical scrolling
           transition: 'padding-bottom 0.3s ease-out'
         }}
@@ -2809,7 +2804,7 @@ const handleModelChange = useCallback((newModel) => {
               setShowScrollToBottom(!atBottom);
             }}
             style={{ 
-              height: 'calc(100vh - 320px)', // Zmenšený offset pro větší prostor
+              height: '100%', // Use full height of parent (main container)
               width: '100%',
               minHeight: '300px'
             }}
