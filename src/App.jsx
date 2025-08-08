@@ -692,24 +692,22 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔽 SCROLL TO USER MESSAGE - Fixed position (ChatGPT style)
+  // 🔽 SCROLL TO USER MESSAGE - Gemini approach: scrollIntoView + offset
   const scrollToUserMessage = () => {
-    console.log('🚀 scrollToUserMessage called - scrolling to start position');
-    console.trace(); // Show call stack
-    
-    if (virtuosoRef.current) {
-      // Scroll to fixed position where first message starts (under top bar padding)
-      const topPosition = isMobile 
-        ? 0  // Mobile: wrapper padding handles the offset
-        : 0; // Desktop: wrapper padding handles the offset
-        
-      console.log('✅ Scrolling to top position:', topPosition);
-      virtuosoRef.current.scrollTo({
-        top: topPosition,
-        behavior: 'smooth'
+    if (userMessageRef.current) {
+      // Step 1: Scroll user message to top of viewport
+      userMessageRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
       });
-    } else {
-      console.log('❌ Virtuoso ref missing');
+      
+      // Step 2: Apply negative offset to account for wrapper padding (120px)
+      setTimeout(() => {
+        window.scrollBy({
+          top: -120, // Negative value moves viewport down by 120px
+          behavior: 'smooth'
+        });
+      }, 50);
     }
   };
 
