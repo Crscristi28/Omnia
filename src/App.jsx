@@ -2368,6 +2368,21 @@ const handleModelChange = useCallback((newModel) => {
           {/* 💬 CHAT MESSAGES - NYNÍ S VIRTUOSO */}
           <Virtuoso
             ref={virtuosoRef}
+            components={{
+              List: React.forwardRef(({ style, children, ...props }, ref) => (
+                <div
+                  ref={ref}
+                  {...props}
+                  style={{
+                    ...style,
+                    paddingTop: isMobile ? 'calc(100px + env(safe-area-inset-top))' : '120px',
+                    paddingBottom: isMobile ? '240px' : '220px'
+                  }}
+                >
+                  {children}
+                </div>
+              ))
+            }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               if (loading || streaming) {
@@ -2387,9 +2402,6 @@ const handleModelChange = useCallback((newModel) => {
               const lastUserMsg = [...allMessages].reverse().find(m => m.sender === 'user');
               const isLastUserMsg = msg.sender === 'user' && lastUserMsg && msg.id === lastUserMsg.id;
               
-              const isFirstItem = index === 0;
-              const isLastItem = index === messages.filter(m => !m.isHidden).length - 1;
-              
               return (
               <div 
                 key={msg.id || `fallback_${index}`} 
@@ -2402,8 +2414,6 @@ const handleModelChange = useCallback((newModel) => {
               animation: 'fadeInUp 0.4s ease-out',
               paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
               paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
-              paddingTop: isFirstItem ? (isMobile ? 'calc(100px + env(safe-area-inset-top))' : '120px') : '0', // Space for header
-              paddingBottom: isLastItem ? (isMobile ? '240px' : '220px') : '0', // Extra space for input bar + gradient
               minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
             }}>
               {/* Special rendering for loading indicator */}
