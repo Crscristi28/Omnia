@@ -701,7 +701,7 @@ function App() {
       console.log('✅ User message ref found, scrolling to TOP viewport');
       userMessageRef.current.scrollIntoView({
         behavior: 'smooth',
-        block: 'start' // ChatGPT style - user message at TOP of viewport
+        block: 'center' // Test: center positioning instead of start
       });
     } else {
       console.log('❌ No user message ref - scroll skipped');
