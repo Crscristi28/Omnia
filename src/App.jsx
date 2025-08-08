@@ -2291,39 +2291,36 @@ const handleModelChange = useCallback((newModel) => {
         ref={mainContentRef}
         style={{ 
           flex: 1, 
-          overflow: 'hidden', // Remove scroll - let Virtuoso handle all scrolling
-          padding: isMobile ? '0' : '2rem',
-          paddingTop: isMobile 
-            ? 'calc(80px + env(safe-area-inset-top))' 
-            : '100px', // Space for fixed header + notch/Dynamic Island
-          paddingBottom: isMobile 
-            ? '240px' 
-            : '200px', // More breathing room for scrolling
-          width: '100%',
-          position: 'relative', // Create proper stacking context
-          background: 'transparent',
-          touchAction: 'pan-y', // Only allow vertical scrolling
-          transition: 'padding-bottom 0.3s ease-out'
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden', // Let Virtuoso handle all scrolling
+          position: 'relative',
+          zIndex: 1, // Above background, below header (1000)
+          background: 'transparent'
         }}
       >
         <div 
           className={streaming ? 'streaming-breathing' : ''}
           style={{ 
-            maxWidth: '1000px', 
-            margin: '0 auto',
-            minHeight: 'auto',
+            flex: 1,
             display: 'flex', 
             flexDirection: 'column',
-            justifyContent: messages.length === 0 ? 'center' : 'flex-end'
+            maxWidth: '1000px', 
+            margin: '0 auto',
+            width: '100%',
+            position: 'relative',
+            zIndex: 1
         }}>
           
           {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
           {messages.length === 0 && (
             <div style={{
+              flex: 1,
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: isMobile ? '1.5rem' : '2rem'
             }}>
               
@@ -2804,9 +2801,10 @@ const handleModelChange = useCallback((newModel) => {
               setShowScrollToBottom(!atBottom);
             }}
             style={{ 
-              height: '100%', // Use full height of parent (main container)
+              flex: 1, // Take remaining space in flex container
               width: '100%',
-              minHeight: '300px'
+              zIndex: 1, // Above background, below header
+              position: 'relative'
             }}
           />
           
