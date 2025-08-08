@@ -2367,7 +2367,7 @@ const handleModelChange = useCallback((newModel) => {
           <div style={{ 
             flex: 1,
             paddingTop: isMobile ? '75px' : '100px',
-            paddingBottom: isMobile ? '280px' : '220px',
+            paddingBottom: isMobile ? '240px' : '200px',
             position: 'relative',
             zIndex: 1
           }}>
