@@ -2365,17 +2365,20 @@ const handleModelChange = useCallback((newModel) => {
           )}
 
 
-          {/* 💬 CHAT MESSAGES - NYNÍ S VIRTUOSO */}
-          <Virtuoso
-            ref={virtuosoRef}
-            style={{ 
-              flex: 1,
-              width: '100%',
-              paddingTop: isMobile ? 'calc(120px + env(safe-area-inset-top))' : '120px',
-              paddingBottom: isMobile ? '280px' : '220px', // Extra padding on mobile
-              zIndex: 1,
-              position: 'relative'
-            }}
+          {/* 💬 CHAT MESSAGES - WRAPPER WITH PADDING */}
+          <div style={{ 
+            flex: 1,
+            paddingTop: isMobile ? 'calc(120px + env(safe-area-inset-top))' : '120px',
+            paddingBottom: isMobile ? '280px' : '220px',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            <Virtuoso
+              ref={virtuosoRef}
+              style={{ 
+                height: '100%',
+                width: '100%'
+              }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               if (loading || streaming) {
@@ -2815,7 +2818,8 @@ const handleModelChange = useCallback((newModel) => {
               position: 'relative'
             }}
           />
-          
+          </div>
+          {/* End of Virtuoso wrapper with padding */}
           
           <div ref={endOfMessagesRef} />
         </div>
