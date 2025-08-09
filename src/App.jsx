@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 300, desktop: 300 };
+  const spacerSize = { mobile: 350, desktop: 350 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -702,14 +702,15 @@ function App() {
   // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
   // Now scroll happens ONLY when user sends message, in handleSend function
 
-  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Simple auto-scroll to top
+  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Simple auto-scroll to top with offset
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset 200');
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
         align: 'start',
-        behavior: 'smooth'
+        behavior: 'smooth',
+        offset: 200
       });
     }
   };
