@@ -304,7 +304,6 @@ function App() {
   const sttRecorderRef = useRef(null);
   const mainContentRef = useRef(null);
   const virtuosoRef = useRef(null);
-  const userMessageRef = useRef(null); // For scrollIntoView on user messages
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
@@ -2458,16 +2457,10 @@ const handleModelChange = useCallback((newModel) => {
                 );
               }
 
-              // Find the actual last user message in current messages
-              const allMessages = messages.filter(m => !m.isHidden);
-              const lastUserMsg = [...allMessages].reverse().find(m => m.sender === 'user');
-              const isLastUserMsg = msg.sender === 'user' && lastUserMsg && msg.id === lastUserMsg.id;
-              
               return (
               <div 
                 key={msg.id || `fallback_${index}`} 
                 data-sender={msg.sender}
-                ref={isLastUserMsg ? userMessageRef : null}
                 style={{
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
