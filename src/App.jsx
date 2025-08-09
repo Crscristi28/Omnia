@@ -2465,9 +2465,9 @@ const handleModelChange = useCallback((newModel) => {
                 const isMobile = window.innerWidth <= 768;
                 return (
                   <div 
-                    key="top-spacer"
+                    key="bottom-spacer"
                     style={{
-                      height: isMobile ? '400px' : '500px', // Tall invisible spacer
+                      height: isMobile ? '200px' : '250px', // Smaller spacer for better scrolling
                       width: '100%',
                       backgroundColor: 'transparent' // Completely invisible
                     }}
