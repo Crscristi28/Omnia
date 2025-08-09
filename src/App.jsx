@@ -2071,7 +2071,7 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: isMobile ? '180px' : '160px',
+      paddingBottom: 0,
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
@@ -2467,7 +2467,7 @@ const handleModelChange = useCallback((newModel) => {
                   <div 
                     key="bottom-spacer"
                     style={{
-                      height: isMobile ? '180px' : '160px', // Match paddingBottom exactly
+                      height: isMobile ? '120px' : '140px', // Smaller spacer since no paddingBottom
                       width: '100%',
                       backgroundColor: 'transparent' // Completely invisible
                     }}
