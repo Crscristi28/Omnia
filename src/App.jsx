@@ -2490,7 +2490,6 @@ const handleModelChange = useCallback((newModel) => {
               marginBottom: '2rem',
               paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
               paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
-              minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
             }}>
               {/* Special rendering for loading indicator */}
               {msg.isLoading ? (
