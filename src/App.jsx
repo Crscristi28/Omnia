@@ -2467,7 +2467,7 @@ const handleModelChange = useCallback((newModel) => {
                   <div 
                     key="bottom-spacer"
                     style={{
-                      height: isMobile ? '200px' : '250px', // Smaller spacer for better scrolling
+                      height: isMobile ? '180px' : '160px', // Match paddingBottom exactly
                       width: '100%',
                       backgroundColor: 'transparent' // Completely invisible
                     }}
