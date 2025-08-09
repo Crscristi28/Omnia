@@ -694,13 +694,15 @@ function App() {
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
-      const scrollOffset = isMobile ? 200 : 420;
+      // Scroll to topMargin position (70px from top) - clean start like Claude/ChatGPT
+      const targetOffset = 70; // Same as topMargin
       
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset', scrollOffset);
+      console.log('🔼 Scrolling user message to clean top position at index:', userMessageIndex);
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
-        behavior: 'smooth',
-        offset: scrollOffset
+        align: 'start',
+        offset: targetOffset,
+        behavior: 'smooth'
       });
     }
   };
