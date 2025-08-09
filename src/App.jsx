@@ -652,8 +652,18 @@ function App() {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
       
+      // Limit manual scroll to only 250px of spacer (instead of full 470px)
+      const maxSpacerScroll = 250;
+      const maxAllowedScrollTop = scrollHeight - clientHeight - maxSpacerScroll;
+      
+      if (scrollTop > maxAllowedScrollTop) {
+        console.log('🚫 Limiting manual scroll at spacer boundary');
+        mainContent.scrollTop = maxAllowedScrollTop;
+        return; // Don't process further
+      }
+      
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
       setShowScrollToBottom(!isNearBottom);
     };
 
