@@ -693,18 +693,12 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      // Calculate where the new user message is positioned
-      const averageMessageHeight = 150;
-      const userMessagePosition = userMessageIndex * averageMessageHeight;
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
-      // Scroll so that user message appears at topMargin (70px from top)
-      const targetScrollPosition = userMessagePosition - 70;
-      
-      console.log('🔼 Scrolling to show user message at topMargin. Message position:', userMessagePosition, 'Target scroll:', targetScrollPosition);
-      
-      virtuosoRef.current.scrollTo({ 
-        top: Math.max(0, targetScrollPosition),
-        behavior: 'smooth' 
+      virtuosoRef.current.scrollToIndex({
+        index: userMessageIndex,
+        align: 'start',
+        behavior: 'smooth'
       });
     }
   };
@@ -2869,7 +2863,7 @@ const handleModelChange = useCallback((newModel) => {
             </div>
           ); // Close return statement
           }} // Close itemContent function
-            // initialTopMostItemIndex removed - was interfering with scrollTo positioning
+            initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
             followOutput={false}
             atBottomStateChange={(atBottom) => {
               setShowScrollToBottom(!atBottom);
