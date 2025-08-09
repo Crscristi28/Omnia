@@ -2869,7 +2869,7 @@ const handleModelChange = useCallback((newModel) => {
             </div>
           ); // Close return statement
           }} // Close itemContent function
-            initialTopMostItemIndex={Math.max(0, messages.filter(msg => !msg.isHidden).length - 1)}
+            // initialTopMostItemIndex removed - was interfering with scrollTo positioning
             followOutput={false}
             atBottomStateChange={(atBottom) => {
               setShowScrollToBottom(!atBottom);
