@@ -2396,37 +2396,37 @@ const handleModelChange = useCallback((newModel) => {
                 const scrollContainer = e.target;
                 const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
                 
-                // Only limit manual scroll - auto-scroll can use full spacer range
-                if (!isAutoScrolling) {
-                  // Calculate where content ends and spacer begins
-                  const contentHeight = scrollHeight - 450; // Total height minus spacer
-                  const maxContentScroll = Math.max(0, contentHeight - clientHeight); // Scroll to end of content
-                  
-                  // Calculate how far into spacer user has scrolled
-                  const scrollIntoSpacer = scrollTop - maxContentScroll;
-                  
-                  // Limit manual scroll to 220px into the spacer
-                  if (scrollIntoSpacer > 220) {
-                    const maxAllowedScroll = maxContentScroll + 220;
-                    scrollContainer.scrollTop = maxAllowedScroll;
-                    return; // Don't trigger manual scroll detection for corrected scroll
-                  }
+                // Skip all limiting during auto-scroll
+                if (isAutoScrolling) {
+                  return; // Let auto-scroll use full range without interference
                 }
                 
-                // Manual scroll detection (only for valid scrolls)
-                if (!isAutoScrolling) {
-                  setIsManuallyScrolling(true);
-                  
-                  // Clear existing timeout
-                  if (manualScrollTimeoutRef.current) {
-                    clearTimeout(manualScrollTimeoutRef.current);
-                  }
-                  
-                  // Set timeout to reset manual scrolling flag
-                  manualScrollTimeoutRef.current = setTimeout(() => {
-                    setIsManuallyScrolling(false);
-                  }, 1000); // 1 second after scroll stops
+                // Manual scroll detection
+                setIsManuallyScrolling(true);
+                
+                // Calculate where content ends and spacer begins
+                const contentHeight = scrollHeight - 450; // Total height minus spacer
+                const maxContentScroll = Math.max(0, contentHeight - clientHeight); // Scroll to end of content
+                
+                // Calculate how far into spacer user has scrolled
+                const scrollIntoSpacer = scrollTop - maxContentScroll;
+                
+                // Limit manual scroll to 220px into the spacer
+                if (scrollIntoSpacer > 220) {
+                  const maxAllowedScroll = maxContentScroll + 220;
+                  scrollContainer.scrollTop = maxAllowedScroll;
+                  return; // Don't trigger timeout for corrected scroll
                 }
+                
+                // Clear existing timeout
+                if (manualScrollTimeoutRef.current) {
+                  clearTimeout(manualScrollTimeoutRef.current);
+                }
+                
+                // Set timeout to reset manual scrolling flag
+                manualScrollTimeoutRef.current = setTimeout(() => {
+                  setIsManuallyScrolling(false);
+                }, 1000); // 1 second after scroll stops
               }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
