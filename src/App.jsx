@@ -252,14 +252,13 @@ function App() {
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
   const [currentSources, setCurrentSources] = useState([]);
 
-  // 📏 FIXED LARGE SPACER SIZE - allows auto-scroll to top, manual scroll limited by callback
-  const [spacerSize, setSpacerSize] = useState({ mobile: 400, desktop: 450 });
+  // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
+  const spacerSize = { mobile: 300, desktop: 300 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
   const [currentChatId, setCurrentChatId] = useState(null);
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
-  const isAutoScrolling = useRef(false); // 🔧 Track when we're auto-scrolling vs manual scroll
   const [chatHistories, setChatHistories] = useState([]);
 
   // 🔧 Helper functions for safe chatId management
@@ -703,26 +702,15 @@ function App() {
   // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
   // Now scroll happens ONLY when user sends message, in handleSend function
 
-  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at VERY TOP of screen
+  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Simple auto-scroll to top
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      console.log('🔼 AUTO-SCROLL: Scrolling to user message at index:', userMessageIndex, '(fixed large spacer)');
-      isAutoScrolling.current = true; // Mark as auto-scroll to bypass range limiting
-      
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
         align: 'start',
         behavior: 'smooth'
       });
-      
-      // Reset flag after scroll animation
-      setTimeout(() => {
-        isAutoScrolling.current = false;
-      }, 1000);
-    } else if (virtuosoRef.current) {
-      console.log('⚠️ Invalid user message index:', userMessageIndex);
-    } else {
-      console.log('❌ virtuosoRef.current is null in scrollToUserMessageAt');
     }
   };
 
@@ -2449,24 +2437,6 @@ const handleModelChange = useCallback((newModel) => {
               style={{ 
                 height: '100%',
                 width: '100%'
-              }}
-              rangeChanged={(range) => {
-                // Limit manual scroll - prevent scrolling too high that messages disappear
-                if (range && messages.length > 0 && !isAutoScrolling.current) {
-                  const firstVisibleIndex = range.startIndex;
-                  
-                  // If user scrolled too high (beyond first real message), scroll back down
-                  if (firstVisibleIndex === 0 && messages.length > 1) {
-                    console.log('🚫 Manual scroll too high, limiting to first message');
-                    setTimeout(() => {
-                      virtuosoRef.current?.scrollToIndex({
-                        index: 0, // First real message (spacer is at end)
-                        align: 'start',
-                        behavior: 'smooth'
-                      });
-                    }, 100);
-                  }
-                }
               }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
