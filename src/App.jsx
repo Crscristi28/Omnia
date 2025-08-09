@@ -703,15 +703,15 @@ function App() {
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
-      // Negative offset to push message to very top of screen (compensate for paddingTop)
-      const topOffset = -(isMobile ? 70 : 90); // Negative value of paddingTop
+      // Try large positive offset to push message much higher
+      const topOffset = isMobile ? 500 : 600; // Large positive offset to push way up
       
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset:', topOffset);
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with large positive offset:', topOffset);
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex, // Index konkrétní user zprávy
-        align: 'start', // Zarovná začátek této zprávy s začátkem viditelné oblasti
+        align: 'end', // Try align end with large offset to push message high
         behavior: 'smooth', // Pro plynulou animaci skrolování
-        offset: topOffset // Negativní offset aby se zpráva dostala na vrchol obrazovky
+        offset: topOffset // Velký pozitivní offset aby se zpráva dostala vysoko
       });
     } else if (virtuosoRef.current) {
       console.log('⚠️ Invalid user message index:', userMessageIndex);
