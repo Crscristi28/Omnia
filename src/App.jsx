@@ -693,14 +693,21 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      const isMobile = window.innerWidth <= 768;
-      // "New page" effect - show ONLY the new user message, hide all older content above
-      console.log('🔼 Creating "new page" effect - hiding older messages, showing only new user message at top');
-      virtuosoRef.current.scrollToIndex({
-        index: userMessageIndex,
-        align: 'start',
-        offset: 0, // No offset - message starts exactly at topMargin
-        behavior: 'smooth'
+      // Calculate absolute pixel position for the user message
+      // We want the user message to appear at topMargin (70px from top)
+      
+      // Estimate: each message ~150px average height
+      const averageMessageHeight = 150;
+      const calculatedPosition = userMessageIndex * averageMessageHeight;
+      
+      // We want user message at topMargin position (70px), so scroll to:
+      const targetScrollTop = calculatedPosition - 70;
+      
+      console.log('🔼 ScrollTo absolute position:', targetScrollTop, 'for message index:', userMessageIndex);
+      
+      virtuosoRef.current.scrollTo({ 
+        top: Math.max(0, targetScrollTop), // Don't scroll to negative position
+        behavior: 'smooth' 
       });
     }
   };
