@@ -30,14 +30,6 @@ const preprocessStreamingText = (text) => {
 };
 
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
-  // 🔍 DEBUG: Test re-render optimization
-  console.log('🔄 MessageRenderer render:', { 
-    contentLength: content?.length || 0, 
-    className, 
-    isStreaming,
-    timestamp: new Date().toLocaleTimeString()
-  });
-  
   const [isTransitioning, setIsTransitioning] = React.useState(false);
   const prevStreamingRef = React.useRef(isStreaming);
   
