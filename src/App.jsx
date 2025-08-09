@@ -699,7 +699,23 @@ function App() {
   // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
   // Now scroll happens ONLY when user sends message, in handleSend function
 
-  // 🔼 SCROLL TO LATEST MESSAGE - Show latest message at TOP of viewport
+  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at TOP
+  const scrollToUserMessageAt = (userMessageIndex) => {
+    if (virtuosoRef.current && userMessageIndex >= 0) {
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
+      virtuosoRef.current.scrollToIndex({
+        index: userMessageIndex, // Index konkrétní user zprávy
+        align: 'start', // Zarovná začátek této zprávy s začátkem viditelné oblasti
+        behavior: 'smooth' // Pro plynulou animaci skrolování
+      });
+    } else if (virtuosoRef.current) {
+      console.log('⚠️ Invalid user message index:', userMessageIndex);
+    } else {
+      console.log('❌ virtuosoRef.current is null in scrollToUserMessageAt');
+    }
+  };
+
+  // 🔼 SCROLL TO LATEST MESSAGE - Show latest message at TOP of viewport (legacy)
   const scrollToLatestMessage = () => {
     if (virtuosoRef.current && messages.length > 0) {
       const latestMessageIndex = messages.length - 1; // Index poslední přidané zprávy
@@ -1166,10 +1182,11 @@ function App() {
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
-      // 🔼 SCROLL TO USER MESSAGE immediately after adding it
+      // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it
+      const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       setTimeout(() => {
-        console.log('🔼 User message sent - scrolling to top');
-        scrollToLatestMessage();
+        console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
+        scrollToUserMessageAt(newUserMessageIndex);
       }, 50); // Short delay to ensure DOM update
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
@@ -1779,10 +1796,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     return currentMessagesWithUser;
   });
 
-  // 🔼 SCROLL TO USER MESSAGE immediately after adding it (with documents)
+  // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents)
+  const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   setTimeout(() => {
-    console.log('🔼 User message with documents sent - scrolling to top');
-    scrollToLatestMessage();
+    console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
+    scrollToUserMessageAt(newUserMessageIndex);
   }, 50); // Short delay to ensure DOM update
 
   // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
