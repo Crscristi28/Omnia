@@ -281,10 +281,6 @@ function App() {
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   
-  // 🎯 MANUAL SCROLL DETECTION - Prevent auto-scroll interference during manual scrolling
-  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
-  const manualScrollTimeoutRef = useRef(null);
-  
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
   
@@ -603,18 +599,8 @@ function App() {
     initializeChat();
   }, []);
 
-  // 🔄 AUTO-SCROLL: Scroll only when USER sends new message (ChatGPT style)
-  React.useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      // Only scroll when last message is from user
-      if (lastMessage && lastMessage.sender === 'user') {
-        setTimeout(() => {
-          scrollToUserMessage();
-        }, 50); // Shorter delay for Virtuoso API
-      }
-    }
-  }, [messages.length]); // Trigger on new messages
+  // ❌ REMOVED: Auto-scroll useEffect - scroll now handled directly in handleSend functions
+  // This prevents conflicts between multiple scroll systems
 
   // 💾 Strategic save point #5: Save chat on page visibility change (more reliable than beforeunload)
   React.useEffect(() => {
@@ -656,73 +642,20 @@ function App() {
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%
 
-  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up + Manual scroll detection
+  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up
   useEffect(() => {
     const mainContent = mainContentRef.current;
     if (!mainContent) return;
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // Increase threshold for mobile
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
       
       setShowScrollToBottom(!isNearBottom);
     };
 
-    // 🎯 MANUAL SCROLL DETECTION - Detect user-initiated scrolling
-    let lastScrollTime = 0;
-    let scrollDirection = null;
-    let lastScrollTop = 0;
-    
-    const handleManualScroll = () => {
-      const currentTime = Date.now();
-      const currentScrollTop = mainContent.scrollTop;
-      const scrollDelta = Math.abs(currentScrollTop - lastScrollTop);
-      
-      // Detect if this is a user-initiated scroll (not programmatic)
-      // Lower threshold for slow scrolling detection
-      if (scrollDelta > 2 || (currentTime - lastScrollTime) < 50) {
-        console.log('🎯 Manual scroll detected:', { scrollDelta, timeDiff: currentTime - lastScrollTime });
-        setIsManuallyScrolling(true);
-        
-        // Clear existing timeout
-        if (manualScrollTimeoutRef.current) {
-          clearTimeout(manualScrollTimeoutRef.current);
-        }
-        
-        // Reset manual scrolling state after 1 second of inactivity (faster for slow scroll)
-        manualScrollTimeoutRef.current = setTimeout(() => {
-          setIsManuallyScrolling(false);
-          console.log('✅ Manual scrolling timeout - auto-scroll enabled again');
-        }, 1000);
-      }
-      
-      lastScrollTime = currentTime;
-      lastScrollTop = currentScrollTop;
-    };
-
-    // Combined scroll handler for both scroll detection and manual scroll detection
-    const combinedScrollHandler = () => {
-      handleScroll(); // Show/hide scroll-to-bottom button
-      handleManualScroll(); // Detect manual scrolling
-    };
-    
-    // Listen for various scroll-related events that indicate manual scrolling
-    mainContent.addEventListener('scroll', combinedScrollHandler);
-    mainContent.addEventListener('wheel', handleManualScroll, { passive: true });
-    mainContent.addEventListener('touchstart', handleManualScroll, { passive: true });
-    mainContent.addEventListener('touchmove', handleManualScroll, { passive: true });
-    
-    return () => {
-      mainContent.removeEventListener('scroll', combinedScrollHandler);
-      mainContent.removeEventListener('wheel', handleManualScroll);
-      mainContent.removeEventListener('touchstart', handleManualScroll);
-      mainContent.removeEventListener('touchmove', handleManualScroll);
-      
-      // Clean up timeout
-      if (manualScrollTimeoutRef.current) {
-        clearTimeout(manualScrollTimeoutRef.current);
-      }
-    };
+    mainContent.addEventListener('scroll', handleScroll);
+    return () => mainContent.removeEventListener('scroll', handleScroll);
   }, []);
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
@@ -758,14 +691,8 @@ function App() {
   // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
   // Now scroll happens ONLY when user sends message, in handleSend function
 
-  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Simple auto-scroll to top with offset
+  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
-    // Skip auto-scroll if user is manually scrolling
-    if (isManuallyScrolling) {
-      console.log('🚫 Skipping auto-scroll - user is manually scrolling');
-      return;
-    }
-    
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
       const scrollOffset = isMobile ? 570 : 420;
@@ -798,41 +725,11 @@ function App() {
     }
   };
 
-  // 🔽 SCROLL TO USER MESSAGE - Pure Virtuoso API with offset
-  const scrollToUserMessage = () => {
-    // Skip auto-scroll if user is manually scrolling
-    if (isManuallyScrolling) {
-      console.log('🚫 Skipping scrollToUserMessage - user is manually scrolling');
-      return;
-    }
-    
-    if (virtuosoRef.current) {
-      const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
-      
-      if (lastUserIndex >= 0) {
-        console.log('🔽 Calling scrollToIndex for user message:', lastUserIndex);
-        virtuosoRef.current.scrollToIndex({
-          index: lastUserIndex,
-          align: 'start', // Changed to start to show at top
-          behavior: 'smooth'
-        });
-      } else {
-        console.log('⚠️ No user message found for scrolling');
-      }
-    } else {
-      console.log('❌ virtuosoRef.current is null');
-    }
-  };
+  // ❌ REMOVED: scrollToUserMessage - replaced with direct calls in handleSend functions
 
   // 🔼 SCROLL TO BOTTOM - For scroll button and chat opening (shows last message at TOP)
   const scrollToBottom = () => {
     console.log('🚀 scrollToBottom called - scrolling to last message at TOP');
-    
-    // Reset manual scrolling state when user explicitly clicks scroll-to-bottom
-    setIsManuallyScrolling(false);
-    if (manualScrollTimeoutRef.current) {
-      clearTimeout(manualScrollTimeoutRef.current);
-    }
     
     if (virtuosoRef.current) {
       console.log('✅ virtuosoRef available, calling scrollToIndex LAST with align start');
