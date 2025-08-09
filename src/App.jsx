@@ -281,6 +281,10 @@ function App() {
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   
+  // 🎯 MANUAL SCROLL DETECTION - Prevent auto-scroll interference during manual scrolling
+  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
+  const manualScrollTimeoutRef = useRef(null);
+  
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
   
@@ -692,6 +696,12 @@ function App() {
 
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
+    // Skip auto-scroll if user is manually scrolling
+    if (isManuallyScrolling) {
+      console.log('🚫 Skipping auto-scroll - user is manually scrolling');
+      return;
+    }
+    
     if (virtuosoRef.current && userMessageIndex >= 0) {
       console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
@@ -2408,7 +2418,6 @@ const handleModelChange = useCallback((newModel) => {
                 width: '100%'
               }}
               overscan={300}
-              topMargin={70}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
