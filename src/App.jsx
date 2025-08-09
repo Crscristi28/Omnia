@@ -653,14 +653,18 @@ function App() {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
       
-      // Limit manual scroll to only 250px of spacer (instead of full 470px)
-      const maxSpacerScroll = 250;
-      const maxAllowedScrollTop = scrollHeight - clientHeight - maxSpacerScroll;
+      // Limit scroll to keep last message visible above input bar, but prevent scrolling into spacer
+      const isMobile = window.innerWidth <= 768;
+      const inputBarHeight = isMobile ? 120 : 100; // Approximate input bar height
+      const currentSpacerSize = isMobile ? 475 : 500;
+      
+      // Calculate scroll limit: last message visible above input bar, but before spacer
+      const maxAllowedScrollTop = scrollHeight - clientHeight - currentSpacerSize - inputBarHeight;
       
       if (scrollTop > maxAllowedScrollTop) {
-        console.log('🚫 Limiting manual scroll at spacer boundary');
-        mainContent.scrollTop = maxAllowedScrollTop;
-        return; // Don't process further
+        console.log('🚫 Limiting manual scroll - keeping last message visible above input bar');
+        mainContent.scrollTop = Math.max(0, maxAllowedScrollTop);
+        return;
       }
       
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
