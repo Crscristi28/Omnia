@@ -702,7 +702,7 @@ function App() {
           index: lastUserIndex,
           align: 'start',
           behavior: 'smooth',
-          offset: 350 // Positive offset to move message up towards top bar
+          offset: 500 // Higher positive offset to test maximum upward movement
         });
       }
     }
