@@ -537,10 +537,14 @@ function App() {
         // 🎯 SCROLL FIX: Ensure chat opens at latest messages
         setTimeout(() => {
           if (virtuosoRef.current) {
+            console.log('📂 Chat loaded, scrolling to LAST message');
             virtuosoRef.current.scrollToIndex({ 
               index: 'LAST',
+              align: 'end',
               behavior: 'smooth'
             });
+          } else {
+            console.log('❌ virtuosoRef not ready after chat load');
           }
         }, 100);
       } else if (chatData && chatData.messages.length === 0) {
@@ -698,12 +702,17 @@ function App() {
       const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
       if (lastUserIndex >= 0) {
+        console.log('🔽 Calling scrollToIndex for user message:', lastUserIndex);
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
           align: 'end',
           behavior: 'smooth'
         });
+      } else {
+        console.log('⚠️ No user message found for scrolling');
       }
+    } else {
+      console.log('❌ virtuosoRef.current is null');
     }
   };
 
@@ -711,11 +720,14 @@ function App() {
   const scrollToBottom = () => {
     console.log('🚀 scrollToBottom called - scrolling to last message');
     if (virtuosoRef.current) {
+      console.log('✅ virtuosoRef available, calling scrollToIndex LAST');
       virtuosoRef.current.scrollToIndex({ 
         index: 'LAST',
         align: 'end',
         behavior: 'smooth'
       });
+    } else {
+      console.log('❌ virtuosoRef.current is null in scrollToBottom');
     }
   };
 
@@ -2008,7 +2020,7 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: isMobile ? '140px' : '120px',
+      paddingBottom: isMobile ? '180px' : '160px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
