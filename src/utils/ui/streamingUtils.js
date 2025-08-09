@@ -93,7 +93,7 @@ export const measureTextHeight = async (text, containerStyles = {}, maxWidth = 8
      padding: '1.6rem',
      fontSize: '0.95rem',
      lineHeight: '1.6',
-     whiteSpace: 'pre-wrap',
+     whiteSpace: 'normal',
      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
      ...containerStyles
    });

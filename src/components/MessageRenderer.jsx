@@ -49,7 +49,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
     return (
       <div className={className}>
         <div className="streaming-text" style={{ 
-          whiteSpace: 'pre-wrap',
+          whiteSpace: 'normal',
           lineHeight: '1.6',
           color: 'inherit',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',

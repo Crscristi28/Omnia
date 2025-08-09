@@ -2715,7 +2715,7 @@ const handleModelChange = useCallback((newModel) => {
                     margin: isMobile ? '0 auto' : '0', // Center the container on mobile
                     fontSize: isMobile ? '1rem' : '0.95rem',
                     lineHeight: isMobile ? '1.3' : '1.6',
-                    whiteSpace: 'pre-wrap',
+                    whiteSpace: 'normal',
                     color: '#FFFFFF',
                     textAlign: 'left'
                   }}>
