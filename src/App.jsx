@@ -705,12 +705,12 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Simple auto-scroll to top with offset
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset 200');
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset 350');
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
         align: 'start',
         behavior: 'smooth',
-        offset: 200
+        offset: 350
       });
     }
   };
