@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 450, desktop: 450 };
+  const spacerSize = { mobile: 500, desktop: 500 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
