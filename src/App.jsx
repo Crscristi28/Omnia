@@ -697,7 +697,7 @@ function App() {
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
-        behavior: 'smooth'
+        behavior: 'auto'
       });
     }
   };
