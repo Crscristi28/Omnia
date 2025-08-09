@@ -702,7 +702,7 @@ function App() {
         
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
-          align: 'start',
+          align: 'end',
           behavior: 'smooth',
           offset: scrollOffset // Compensates for wrapper padding - positions message below top bar
         });
