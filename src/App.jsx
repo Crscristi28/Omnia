@@ -669,29 +669,51 @@ function App() {
     };
 
     // 🎯 MANUAL SCROLL DETECTION - Detect user-initiated scrolling
+    let lastScrollTime = 0;
+    let scrollDirection = null;
+    let lastScrollTop = 0;
+    
     const handleManualScroll = () => {
-      setIsManuallyScrolling(true);
+      const currentTime = Date.now();
+      const currentScrollTop = mainContent.scrollTop;
+      const scrollDelta = Math.abs(currentScrollTop - lastScrollTop);
       
-      // Clear existing timeout
-      if (manualScrollTimeoutRef.current) {
-        clearTimeout(manualScrollTimeoutRef.current);
+      // Detect if this is a user-initiated scroll (not programmatic)
+      // Lower threshold for slow scrolling detection
+      if (scrollDelta > 2 || (currentTime - lastScrollTime) < 50) {
+        console.log('🎯 Manual scroll detected:', { scrollDelta, timeDiff: currentTime - lastScrollTime });
+        setIsManuallyScrolling(true);
+        
+        // Clear existing timeout
+        if (manualScrollTimeoutRef.current) {
+          clearTimeout(manualScrollTimeoutRef.current);
+        }
+        
+        // Reset manual scrolling state after 1 second of inactivity (faster for slow scroll)
+        manualScrollTimeoutRef.current = setTimeout(() => {
+          setIsManuallyScrolling(false);
+          console.log('✅ Manual scrolling timeout - auto-scroll enabled again');
+        }, 1000);
       }
       
-      // Reset manual scrolling state after 2 seconds of inactivity
-      manualScrollTimeoutRef.current = setTimeout(() => {
-        setIsManuallyScrolling(false);
-        console.log('✅ Manual scrolling timeout - auto-scroll enabled again');
-      }, 2000);
+      lastScrollTime = currentTime;
+      lastScrollTop = currentScrollTop;
     };
 
+    // Combined scroll handler for both scroll detection and manual scroll detection
+    const combinedScrollHandler = () => {
+      handleScroll(); // Show/hide scroll-to-bottom button
+      handleManualScroll(); // Detect manual scrolling
+    };
+    
     // Listen for various scroll-related events that indicate manual scrolling
-    mainContent.addEventListener('scroll', handleScroll);
+    mainContent.addEventListener('scroll', combinedScrollHandler);
     mainContent.addEventListener('wheel', handleManualScroll, { passive: true });
     mainContent.addEventListener('touchstart', handleManualScroll, { passive: true });
     mainContent.addEventListener('touchmove', handleManualScroll, { passive: true });
     
     return () => {
-      mainContent.removeEventListener('scroll', handleScroll);
+      mainContent.removeEventListener('scroll', combinedScrollHandler);
       mainContent.removeEventListener('wheel', handleManualScroll);
       mainContent.removeEventListener('touchstart', handleManualScroll);
       mainContent.removeEventListener('touchmove', handleManualScroll);
