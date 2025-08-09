@@ -2378,18 +2378,9 @@ const handleModelChange = useCallback((newModel) => {
                 width: '100%'
               }}
             data={React.useMemo(() => {
-              const filtered = messages.filter(msg => !msg.isHidden);
-              if (loading || streaming) {
-                return [...filtered, {
-                  id: 'loading-indicator',
-                  sender: 'bot',
-                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
-                  isLoading: true,
-                  isStreaming: streaming
-                }];
-              }
-              return filtered;
-            }, [messages, loading, streaming, isSearching, uiLanguage])}
+              // ✅ NO EXTRA ITEMS - just filtered messages for correct indexing
+              return messages.filter(msg => !msg.isHidden);
+            }, [messages])}
             itemContent={(index, msg) => {
               // Find the actual last user message in current messages
               const allMessages = messages.filter(m => !m.isHidden);
@@ -2410,62 +2401,8 @@ const handleModelChange = useCallback((newModel) => {
               paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
               minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
             }}>
-              {/* Special rendering for loading indicator */}
-              {msg.isLoading ? (
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'flex-start', 
-                  width: '100%',
-                  animation: 'fadeInUp 0.4s ease-out'
-                }}>
-                  <div style={{
-                    width: isMobile ? '95%' : '100%',
-                    padding: isMobile ? '1.2rem' : '1.6rem',
-                    paddingLeft: isMobile ? '1rem' : '1.2rem',
-                    fontSize: isMobile ? '1rem' : '0.95rem', 
-                    color: '#ffffff',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(10px)',
-                    textAlign: 'left'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                      <div style={{ 
-                        width: '18px', 
-                        height: '18px', 
-                        border: '2px solid rgba(255,255,255,0.3)', 
-                        borderTop: '2px solid #00ffff',
-                        borderRadius: '50%', 
-                        animation: 'spin 1s linear infinite'
-                      }}></div>
-                      <span style={{ 
-                        color: msg.isStreaming ? '#00ffff' : '#a0aec0', 
-                        fontWeight: '500' 
-                      }}>
-                        {msg.isStreaming ? (
-                          <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <span style={{ 
-                              animation: 'pulse 1.4s ease-in-out infinite',
-                              fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
-                            }}>●</span>
-                            <span style={{ 
-                              animation: 'pulse 1.4s ease-in-out 0.2s infinite',
-                              fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
-                            }}>●</span>
-                            <span style={{ 
-                              animation: 'pulse 1.4s ease-in-out 0.4s infinite',
-                              fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
-                            }}>●</span>
-                          </span>
-                        ) : msg.text}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : msg.sender === 'user' ? (
+              {/* ✅ REMOVED: Loading indicator - now handled by absolute overlay */}
+              {msg.sender === 'user' ? (
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -2818,6 +2755,64 @@ const handleModelChange = useCallback((newModel) => {
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
+          
+          {/* 🔄 LOADING OVERLAY - Absolute positioning, no Virtuoso interference */}
+          {(loading || streaming) && (
+            <div style={{
+              position: 'absolute',
+              bottom: '100px', // Above input area
+              left: '1rem',
+              zIndex: 10,
+              animation: 'fadeInUp 0.4s ease-out'
+            }}>
+              <div style={{
+                width: isMobile ? '95%' : 'auto',
+                padding: isMobile ? '1.2rem' : '1.6rem',
+                paddingLeft: isMobile ? '1rem' : '1.2rem',
+                fontSize: isMobile ? '1rem' : '0.95rem', 
+                color: '#ffffff',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                textAlign: 'left'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ 
+                    width: '18px', 
+                    height: '18px', 
+                    border: '2px solid rgba(255,255,255,0.3)', 
+                    borderTop: '2px solid #00ffff',
+                    borderRadius: '50%', 
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <span style={{ 
+                    color: streaming ? '#00ffff' : '#a0aec0', 
+                    fontWeight: '500' 
+                  }}>
+                    {streaming ? (
+                      <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <span style={{ 
+                          animation: 'pulse 1.4s ease-in-out infinite',
+                          fontSize: '24px',
+                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                        }}>●</span>
+                        <span style={{ 
+                          animation: 'pulse 1.4s ease-in-out 0.2s infinite',
+                          fontSize: '24px',
+                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                        }}>●</span>
+                        <span style={{ 
+                          animation: 'pulse 1.4s ease-in-out 0.4s infinite',
+                          fontSize: '24px',
+                          textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                        }}>●</span>
+                      </span>
+                    ) : (isSearching ? t('searching') : t('thinking'))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div ref={endOfMessagesRef} />
         </div>
