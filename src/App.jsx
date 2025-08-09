@@ -705,7 +705,9 @@ function App() {
       console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
       virtuosoRef.current.scrollToIndex({
-        index: userMessageIndex
+        index: userMessageIndex,
+        align: 'end',
+        behavior: 'smooth'
       });
     }
   };
