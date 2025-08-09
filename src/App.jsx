@@ -696,15 +696,8 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
-  // 🔼 AUTO-SCROLL TO LATEST MESSAGE - Triggered on every message change
-  useEffect(() => {
-    if (messages.length > 0) {
-      // Small delay to ensure DOM is updated after message addition
-      setTimeout(() => {
-        scrollToLatestMessage();
-      }, 50);
-    }
-  }, [messages]); // Spustí se pokaždé, když se změní pole zpráv
+  // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
+  // Now scroll happens ONLY when user sends message, in handleSend function
 
   // 🔼 SCROLL TO LATEST MESSAGE - Show latest message at TOP of viewport
   const scrollToLatestMessage = () => {
@@ -1172,6 +1165,12 @@ function App() {
 };
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
+
+      // 🔼 SCROLL TO USER MESSAGE immediately after adding it
+      setTimeout(() => {
+        console.log('🔼 User message sent - scrolling to top');
+        scrollToLatestMessage();
+      }, 50); // Short delay to ensure DOM update
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
@@ -1779,6 +1778,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     currentMessagesWithUser = [...prev, userMessage];
     return currentMessagesWithUser;
   });
+
+  // 🔼 SCROLL TO USER MESSAGE immediately after adding it (with documents)
+  setTimeout(() => {
+    console.log('🔼 User message with documents sent - scrolling to top');
+    scrollToLatestMessage();
+  }, 50); // Short delay to ensure DOM update
 
   // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
   console.log(`📊 [DOC-AUTO-SAVE-CHECK] Current messages: ${currentMessagesWithUser.length}, Checking auto-save condition...`);
