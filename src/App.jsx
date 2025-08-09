@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 450, desktop: 450 };
+  const spacerSize = { mobile: 465, desktop: 450 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -706,7 +706,7 @@ function App() {
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
-      const scrollOffset = isMobile ? 470 : 420;
+      const scrollOffset = isMobile ? 480 : 420;
       
       console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset', scrollOffset);
       virtuosoRef.current.scrollToIndex({
