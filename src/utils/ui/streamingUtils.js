@@ -236,13 +236,13 @@ export const streamMessageWithEffect = (
      }
    ]);
 
-   // Smart scroll during streaming
-   if (scrollContainer && !isStreaming) {
-     smartScrollToBottom(scrollContainer, {
-       threshold: 150,
-       behavior: 'smooth'
-     });
-   }
+   // Smart scroll during streaming - DISABLED for ChatGPT style scrolling
+   // if (scrollContainer && !isStreaming) {
+   //   smartScrollToBottom(scrollContainer, {
+   //     threshold: 150,
+   //     behavior: 'smooth'
+   //   });
+   // }
  }, {
    baseDelay: 50,        // Slower for debugging
    punctuationDelay: 100,
