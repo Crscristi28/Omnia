@@ -2411,6 +2411,7 @@ const handleModelChange = useCallback((newModel) => {
                 width: '100%'
               }}
               overscan={300}
+              topMargin={70}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
