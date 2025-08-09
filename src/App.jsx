@@ -706,7 +706,6 @@ function App() {
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
-        align: 'start',
         behavior: 'smooth'
       });
     }
@@ -2426,7 +2425,7 @@ const handleModelChange = useCallback((newModel) => {
                 height: '100%',
                 width: '100%'
               }}
-              overscan={500}
+              overscan={200}
               onScroll={(e) => {
                 // Manual scroll detection
                 setIsManuallyScrolling(true);
