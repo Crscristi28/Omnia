@@ -1161,8 +1161,8 @@ function App() {
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
       setTimeout(() => {
-        console.log('🔼 User message sent - scrolling to index 0 (first message)');
-        scrollToUserMessageAt(0); // Always scroll to first message
+        console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
+        scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
       }, 50); // Short delay to ensure DOM update
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
@@ -1776,8 +1776,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
   setTimeout(() => {
-    console.log('🔼 User message with documents sent - scrolling to index 0 (first message)');
-    scrollToUserMessageAt(0); // Always scroll to first message
+    console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
+    scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
   }, 50); // Short delay to ensure DOM update
 
   // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
