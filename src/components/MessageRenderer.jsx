@@ -30,18 +30,19 @@ const preprocessStreamingText = (text) => {
 };
 
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
-  const [isTransitioning, setIsTransitioning] = React.useState(false);
-  const prevStreamingRef = React.useRef(isStreaming);
+  // TEMPORARILY DISABLED: Transition causes scroll jumping with Virtuoso
+  // const [isTransitioning, setIsTransitioning] = React.useState(false);
+  // const prevStreamingRef = React.useRef(isStreaming);
   
-  // Detect transition from streaming to final
-  React.useEffect(() => {
-    if (prevStreamingRef.current && !isStreaming) {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => setIsTransitioning(false), 300);
-      return () => clearTimeout(timer);
-    }
-    prevStreamingRef.current = isStreaming;
-  }, [isStreaming]);
+  // // Detect transition from streaming to final
+  // React.useEffect(() => {
+  //   if (prevStreamingRef.current && !isStreaming) {
+  //     setIsTransitioning(true);
+  //     const timer = setTimeout(() => setIsTransitioning(false), 300);
+  //     return () => clearTimeout(timer);
+  //   }
+  //   prevStreamingRef.current = isStreaming;
+  // }, [isStreaming]);
   
   
   if (isStreaming) {
@@ -80,15 +81,12 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   // Final render with full markdown parsing
   return (
     <div className={className}>
-      <div className={`markdown-container ${isTransitioning ? 'transitioning' : ''}`}>
+      <div className="markdown-container">
         <MDEditor.Markdown 
           source={content} 
           style={{ 
             backgroundColor: 'transparent',
-            color: 'inherit',
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? 'translateY(5px)' : 'translateY(0)',
-            transition: 'all 0.3s ease'
+            color: 'inherit'
           }}
           data-color-mode="dark"
           remarkPlugins={[remarkMath, remarkGfm]}
