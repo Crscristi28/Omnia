@@ -694,7 +694,7 @@ function App() {
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
-      const scrollOffset = isMobile ? 400 : 420;
+      const scrollOffset = isMobile ? 200 : 420;
       
       console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset', scrollOffset);
       virtuosoRef.current.scrollToIndex({
