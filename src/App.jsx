@@ -2444,8 +2444,6 @@ const handleModelChange = useCallback((newModel) => {
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
-              paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
-              paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
             }}>
               {/* Special rendering for loading indicator */}
               {msg.isLoading ? (
