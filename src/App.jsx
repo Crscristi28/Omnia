@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 475, desktop: 500 };
+  const spacerSize = { mobile: 485, desktop: 500 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -652,22 +652,8 @@ function App() {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
-      
-      // Limit scroll to keep last message visible above input bar, but prevent scrolling into spacer
-      const isMobile = window.innerWidth <= 768;
-      const inputBarHeight = isMobile ? 120 : 100; // Approximate input bar height
-      const currentSpacerSize = isMobile ? 475 : 500;
-      
-      // Calculate scroll limit: last message visible above input bar, but before spacer
-      const maxAllowedScrollTop = scrollHeight - clientHeight - currentSpacerSize - inputBarHeight;
-      
-      if (scrollTop > maxAllowedScrollTop) {
-        console.log('🚫 Limiting manual scroll - keeping last message visible above input bar');
-        mainContent.scrollTop = Math.max(0, maxAllowedScrollTop);
-        return;
-      }
-      
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      
       setShowScrollToBottom(!isNearBottom);
     };
 
