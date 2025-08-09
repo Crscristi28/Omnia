@@ -2413,24 +2413,26 @@ const handleModelChange = useCallback((newModel) => {
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
-              // Add invisible spacer at END to create scroll space below
-              const spacer = {
+              // Add spacer only if there are user messages (for auto-scroll functionality)
+              const hasUserMessages = filtered.some(msg => msg.sender === 'user');
+              const spacer = hasUserMessages ? {
                 id: 'bottom-spacer',
                 sender: 'spacer',
                 text: '',
                 isSpacer: true
-              };
+              } : null;
               
               if (loading || streaming) {
-                return [...filtered, {
+                const loadingData = [...filtered, {
                   id: 'loading-indicator',
                   sender: 'bot',
                   text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
                   isLoading: true,
                   isStreaming: streaming
-                }, spacer];
+                }];
+                return spacer ? [...loadingData, spacer] : loadingData;
               }
-              return [...filtered, spacer];
+              return spacer ? [...filtered, spacer] : filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={(index, msg) => {
               // Handle invisible spacer for scroll space
