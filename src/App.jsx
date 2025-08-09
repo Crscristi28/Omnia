@@ -702,13 +702,11 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at VERY TOP of screen
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      // Account for spacer at index 0 - user messages are now at index + 1
-      const virtuosoIndex = userMessageIndex + 1;
-      
-      console.log('🔼 Scrolling to user message. Original index:', userMessageIndex, 'Virtuoso index (with spacer):', virtuosoIndex);
+      // Spacer is now at the end, so user message indices are unchanged
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex, '(spacer at end provides scroll space)');
       virtuosoRef.current.scrollToIndex({
-        index: virtuosoIndex, // Index in Virtuoso data array (includes spacer)
-        align: 'start', // Back to start alignment - spacer should provide scroll space
+        index: userMessageIndex, // Original index - spacer doesn't affect message indices
+        align: 'start', // Start alignment with spacer providing scroll space below
         behavior: 'smooth' // Pro plynulou animaci skrolování
       });
     } else if (virtuosoRef.current) {
@@ -2443,24 +2441,24 @@ const handleModelChange = useCallback((newModel) => {
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
-              // Add invisible spacer at beginning to allow scrolling messages to top
+              // Add invisible spacer at END to create scroll space below
               const spacer = {
-                id: 'top-spacer',
+                id: 'bottom-spacer',
                 sender: 'spacer',
                 text: '',
                 isSpacer: true
               };
               
               if (loading || streaming) {
-                return [spacer, ...filtered, {
+                return [...filtered, {
                   id: 'loading-indicator',
                   sender: 'bot',
                   text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
                   isLoading: true,
                   isStreaming: streaming
-                }];
+                }, spacer];
               }
-              return [spacer, ...filtered];
+              return [...filtered, spacer];
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={(index, msg) => {
               // Handle invisible spacer for scroll space
