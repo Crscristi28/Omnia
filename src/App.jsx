@@ -698,7 +698,7 @@ function App() {
       const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
       if (lastUserIndex >= 0) {
-        const scrollOffset = isMobile ? 75 : 100; // Match wrapper padding
+        const scrollOffset = isMobile ? 70 : 90; // Match wrapper padding
         
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
@@ -2366,8 +2366,8 @@ const handleModelChange = useCallback((newModel) => {
           {/* 💬 CHAT MESSAGES - WRAPPER WITH PADDING */}
           <div style={{ 
             flex: 1,
-            paddingTop: isMobile ? '75px' : '100px',
-            paddingBottom: isMobile ? '240px' : '200px',
+            paddingTop: isMobile ? '70px' : '90px',
+            paddingBottom: isMobile ? '220px' : '190px',
             position: 'relative',
             zIndex: 1
           }}>
