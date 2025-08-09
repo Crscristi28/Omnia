@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 450, desktop: 450 };
+  const spacerSize = { mobile: 485, desktop: 500 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -2014,7 +2014,7 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: '140px',
+      paddingBottom: '115px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
@@ -2382,7 +2382,19 @@ const handleModelChange = useCallback((newModel) => {
               }}
               overscan={300}
               onScroll={(e) => {
-                // Manual scroll detection
+                const scrollContainer = e.target;
+                const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+                
+                // Calculate max allowed scroll position (220px effective scroll buffer)
+                const maxAllowedScroll = Math.max(0, scrollHeight - clientHeight - 220);
+                
+                // Limit scroll - prevent over-scrolling beyond normal spacer range
+                if (scrollTop > maxAllowedScroll) {
+                  scrollContainer.scrollTop = maxAllowedScroll;
+                  return; // Don't trigger manual scroll detection for corrected scroll
+                }
+                
+                // Manual scroll detection (only for valid scrolls)
                 setIsManuallyScrolling(true);
                 
                 // Clear existing timeout
