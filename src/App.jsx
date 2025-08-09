@@ -707,17 +707,12 @@ function App() {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       console.log('🔼 Auto-scrolling to user message at index:', userMessageIndex);
       
-      // Set auto-scroll flag to bypass scroll limits
+      // Enable full spacer access for auto-scroll (no timeout reset)
       setIsAutoScrolling(true);
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex
       });
-      
-      // Clear auto-scroll flag after scroll completes
-      setTimeout(() => {
-        setIsAutoScrolling(false);
-      }, 500);
     }
   };
 
@@ -2401,8 +2396,9 @@ const handleModelChange = useCallback((newModel) => {
                   return; // Let auto-scroll use full range without interference
                 }
                 
-                // Manual scroll detection
+                // Manual scroll detection - also disable auto-scroll mode
                 setIsManuallyScrolling(true);
+                setIsAutoScrolling(false); // User manual scroll disables auto-scroll mode
                 
                 // Calculate where content ends and spacer begins
                 const contentHeight = scrollHeight - 450; // Total height minus spacer
@@ -2411,9 +2407,9 @@ const handleModelChange = useCallback((newModel) => {
                 // Calculate how far into spacer user has scrolled
                 const scrollIntoSpacer = scrollTop - maxContentScroll;
                 
-                // Limit manual scroll to 220px into the spacer
-                if (scrollIntoSpacer > 220) {
-                  const maxAllowedScroll = maxContentScroll + 220;
+                // Limit manual scroll to 190px into the spacer
+                if (scrollIntoSpacer > 190) {
+                  const maxAllowedScroll = maxContentScroll + 190;
                   scrollContainer.scrollTop = maxAllowedScroll;
                   return; // Don't trigger timeout for corrected scroll
                 }
