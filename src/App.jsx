@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 400, desktop: 400 };
+  const spacerSize = { mobile: 450, desktop: 450 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -705,8 +705,7 @@ function App() {
       console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
       virtuosoRef.current.scrollToIndex({
-        index: userMessageIndex,
-        behavior: isMobile ? 'auto' : 'smooth'
+        index: userMessageIndex
       });
     }
   };
@@ -2059,7 +2058,7 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: '170px',
+      paddingBottom: '160px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
