@@ -1087,6 +1087,15 @@ function App() {
     uploadedDocumentsRef.current = uploadedDocuments;
   }, [input, messages, uploadedDocuments]);
 
+  // Cleanup manual scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (manualScrollTimeoutRef.current) {
+        clearTimeout(manualScrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = useCallback(async (textInput, fromVoice = false) => {
     const currentInput = inputRef.current;
@@ -2416,6 +2425,20 @@ const handleModelChange = useCallback((newModel) => {
                 width: '100%'
               }}
               overscan={300}
+              onScroll={(e) => {
+                // Manual scroll detection
+                setIsManuallyScrolling(true);
+                
+                // Clear existing timeout
+                if (manualScrollTimeoutRef.current) {
+                  clearTimeout(manualScrollTimeoutRef.current);
+                }
+                
+                // Set timeout to reset manual scrolling flag
+                manualScrollTimeoutRef.current = setTimeout(() => {
+                  setIsManuallyScrolling(false);
+                }, 1000); // 1 second after scroll stops
+              }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
