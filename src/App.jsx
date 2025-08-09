@@ -2472,7 +2472,6 @@ const handleModelChange = useCallback((newModel) => {
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
-              animation: 'fadeInUp 0.4s ease-out',
               paddingLeft: msg.sender === 'user' && isMobile ? '0' : '1rem',
               paddingRight: msg.sender === 'user' && isMobile ? '0' : '1rem',
               minHeight: '60px' // Zajistí, že Virtuoso má minimální výšku pro renderování
@@ -2482,8 +2481,7 @@ const handleModelChange = useCallback((newModel) => {
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'flex-start', 
-                  width: '100%',
-                  animation: 'fadeInUp 0.4s ease-out'
+                  width: '100%'
                 }}>
                   <div style={{
                     width: isMobile ? '95%' : '100%',
