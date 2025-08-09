@@ -2059,7 +2059,7 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: '155px',
+      paddingBottom: '170px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
