@@ -2867,28 +2867,29 @@ const handleModelChange = useCallback((newModel) => {
                     className="text-white"
                   />
                   
-                  {/* 🔘 ACTION BUTTONS - Moved below message */}
-                  {!msg.isStreaming && (
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '10px', 
-                      marginTop: '1rem',
-                      paddingTop: '0.8rem',
-                      justifyContent: 'flex-start'
-                    }}>
-                      <SourcesButton 
-                        sources={msg.sources || []}
-                        onClick={() => handleSourcesClick(msg.sources || [])}
-                        language={detectLanguage(msg.text)}
-                      />
-                      <VoiceButton 
-                        text={msg.text} 
-                        onAudioStart={() => setIsAudioPlaying(true)}
-                        onAudioEnd={() => setIsAudioPlaying(false)}
-                      />
-                      <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
-                    </div>
-                  )}
+                  {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '10px', 
+                    marginTop: '1rem',
+                    paddingTop: '0.8rem',
+                    justifyContent: 'flex-start',
+                    opacity: msg.isStreaming ? 0 : 1,
+                    pointerEvents: msg.isStreaming ? 'none' : 'auto',
+                    transition: 'opacity 0.3s ease'
+                  }}>
+                    <SourcesButton 
+                      sources={msg.sources || []}
+                      onClick={() => handleSourcesClick(msg.sources || [])}
+                      language={detectLanguage(msg.text)}
+                    />
+                    <VoiceButton 
+                      text={msg.text} 
+                      onAudioStart={() => setIsAudioPlaying(true)}
+                      onAudioEnd={() => setIsAudioPlaying(false)}
+                    />
+                    <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
+                  </div>
                 </div>
               )}
             </div>
