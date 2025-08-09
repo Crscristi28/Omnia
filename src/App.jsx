@@ -693,20 +693,17 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      // Calculate absolute pixel position for the user message
-      // We want the user message to appear at topMargin (70px from top)
-      
-      // Estimate: each message ~150px average height
+      // Calculate where the new user message is positioned
       const averageMessageHeight = 150;
-      const calculatedPosition = userMessageIndex * averageMessageHeight;
+      const userMessagePosition = userMessageIndex * averageMessageHeight;
       
-      // We want user message at topMargin position (70px), so scroll to:
-      const targetScrollTop = calculatedPosition - 70;
+      // Scroll so that user message appears at topMargin (70px from top)
+      const targetScrollPosition = userMessagePosition - 70;
       
-      console.log('🔼 ScrollTo absolute position:', targetScrollTop, 'for message index:', userMessageIndex);
+      console.log('🔼 Scrolling to show user message at topMargin. Message position:', userMessagePosition, 'Target scroll:', targetScrollPosition);
       
       virtuosoRef.current.scrollTo({ 
-        top: Math.max(0, targetScrollTop), // Don't scroll to negative position
+        top: Math.max(0, targetScrollPosition),
         behavior: 'smooth' 
       });
     }
