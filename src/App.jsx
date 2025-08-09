@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 450, desktop: 450 };
+  const spacerSize = { mobile: 400, desktop: 400 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -2425,7 +2425,7 @@ const handleModelChange = useCallback((newModel) => {
                 height: '100%',
                 width: '100%'
               }}
-              overscan={200}
+              overscan={300}
               onScroll={(e) => {
                 // Manual scroll detection
                 setIsManuallyScrolling(true);
