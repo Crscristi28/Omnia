@@ -694,14 +694,12 @@ function App() {
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
-      // Scroll to topMargin position (70px from top) - clean start like Claude/ChatGPT
-      const targetOffset = 70; // Same as topMargin
-      
-      console.log('🔼 Scrolling user message to clean top position at index:', userMessageIndex);
+      // "New page" effect - show ONLY the new user message, hide all older content above
+      console.log('🔼 Creating "new page" effect - hiding older messages, showing only new user message at top');
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
         align: 'start',
-        offset: targetOffset,
+        offset: 0, // No offset - message starts exactly at topMargin
         behavior: 'smooth'
       });
     }
