@@ -251,6 +251,9 @@ function App() {
   // 🔗 SOURCES STATE (UNCHANGED)
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
   const [currentSources, setCurrentSources] = useState([]);
+
+  // 📏 DYNAMIC SPACER SIZE - small for manual scroll, large for auto-scroll  
+  const [spacerSize, setSpacerSize] = useState({ mobile: 220, desktop: 200 });
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -1182,12 +1185,23 @@ function App() {
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
-      // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it
+      // 🔼 DYNAMIC SPACER + SCROLL TO THIS USER MESSAGE immediately after adding it
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
+      
+      // 1. Temporarily increase spacer for auto-scroll to top
+      console.log('📏 Temporarily increasing spacer for auto-scroll');
+      setSpacerSize({ mobile: 400, desktop: 450 });
+      
       setTimeout(() => {
-        console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
+        console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex, 'with large spacer');
         scrollToUserMessageAt(newUserMessageIndex);
-      }, 50); // Short delay to ensure DOM update
+        
+        // 2. Return spacer to normal size after scroll
+        setTimeout(() => {
+          console.log('📏 Returning spacer to normal size');
+          setSpacerSize({ mobile: 220, desktop: 200 });
+        }, 800); // After scroll animation finishes
+      }, 100); // Delay for spacer size change to take effect
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
@@ -1796,12 +1810,23 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     return currentMessagesWithUser;
   });
 
-  // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents)
+  // 🔼 DYNAMIC SPACER + SCROLL TO THIS USER MESSAGE immediately after adding it (with documents)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
+  
+  // 1. Temporarily increase spacer for auto-scroll to top
+  console.log('📏 [DOCS] Temporarily increasing spacer for auto-scroll');
+  setSpacerSize({ mobile: 400, desktop: 450 });
+  
   setTimeout(() => {
-    console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
+    console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex, 'with large spacer');
     scrollToUserMessageAt(newUserMessageIndex);
-  }, 50); // Short delay to ensure DOM update
+    
+    // 2. Return spacer to normal size after scroll
+    setTimeout(() => {
+      console.log('📏 [DOCS] Returning spacer to normal size');
+      setSpacerSize({ mobile: 220, desktop: 200 });
+    }, 800); // After scroll animation finishes
+  }, 100); // Delay for spacer size change to take effect
 
   // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
   console.log(`📊 [DOC-AUTO-SAVE-CHECK] Current messages: ${currentMessagesWithUser.length}, Checking auto-save condition...`);
@@ -2467,9 +2492,10 @@ const handleModelChange = useCallback((newModel) => {
                   <div 
                     key="bottom-spacer"
                     style={{
-                      height: isMobile ? '220px' : '200px', // Larger spacer to replace paddingBottom
+                      height: isMobile ? `${spacerSize.mobile}px` : `${spacerSize.desktop}px`, // Dynamic spacer size
                       width: '100%',
-                      backgroundColor: 'transparent' // Completely invisible
+                      backgroundColor: 'transparent', // Completely invisible
+                      transition: 'height 0.3s ease' // Smooth size changes
                     }}
                   />
                 );
