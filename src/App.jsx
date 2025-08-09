@@ -702,16 +702,14 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at VERY TOP of screen
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      const isMobile = window.innerWidth <= 768;
-      // Try large positive offset to push message much higher
-      const topOffset = isMobile ? 500 : 600; // Large positive offset to push way up
+      // Account for spacer at index 0 - user messages are now at index + 1
+      const virtuosoIndex = userMessageIndex + 1;
       
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with large positive offset:', topOffset);
+      console.log('🔼 Scrolling to user message. Original index:', userMessageIndex, 'Virtuoso index (with spacer):', virtuosoIndex);
       virtuosoRef.current.scrollToIndex({
-        index: userMessageIndex, // Index konkrétní user zprávy
-        align: 'end', // Try align end with large offset to push message high
-        behavior: 'smooth', // Pro plynulou animaci skrolování
-        offset: topOffset // Velký pozitivní offset aby se zpráva dostala vysoko
+        index: virtuosoIndex, // Index in Virtuoso data array (includes spacer)
+        align: 'start', // Back to start alignment - spacer should provide scroll space
+        behavior: 'smooth' // Pro plynulou animaci skrolování
       });
     } else if (virtuosoRef.current) {
       console.log('⚠️ Invalid user message index:', userMessageIndex);
@@ -2444,8 +2442,17 @@ const handleModelChange = useCallback((newModel) => {
               }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
+              
+              // Add invisible spacer at beginning to allow scrolling messages to top
+              const spacer = {
+                id: 'top-spacer',
+                sender: 'spacer',
+                text: '',
+                isSpacer: true
+              };
+              
               if (loading || streaming) {
-                return [...filtered, {
+                return [spacer, ...filtered, {
                   id: 'loading-indicator',
                   sender: 'bot',
                   text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
@@ -2453,9 +2460,24 @@ const handleModelChange = useCallback((newModel) => {
                   isStreaming: streaming
                 }];
               }
-              return filtered;
+              return [spacer, ...filtered];
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={(index, msg) => {
+              // Handle invisible spacer for scroll space
+              if (msg.isSpacer) {
+                const isMobile = window.innerWidth <= 768;
+                return (
+                  <div 
+                    key="top-spacer"
+                    style={{
+                      height: isMobile ? '400px' : '500px', // Tall invisible spacer
+                      width: '100%',
+                      backgroundColor: 'transparent' // Completely invisible
+                    }}
+                  />
+                );
+              }
+
               // Find the actual last user message in current messages
               const allMessages = messages.filter(m => !m.isHidden);
               const lastUserMsg = [...allMessages].reverse().find(m => m.sender === 'user');
