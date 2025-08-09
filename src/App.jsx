@@ -702,12 +702,11 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at VERY TOP of screen
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      // Spacer is now at the end, so user message indices are unchanged
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex, '(spacer at end provides scroll space)');
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex, '(clean scroll with spacer)');
       virtuosoRef.current.scrollToIndex({
-        index: userMessageIndex, // Original index - spacer doesn't affect message indices
-        align: 'start', // Start alignment with spacer providing scroll space below
-        behavior: 'smooth' // Pro plynulou animaci skrolování
+        index: userMessageIndex,
+        align: 'start',
+        behavior: 'smooth'
       });
     } else if (virtuosoRef.current) {
       console.log('⚠️ Invalid user message index:', userMessageIndex);
