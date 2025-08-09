@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 450, desktop: 450 };
+  const spacerSize = { mobile: 485, desktop: 485 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -2401,7 +2401,7 @@ const handleModelChange = useCallback((newModel) => {
                 setIsAutoScrolling(false); // User manual scroll disables auto-scroll mode
                 
                 // Calculate where content ends and spacer begins
-                const contentHeight = scrollHeight - 450; // Total height minus spacer
+                const contentHeight = scrollHeight - 485; // Total height minus spacer
                 const maxContentScroll = Math.max(0, contentHeight - clientHeight); // Scroll to end of content
                 
                 // Calculate how far into spacer user has scrolled
