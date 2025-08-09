@@ -281,6 +281,10 @@ function App() {
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   
+  // 🎯 MANUAL SCROLL DETECTION - Prevent auto-scroll interference during manual scrolling
+  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
+  const manualScrollTimeoutRef = useRef(null);
+  
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
   
@@ -652,7 +656,7 @@ function App() {
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%
 
-  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up + Load older messages when scrolled to top
+  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up + Manual scroll detection
   useEffect(() => {
     const mainContent = mainContentRef.current;
     if (!mainContent) return;
@@ -662,11 +666,41 @@ function App() {
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // Increase threshold for mobile
       
       setShowScrollToBottom(!isNearBottom);
-      
     };
 
+    // 🎯 MANUAL SCROLL DETECTION - Detect user-initiated scrolling
+    const handleManualScroll = () => {
+      setIsManuallyScrolling(true);
+      
+      // Clear existing timeout
+      if (manualScrollTimeoutRef.current) {
+        clearTimeout(manualScrollTimeoutRef.current);
+      }
+      
+      // Reset manual scrolling state after 2 seconds of inactivity
+      manualScrollTimeoutRef.current = setTimeout(() => {
+        setIsManuallyScrolling(false);
+        console.log('✅ Manual scrolling timeout - auto-scroll enabled again');
+      }, 2000);
+    };
+
+    // Listen for various scroll-related events that indicate manual scrolling
     mainContent.addEventListener('scroll', handleScroll);
-    return () => mainContent.removeEventListener('scroll', handleScroll);
+    mainContent.addEventListener('wheel', handleManualScroll, { passive: true });
+    mainContent.addEventListener('touchstart', handleManualScroll, { passive: true });
+    mainContent.addEventListener('touchmove', handleManualScroll, { passive: true });
+    
+    return () => {
+      mainContent.removeEventListener('scroll', handleScroll);
+      mainContent.removeEventListener('wheel', handleManualScroll);
+      mainContent.removeEventListener('touchstart', handleManualScroll);
+      mainContent.removeEventListener('touchmove', handleManualScroll);
+      
+      // Clean up timeout
+      if (manualScrollTimeoutRef.current) {
+        clearTimeout(manualScrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
@@ -704,6 +738,12 @@ function App() {
 
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Simple auto-scroll to top with offset
   const scrollToUserMessageAt = (userMessageIndex) => {
+    // Skip auto-scroll if user is manually scrolling
+    if (isManuallyScrolling) {
+      console.log('🚫 Skipping auto-scroll - user is manually scrolling');
+      return;
+    }
+    
     if (virtuosoRef.current && userMessageIndex >= 0) {
       const isMobile = window.innerWidth <= 768;
       const scrollOffset = isMobile ? 570 : 420;
@@ -738,6 +778,12 @@ function App() {
 
   // 🔽 SCROLL TO USER MESSAGE - Pure Virtuoso API with offset
   const scrollToUserMessage = () => {
+    // Skip auto-scroll if user is manually scrolling
+    if (isManuallyScrolling) {
+      console.log('🚫 Skipping scrollToUserMessage - user is manually scrolling');
+      return;
+    }
+    
     if (virtuosoRef.current) {
       const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
@@ -759,6 +805,13 @@ function App() {
   // 🔼 SCROLL TO BOTTOM - For scroll button and chat opening (shows last message at TOP)
   const scrollToBottom = () => {
     console.log('🚀 scrollToBottom called - scrolling to last message at TOP');
+    
+    // Reset manual scrolling state when user explicitly clicks scroll-to-bottom
+    setIsManuallyScrolling(false);
+    if (manualScrollTimeoutRef.current) {
+      clearTimeout(manualScrollTimeoutRef.current);
+    }
+    
     if (virtuosoRef.current) {
       console.log('✅ virtuosoRef available, calling scrollToIndex LAST with align start');
       virtuosoRef.current.scrollToIndex({ 
