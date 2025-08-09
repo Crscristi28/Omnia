@@ -698,13 +698,10 @@ function App() {
       const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
       if (lastUserIndex >= 0) {
-        const scrollOffset = isMobile ? 70 : 90; // Match wrapper padding
-        
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
-          align: 'start',
-          behavior: 'smooth',
-          offset: scrollOffset // Realistic offset matching top bar height
+          align: 'end',
+          behavior: 'smooth'
         });
       }
     }
@@ -716,6 +713,7 @@ function App() {
     if (virtuosoRef.current) {
       virtuosoRef.current.scrollToIndex({ 
         index: 'LAST',
+        align: 'end',
         behavior: 'smooth'
       });
     }
@@ -2009,7 +2007,8 @@ const handleModelChange = useCallback((newModel) => {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
       width: '100vw',
       margin: 0,
-      padding: 0,
+      paddingTop: isMobile ? '70px' : '90px',
+      paddingBottom: isMobile ? '140px' : '120px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
@@ -2363,11 +2362,9 @@ const handleModelChange = useCallback((newModel) => {
           )}
 
 
-          {/* 💬 CHAT MESSAGES - WRAPPER WITH PADDING */}
+          {/* 💬 CHAT MESSAGES - WRAPPER */}
           <div style={{ 
             flex: 1,
-            paddingTop: isMobile ? '70px' : '90px',
-            paddingBottom: isMobile ? '220px' : '190px',
             position: 'relative',
             zIndex: 1
           }}>
