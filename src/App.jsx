@@ -285,6 +285,9 @@ function App() {
   const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
   const manualScrollTimeoutRef = useRef(null);
   
+  // 🎯 AUTO-SCROLL FLAG - Track when auto-scroll is happening to bypass limits
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
   
@@ -702,11 +705,19 @@ function App() {
     }
     
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
+      console.log('🔼 Auto-scrolling to user message at index:', userMessageIndex);
+      
+      // Set auto-scroll flag to bypass scroll limits
+      setIsAutoScrolling(true);
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex
       });
+      
+      // Clear auto-scroll flag after scroll completes
+      setTimeout(() => {
+        setIsAutoScrolling(false);
+      }, 500);
     }
   };
 
@@ -2385,27 +2396,37 @@ const handleModelChange = useCallback((newModel) => {
                 const scrollContainer = e.target;
                 const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
                 
-                // Calculate max allowed scroll position (220px effective scroll buffer)
-                const maxAllowedScroll = Math.max(0, scrollHeight - clientHeight - 220);
-                
-                // Limit scroll - prevent over-scrolling beyond normal spacer range
-                if (scrollTop > maxAllowedScroll) {
-                  scrollContainer.scrollTop = maxAllowedScroll;
-                  return; // Don't trigger manual scroll detection for corrected scroll
+                // Only limit manual scroll - auto-scroll can use full spacer range
+                if (!isAutoScrolling) {
+                  // Calculate where content ends and spacer begins
+                  const contentHeight = scrollHeight - 450; // Total height minus spacer
+                  const maxContentScroll = Math.max(0, contentHeight - clientHeight); // Scroll to end of content
+                  
+                  // Calculate how far into spacer user has scrolled
+                  const scrollIntoSpacer = scrollTop - maxContentScroll;
+                  
+                  // Limit manual scroll to 220px into the spacer
+                  if (scrollIntoSpacer > 220) {
+                    const maxAllowedScroll = maxContentScroll + 220;
+                    scrollContainer.scrollTop = maxAllowedScroll;
+                    return; // Don't trigger manual scroll detection for corrected scroll
+                  }
                 }
                 
                 // Manual scroll detection (only for valid scrolls)
-                setIsManuallyScrolling(true);
-                
-                // Clear existing timeout
-                if (manualScrollTimeoutRef.current) {
-                  clearTimeout(manualScrollTimeoutRef.current);
+                if (!isAutoScrolling) {
+                  setIsManuallyScrolling(true);
+                  
+                  // Clear existing timeout
+                  if (manualScrollTimeoutRef.current) {
+                    clearTimeout(manualScrollTimeoutRef.current);
+                  }
+                  
+                  // Set timeout to reset manual scrolling flag
+                  manualScrollTimeoutRef.current = setTimeout(() => {
+                    setIsManuallyScrolling(false);
+                  }, 1000); // 1 second after scroll stops
                 }
-                
-                // Set timeout to reset manual scrolling flag
-                manualScrollTimeoutRef.current = setTimeout(() => {
-                  setIsManuallyScrolling(false);
-                }, 1000); // 1 second after scroll stops
               }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
