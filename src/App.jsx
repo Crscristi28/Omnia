@@ -2426,7 +2426,7 @@ const handleModelChange = useCallback((newModel) => {
                 height: '100%',
                 width: '100%'
               }}
-              overscan={300}
+              overscan={500}
               onScroll={(e) => {
                 // Manual scroll detection
                 setIsManuallyScrolling(true);
