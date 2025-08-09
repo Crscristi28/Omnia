@@ -698,13 +698,11 @@ function App() {
       const lastUserIndex = messages.findLastIndex(msg => msg.sender === 'user');
       
       if (lastUserIndex >= 0) {
-        const scrollOffset = isMobile ? 70 : 90; // Match wrapper padding
-        
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
-          align: 'end',
+          align: 'start',
           behavior: 'smooth',
-          offset: scrollOffset // Compensates for wrapper padding - positions message below top bar
+          offset: -150 // Negative offset to move message up towards top bar
         });
       }
     }
