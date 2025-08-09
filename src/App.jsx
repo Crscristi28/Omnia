@@ -706,7 +706,7 @@ function App() {
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
-        align: 'end',
+        align: 'start',
         behavior: 'smooth'
       });
     }
