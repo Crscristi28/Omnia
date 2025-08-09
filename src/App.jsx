@@ -699,14 +699,19 @@ function App() {
   // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
   // Now scroll happens ONLY when user sends message, in handleSend function
 
-  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at TOP
+  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - Show only that user message at VERY TOP of screen
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
+      const isMobile = window.innerWidth <= 768;
+      // Negative offset to push message to very top of screen (compensate for paddingTop)
+      const topOffset = -(isMobile ? 70 : 90); // Negative value of paddingTop
+      
+      console.log('🔼 Scrolling to user message at index:', userMessageIndex, 'with offset:', topOffset);
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex, // Index konkrétní user zprávy
         align: 'start', // Zarovná začátek této zprávy s začátkem viditelné oblasti
-        behavior: 'smooth' // Pro plynulou animaci skrolování
+        behavior: 'smooth', // Pro plynulou animaci skrolování
+        offset: topOffset // Negativní offset aby se zpráva dostala na vrchol obrazovky
       });
     } else if (virtuosoRef.current) {
       console.log('⚠️ Invalid user message index:', userMessageIndex);
