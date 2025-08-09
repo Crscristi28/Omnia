@@ -534,13 +534,13 @@ function App() {
           loadedRange: chatData.loadedRange
         });
         
-        // 🎯 SCROLL FIX: Ensure chat opens at latest messages
+        // 🎯 SCROLL FIX: Ensure chat opens with latest message at TOP
         setTimeout(() => {
           if (virtuosoRef.current) {
-            console.log('📂 Chat loaded, scrolling to LAST message');
+            console.log('📂 Chat loaded, scrolling to LAST message at TOP');
             virtuosoRef.current.scrollToIndex({ 
               index: 'LAST',
-              align: 'end',
+              align: 'start', // Show last message at TOP of viewport
               behavior: 'smooth'
             });
           } else {
@@ -696,6 +696,34 @@ function App() {
     return allMessages; // No cleanup, return original
   };
 
+  // 🔼 AUTO-SCROLL TO LATEST MESSAGE - Triggered on every message change
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Small delay to ensure DOM is updated after message addition
+      setTimeout(() => {
+        scrollToLatestMessage();
+      }, 50);
+    }
+  }, [messages]); // Spustí se pokaždé, když se změní pole zpráv
+
+  // 🔼 SCROLL TO LATEST MESSAGE - Show latest message at TOP of viewport
+  const scrollToLatestMessage = () => {
+    if (virtuosoRef.current && messages.length > 0) {
+      const latestMessageIndex = messages.length - 1; // Index poslední přidané zprávy
+      
+      console.log('🔼 Scrolling to latest message at index:', latestMessageIndex);
+      virtuosoRef.current.scrollToIndex({
+        index: latestMessageIndex, // Index poslední přidané zprávy
+        align: 'start', // Zarovná začátek této zprávy s začátkem viditelné oblasti
+        behavior: 'smooth' // Pro plynulou animaci skrolování
+      });
+    } else if (virtuosoRef.current) {
+      console.log('⚠️ No messages to scroll to');
+    } else {
+      console.log('❌ virtuosoRef.current is null in scrollToLatestMessage');
+    }
+  };
+
   // 🔽 SCROLL TO USER MESSAGE - Pure Virtuoso API with offset
   const scrollToUserMessage = () => {
     if (virtuosoRef.current) {
@@ -705,7 +733,7 @@ function App() {
         console.log('🔽 Calling scrollToIndex for user message:', lastUserIndex);
         virtuosoRef.current.scrollToIndex({
           index: lastUserIndex,
-          align: 'end',
+          align: 'start', // Changed to start to show at top
           behavior: 'smooth'
         });
       } else {
@@ -716,14 +744,14 @@ function App() {
     }
   };
 
-  // 🔽 SCROLL TO BOTTOM - For scroll button and chat opening  
+  // 🔼 SCROLL TO BOTTOM - For scroll button and chat opening (shows last message at TOP)
   const scrollToBottom = () => {
-    console.log('🚀 scrollToBottom called - scrolling to last message');
+    console.log('🚀 scrollToBottom called - scrolling to last message at TOP');
     if (virtuosoRef.current) {
-      console.log('✅ virtuosoRef available, calling scrollToIndex LAST');
+      console.log('✅ virtuosoRef available, calling scrollToIndex LAST with align start');
       virtuosoRef.current.scrollToIndex({ 
         index: 'LAST',
-        align: 'end',
+        align: 'start', // Show last message at TOP of viewport
         behavior: 'smooth'
       });
     } else {
@@ -2020,7 +2048,7 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: isMobile ? '180px' : '160px',
+      paddingBottom: isMobile ? '140px' : '120px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
