@@ -2404,7 +2404,10 @@ const handleModelChange = useCallback((newModel) => {
                 width: '100%',
                 transform: 'translateZ(0)',
                 willChange: 'transform',
-                backfaceVisibility: 'hidden'
+                backfaceVisibility: 'hidden',
+                flex: 1, // Take remaining space in flex container
+                zIndex: 1, // Above background, below header
+                position: 'relative'
               }}
               overscan={300}
               onScroll={(e) => {
@@ -2899,12 +2902,6 @@ const handleModelChange = useCallback((newModel) => {
             followOutput={false}
             atBottomStateChange={(atBottom) => {
               setShowScrollToBottom(!atBottom);
-            }}
-            style={{ 
-              flex: 1, // Take remaining space in flex container
-              width: '100%',
-              zIndex: 1, // Above background, below header
-              position: 'relative'
             }}
           />
           </div>
