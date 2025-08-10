@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 465, desktop: 465 };
+  const spacerSize = { mobile: 485, desktop: 485 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -285,7 +285,7 @@ function App() {
   const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
   const manualScrollTimeoutRef = useRef(null);
   
-  // 🎯 POST-GEMINI SCROLL LIMIT - Apply 190px limit after Gemini response
+  // 🎯 POST-GEMINI SCROLL LIMIT - Apply 110px limit after Gemini response
   const [afterGeminiResponse, setAfterGeminiResponse] = useState(false);
   
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
@@ -654,7 +654,7 @@ function App() {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = mainContent;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 110;
       
       setShowScrollToBottom(!isNearBottom);
     };
@@ -1129,7 +1129,7 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
-      // Reset scroll limit BEFORE scrolling to allow full 465px spacer
+      // Reset scroll limit BEFORE scrolling to allow full 485px spacer
       setAfterGeminiResponse(false);
       console.log('🔄 Reset to full spacer access');
       
@@ -1419,9 +1419,9 @@ function App() {
         const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
         setMessages(cleanedMessages);
         
-        // 🎯 Enable 130px scroll limit after Gemini response
+        // 🎯 Enable 110px scroll limit after Gemini response
         setAfterGeminiResponse(true);
-        console.log('🤖 Gemini complete - 130px scroll limit enabled');
+        console.log('🤖 Gemini complete - 110px scroll limit enabled');
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
@@ -1752,7 +1752,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
-  // Reset scroll limit BEFORE scrolling to allow full 465px spacer
+  // Reset scroll limit BEFORE scrolling to allow full 485px spacer
   setAfterGeminiResponse(false);
   console.log('🔄 Reset to full spacer access');
   
@@ -1994,9 +1994,9 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
       setMessages(cleanedMessages);
       
-      // 🎯 Enable 130px scroll limit after Gemini response
+      // 🎯 Enable 110px scroll limit after Gemini response
       setAfterGeminiResponse(true);
-      console.log('🤖 Gemini complete - 130px scroll limit enabled');
+      console.log('🤖 Gemini complete - 110px scroll limit enabled');
     }
     
   } catch (error) {
@@ -2404,16 +2404,16 @@ const handleModelChange = useCallback((newModel) => {
                 const scrollContainer = e.target;
                 const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
                 
-                // Apply 190px scroll limit only after Gemini response
+                // Apply 110px scroll limit only after Gemini response
                 if (afterGeminiResponse) {
-                  const contentHeight = scrollHeight - 465; // Total height minus 465px spacer
+                  const contentHeight = scrollHeight - 485; // Total height minus 485px spacer
                   const maxContentScroll = Math.max(0, contentHeight - clientHeight);
                   const scrollIntoSpacer = scrollTop - maxContentScroll;
                   
-                  if (scrollIntoSpacer > 130) {
-                    const maxAllowedScroll = maxContentScroll + 130;
+                  if (scrollIntoSpacer > 110) {
+                    const maxAllowedScroll = maxContentScroll + 110;
                     scrollContainer.scrollTop = maxAllowedScroll;
-                    console.log('🚫 Post-Gemini scroll limited to 130px');
+                    console.log('🚫 Post-Gemini scroll limited to 110px');
                     return;
                   }
                 }
