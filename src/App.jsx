@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 450, desktop: 450 };
+  const spacerSize = { mobile: 465, desktop: 465 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -284,6 +284,9 @@ function App() {
   // 🎯 MANUAL SCROLL DETECTION - Prevent auto-scroll interference during manual scrolling
   const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
   const manualScrollTimeoutRef = useRef(null);
+  
+  // 🎯 POST-GEMINI SCROLL LIMIT - Apply 190px limit after Gemini response
+  const [afterGeminiResponse, setAfterGeminiResponse] = useState(false);
   
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
@@ -1128,6 +1131,7 @@ function App() {
       
       setTimeout(() => {
         console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
+        setAfterGeminiResponse(false); // Reset - allow full 465px spacer
         scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
       }, 200); // Longer delay to avoid conflicts
 
@@ -1411,6 +1415,10 @@ function App() {
         // 🔄 Check auto-save after AI response
         const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
         setMessages(cleanedMessages);
+        
+        // 🎯 Enable 190px scroll limit after Gemini response
+        setAfterGeminiResponse(true);
+        console.log('🤖 Gemini complete - 190px scroll limit enabled');
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
@@ -1743,6 +1751,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   
   setTimeout(() => {
     console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
+    setAfterGeminiResponse(false); // Reset - allow full 465px spacer
     scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
   }, 200); // Longer delay to avoid conflicts
 
@@ -1978,6 +1987,10 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Check auto-save after AI response
       const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
       setMessages(cleanedMessages);
+      
+      // 🎯 Enable 190px scroll limit after Gemini response
+      setAfterGeminiResponse(true);
+      console.log('🤖 Gemini complete - 190px scroll limit enabled');
     }
     
   } catch (error) {
@@ -2382,7 +2395,24 @@ const handleModelChange = useCallback((newModel) => {
               }}
               overscan={300}
               onScroll={(e) => {
-                // Manual scroll detection
+                const scrollContainer = e.target;
+                const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+                
+                // Apply 190px scroll limit only after Gemini response
+                if (afterGeminiResponse) {
+                  const contentHeight = scrollHeight - 465; // Total height minus 465px spacer
+                  const maxContentScroll = Math.max(0, contentHeight - clientHeight);
+                  const scrollIntoSpacer = scrollTop - maxContentScroll;
+                  
+                  if (scrollIntoSpacer > 190) {
+                    const maxAllowedScroll = maxContentScroll + 190;
+                    scrollContainer.scrollTop = maxAllowedScroll;
+                    console.log('🚫 Post-Gemini scroll limited to 190px');
+                    return;
+                  }
+                }
+                
+                // Manual scroll detection (unchanged)
                 setIsManuallyScrolling(true);
                 
                 // Clear existing timeout
