@@ -1419,9 +1419,9 @@ function App() {
         const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
         setMessages(cleanedMessages);
         
-        // 🎯 Enable 190px scroll limit after Gemini response
+        // 🎯 Enable 160px scroll limit after Gemini response
         setAfterGeminiResponse(true);
-        console.log('🤖 Gemini complete - 190px scroll limit enabled');
+        console.log('🤖 Gemini complete - 160px scroll limit enabled');
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
@@ -1994,9 +1994,9 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
       setMessages(cleanedMessages);
       
-      // 🎯 Enable 190px scroll limit after Gemini response
+      // 🎯 Enable 160px scroll limit after Gemini response
       setAfterGeminiResponse(true);
-      console.log('🤖 Gemini complete - 190px scroll limit enabled');
+      console.log('🤖 Gemini complete - 160px scroll limit enabled');
     }
     
   } catch (error) {
@@ -2410,10 +2410,10 @@ const handleModelChange = useCallback((newModel) => {
                   const maxContentScroll = Math.max(0, contentHeight - clientHeight);
                   const scrollIntoSpacer = scrollTop - maxContentScroll;
                   
-                  if (scrollIntoSpacer > 190) {
-                    const maxAllowedScroll = maxContentScroll + 190;
+                  if (scrollIntoSpacer > 160) {
+                    const maxAllowedScroll = maxContentScroll + 160;
                     scrollContainer.scrollTop = maxAllowedScroll;
-                    console.log('🚫 Post-Gemini scroll limited to 190px');
+                    console.log('🚫 Post-Gemini scroll limited to 160px');
                     return;
                   }
                 }
