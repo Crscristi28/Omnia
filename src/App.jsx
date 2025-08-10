@@ -1129,9 +1129,12 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
+      // Reset scroll limit BEFORE scrolling to allow full 465px spacer
+      setAfterGeminiResponse(false);
+      console.log('🔄 Reset to full spacer access');
+      
       setTimeout(() => {
         console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
-        setAfterGeminiResponse(false); // Reset - allow full 465px spacer
         scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
       }, 200); // Longer delay to avoid conflicts
 
@@ -1749,9 +1752,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
+  // Reset scroll limit BEFORE scrolling to allow full 465px spacer
+  setAfterGeminiResponse(false);
+  console.log('🔄 Reset to full spacer access');
+  
   setTimeout(() => {
     console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
-    setAfterGeminiResponse(false); // Reset - allow full 465px spacer
     scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
   }, 200); // Longer delay to avoid conflicts
 
