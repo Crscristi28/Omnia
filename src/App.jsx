@@ -2329,6 +2329,8 @@ const handleModelChange = useCallback((newModel) => {
             flex: 1,
             display: 'flex', 
             flexDirection: 'column',
+            transform: 'translateZ(0)',
+            willChange: 'transform',
             maxWidth: '1000px', 
             margin: '0 auto',
             width: '100%',
@@ -2513,7 +2515,9 @@ const handleModelChange = useCallback((newModel) => {
                         border: '2px solid rgba(255,255,255,0.3)', 
                         borderTop: '2px solid #00ffff',
                         borderRadius: '50%', 
-                        animation: 'spin 1s linear infinite'
+                        animation: 'spin 1s linear infinite',
+                        transform: 'translateZ(0)',
+                        willChange: 'transform'
                       }}></div>
                       <span style={{ 
                         color: msg.isStreaming ? '#00ffff' : '#a0aec0', 
@@ -2524,17 +2528,23 @@ const handleModelChange = useCallback((newModel) => {
                             <span style={{ 
                               animation: 'pulse 1.4s ease-in-out infinite',
                               fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+                              transform: 'translateZ(0)',
+                              willChange: 'transform'
                             }}>●</span>
                             <span style={{ 
                               animation: 'pulse 1.4s ease-in-out 0.2s infinite',
                               fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+                              transform: 'translateZ(0)',
+                              willChange: 'transform'
                             }}>●</span>
                             <span style={{ 
                               animation: 'pulse 1.4s ease-in-out 0.4s infinite',
                               fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)'
+                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+                              transform: 'translateZ(0)',
+                              willChange: 'transform'
                             }}>●</span>
                           </span>
                         ) : msg.text}
@@ -3103,6 +3113,8 @@ const handleModelChange = useCallback((newModel) => {
             justifyContent: 'center',
             padding: '0.5rem',
             animation: 'fadeIn 0.3s ease',
+            transform: 'translateZ(0)',
+            willChange: 'transform',
             cursor: 'pointer',
           }}
         >
@@ -3137,8 +3149,9 @@ const handleModelChange = useCallback((newModel) => {
               borderRadius: '12px',
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
               animation: 'fadeIn 0.3s ease',
-              transform: 'scale(1)',
+              transform: 'scale(1) translateZ(0)',
               transition: 'transform 0.2s ease',
+              willChange: 'transform',
             }}
             onLoad={(e) => {
               // Subtle scale animation on load
