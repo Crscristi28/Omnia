@@ -2623,13 +2623,15 @@ const handleModelChange = useCallback((newModel) => {
                                   borderRadius: '12px',
                                   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                                   cursor: 'pointer',
-                                  transition: 'transform 0.2s'
+                                  transition: 'transform 0.2s',
+                                  transform: 'translateZ(0)',
+                                  willChange: 'transform'
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.target.style.transform = 'scale(1.02)';
+                                  e.target.style.transform = 'scale(1.02) translateZ(0)';
                                 }}
                                 onMouseLeave={(e) => {
-                                  e.target.style.transform = 'scale(1)';
+                                  e.target.style.transform = 'scale(1) translateZ(0)';
                                 }}
                                 onLoad={() => {
                                   // Image loaded - scroll handled by useEffect
@@ -2844,13 +2846,15 @@ const handleModelChange = useCallback((newModel) => {
                           borderRadius: '12px',
                           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                           cursor: 'pointer',
-                          transition: 'transform 0.2s'
+                          transition: 'transform 0.2s',
+                        transform: 'translateZ(0)',
+                        willChange: 'transform'
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.transform = 'scale(1.02)';
+                          e.target.style.transform = 'scale(1.02) translateZ(0)';
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.transform = 'scale(1)';
+                          e.target.style.transform = 'scale(1) translateZ(0)';
                         }}
                         onLoad={() => {
                           // Image loaded - scroll handled by useEffect
@@ -2938,11 +2942,11 @@ const handleModelChange = useCallback((newModel) => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(96, 165, 250, 0.2)';
-            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.transform = 'scale(1.1) translateZ(0)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.transform = 'scale(1) translateZ(0)';
           }}
         >
           <svg 
@@ -3155,9 +3159,9 @@ const handleModelChange = useCallback((newModel) => {
             }}
             onLoad={(e) => {
               // Subtle scale animation on load
-              e.target.style.transform = 'scale(0.95)';
+              e.target.style.transform = 'scale(0.95) translateZ(0)';
               setTimeout(() => {
-                e.target.style.transform = 'scale(1)';
+                e.target.style.transform = 'scale(1) translateZ(0)';
               }, 50);
             }}
           />
