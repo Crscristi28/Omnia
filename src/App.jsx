@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 485, desktop: 485 };
+  const spacerSize = { mobile: 500, desktop: 500 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -1129,7 +1129,7 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
-      // Reset scroll limit BEFORE scrolling to allow full 485px spacer
+      // Reset scroll limit BEFORE scrolling to allow full 500px spacer
       setAfterGeminiResponse(false);
       console.log('🔄 Reset to full spacer access');
       
@@ -1752,7 +1752,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
-  // Reset scroll limit BEFORE scrolling to allow full 485px spacer
+  // Reset scroll limit BEFORE scrolling to allow full 500px spacer
   setAfterGeminiResponse(false);
   console.log('🔄 Reset to full spacer access');
   
@@ -2416,7 +2416,7 @@ const handleModelChange = useCallback((newModel) => {
                 
                 // Apply 110px scroll limit only after Gemini response
                 if (afterGeminiResponse) {
-                  const contentHeight = scrollHeight - 485; // Total height minus 485px spacer
+                  const contentHeight = scrollHeight - 500; // Total height minus 500px spacer
                   const maxContentScroll = Math.max(0, contentHeight - clientHeight);
                   const scrollIntoSpacer = scrollTop - maxContentScroll;
                   
