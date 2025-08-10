@@ -2044,6 +2044,8 @@ const handleModelChange = useCallback((newModel) => {
         top: 0,
         left: 0,
         right: 0,
+        transform: 'translateZ(0)',
+        willChange: 'transform',
         height: isMobile ? '60px' : '70px',
         background: 'rgba(0, 0, 0, 0.1)',
         backdropFilter: 'blur(10px)',
@@ -2906,6 +2908,8 @@ const handleModelChange = useCallback((newModel) => {
             position: 'fixed',
             bottom: isMobile ? '110px' : '120px', // Above input bar
             right: isMobile ? '20px' : '50px',
+            transform: 'translateZ(0)',
+            willChange: 'transform',
             width: '40px',
             height: '40px',
             borderRadius: '50%',

@@ -340,6 +340,8 @@ const InputBar = ({
         bottom: 0,
         left: 0,
         right: 0,
+        transform: 'translateZ(0)',
+        willChange: 'transform',
         height: isMobile ? '140px' : '120px',
         background: `linear-gradient(to top, 
           rgba(255, 255, 255, 0.08) 0%, 
@@ -376,6 +378,8 @@ const InputBar = ({
         bottom: 0,
         left: 0,
         right: 0,
+        transform: 'translateZ(0)',
+        willChange: 'transform',
         padding: isMobile ? '0.5rem' : '1.5rem',
         paddingBottom: isMobile 
           ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
