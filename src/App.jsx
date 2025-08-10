@@ -2397,7 +2397,10 @@ const handleModelChange = useCallback((newModel) => {
               ref={virtuosoRef}
               style={{ 
                 height: '100%',
-                width: '100%'
+                width: '100%',
+                transform: 'translateZ(0)',
+                willChange: 'transform',
+                backfaceVisibility: 'hidden'
               }}
               overscan={300}
               onScroll={(e) => {
