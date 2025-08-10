@@ -2485,6 +2485,8 @@ const handleModelChange = useCallback((newModel) => {
               marginBottom: '2rem',
               paddingLeft: isMobile ? '0.5rem' : '0',
               paddingRight: isMobile ? '0.5rem' : '0',
+              transform: 'translateZ(0)',
+              willChange: 'transform'
             }}>
               {/* Special rendering for loading indicator */}
               {msg.isLoading ? (
