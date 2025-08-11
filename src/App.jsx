@@ -2510,8 +2510,8 @@ const handleModelChange = useCallback((newModel) => {
                   alignItems: 'flex-end',
                   gap: '0.8rem',
                   width: '100%',
-                  paddingLeft: isMobile ? '0.5rem' : '25%',
-                  paddingRight: isMobile ? '0.5rem' : '0'
+                  paddingLeft: isMobile ? '0' : '25%',
+                  paddingRight: isMobile ? '0' : '0'
                 }}>
                   {/* User text bubble */}
                   {msg.text && (
@@ -2528,6 +2528,7 @@ const handleModelChange = useCallback((newModel) => {
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                       width: isMobile ? '95%' : '100%',
+                      margin: isMobile ? '0 auto' : '0',
                       transform: 'translateZ(0)',
                       willChange: 'transform'
                     }}>
