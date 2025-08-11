@@ -2510,8 +2510,8 @@ const handleModelChange = useCallback((newModel) => {
                   alignItems: 'flex-end',
                   gap: '0.8rem',
                   width: '100%',
-                  paddingLeft: isMobile ? '5%' : '25%',
-                  paddingRight: isMobile ? '5%' : '0'
+                  paddingLeft: isMobile ? '0.5rem' : '25%',
+                  paddingRight: isMobile ? '0.5rem' : '0'
                 }}>
                   {/* User text bubble */}
                   {msg.text && (
@@ -2519,7 +2519,7 @@ const handleModelChange = useCallback((newModel) => {
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
                       color: '#ffffff',
                       padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
-                      borderRadius: '25px 25px 8px 25px',
+                      borderRadius: isMobile ? '25px' : '25px 25px 8px 25px',
                       fontSize: isMobile ? '1rem' : '0.95rem',
                       lineHeight: isMobile ? '1.3' : '1.6', 
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
