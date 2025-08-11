@@ -1057,6 +1057,10 @@ function App() {
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = useCallback(async (textInput, fromVoice = false) => {
+    // 🎯 OKAMŽITĚ VYPNI GEMINI LIMIT při SEND kliknutí
+    setAfterGeminiResponse(false);
+    console.log('🔄 Gemini limit disabled immediately on SEND click');
+    
     const currentInput = inputRef.current;
     const currentMessages = messagesRef.current;
     const currentDocuments = uploadedDocumentsRef.current;
@@ -1128,10 +1132,6 @@ function App() {
 
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
-      
-      // Reset scroll limit BEFORE scrolling to allow full 500px spacer
-      setAfterGeminiResponse(false);
-      console.log('🔄 Reset to full spacer access');
       
       setTimeout(() => {
         console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
@@ -1698,6 +1698,10 @@ const handleDocumentUpload = async (event) => {
 
 // 📄 HANDLE SEND WITH DOCUMENTS
 const handleSendWithDocuments = useCallback(async (text, documents) => {
+  // 🎯 OKAMŽITĚ VYPNI GEMINI LIMIT při SEND kliknutí
+  setAfterGeminiResponse(false);
+  console.log('🔄 Gemini limit disabled immediately on SEND WITH DOCS click');
+  
   const currentMessages = messagesRef.current;
   const currentDocuments = uploadedDocumentsRef.current;
   const currentLoading = loading;
@@ -1751,10 +1755,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
 
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
-  
-  // Reset scroll limit BEFORE scrolling to allow full 500px spacer
-  setAfterGeminiResponse(false);
-  console.log('🔄 Reset to full spacer access');
   
   setTimeout(() => {
     console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
