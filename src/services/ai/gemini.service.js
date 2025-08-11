@@ -1,6 +1,9 @@
 // 🤖 GEMINI SERVICE - OMNIA 2.0 WITH GOOGLE SEARCH GROUNDING
 // 🎯 Smart, human-like assistant with Google Search integration
 // 🔥 Google native search grounding for current data
+// 📄 PDF generation support
+
+import { generatePDF, cleanupPDFUrl } from '../../utils/pdfGenerator.js';
 
 const geminiService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs', documents = []) {
@@ -90,10 +93,16 @@ const geminiService = {
         throw streamError;
       }
 
+      // Process PDF generation if requested
+      const pdfResult = await this.processPDFGeneration(fullText);
+      
       return {
-        text: fullText,
+        text: pdfResult.text,
         sources: sourcesExtracted,
-        webSearchUsed: sourcesExtracted.length > 0
+        webSearchUsed: sourcesExtracted.length > 0,
+        pdfGenerated: pdfResult.pdfGenerated,
+        pdfUrl: pdfResult.pdfUrl,
+        pdfFilename: pdfResult.pdfFilename
       };
 
     } catch (error) {
@@ -284,6 +293,31 @@ You are Omnia One AI – a brilliant, insightful, and friendly AI assistant. Thi
     • If user creates an image using the Imagen button, you will be provided with a text description of that image. Based on this text description, behave as if you saw the image and interpret it. ✨
     • You can analyze documents, images, and photos when provided by user (e.g., "What's in this image?", "Summarize this document.").
 
+• **PDF Document Generation:**
+    • When user requests creation of documents (e.g., "vytvoř PDF", "udělej dokument", "vygeneruj fakturu"), you can generate downloadable PDF files! 📄
+    • For PDF generation, use this special format in your response:
+      ```
+      [PDF_GENERATE]
+      TITLE: [Document Title]
+      CONTENT: [Full document content with proper formatting]
+      [/PDF_GENERATE]
+      ```
+    • Example:
+      ```
+      [PDF_GENERATE]
+      TITLE: Obchodní plán 2024
+      CONTENT: # Obchodní plán 2024
+      
+      ## Úvod
+      Tento dokument obsahuje strategii...
+      
+      ## Cíle
+      1. Zvýšit prodeje o 25%
+      2. Rozšířit portfolio
+      [/PDF_GENERATE]
+      ```
+    • Always explain what you're generating and provide the PDF download after creation ✨
+
 • **General rules:**
     • Detect user's language and respond in the same language.
     • Be concise, but helpful! ✨
@@ -303,6 +337,79 @@ You are Omnia One AI – a brilliant, insightful, and friendly AI assistant. Thi
       'ro': 'Caut prin Google...'
     };
     return messages[language] || 'Searching via Google...';
+  },
+
+  // 📄 PDF GENERATION PROCESSING
+  async processPDFGeneration(text) {
+    try {
+      console.log('📄 [GEMINI-SERVICE] Checking for PDF generation tags...');
+      
+      // Check if text contains PDF generation tags
+      const pdfGenerateRegex = /\[PDF_GENERATE\]([\s\S]*?)\[\/PDF_GENERATE\]/;
+      const match = text.match(pdfGenerateRegex);
+      
+      if (!match) {
+        // No PDF generation requested
+        return {
+          text: text,
+          pdfGenerated: false
+        };
+      }
+      
+      console.log('📄 [GEMINI-SERVICE] PDF generation tags detected!');
+      
+      // Extract PDF content
+      const pdfBlock = match[1].trim();
+      
+      // Parse TITLE and CONTENT
+      const titleMatch = pdfBlock.match(/TITLE:\s*(.*?)$/m);
+      const contentMatch = pdfBlock.match(/CONTENT:\s*([\s\S]*?)$/m);
+      
+      const pdfTitle = titleMatch ? titleMatch[1].trim() : 'Dokument';
+      const pdfContent = contentMatch ? contentMatch[1].trim() : pdfBlock;
+      
+      console.log('📄 [GEMINI-SERVICE] Generating PDF:', { title: pdfTitle, contentLength: pdfContent.length });
+      
+      // Generate PDF
+      const pdfResult = generatePDF(pdfContent, pdfTitle);
+      
+      if (!pdfResult.success) {
+        console.error('❌ [GEMINI-SERVICE] PDF generation failed:', pdfResult.error);
+        
+        // Remove PDF tags but keep text
+        const cleanText = text.replace(pdfGenerateRegex, '');
+        return {
+          text: cleanText + '\n\n❌ **Chyba při generování PDF:** ' + pdfResult.error,
+          pdfGenerated: false
+        };
+      }
+      
+      console.log('✅ [GEMINI-SERVICE] PDF generated successfully:', pdfResult.filename);
+      
+      // Remove PDF generation tags from display text and add download info
+      const cleanText = text.replace(pdfGenerateRegex, '');
+      const pdfInfo = `\n\n📄 **PDF dokument vygenerován!**\n[Stáhnout ${pdfResult.filename}](${pdfResult.url})\n\n*Velikost: ${Math.round(pdfResult.size/1024)}KB | Stránek: ${pdfResult.pages}*`;
+      
+      return {
+        text: cleanText + pdfInfo,
+        pdfGenerated: true,
+        pdfUrl: pdfResult.url,
+        pdfFilename: pdfResult.filename,
+        pdfBlob: pdfResult.blob,
+        pdfSize: pdfResult.size,
+        pdfPages: pdfResult.pages
+      };
+      
+    } catch (error) {
+      console.error('💥 [GEMINI-SERVICE] PDF processing error:', error);
+      
+      // Fallback: remove PDF tags and show error
+      const cleanText = text.replace(/\[PDF_GENERATE\][\s\S]*?\[\/PDF_GENERATE\]/g, '');
+      return {
+        text: cleanText + '\n\n❌ **Chyba při zpracování PDF:** ' + error.message,
+        pdfGenerated: false
+      };
+    }
   }
 };
 
