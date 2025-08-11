@@ -1771,7 +1771,16 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           'text/plain',
           'image/png',
           'image/jpeg',
-          'image/jpg'
+          'image/jpg',
+          'image/bmp',
+          'image/tiff',
+          'image/gif',
+          'text/markdown',
+          'application/json',
+          'application/javascript',
+          'text/javascript',
+          'text/css',
+          'text/html'
         ];
         
         if (!supportedTypes.includes(doc.file.type)) {
@@ -1794,34 +1803,53 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         
         const result = await response.json();
         
-        // Upload to storage
-        const geminiResponse = await fetch('/api/upload-to-gemini', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pdfUrl: result.originalPdfUrl,
-            originalName: result.originalName
-          })
-        });
+        let newDoc;
         
-        if (!geminiResponse.ok) {
-          throw new Error('Failed to process document');
+        // Check if this was processed as plain text (no Gemini upload needed)
+        if (result.processingMethod === 'direct-text-extraction') {
+          console.log('📝 Plain text file processed - skipping Gemini upload');
+          
+          // Create document without Gemini URI for text files
+          newDoc = {
+            id: Date.now() + Math.random(),
+            name: result.originalName,
+            extractedText: result.extractedText, // Direct text content
+            processingMethod: result.processingMethod,
+            metadata: result.metadata,
+            uploadedAt: new Date()
+          };
+        } else {
+          console.log('📄 Non-text file - uploading to Gemini');
+          
+          // Upload to Gemini for non-text files
+          const geminiResponse = await fetch('/api/upload-to-gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              pdfUrl: result.originalPdfUrl,
+              originalName: result.originalName
+            })
+          });
+          
+          if (!geminiResponse.ok) {
+            throw new Error('Failed to process document');
+          }
+          
+          const geminiResult = await geminiResponse.json();
+          
+          // Create document with Gemini URI for non-text files
+          newDoc = {
+            id: Date.now() + Math.random(),
+            name: result.originalName,
+            documentUrl: result.documentUrl,
+            originalPdfUrl: result.originalPdfUrl,
+            geminiFileUri: geminiResult.fileUri,
+            fileName: result.fileName,
+            pageCount: result.pageCount,
+            preview: result.preview,
+            uploadedAt: new Date()
+          };
         }
-        
-        const geminiResult = await geminiResponse.json();
-        
-        // Create processed document
-        const newDoc = {
-          id: Date.now() + Math.random(), // Unique ID
-          name: result.originalName,
-          documentUrl: result.documentUrl,
-          originalPdfUrl: result.originalPdfUrl,
-          geminiFileUri: geminiResult.fileUri,
-          fileName: result.fileName,
-          pageCount: result.pageCount,
-          preview: result.preview,
-          uploadedAt: new Date()
-        };
         
         processedDocuments.push(newDoc);
       }
@@ -1840,13 +1868,15 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const allDocuments = [...currentDocuments, ...processedDocuments];
       
       // Combine existing and new documents BEFORE sending to AI
-      const newActiveDocuments = processedDocuments.map(doc => ({
-        uri: doc.geminiFileUri,
-        name: doc.name,
-        uploadTimestamp: Date.now(),
-        lastAccessedTimestamp: Date.now(),
-        lastAccessedMessageIndex: messagesWithUser.length
-      }));
+      const newActiveDocuments = processedDocuments
+        .filter(doc => doc.geminiFileUri) // Only documents with Gemini URI (non-text files)
+        .map(doc => ({
+          uri: doc.geminiFileUri,
+          name: doc.name,
+          uploadTimestamp: Date.now(),
+          lastAccessedTimestamp: Date.now(),
+          lastAccessedMessageIndex: messagesWithUser.length
+        }));
       
       const allActiveDocuments = [...activeDocumentContexts, ...newActiveDocuments];
       
@@ -1891,21 +1921,42 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Prepare messages for AI - ALWAYS add document context when documents are present
       const messagesForAI = messagesWithUser.map(msg => {
         if (msg === userMessage && processedDocuments.length > 0) {
-          // If user provided text, keep it and add document references
-          // If no text, just add document references
-          const documentReferences = processedDocuments.map(doc => {
-            const isImage = doc.name.match(/\.(png|jpe?g|gif|webp)$/i);
-            const emoji = isImage ? '🖼️' : '📄';
-            return `${emoji} ${doc.name}`;
-          }).join('\n');
+          // Separate text files (embed content) from other files (reference only)
+          const textFiles = processedDocuments.filter(doc => doc.processingMethod === 'direct-text-extraction');
+          const otherFiles = processedDocuments.filter(doc => doc.processingMethod !== 'direct-text-extraction');
+          
+          // Build document context
+          let documentContext = '';
+          
+          // Add text file contents directly
+          if (textFiles.length > 0) {
+            documentContext += '\n\n--- OBSAH TEXTOVÝCH SOUBORŮ ---\n';
+            textFiles.forEach(doc => {
+              documentContext += `\n📝 ${doc.name}:\n`;
+              documentContext += '```\n';
+              documentContext += doc.extractedText || '[Prázdný soubor]';
+              documentContext += '\n```\n';
+            });
+          }
+          
+          // Add references to other files
+          if (otherFiles.length > 0) {
+            const documentReferences = otherFiles.map(doc => {
+              const isImage = doc.name.match(/\.(png|jpe?g|gif|webp)$/i);
+              const emoji = isImage ? '🖼️' : '📄';
+              return `${emoji} ${doc.name}`;
+            }).join('\n');
+            documentContext += '\n\n--- NAHRANÉ SOUBORY ---\n' + documentReferences;
+          }
           
           const combinedText = text.trim() 
-            ? `${text.trim()}\n\n${documentReferences}`
-            : documentReferences;
+            ? `${text.trim()}${documentContext}`
+            : `Analyzuj nahraté soubory:${documentContext}`;
           
           console.log('🔍 DEBUG - AI message preparation:');
           console.log('   - Original text:', `"${text.trim()}"`);
-          console.log('   - Document references:', documentReferences);
+          console.log('   - Text files:', textFiles.length);
+          console.log('   - Other files:', otherFiles.length);
           console.log('   - Combined text for AI:', `"${combinedText}"`);
           
           return {
