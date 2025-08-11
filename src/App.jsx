@@ -698,9 +698,20 @@ function App() {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
+      // Dočasně vypni 200px scroll limit pro programmatic scroll
+      const originalLimit = afterGeminiResponse;
+      setAfterGeminiResponse(false);
+      console.log('🚫 Temporarily disabled scroll limit for scrollToIndex()');
+      
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex
       });
+      
+      // Zapni limit zpět po 500ms - dostatek času na dokončení scroll
+      setTimeout(() => {
+        setAfterGeminiResponse(originalLimit);
+        console.log('✅ Scroll limit restored after scrollToIndex()');
+      }, 500);
     }
   };
 
