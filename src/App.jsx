@@ -606,12 +606,12 @@ function App() {
   // 💾 Strategic save point #5: Save chat on page visibility change (more reliable than beforeunload)
   React.useEffect(() => {
     const handleVisibilityChange = () => {
-      // Only save when page becomes hidden AND it's not just opening a document viewer
+      // Primary save trigger for PWA (minimize, app switch)
       if (document.hidden && currentChatId && messages.length > 0) {
-        console.log('👁️ [MONITOR] Page hidden - saving to IndexedDB and sessionStorage');
+        console.log('👁️ [MONITOR] PWA hidden - smart incremental save');
         
         smartIncrementalSave(currentChatId, messages).catch(error => {
-          console.error('❌ Failed to save to IndexedDB V2 on visibility change:', error);
+          console.error('❌ Failed smart save on visibility change:', error);
         });
         
         sessionManager.saveCurrentChatId(currentChatId);
@@ -619,19 +619,21 @@ function App() {
     };
 
     const handleBeforeUnload = () => {
-      // Keep minimal beforeunload for actual page closing
+      // Emergency backup for PWA force close - also uses smart save
       if (currentChatId && messages.length > 0) {
-        console.log('🚪 [MONITOR] App closing - final save');
+        console.log('🚪 [MONITOR] PWA force close - emergency smart save');
+        
         smartIncrementalSave(currentChatId, messages).catch(error => {
-          console.error('❌ Failed to save to IndexedDB V2 on close:', error);
+          console.error('❌ Failed emergency smart save on close:', error);
         });
+        
         sessionManager.saveCurrentChatId(currentChatId);
       }
     };
 
-    // Use visibilitychange as primary save trigger (doesn't interfere with document viewing)
+    // PWA Hybrid save system: both events use smartIncrementalSave (prevents duplicates)
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    // Keep beforeunload as backup for actual page close
+    // Keep beforeunload as emergency backup for PWA force close
     window.addEventListener('beforeunload', handleBeforeUnload);
     
     return () => {
@@ -1741,27 +1743,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     });
   });
 
-  // 🔄 AUTO-SAVE + RAM CLEANUP for document handler - každých 50 zpráv
-  console.log(`📊 [DOC-AUTO-SAVE-CHECK] Current messages: ${currentMessagesWithUser.length}, Checking auto-save condition...`);
-  
-  if (currentMessagesWithUser.length % 50 === 0 && currentMessagesWithUser.length > 0 && currentChatId) {
-    console.log(`🔄 [DOC-AUTO-SAVE] Trigger: ${currentMessagesWithUser.length} messages - exact multiple of 50!`);
-    try {
-      await smartIncrementalSave(currentChatId, currentMessagesWithUser);
-      console.log(`✅ [DOC-AUTO-SAVE] SUCCESS: ${currentMessagesWithUser.length} messages saved to DB`);
-      
-      // 🚨 VIRTUOSO PREP: DISABLED RAM CLEANUP - Virtuoso needs full message array
-      // RAM cleanup - ponech jen posledních 50 zpráv
-      // const beforeCleanup = currentMessagesWithUser.length;
-      // currentMessagesWithUser = currentMessagesWithUser.slice(-50);
-      // setMessages(currentMessagesWithUser);
-      // console.log(`🧹 [DOC-RAM-CLEANUP] ${beforeCleanup} → 50 messages in RAM`);
-      // console.log(`💾 [DOC-RAM-CLEANUP] ${beforeCleanup - 50} messages moved to DB only`);
-      // console.log(`📊 [DOC-RAM-STATUS] Current messages in memory: ${currentMessagesWithUser.length}`);
-    } catch (error) {
-      console.error(`❌ [DOC-AUTO-SAVE] FAILED - NO CLEANUP:`, error);
-    }
-  }
+  // ❌ REMOVED: DOC-AUTO-SAVE - using unified auto-save system instead (every 10 messages)
   
   setLoading(true);
   setStreaming(true);
@@ -2302,7 +2284,6 @@ const handleModelChange = useCallback((newModel) => {
         }}
       >
         <div 
-          className={streaming ? 'streaming-breathing' : ''}
           style={{ 
             flex: 1,
             display: 'flex', 
