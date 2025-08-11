@@ -1567,6 +1567,8 @@ const handleDocumentUpload = async (event) => {
     'application/json',      // JSON
     'application/javascript', // JS
     'text/javascript',       // JS (alternative)
+    'text/jsx',              // JSX
+    'text/typescript',       // TS/TSX
     'text/css',              // CSS
     'text/html'              // HTML
   ];
@@ -1779,6 +1781,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           'application/json',
           'application/javascript',
           'text/javascript',
+          'text/jsx',
+          'text/typescript',
           'text/css',
           'text/html'
         ];
