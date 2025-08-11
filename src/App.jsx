@@ -2528,9 +2528,7 @@ const handleModelChange = useCallback((newModel) => {
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                       width: isMobile ? '95%' : '100%',
-                      margin: isMobile ? '0 auto' : '0',
-                      transform: 'translateZ(0)',
-                      willChange: 'transform'
+                      margin: isMobile ? '0 auto' : '0'
                     }}>
                       <MessageRenderer 
                         content={msg.text || ''}
@@ -2702,9 +2700,7 @@ const handleModelChange = useCallback((newModel) => {
                     lineHeight: isMobile ? '1.3' : '1.6',
                     whiteSpace: 'normal',
                     color: '#FFFFFF',
-                    textAlign: 'left',
-                    transform: 'translateZ(0)',
-                    willChange: 'transform'
+                    textAlign: 'left'
                   }}>
                   <div style={{ 
                     fontSize: '0.75rem', 
