@@ -1714,7 +1714,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const base64Data = await convertFileToBase64(doc.file);
       return {
         name: doc.name,
-        size: doc.size,
+        size: doc.file.size, // Use actual file.size in bytes, not formatted string
         type: doc.file.type,
         base64: base64Data // Store as base64 string, not File object
       };
@@ -1722,7 +1722,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       console.error('Failed to convert file to base64:', error);
       return {
         name: doc.name,
-        size: doc.size,
+        size: doc.file.size || 0, // Use actual file.size, fallback to 0
         type: doc.file.type,
         base64: null // Fallback for failed conversion
       };
@@ -2725,7 +2725,9 @@ const handleModelChange = useCallback((newModel) => {
                               fontSize: '0.8rem',
                               opacity: 0.7
                             }}>
-                              {attachment.size ? `${Math.round(attachment.size / 1024)} KB` : 'Generated'}
+                              {attachment.size && typeof attachment.size === 'number' && !isNaN(attachment.size) 
+                                ? `${Math.round(attachment.size / 1024)} KB` 
+                                : 'Generated'}
                             </div>
                           </div>
                           
