@@ -281,9 +281,6 @@ function App() {
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   
-  // 🎯 MANUAL SCROLL DETECTION - Prevent auto-scroll interference during manual scrolling
-  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
-  const manualScrollTimeoutRef = useRef(null);
   
   // 🎯 POST-GEMINI SCROLL LIMIT - Apply 110px limit after Gemini response
   const [afterGeminiResponse, setAfterGeminiResponse] = useState(false);
@@ -698,12 +695,6 @@ function App() {
 
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
-    // Skip auto-scroll if user is manually scrolling
-    if (isManuallyScrolling) {
-      console.log('🚫 Skipping auto-scroll - user is manually scrolling');
-      return;
-    }
-    
     if (virtuosoRef.current && userMessageIndex >= 0) {
       console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
@@ -1046,14 +1037,6 @@ function App() {
     uploadedDocumentsRef.current = uploadedDocuments;
   }, [input, messages, uploadedDocuments]);
 
-  // Cleanup manual scroll timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (manualScrollTimeoutRef.current) {
-        clearTimeout(manualScrollTimeoutRef.current);
-      }
-    };
-  }, []);
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = useCallback(async (textInput, fromVoice = false) => {
@@ -2427,19 +2410,6 @@ const handleModelChange = useCallback((newModel) => {
                     return;
                   }
                 }
-                
-                // Manual scroll detection (unchanged)
-                setIsManuallyScrolling(true);
-                
-                // Clear existing timeout
-                if (manualScrollTimeoutRef.current) {
-                  clearTimeout(manualScrollTimeoutRef.current);
-                }
-                
-                // Set timeout to reset manual scrolling flag
-                manualScrollTimeoutRef.current = setTimeout(() => {
-                  setIsManuallyScrolling(false);
-                }, 1000); // 1 second after scroll stops
               }}
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
