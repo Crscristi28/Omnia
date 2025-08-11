@@ -2527,7 +2527,7 @@ const handleModelChange = useCallback((newModel) => {
                       backdropFilter: 'blur(10px)',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
-                      maxWidth: '100%'
+                      width: isMobile ? '95%' : '100%'
                     }}>
                       <MessageRenderer 
                         content={msg.text || ''}
