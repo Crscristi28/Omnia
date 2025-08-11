@@ -253,7 +253,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 485, desktop: 485 };
+  const spacerSize = { mobile: 475, desktop: 475 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -282,8 +282,7 @@ function App() {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   
   
-  // 🎯 POST-GEMINI SCROLL LIMIT - Apply 200px limit after Gemini response
-  const [afterGeminiResponse, setAfterGeminiResponse] = useState(false);
+  // ❌ REMOVED: All scroll limit logic - keeping only spacer
   
   // 🎨 IMAGE GENERATION STATE - For switching between chat and image modes
   const [isImageMode, setIsImageMode] = useState(false);
@@ -698,20 +697,9 @@ function App() {
     if (virtuosoRef.current && userMessageIndex >= 0) {
       console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
-      // Dočasně vypni 200px scroll limit pro programmatic scroll
-      const originalLimit = afterGeminiResponse;
-      setAfterGeminiResponse(false);
-      console.log('🚫 Temporarily disabled scroll limit for scrollToIndex()');
-      
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex
       });
-      
-      // Zapni limit zpět po 500ms - dostatek času na dokončení scroll
-      setTimeout(() => {
-        setAfterGeminiResponse(originalLimit);
-        console.log('✅ Scroll limit restored after scrollToIndex()');
-      }, 500);
     }
   };
 
@@ -1051,9 +1039,7 @@ function App() {
 
 // 🤖 AI CONVERSATION - WITH STREAMING EFFECT
   const handleSend = useCallback(async (textInput, fromVoice = false) => {
-    // 🎯 OKAMŽITĚ VYPNI GEMINI LIMIT při SEND kliknutí
-    setAfterGeminiResponse(false);
-    console.log('🔄 Gemini limit disabled immediately on SEND click');
+    // ❌ REMOVED: Scroll limit logic
     
     const currentInput = inputRef.current;
     const currentMessages = messagesRef.current;
@@ -1415,9 +1401,7 @@ function App() {
         const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
         setMessages(cleanedMessages);
         
-        // 🎯 Enable 200px scroll limit after Gemini response
-        setAfterGeminiResponse(true);
-        console.log('🤖 Gemini complete - 200px scroll limit enabled');
+        // ❌ REMOVED: Scroll limit activation
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
@@ -1694,9 +1678,7 @@ const handleDocumentUpload = async (event) => {
 
 // 📄 HANDLE SEND WITH DOCUMENTS
 const handleSendWithDocuments = useCallback(async (text, documents) => {
-  // 🎯 OKAMŽITĚ VYPNI GEMINI LIMIT při SEND kliknutí
-  setAfterGeminiResponse(false);
-  console.log('🔄 Gemini limit disabled immediately on SEND WITH DOCS click');
+  // ❌ REMOVED: Scroll limit logic
   
   const currentMessages = messagesRef.current;
   const currentDocuments = uploadedDocumentsRef.current;
@@ -1992,9 +1974,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
       setMessages(cleanedMessages);
       
-      // 🎯 Enable 200px scroll limit after Gemini response
-      setAfterGeminiResponse(true);
-      console.log('🤖 Gemini complete - 200px scroll limit enabled');
+      // ❌ REMOVED: Scroll limit activation
     }
     
   } catch (error) {
@@ -2408,24 +2388,7 @@ const handleModelChange = useCallback((newModel) => {
                 position: 'relative'
               }}
               overscan={300}
-              onScroll={(e) => {
-                const scrollContainer = e.target;
-                const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-                
-                // Apply 200px scroll limit only after Gemini response
-                if (afterGeminiResponse) {
-                  const contentHeight = scrollHeight - 485; // Total height minus 485px spacer
-                  const maxContentScroll = Math.max(0, contentHeight - clientHeight);
-                  const scrollIntoSpacer = scrollTop - maxContentScroll;
-                  
-                  if (scrollIntoSpacer > 200) {
-                    const maxAllowedScroll = maxContentScroll + 200;
-                    scrollContainer.scrollTop = maxAllowedScroll;
-                    console.log('🚫 Post-Gemini scroll limited to 200px');
-                    return;
-                  }
-                }
-              }}
+              // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
