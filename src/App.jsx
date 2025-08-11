@@ -1553,12 +1553,22 @@ const handleDocumentUpload = async (event) => {
   
   // Check if it's supported format
   const supportedTypes = [
+    // Documents
     'application/pdf',        // PDF
+    // Images  
     'image/png',             // PNG  
     'image/jpeg',            // JPEG/JPG
     'image/bmp',             // BMP
     'image/tiff',            // TIFF/TIF
-    'image/gif'              // GIF
+    'image/gif',             // GIF
+    // Text files
+    'text/plain',            // TXT
+    'text/markdown',         // MD
+    'application/json',      // JSON
+    'application/javascript', // JS
+    'text/javascript',       // JS (alternative)
+    'text/css',              // CSS
+    'text/html'              // HTML
   ];
   
   if (!supportedTypes.includes(file.type)) {
