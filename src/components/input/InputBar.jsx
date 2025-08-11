@@ -102,7 +102,7 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUploa
                   console.log('📄 Document upload initiated');
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
+                  input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif';
                   input.onchange = onDocumentUpload;
                   input.click();
                   onClose();
@@ -614,7 +614,7 @@ const InputBar = ({
                     setTimeout(() => {
                       const input = document.createElement('input');
                       input.type = 'file';
-                      input.accept = '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg';
+                      input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif';
                       input.onchange = handleDocumentUploadToChips;
                       input.click();
                     }, isMobile ? 100 : 0);

@@ -1553,13 +1553,12 @@ const handleDocumentUpload = async (event) => {
   
   // Check if it's supported format
   const supportedTypes = [
-    'application/pdf',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/msword', // .doc
-    'text/plain', // .txt
-    'image/png',
-    'image/jpeg',
-    'image/jpg'
+    'application/pdf',        // PDF
+    'image/png',             // PNG  
+    'image/jpeg',            // JPEG/JPG
+    'image/bmp',             // BMP
+    'image/tiff',            // TIFF/TIF
+    'image/gif'              // GIF
   ];
   
   if (!supportedTypes.includes(file.type)) {
