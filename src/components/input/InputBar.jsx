@@ -300,10 +300,21 @@ const InputBar = ({
     
     const file = event.target.files?.[0];
     if (file) {
+      // Debug file properties
+      console.log('🔍 DEBUG - File object:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        sizeType: typeof file.size,
+        hasSize: file.hasOwnProperty('size')
+      });
+      
       // Format file size properly
       let formattedSize = 'Unknown size';
-      if (file.size && typeof file.size === 'number') {
+      if (file.size !== undefined && file.size !== null && typeof file.size === 'number' && !isNaN(file.size)) {
         const sizeInBytes = file.size;
+        console.log('🔍 DEBUG - Size in bytes:', sizeInBytes);
+        
         if (sizeInBytes < 1024) {
           formattedSize = `${sizeInBytes}B`;
         } else if (sizeInBytes < 1024 * 1024) {
@@ -311,6 +322,10 @@ const InputBar = ({
         } else {
           formattedSize = `${(sizeInBytes / (1024 * 1024)).toFixed(1)}MB`;
         }
+        
+        console.log('🔍 DEBUG - Formatted size:', formattedSize);
+      } else {
+        console.log('🔍 DEBUG - Invalid file.size:', file.size, typeof file.size);
       }
       
       // Only add chip - NO background upload yet
