@@ -1396,13 +1396,7 @@ function App() {
           sender: 'bot', 
           text: responseText,
           sources: sources,
-          isStreaming: false,
-          // PDF generation support
-          pdfGenerated: result.pdfGenerated || false,
-          pdfUrl: result.pdfUrl,
-          pdfFilename: result.pdfFilename,
-          pdfSize: result.pdfSize,
-          pdfPages: result.pdfPages
+          isStreaming: false
         }];
         
         // 🔄 Check auto-save after AI response
@@ -2019,13 +2013,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         sender: 'bot',
         text: cleanedText,
         sources: result.sources || [],
-        isStreaming: false,
-        // PDF generation support
-        pdfGenerated: result.pdfGenerated || false,
-        pdfUrl: result.pdfUrl,
-        pdfFilename: result.pdfFilename,
-        pdfSize: result.pdfSize,
-        pdfPages: result.pdfPages
+        isStreaming: false
       }];
       
       // Check auto-save after AI response
