@@ -300,11 +300,24 @@ const InputBar = ({
     
     const file = event.target.files?.[0];
     if (file) {
+      // Format file size properly
+      let formattedSize = 'Unknown size';
+      if (file.size && typeof file.size === 'number') {
+        const sizeInBytes = file.size;
+        if (sizeInBytes < 1024) {
+          formattedSize = `${sizeInBytes}B`;
+        } else if (sizeInBytes < 1024 * 1024) {
+          formattedSize = `${(sizeInBytes / 1024).toFixed(1)}KB`;
+        } else {
+          formattedSize = `${(sizeInBytes / (1024 * 1024)).toFixed(1)}MB`;
+        }
+      }
+      
       // Only add chip - NO background upload yet
       const docChip = {
         id: Date.now(),
         name: file.name,
-        size: (file.size / (1024 * 1024)).toFixed(1) + 'MB',
+        size: formattedSize,
         file: file // Store file for later upload
       };
       setPendingDocuments(prev => [...prev, docChip]);
