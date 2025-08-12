@@ -2452,12 +2452,11 @@ const handleModelChange = useCallback((newModel) => {
             itemContent={(index, msg) => {
               // Handle invisible spacer for scroll space
               if (msg.isSpacer) {
-                const isMobile = window.innerWidth <= 768;
                 return (
                   <div 
                     key="bottom-spacer"
                     style={{
-                      height: isMobile ? `${spacerSize.mobile}px` : `${spacerSize.desktop}px`, // Dynamic spacer size
+                      height: `${spacerSize.mobile}px`, // Static spacer size (mobile and desktop are same: 475px)
                       width: '100%',
                       backgroundColor: 'transparent' // Completely invisible
                     }}
@@ -2473,8 +2472,8 @@ const handleModelChange = useCallback((newModel) => {
               display: 'flex',
               justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '2rem',
-              paddingLeft: isMobile ? '0.5rem' : '0',
-              paddingRight: isMobile ? '0.5rem' : '0',
+              paddingLeft: '0.5rem', // Static padding for mobile consistency
+              paddingRight: '0.5rem',
             }}>
               {/* Special rendering for loading indicator */}
               {msg.isLoading ? (
@@ -2484,10 +2483,10 @@ const handleModelChange = useCallback((newModel) => {
                   width: '100%'
                 }}>
                   <div style={{
-                    width: isMobile ? '95%' : '100%',
-                    padding: isMobile ? '1.2rem' : '1.6rem',
-                    paddingLeft: isMobile ? '1rem' : '1.2rem',
-                    fontSize: isMobile ? '1rem' : '0.95rem', 
+                    width: '95%', // Static mobile-friendly width
+                    padding: '1.2rem',
+                    paddingLeft: '1rem',
+                    fontSize: '1rem', 
                     color: '#ffffff',
                     background: 'rgba(255, 255, 255, 0.03)',
                     borderRadius: '12px',
@@ -2545,25 +2544,25 @@ const handleModelChange = useCallback((newModel) => {
                   alignItems: 'flex-end',
                   gap: '0.8rem',
                   width: '100%',
-                  paddingLeft: isMobile ? '0' : '25%',
-                  paddingRight: isMobile ? '0' : '0'
+                  paddingLeft: '0',
+                  paddingRight: '0'
                 }}>
                   {/* User text bubble */}
                   {msg.text && (
                     <div style={{
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
                       color: '#ffffff',
-                      padding: isMobile ? '1.2rem 1.4rem' : '1.4rem 1.6rem',
-                      borderRadius: isMobile ? '25px' : '25px 25px 8px 25px',
-                      fontSize: isMobile ? '1rem' : '0.95rem',
-                      lineHeight: isMobile ? '1.3' : '1.6', 
+                      padding: '1.2rem 1.4rem',
+                      borderRadius: '25px',
+                      fontSize: '1rem',
+                      lineHeight: '1.3', 
                       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
                       backdropFilter: 'blur(10px)',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
-                      width: isMobile ? '95%' : '100%',
-                      margin: isMobile ? '0 auto' : '0'
+                      width: '95%',
+                      margin: '0 auto'
                     }}>
                       <MessageRenderer 
                         content={msg.text || ''}
@@ -2604,7 +2603,7 @@ const handleModelChange = useCallback((newModel) => {
                                   });
                                 }}
                                 style={{
-                                  maxWidth: isMobile ? '280px' : '400px',
+                                  maxWidth: '280px',
                                   width: '100%',
                                   height: 'auto',
                                   borderRadius: '12px',
