@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* HTML5 Semantic Elements Reset - Fix irregular margins causing scroll jumping */
+main, article, section, div, aside, header, footer, nav, hgroup, search {
+  margin: 0;
+  padding: 0;
+}
+
+/* Global box-sizing for consistent layout calculations */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
