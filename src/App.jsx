@@ -2435,7 +2435,6 @@ const handleModelChange = useCallback((newModel) => {
               overscan={300}
               increaseViewportBy={200}
               atBottomThreshold={100}
-              initialTopMostItemIndex={0}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
