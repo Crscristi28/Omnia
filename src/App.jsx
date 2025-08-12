@@ -2289,6 +2289,18 @@ const topHeaderStyle = React.useMemo(() => ({
   zIndex: 1000,
 }), []);
 
+const hamburgerButtonStyle = React.useMemo(() => ({
+  borderRadius: '12px',
+  border: 'none',
+  background: 'transparent',
+  color: 'white',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  outline: 'none',
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{
@@ -2313,19 +2325,11 @@ const topHeaderStyle = React.useMemo(() => ({
           onClick={handleSidebarOpen}
           disabled={loading || streaming}
           style={{
+            ...hamburgerButtonStyle,
             width: isMobile ? 40 : 44,
             height: isMobile ? 40 : 44,
-            borderRadius: '12px',
-            border: 'none',
-            background: 'transparent',
-            color: 'white',
             cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             opacity: (loading || streaming) ? 0.5 : 1,
-            outline: 'none',
             fontSize: isMobile ? '20px' : '24px',
           }}
           onMouseEnter={(e) => {
