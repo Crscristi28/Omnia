@@ -2425,7 +2425,7 @@ const handleModelChange = useCallback((newModel) => {
                 position: 'relative'
               }}
               increaseViewportBy={400}
-              atBottomThreshold={100}
+              atBottomThreshold={300}
               components={{
                 Footer: () => <div style={{ height: '160px' }} />
               }}
