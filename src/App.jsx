@@ -261,7 +261,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 465, desktop: 465 };
+  const spacerSize = { mobile: 485, desktop: 485 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -2425,7 +2425,7 @@ const handleModelChange = useCallback((newModel) => {
                 position: 'relative'
               }}
               increaseViewportBy={400}
-              atBottomThreshold={300}
+              atBottomThreshold={400}
               components={{
                 Footer: () => <div style={{ height: '125px' }} />
               }}
