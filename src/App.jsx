@@ -2258,46 +2258,54 @@ const modelDescriptionStyle = React.useMemo(() => ({
   color: 'rgba(255, 255, 255, 0.7)'
 }), []);
 
+const mainContainerStyle = React.useMemo(() => ({
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  color: '#ffffff',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
+  width: '100vw',
+  margin: 0,
+  transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+  overflow: 'hidden'
+}), []);
+
+const topHeaderStyle = React.useMemo(() => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  transform: 'translateZ(0)',
+  willChange: 'transform',
+  background: 'rgba(0, 0, 0, 0.1)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+  paddingRight: 'max(1rem, env(safe-area-inset-right))',
+  zIndex: 1000,
+}), []);
+
 // 🎨 JSX RENDER  
   return (
-    <div style={{ 
-      height: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
+    <div style={{
+      ...mainContainerStyle,
       background: isListening 
         ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
         : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
-      color: '#ffffff',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-      width: '100vw',
-      margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-      overflow: 'hidden'
     }}>
       
       {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
       <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        transform: 'translateZ(0)',
-        willChange: 'transform',
+        ...topHeaderStyle,
         height: isMobile ? '60px' : '70px',
-        background: 'rgba(0, 0, 0, 0.1)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
         padding: isMobile ? '0 1rem' : '0 2rem',
         paddingTop: isMobile ? 'max(1rem, env(safe-area-inset-top))' : '0',
-        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
-        paddingRight: 'max(1rem, env(safe-area-inset-right))',
         minHeight: isMobile ? 'calc(60px + env(safe-area-inset-top))' : '70px',
-        zIndex: 1000,
       }}>
         
         {/* HAMBURGER BUTTON - vlevo */}
