@@ -2209,6 +2209,55 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
   maxWidth: '100%'
 }), []);
 
+const modelDropdownSpanStyle = React.useMemo(() => ({
+  color: 'rgba(255, 255, 255, 0.9)'
+}), []);
+
+const modelDropdownIconStyle = React.useMemo(() => ({
+  color: 'rgba(255, 255, 255, 0.9)'
+}), []);
+
+const modelDropdownContainerStyle = React.useMemo(() => ({
+  position: 'absolute',
+  top: '100%',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  marginTop: '8px',
+  minWidth: '220px',
+  maxWidth: '280px',
+  borderRadius: '12px',
+  backgroundColor: 'rgba(55, 65, 81, 0.95)',
+  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+  backdropFilter: 'blur(12px)',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  overflow: 'hidden',
+  zIndex: 1001,
+}), []);
+
+const modelButtonBaseStyle = React.useMemo(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  width: '100%',
+  padding: '12px 16px',
+  border: 'none',
+  color: 'white',
+  fontSize: '14px',
+  cursor: 'pointer',
+  transition: 'all 0.2s',
+  fontFamily: 'inherit',
+}), []);
+
+const modelNameStyle = React.useMemo(() => ({
+  fontWeight: '500'
+}), []);
+
+const modelDescriptionStyle = React.useMemo(() => ({
+  marginLeft: 'auto',
+  fontSize: '12px',
+  color: 'rgba(255, 255, 255, 0.7)'
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
@@ -2294,43 +2343,18 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
                        flex items-center gap-1.5 font-medium transition-all duration-200 outline-none
                        hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
           >
-            <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'grok-3' ? 'o3' : 'o4'}</span>
-            <ChevronDown size={14} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.9)' }} />
+            <span style={modelDropdownSpanStyle}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'grok-3' ? 'o3' : 'o4'}</span>
+            <ChevronDown size={14} strokeWidth={2} style={modelDropdownIconStyle} />
           </button>
 
           {/* MODEL DROPDOWN */}
           {showModelDropdown && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: '8px',
-              minWidth: '220px',
-              maxWidth: '280px',
-              borderRadius: '12px',
-              backgroundColor: 'rgba(55, 65, 81, 0.95)',
-              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              overflow: 'hidden',
-              zIndex: 1001,
-            }}>
+            <div style={modelDropdownContainerStyle}>
               <button
                 onClick={() => handleModelChange('claude')}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
+                  ...modelButtonBaseStyle,
                   background: model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
                 }}
                 onMouseEnter={(e) => {
                   if (model !== 'claude') {
@@ -2343,10 +2367,9 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
                   }
                 }}
               >
-                <span style={{ fontWeight: '500' }}>Omnia Claude</span>
+                <span style={modelNameStyle}>Omnia Claude</span>
                 <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '12px',
+                  ...modelDescriptionStyle,
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
                 }}>o1</span>
@@ -2355,18 +2378,8 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
               <button
                 onClick={() => handleModelChange('gpt-4o')}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
+                  ...modelButtonBaseStyle,
                   background: model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
                 }}
                 onMouseEnter={(e) => {
                   if (model !== 'gpt-4o') {
@@ -2379,10 +2392,9 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
                   }
                 }}
               >
-                <span style={{ fontWeight: '500' }}>Omnia GPT</span>
+                <span style={modelNameStyle}>Omnia GPT</span>
                 <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '12px',
+                  ...modelDescriptionStyle,
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
                 }}>o2</span>
@@ -2391,18 +2403,8 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
               <button
                 onClick={() => handleModelChange('grok-3')}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
+                  ...modelButtonBaseStyle,
                   background: model === 'grok-3' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
                 }}
                 onMouseEnter={(e) => {
                   if (model !== 'grok-3') {
@@ -2415,10 +2417,9 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
                   }
                 }}
               >
-                <span style={{ fontWeight: '500' }}>Omnia X</span>
+                <span style={modelNameStyle}>Omnia X</span>
                 <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '12px',
+                  ...modelDescriptionStyle,
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
                 }}>o3</span>
@@ -2427,18 +2428,8 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
               <button
                 onClick={() => handleModelChange('gemini-2.5-flash')}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
+                  ...modelButtonBaseStyle,
                   background: model === 'gemini-2.5-flash' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
                 }}
                 onMouseEnter={(e) => {
                   if (model !== 'gemini-2.5-flash') {
@@ -2451,10 +2442,9 @@ const userAttachmentWrapperStyle = React.useMemo(() => ({
                   }
                 }}
               >
-                <span style={{ fontWeight: '500' }}>Omnia G</span>
+                <span style={modelNameStyle}>Omnia G</span>
                 <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '12px',
+                  ...modelDescriptionStyle,
                   color: 'rgba(156, 163, 175, 1)',
                   fontWeight: '400',
                 }}>o4</span>
