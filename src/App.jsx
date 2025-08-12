@@ -2181,6 +2181,34 @@ const loadingDot3Style = React.useMemo(() => ({
   animation: 'pulse 1.4s ease-in-out 0.4s infinite'
 }), [loadingDotStyle]);
 
+const imageStyle = React.useMemo(() => ({
+  maxWidth: '280px',
+  width: '100%',
+  height: 'auto',
+  borderRadius: '12px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+  cursor: 'pointer',
+  transition: 'transform 0.2s',
+  transform: 'translateZ(0)',
+  willChange: 'transform'
+}), []);
+
+const userAttachmentsContainerStyle = React.useMemo(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5rem',
+  marginTop: '1rem',
+  width: '100%'
+}), []);
+
+const userAttachmentWrapperStyle = React.useMemo(() => ({
+  marginTop: '1rem',
+  marginBottom: '1rem',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  maxWidth: '100%'
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
@@ -2643,25 +2671,14 @@ const loadingDot3Style = React.useMemo(() => ({
                   
                   {/* File attachments - separate display for generated vs uploaded */}
                   {msg.attachments && msg.attachments.length > 0 && (
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.5rem',
-                      width: '100%'
-                    }}>
+                    <div style={userAttachmentsContainerStyle}>
                       {msg.attachments.map((attachment, index) => {
                         // Generated images display as large standalone images
                         if (attachment.isGenerated && attachment.type && attachment.type.startsWith('image/')) {
                           return (
                             <div
                               key={index}
-                              style={{
-                                marginTop: '1rem',
-                                marginBottom: '1rem',
-                                borderRadius: '12px',
-                                overflow: 'hidden',
-                                maxWidth: '100%'
-                              }}
+                              style={userAttachmentWrapperStyle}
                             >
                               <img 
                                 src={attachment.base64}
@@ -2672,17 +2689,7 @@ const loadingDot3Style = React.useMemo(() => ({
                                     name: attachment.name
                                   });
                                 }}
-                                style={{
-                                  maxWidth: '280px',
-                                  width: '100%',
-                                  height: 'auto',
-                                  borderRadius: '12px',
-                                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                                  cursor: 'pointer',
-                                  transition: 'transform 0.2s',
-                                  transform: 'translateZ(0)',
-                                  willChange: 'transform'
-                                }}
+                                style={imageStyle}
                                 onMouseEnter={(e) => {
                                   e.target.style.transform = 'scale(1.02) translateZ(0)';
                                 }}
@@ -2877,17 +2884,7 @@ const loadingDot3Style = React.useMemo(() => ({
                             }
                           }
                         }}
-                        style={{
-                          maxWidth: '280px',
-                          width: '100%',
-                          height: 'auto',
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s',
-                        transform: 'translateZ(0)',
-                        willChange: 'transform'
-                        }}
+                        style={imageStyle}
                         onMouseEnter={(e) => {
                           e.target.style.transform = 'scale(1.02) translateZ(0)';
                         }}
