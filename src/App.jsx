@@ -2114,6 +2114,22 @@ const botContainerStyle = React.useMemo(() => ({
   textAlign: 'left'
 }), []);
 
+const botHeaderStyle = React.useMemo(() => ({
+  fontSize: '0.75rem',
+  opacity: 0.7,
+  marginBottom: '0.8rem',
+  display: 'flex',
+  alignItems: 'center',
+  paddingBottom: '0.6rem'
+}), []);
+
+const botNameStyle = React.useMemo(() => ({
+  fontWeight: '600',
+  color: '#a0aec0',
+  display: 'flex',
+  alignItems: 'center'
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
@@ -2762,29 +2778,9 @@ const botContainerStyle = React.useMemo(() => ({
               ) : (
                 <div 
                   className="p-4"
-                  style={{
-                    width: '95%', // Use width instead of maxWidth
-                    margin: '0 auto', // Center the container on mobile
-                    fontSize: '1rem',
-                    lineHeight: '1.3',
-                    whiteSpace: 'normal',
-                    color: '#FFFFFF',
-                    textAlign: 'left'
-                  }}>
-                  <div style={{ 
-                    fontSize: '0.75rem', 
-                    opacity: 0.7, 
-                    marginBottom: '0.8rem',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    paddingBottom: '0.6rem'
-                  }}>
-                    <span style={{ 
-                      fontWeight: '600', 
-                      color: '#a0aec0', 
-                      display: 'flex', 
-                      alignItems: 'center' 
-                    }}>
+                  style={botContainerStyle}>
+                  <div style={botHeaderStyle}>
+                    <span style={botNameStyle}>
                       <ChatOmniaLogo size={18} />
                       Omnia {msg.isStreaming ? ' • streaming' : ''}
                     </span>
