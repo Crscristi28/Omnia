@@ -2381,6 +2381,10 @@ const virtuosoStyle = React.useMemo(() => ({
   flex: 1,
 }), []);
 
+const virtuosoFooterStyle = React.useMemo(() => ({
+  height: '120px'
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{
@@ -2629,7 +2633,7 @@ const virtuosoStyle = React.useMemo(() => ({
               increaseViewportBy={400}
               atBottomThreshold={100}
               components={{
-                Footer: () => <div style={{ height: '120px' }} />
+                Footer: () => <div style={virtuosoFooterStyle} />
               }}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
