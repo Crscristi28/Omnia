@@ -27,35 +27,32 @@ main, article, section, div, aside, header, footer, nav, hgroup, search {
 /* PWA & Mobile Optimizations */
 html {
   height: 100%;
-  overflow: hidden; /* Prevent overscroll bounce */
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
-  -webkit-text-size-adjust: 100%; /* Prevent text scaling */
-  /* Clean notch/Dynamic Island support - top only */
+  -webkit-text-size-adjust: 100%;
   padding-top: env(safe-area-inset-top);
-  /* Match app background for seamless notch integration */
   background: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  overscroll-behavior: none;
 }
 
 body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* Prevent overscroll bounce */
-  position: fixed; /* Prevent iOS address bar bounce */
+  overflow: hidden;
+  position: fixed;
   width: 100%;
-  -webkit-user-select: none; /* Prevent text selection issues */
-  -webkit-touch-callout: none; /* Disable iOS context menu */
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlights */
+  overscroll-behavior: none;
 }
 
 #root {
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100dvh;
   overflow: hidden;
   position: relative;
 }
 
-/* Disable zoom on inputs (iOS fix) */
+/* Input optimizations - prevent zoom on iOS */
 input[type="text"],
 input[type="email"], 
 input[type="search"],
@@ -63,45 +60,29 @@ input[type="tel"],
 input[type="url"],
 input[type="password"],
 textarea {
-  font-size: 16px !important; /* Prevents zoom on iOS */
+  font-size: 16px !important;
 }
 
-/* Prevent pinch zoom gestures and all scaling */
-* {
-  touch-action: manipulation; /* Allow single-finger panning, disable pinch zoom */
-  -webkit-touch-callout: none; /* Disable iOS context menu */
-  user-zoom: fixed; /* Prevent zoom */
-  -webkit-user-zoom: fixed; /* Prevent zoom on webkit */
-}
-
-/* Disable text selection for UI elements only */
-button, input, .input-bar, .header, nav, .ui-element {
+/* UI Controls - prevent unwanted interactions */
+button, input, nav, header, .ui-element, .input-bar {
+  touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Enable text selection for chat messages */
+/* Chat content - allow text selection */
 .message, .markdown-container, .chat-content {
   -webkit-user-select: text;
   user-select: text;
-  -webkit-touch-callout: default; /* Allow iOS context menu for text */
+  -webkit-touch-callout: default;
 }
 
-/* Specific touch-action for scrollable areas */
+/* Scrollable areas - vertical scroll only */
 .scrollable {
-  touch-action: pan-y; /* Allow only vertical scrolling */
-  -webkit-touch-action: pan-y; /* Webkit support */
-}
-
-/* Prevent elastic scroll on all elements */
-* {
+  touch-action: pan-y;
   overscroll-behavior: none;
-  -webkit-overscroll-behavior: none; /* iOS Safari support */
-}
-
-body {
-  overscroll-behavior: none;
-  -webkit-overscroll-behavior: none; /* iOS Safari support */
 }
 
 /* Custom styles will go here */
