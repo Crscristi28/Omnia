@@ -2301,6 +2301,41 @@ const hamburgerButtonStyle = React.useMemo(() => ({
   outline: 'none',
 }), []);
 
+const newChatButtonStyle = React.useMemo(() => ({
+  borderRadius: '12px',
+  border: 'none',
+  background: 'transparent',
+  color: 'rgba(255, 255, 255, 0.9)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  outline: 'none',
+}), []);
+
+const mainContentStyle = React.useMemo(() => ({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  position: 'relative',
+  zIndex: 1,
+  background: 'transparent'
+}), []);
+
+const messagesContainerStyle = React.useMemo(() => ({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  transform: 'translateZ(0)',
+  willChange: 'transform',
+  maxWidth: '1000px',
+  margin: '0 auto',
+  width: '100%',
+  position: 'relative',
+  zIndex: 1
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{
@@ -2470,19 +2505,11 @@ const hamburgerButtonStyle = React.useMemo(() => ({
           onClick={handleNewChat}
           disabled={loading || streaming}
           style={{
+            ...newChatButtonStyle,
             width: isMobile ? 40 : 44,
             height: isMobile ? 40 : 44,
-            borderRadius: '12px',
-            border: 'none',
-            background: 'transparent',
-            color: 'rgba(255, 255, 255, 0.9)',
             cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             opacity: (loading || streaming) ? 0.5 : 1,
-            outline: 'none',
             fontSize: isMobile ? '20px' : '24px',
           }}
           onMouseEnter={(e) => {
@@ -2504,29 +2531,9 @@ const hamburgerButtonStyle = React.useMemo(() => ({
       {/* 🎨 MAIN CONTENT AREA */}
       <main 
         ref={mainContentRef}
-        style={{ 
-          flex: 1, 
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden', // Let Virtuoso handle all scrolling
-          position: 'relative',
-          zIndex: 1, // Above background, below header (1000)
-          background: 'transparent'
-        }}
+        style={mainContentStyle}
       >
-        <div 
-          style={{ 
-            flex: 1,
-            display: 'flex', 
-            flexDirection: 'column',
-            transform: 'translateZ(0)',
-            willChange: 'transform',
-            maxWidth: '1000px', 
-            margin: '0 auto',
-            width: '100%',
-            position: 'relative',
-            zIndex: 1
-        }}>
+        <div style={messagesContainerStyle}>
           
           {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
           {messages.length === 0 && (
