@@ -2366,6 +2366,21 @@ const welcomeSubtitleStyle = React.useMemo(() => ({
   letterSpacing: '0.01em'
 }), []);
 
+const chatMessagesWrapperStyle = React.useMemo(() => ({
+  flex: 1,
+  position: 'relative',
+  zIndex: 1
+}), []);
+
+const virtuosoStyle = React.useMemo(() => ({
+  height: '100%',
+  width: '100%',
+  transform: 'translateZ(0)',
+  willChange: 'transform',
+  backfaceVisibility: 'hidden',
+  flex: 1,
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{
@@ -2603,21 +2618,12 @@ const welcomeSubtitleStyle = React.useMemo(() => ({
 
 
           {/* 💬 CHAT MESSAGES - WRAPPER */}
-          <div style={{ 
-            flex: 1,
-            position: 'relative',
-            zIndex: 1
-          }}>
+          <div style={chatMessagesWrapperStyle}>
             <Virtuoso
               ref={virtuosoRef}
-              style={{ 
-                height: '100%',
-                width: '100%',
-                transform: 'translateZ(0)',
-                willChange: 'transform',
-                backfaceVisibility: 'hidden',
-                flex: 1, // Take remaining space in flex container
-                zIndex: 1, // Above background, below header
+              style={{
+                ...virtuosoStyle,
+                zIndex: 1,
                 position: 'relative'
               }}
               increaseViewportBy={400}
