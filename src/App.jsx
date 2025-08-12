@@ -2130,6 +2130,57 @@ const botNameStyle = React.useMemo(() => ({
   alignItems: 'center'
 }), []);
 
+const loadingAnimationContainerStyle = React.useMemo(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.8rem'
+}), []);
+
+const loadingSpinnerStyle = React.useMemo(() => ({
+  width: '18px',
+  height: '18px',
+  border: '2px solid rgba(255,255,255,0.3)',
+  borderTop: '2px solid #00ffff',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+  flexShrink: 0
+}), []);
+
+const loadingTextStyleStreaming = React.useMemo(() => ({
+  color: '#00ffff',
+  fontWeight: '500'
+}), []);
+
+const loadingTextStyleNormal = React.useMemo(() => ({
+  color: '#a0aec0',
+  fontWeight: '500'
+}), []);
+
+const loadingDotsContainerStyle = React.useMemo(() => ({
+  display: 'flex',
+  gap: '4px',
+  alignItems: 'center'
+}), []);
+
+const loadingDotStyle = React.useMemo(() => ({
+  animation: 'pulse 1.4s ease-in-out infinite',
+  fontSize: '24px',
+  textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
+  color: '#00ffff',
+  transform: 'translateZ(0)',
+  willChange: 'transform'
+}), []);
+
+const loadingDot2Style = React.useMemo(() => ({
+  ...loadingDotStyle,
+  animation: 'pulse 1.4s ease-in-out 0.2s infinite'
+}), [loadingDotStyle]);
+
+const loadingDot3Style = React.useMemo(() => ({
+  ...loadingDotStyle,
+  animation: 'pulse 1.4s ease-in-out 0.4s infinite'
+}), [loadingDotStyle]);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
@@ -2564,44 +2615,14 @@ const botNameStyle = React.useMemo(() => ({
               {msg.isLoading ? (
                 <div style={loadingContainerStyle}>
                   <div style={loadingBoxStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                      <div style={{ 
-                        width: '18px', 
-                        height: '18px', 
-                        border: '2px solid rgba(255,255,255,0.3)', 
-                        borderTop: '2px solid #00ffff',
-                        borderRadius: '50%', 
-                        animation: 'spin 1s linear infinite',
-                        transform: 'translateZ(0)',
-                        willChange: 'transform'
-                      }}></div>
-                      <span style={{ 
-                        color: msg.isStreaming ? '#00ffff' : '#a0aec0', 
-                        fontWeight: '500' 
-                      }}>
+                    <div style={loadingAnimationContainerStyle}>
+                      <div style={loadingSpinnerStyle}></div>
+                      <span style={msg.isStreaming ? loadingTextStyleStreaming : loadingTextStyleNormal}>
                         {msg.isStreaming ? (
-                          <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <span style={{ 
-                              animation: 'pulse 1.4s ease-in-out infinite',
-                              fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
-                              transform: 'translateZ(0)',
-                              willChange: 'transform'
-                            }}>●</span>
-                            <span style={{ 
-                              animation: 'pulse 1.4s ease-in-out 0.2s infinite',
-                              fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
-                              transform: 'translateZ(0)',
-                              willChange: 'transform'
-                            }}>●</span>
-                            <span style={{ 
-                              animation: 'pulse 1.4s ease-in-out 0.4s infinite',
-                              fontSize: '24px',
-                              textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
-                              transform: 'translateZ(0)',
-                              willChange: 'transform'
-                            }}>●</span>
+                          <span style={loadingDotsContainerStyle}>
+                            <span style={loadingDotStyle}>●</span>
+                            <span style={loadingDot2Style}>●</span>
+                            <span style={loadingDot3Style}>●</span>
                           </span>
                         ) : msg.text}
                       </span>
