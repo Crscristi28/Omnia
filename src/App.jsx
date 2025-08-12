@@ -2457,8 +2457,7 @@ const handleModelChange = useCallback((newModel) => {
                     style={{
                       height: isMobile ? `${spacerSize.mobile}px` : `${spacerSize.desktop}px`, // Dynamic spacer size
                       width: '100%',
-                      backgroundColor: 'transparent', // Completely invisible
-                      transition: 'height 0.3s ease' // Smooth size changes
+                      backgroundColor: 'transparent' // Completely invisible
                     }}
                   />
                 );
