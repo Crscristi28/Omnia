@@ -2730,10 +2730,10 @@ const handleModelChange = useCallback((newModel) => {
                 <div 
                   className="p-4"
                   style={{
-                    width: isMobile ? '95%' : '100%', // Use width instead of maxWidth
-                    margin: isMobile ? '0 auto' : '0', // Center the container on mobile
-                    fontSize: isMobile ? '1rem' : '0.95rem',
-                    lineHeight: isMobile ? '1.3' : '1.6',
+                    width: '95%', // Use width instead of maxWidth
+                    margin: '0 auto', // Center the container on mobile
+                    fontSize: '1rem',
+                    lineHeight: '1.3',
                     whiteSpace: 'normal',
                     color: '#FFFFFF',
                     textAlign: 'left'
@@ -2828,7 +2828,7 @@ const handleModelChange = useCallback((newModel) => {
                           }
                         }}
                         style={{
-                          maxWidth: isMobile ? '280px' : '400px',
+                          maxWidth: '280px',
                           width: '100%',
                           height: 'auto',
                           borderRadius: '12px',
