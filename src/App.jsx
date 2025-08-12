@@ -24,6 +24,14 @@ import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // �
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
+
+// 🎯 STATIC SPACER OBJECT - Prevent re-renders by reusing same reference
+const BOTTOM_SPACER = {
+  id: 'bottom-spacer',
+  sender: 'spacer',
+  text: '',
+  isSpacer: true
+};
 import { VoiceScreen } from './components/chat';
 import MessageRenderer from './components/MessageRenderer';
 
@@ -2425,12 +2433,7 @@ const handleModelChange = useCallback((newModel) => {
               
               // Add spacer only if there are user messages (for auto-scroll functionality)
               const hasUserMessages = filtered.some(msg => msg.sender === 'user');
-              const spacer = hasUserMessages ? {
-                id: 'bottom-spacer',
-                sender: 'spacer',
-                text: '',
-                isSpacer: true
-              } : null;
+              const spacer = hasUserMessages ? BOTTOM_SPACER : null;
               
               if (loading || streaming) {
                 const loadingData = [...filtered, {
