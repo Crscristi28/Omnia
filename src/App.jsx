@@ -2417,8 +2417,7 @@ const handleModelChange = useCallback((newModel) => {
                 zIndex: 1, // Above background, below header
                 position: 'relative'
               }}
-              overscan={300}
-              increaseViewportBy={200}
+              increaseViewportBy={400}
               atBottomThreshold={100}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
