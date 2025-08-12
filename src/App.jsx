@@ -2593,32 +2593,10 @@ const botContainerStyle = React.useMemo(() => ({
                   </div>
                 </div>
               ) : msg.sender === 'user' ? (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  gap: '0.8rem',
-                  width: '100%',
-                  paddingLeft: '0',
-                  paddingRight: '0'
-                }}>
+                <div style={userContainerStyle}>
                   {/* User text bubble */}
                   {msg.text && (
-                    <div style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      color: '#ffffff',
-                      padding: '1.2rem 1.4rem',
-                      borderRadius: '25px',
-                      fontSize: '1rem',
-                      lineHeight: '1.3', 
-                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      backdropFilter: 'blur(10px)',
-                      wordBreak: 'break-word',
-                      overflowWrap: 'break-word',
-                      width: '95%',
-                      margin: '0 auto'
-                    }}>
+                    <div style={userBubbleStyle}>
                       <MessageRenderer 
                         content={msg.text || ''}
                         className="user-message-content"
