@@ -2050,7 +2050,6 @@ const handleModelChange = useCallback((newModel) => {
       width: '100vw',
       margin: 0,
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: '140px',
       transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden'
     }}>
@@ -2427,6 +2426,9 @@ const handleModelChange = useCallback((newModel) => {
               }}
               increaseViewportBy={400}
               atBottomThreshold={100}
+              components={{
+                Footer: () => <div style={{ height: '140px' }} />
+              }}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
