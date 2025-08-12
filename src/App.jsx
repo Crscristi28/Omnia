@@ -2427,7 +2427,7 @@ const handleModelChange = useCallback((newModel) => {
               increaseViewportBy={400}
               atBottomThreshold={100}
               components={{
-                Footer: () => <div style={{ height: '140px' }} />
+                Footer: () => <div style={{ height: '120px' }} />
               }}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
