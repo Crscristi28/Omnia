@@ -2036,6 +2036,84 @@ const handleModelChange = useCallback((newModel) => {
 
 // 🔍 DEBUG: Detailní analýza dat pro Virtuoso
 
+// 🎯 STYLE CONSTANTS - Prevent inline style object recreation that causes re-renders
+const spacerStyle = React.useMemo(() => ({
+  height: `${spacerSize.mobile}px`,
+  width: '100%',
+  backgroundColor: 'transparent'
+}), []);
+
+const messageContainerBaseStyle = React.useMemo(() => ({
+  display: 'flex',
+  marginBottom: '2rem',
+  paddingLeft: '0.5rem',
+  paddingRight: '0.5rem'
+}), []);
+
+const userMessageContainerStyle = React.useMemo(() => ({
+  ...messageContainerBaseStyle,
+  justifyContent: 'flex-end'
+}), [messageContainerBaseStyle]);
+
+const botMessageContainerStyle = React.useMemo(() => ({
+  ...messageContainerBaseStyle,
+  justifyContent: 'flex-start'
+}), [messageContainerBaseStyle]);
+
+const loadingContainerStyle = React.useMemo(() => ({
+  display: 'flex',
+  justifyContent: 'flex-start',
+  width: '100%'
+}), []);
+
+const loadingBoxStyle = React.useMemo(() => ({
+  width: '95%',
+  padding: '1.2rem',
+  paddingLeft: '1rem',
+  fontSize: '1rem',
+  color: '#ffffff',
+  background: 'rgba(255, 255, 255, 0.03)',
+  borderRadius: '12px',
+  backdropFilter: 'blur(10px)',
+  textAlign: 'left'
+}), []);
+
+const userContainerStyle = React.useMemo(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  gap: '0.8rem',
+  width: '100%',
+  paddingLeft: '0',
+  paddingRight: '0'
+}), []);
+
+const userBubbleStyle = React.useMemo(() => ({
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  color: '#ffffff',
+  padding: '1.2rem 1.4rem',
+  borderRadius: '25px',
+  fontSize: '1rem',
+  lineHeight: '1.3',
+  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  backdropFilter: 'blur(10px)',
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+  width: '95%',
+  margin: '0 auto'
+}), []);
+
+const botContainerStyle = React.useMemo(() => ({
+  width: '95%',
+  margin: '0 auto',
+  fontSize: '1rem',
+  lineHeight: '1.3',
+  whiteSpace: 'normal',
+  color: '#FFFFFF',
+  textAlign: 'left'
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{ 
@@ -2455,11 +2533,7 @@ const handleModelChange = useCallback((newModel) => {
                 return (
                   <div 
                     key="bottom-spacer"
-                    style={{
-                      height: `${spacerSize.mobile}px`, // Static spacer size (mobile and desktop are same: 475px)
-                      width: '100%',
-                      backgroundColor: 'transparent' // Completely invisible
-                    }}
+                    style={spacerStyle}
                   />
                 );
               }
@@ -2468,31 +2542,12 @@ const handleModelChange = useCallback((newModel) => {
               <div 
                 key={msg.id || `fallback_${index}`} 
                 data-sender={msg.sender}
-                style={{
-              display: 'flex',
-              justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-              marginBottom: '2rem',
-              paddingLeft: '0.5rem', // Static padding for mobile consistency
-              paddingRight: '0.5rem',
-            }}>
+                style={msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle}
+            >
               {/* Special rendering for loading indicator */}
               {msg.isLoading ? (
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'flex-start', 
-                  width: '100%'
-                }}>
-                  <div style={{
-                    width: '95%', // Static mobile-friendly width
-                    padding: '1.2rem',
-                    paddingLeft: '1rem',
-                    fontSize: '1rem', 
-                    color: '#ffffff',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(10px)',
-                    textAlign: 'left'
-                  }}>
+                <div style={loadingContainerStyle}>
+                  <div style={loadingBoxStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                       <div style={{ 
                         width: '18px', 
