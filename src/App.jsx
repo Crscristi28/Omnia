@@ -2336,6 +2336,36 @@ const messagesContainerStyle = React.useMemo(() => ({
   zIndex: 1
 }), []);
 
+const welcomeScreenStyle = React.useMemo(() => ({
+  flex: 1,
+  textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+}), []);
+
+const welcomeTextContainerStyle = React.useMemo(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '1rem'
+}), []);
+
+const welcomeTitleStyle = React.useMemo(() => ({
+  fontWeight: '700',
+  margin: 0,
+  color: '#ffffff',
+  letterSpacing: '0.02em'
+}), []);
+
+const welcomeSubtitleStyle = React.useMemo(() => ({
+  fontWeight: '400',
+  margin: 0,
+  color: 'rgba(255, 255, 255, 0.8)',
+  letterSpacing: '0.01em'
+}), []);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{
@@ -2538,12 +2568,7 @@ const messagesContainerStyle = React.useMemo(() => ({
           {/* 🎨 WELCOME SCREEN - když nejsou zprávy */}
           {messages.length === 0 && (
             <div style={{
-              flex: 1,
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+              ...welcomeScreenStyle,
               gap: isMobile ? '1.5rem' : '2rem'
             }}>
               
@@ -2558,28 +2583,17 @@ const messagesContainerStyle = React.useMemo(() => ({
               </div>
               
               {/* 🌍 MULTILINGUAL WELCOME TEXT */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '1rem'
-              }}>
-                <h1 className="text-shadow-lg shadow-white/30 drop-shadow-lg" style={{ 
-                  fontSize: isMobile ? '2rem' : '2.5rem', 
-                  fontWeight: '700', 
-                  margin: 0, 
-                  color: '#ffffff',
-                  letterSpacing: '0.02em'
+              <div style={welcomeTextContainerStyle}>
+                <h1 className="text-shadow-lg shadow-white/30 drop-shadow-lg" style={{
+                  ...welcomeTitleStyle,
+                  fontSize: isMobile ? '2rem' : '2.5rem',
                 }}>
                   {welcomeTexts[uiLanguage]?.hello || welcomeTexts.cs.hello}
                 </h1>
                 
                 <p className="text-shadow shadow-white/20 drop-shadow" style={{
+                  ...welcomeSubtitleStyle,
                   fontSize: isMobile ? '1rem' : '1.2rem',
-                  fontWeight: '400',
-                  margin: 0,
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  letterSpacing: '0.01em'
                 }}>
                   {welcomeTexts[uiLanguage]?.subtitle || welcomeTexts.cs.subtitle}
                 </p>
