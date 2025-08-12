@@ -645,21 +645,6 @@ function App() {
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%
 
-  // 🔽 SCROLL DETECTION - Show scroll-to-bottom button when scrolled up
-  useEffect(() => {
-    const mainContent = mainContentRef.current;
-    if (!mainContent) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = mainContent;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 110;
-      
-      setShowScrollToBottom(!isNearBottom);
-    };
-
-    mainContent.addEventListener('scroll', handleScroll);
-    return () => mainContent.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
   const checkAutoSave = async (allMessages, chatId = currentChatId) => {
