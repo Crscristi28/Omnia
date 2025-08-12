@@ -261,7 +261,7 @@ function App() {
   const [currentSources, setCurrentSources] = useState([]);
 
   // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 485, desktop: 485 };
+  const spacerSize = { mobile: 475, desktop: 475 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -2425,9 +2425,9 @@ const handleModelChange = useCallback((newModel) => {
                 position: 'relative'
               }}
               increaseViewportBy={400}
-              atBottomThreshold={400}
+              atBottomThreshold={100}
               components={{
-                Footer: () => <div style={{ height: '125px' }} />
+                Footer: () => <div style={{ height: '140px' }} />
               }}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
