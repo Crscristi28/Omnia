@@ -2615,6 +2615,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
                 zIndex: 1,
                 position: 'relative'
               }}
+              overscan={1200}
               atBottomThreshold={100}
               components={{
                 Footer: () => <div style={virtuosoFooterStyle} />,
