@@ -25,13 +25,6 @@ import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // �
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
 
-// 🎯 STATIC SPACER OBJECT - Prevent re-renders by reusing same reference
-const BOTTOM_SPACER = {
-  id: 'bottom-spacer',
-  sender: 'spacer',
-  text: '',
-  isSpacer: true
-};
 import { VoiceScreen } from './components/chat';
 import MessageRenderer from './components/MessageRenderer';
 
@@ -260,8 +253,6 @@ function App() {
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
   const [currentSources, setCurrentSources] = useState([]);
 
-  // 📏 SIMPLE FIXED SPACER - just enough for auto-scroll to work
-  const spacerSize = { mobile: 475, desktop: 475 };
   
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
@@ -2038,11 +2029,6 @@ const handleModelChange = useCallback((newModel) => {
 // 🔍 DEBUG: Detailní analýza dat pro Virtuoso
 
 // 🎯 STYLE CONSTANTS - Prevent inline style object recreation that causes re-renders
-const spacerStyle = React.useMemo(() => ({
-  height: `${spacerSize.mobile}px`,
-  width: '100%',
-  backgroundColor: 'transparent'
-}), []);
 
 const messageContainerBaseStyle = React.useMemo(() => ({
   display: 'flex',
@@ -2380,6 +2366,7 @@ const virtuosoStyle = React.useMemo(() => ({
   willChange: 'transform',
   backfaceVisibility: 'hidden',
   flex: 1,
+  paddingBottom: '475px'
 }), []);
 
 const virtuosoFooterStyle = React.useMemo(() => ({
@@ -2640,32 +2627,18 @@ const virtuosoFooterStyle = React.useMemo(() => ({
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
-              // Add spacer only if there are user messages (for auto-scroll functionality)
-              const hasUserMessages = filtered.some(msg => msg.sender === 'user');
-              const spacer = hasUserMessages ? BOTTOM_SPACER : null;
-              
               if (loading || streaming) {
-                const loadingData = [...filtered, {
+                return [...filtered, {
                   id: 'loading-indicator',
                   sender: 'bot',
                   text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
                   isLoading: true,
                   isStreaming: streaming
                 }];
-                return spacer ? [...loadingData, spacer] : loadingData;
               }
-              return spacer ? [...filtered, spacer] : filtered;
+              return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={(index, msg) => {
-              // Handle invisible spacer for scroll space
-              if (msg.isSpacer) {
-                return (
-                  <div 
-                    key="bottom-spacer"
-                    style={spacerStyle}
-                  />
-                );
-              }
 
               return (
               <div 
