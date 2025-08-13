@@ -2104,10 +2104,9 @@ const botContainerStyle = React.useMemo(() => ({
 const botHeaderStyle = React.useMemo(() => ({
   fontSize: '0.75rem',
   opacity: 0.7,
-  marginBottom: '0.8rem',
   display: 'flex',
   alignItems: 'center',
-  paddingBottom: '0.6rem'
+  paddingBottom: '1.4rem'
 }), []);
 
 const botNameStyle = React.useMemo(() => ({
@@ -2184,13 +2183,13 @@ const userAttachmentsContainerStyle = React.useMemo(() => ({
   display: 'flex',
   flexDirection: 'column',
   gap: '0.5rem',
-  marginTop: '1rem',
+  paddingTop: '1rem',
   width: '100%'
 }), []);
 
 const userAttachmentWrapperStyle = React.useMemo(() => ({
-  marginTop: '1rem',
-  marginBottom: '1rem',
+  paddingTop: '1rem',
+  paddingBottom: '1rem',
   borderRadius: '12px',
   overflow: 'hidden',
   maxWidth: '100%'
@@ -2825,8 +2824,8 @@ const virtuosoFooterStyle = React.useMemo(() => ({
                   {/* 🎨 GENERATED IMAGE - Display if message contains image */}
                   {msg.image && (
                     <div style={{
-                      marginTop: '1rem',
-                      marginBottom: '1rem',
+                      paddingTop: '1rem',
+                      paddingBottom: '1rem',
                       borderRadius: '12px',
                       overflow: 'hidden',
                       maxWidth: '100%'
