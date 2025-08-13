@@ -2928,12 +2928,14 @@ const virtuosoFooterStyle = React.useMemo(() => ({
                       onClick={() => handleSourcesClick(msg.sources || [])}
                       language={detectLanguage(msg.text)}
                     />
+{/* TEMP DISABLED: Testing scroll jumping
                     <VoiceButton 
                       text={msg.text} 
                       onAudioStart={() => setIsAudioPlaying(true)}
                       onAudioEnd={() => setIsAudioPlaying(false)}
                     />
                     <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
+                    */}
                   </div>
                 </div>
               )}
