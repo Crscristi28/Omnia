@@ -2153,8 +2153,7 @@ const loadingDotStyle = React.useMemo(() => ({
   fontSize: '24px',
   textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
   color: '#00ffff',
-  transform: 'translateZ(0)',
-  willChange: 'transform'
+  transform: 'translateZ(0)'
 }), []);
 
 const loadingDot2Style = React.useMemo(() => ({
@@ -2175,8 +2174,7 @@ const imageStyle = React.useMemo(() => ({
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
   cursor: 'pointer',
   transition: 'transform 0.2s',
-  transform: 'translateZ(0)',
-  willChange: 'transform'
+  transform: 'translateZ(0)'
 }), []);
 
 const userAttachmentsContainerStyle = React.useMemo(() => ({
@@ -2262,7 +2260,6 @@ const topHeaderStyle = React.useMemo(() => ({
   left: 0,
   right: 0,
   transform: 'translateZ(0)',
-  willChange: 'transform',
   background: 'rgba(0, 0, 0, 0.1)',
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
@@ -2314,7 +2311,6 @@ const messagesContainerStyle = React.useMemo(() => ({
   display: 'flex',
   flexDirection: 'column',
   transform: 'translateZ(0)',
-  willChange: 'transform',
   maxWidth: '1000px',
   margin: '0 auto',
   width: '100%',
@@ -2943,7 +2939,6 @@ const virtuosoInlineStyle = React.useMemo(() => ({
             bottom: isMobile ? '110px' : '120px', // Above input bar
             right: isMobile ? '20px' : '50px',
             transform: 'translateZ(0)',
-            willChange: 'transform',
             width: '40px',
             height: '40px',
             borderRadius: '50%',
@@ -3138,7 +3133,6 @@ const virtuosoInlineStyle = React.useMemo(() => ({
             padding: '0.5rem',
             animation: 'fadeIn 0.3s ease',
             transform: 'translateZ(0)',
-            willChange: 'transform',
             cursor: 'pointer',
           }}
         >
@@ -3175,7 +3169,6 @@ const virtuosoInlineStyle = React.useMemo(() => ({
               animation: 'fadeIn 0.3s ease',
               transform: 'scale(1) translateZ(0)',
               transition: 'transform 0.2s ease',
-              willChange: 'transform',
             }}
             onLoad={(e) => {
               // Subtle scale animation on load
