@@ -2609,7 +2609,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
 
 
           {/* 💬 CHAT MESSAGES - WRAPPER */}
-          <div style={chatMessagesWrapperStyle}>
+          <div className="chat-wrapper" style={chatMessagesWrapperStyle}>
             <Virtuoso
               ref={virtuosoRef}
               style={{
@@ -2620,10 +2620,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
               overscan={1570}
               atBottomThreshold={100}
               components={{
-                Footer: () => <div style={virtuosoFooterStyle} />,
-                Scroller: React.forwardRef((props, ref) => (
-                  <div {...props} ref={ref} style={{...props.style, paddingBottom: '475px'}} />
-                ))
+                Footer: () => <div style={virtuosoFooterStyle} />
               }}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {

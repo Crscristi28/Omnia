@@ -36,3 +36,9 @@
     animation: logo-spin infinite 20s linear;
   }
 }
+
+/* 🎯 VIRTUOSO SCROLL-TO-TOP: Add padding to internal scroller for scroll-to-top functionality */
+.chat-wrapper > div:first-child {
+  padding-bottom: 475px;
+  box-sizing: border-box;
+}
