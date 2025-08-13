@@ -546,8 +546,7 @@ function App() {
             virtuosoRef.current.scrollToIndex({ 
               index: 'LAST',
               align: 'start',
-              behavior: 'smooth',
-              offset: 64
+              behavior: 'smooth'
             });
           } else {
             console.log('❌ virtuosoRef not ready after chat load');
@@ -688,8 +687,7 @@ function App() {
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
-        align: 'start',
-        offset: 64
+        align: 'start'
       });
     }
   };
@@ -703,8 +701,7 @@ function App() {
       virtuosoRef.current.scrollToIndex({
         index: latestMessageIndex, // Index poslední přidané zprávy
         align: 'start',
-        behavior: 'smooth', // Pro plynulou animaci skrolování
-        offset: 64 // Kompenzace padding-top: 4rem
+        behavior: 'smooth' // Pro plynulou animaci skrolování
       });
     } else if (virtuosoRef.current) {
       console.log('⚠️ No messages to scroll to');
@@ -724,8 +721,7 @@ function App() {
       virtuosoRef.current.scrollToIndex({ 
         index: 'LAST',
         align: 'start',
-        behavior: 'smooth',
-        offset: 64
+        behavior: 'smooth'
       });
     } else {
       console.log('❌ virtuosoRef.current is null in scrollToBottom');
