@@ -2617,7 +2617,6 @@ const virtuosoInlineStyle = React.useMemo(() => ({
               overscan={1200}
               atBottomThreshold={100}
               components={virtuosoComponents}
-              useWindowScroll={true}
               itemSize={useCallback((index) => {
                 const msg = messages.filter(m => !m.isHidden)[index];
                 if (!msg) return 200; // Default fallback
