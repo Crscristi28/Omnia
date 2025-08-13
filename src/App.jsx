@@ -2360,7 +2360,6 @@ const chatMessagesWrapperStyle = React.useMemo(() => ({
 }), []);
 
 const virtuosoStyle = React.useMemo(() => ({
-  height: '100%',
   width: '100%',
   transform: 'translateZ(0)',
   willChange: 'transform',
