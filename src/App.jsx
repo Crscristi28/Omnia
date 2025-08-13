@@ -2362,7 +2362,8 @@ const chatMessagesWrapperStyle = React.useMemo(() => ({
 const virtuosoStyle = React.useMemo(() => ({
   width: '100%',
   flex: 1,
-  overflowY: 'auto'
+  overflowY: 'auto',
+  overscrollBehavior: 'none'
 }), []);
 
 const virtuosoFooterStyle = React.useMemo(() => ({
