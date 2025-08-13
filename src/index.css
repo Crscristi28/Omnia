@@ -25,7 +25,15 @@ ul, ol {
 }
 
 .markdown-container ul {
-  list-style-type: disc;
+  list-style-type: disc; /* Level 1: plný kruh ● */
+}
+
+.markdown-container ul ul {
+  list-style-type: circle; /* Level 2: prázdný kruh ○ */
+}
+
+.markdown-container ul ul ul {
+  list-style-type: square; /* Level 3: čtvereček ■ */
 }
 
 .markdown-container ol {

@@ -125,7 +125,13 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           line-height: 1.6;
         }
         .markdown-container .w-md-editor-text ul li {
-          list-style-type: disc;
+          list-style-type: disc; /* Level 1: plný kruh ● */
+        }
+        .markdown-container .w-md-editor-text ul ul li {
+          list-style-type: circle; /* Level 2: prázdný kruh ○ */
+        }
+        .markdown-container .w-md-editor-text ul ul ul li {
+          list-style-type: square; /* Level 3: čtvereček ■ */
         }
         .markdown-container .w-md-editor-text ol li {
           list-style-type: decimal;
