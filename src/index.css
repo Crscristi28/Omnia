@@ -8,15 +8,41 @@ main, article, section, div, aside, header, footer, nav, hgroup, search {
   padding: 0;
 }
 
-/* Typography Reset - Essential for virtualized scrolling stability */
-h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, blockquote, hr {
+/* Typography Reset - Only reset layout elements, preserve content spacing */
+figure, blockquote, hr {
   margin: 0;
   padding: 0;
 }
 
-/* Remove list styles if not explicitly needed */
+/* Remove list styles from UI elements, but preserve markdown content */
 ul, ol {
   list-style: none;
+}
+
+/* Restore list styles for markdown content */
+.markdown-container ul, .markdown-container ol {
+  list-style: initial;
+}
+
+.markdown-container ul {
+  list-style-type: disc;
+}
+
+.markdown-container ol {
+  list-style-type: decimal;
+}
+
+/* Basic markdown content spacing - fallback for elements without w-md-editor-text */
+.markdown-container > h1, .markdown-container > h2, .markdown-container > h3, 
+.markdown-container > h4, .markdown-container > h5, .markdown-container > h6 {
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+.markdown-container > h1:first-child, .markdown-container > h2:first-child, 
+.markdown-container > h3:first-child, .markdown-container > h4:first-child, 
+.markdown-container > h5:first-child, .markdown-container > h6:first-child {
+  margin-top: 0;
 }
 
 /* Global box-sizing for consistent layout calculations */
