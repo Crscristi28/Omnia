@@ -39,7 +39,6 @@ ul, ol {
 html {
   height: 100%;
   overflow: hidden;
-  -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%;
   padding-top: env(safe-area-inset-top);
   background: linear-gradient(135deg, #000428, #004e92, #009ffd);
