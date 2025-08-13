@@ -2370,6 +2370,21 @@ const virtuosoFooterStyle = React.useMemo(() => ({
   height: '120px'
 }), []);
 
+// 🎯 VIRTUOSO COMPONENTS - Memoized to prevent re-renders
+const virtuosoComponents = React.useMemo(() => ({
+  Footer: () => <div style={virtuosoFooterStyle} />,
+  List: React.forwardRef((props, ref) => (
+    <div {...props} ref={ref} style={{...props.style, paddingBottom: '475px'}} />
+  ))
+}), [virtuosoFooterStyle]);
+
+// 🎯 VIRTUOSO STYLE - Memoized inline style
+const virtuosoInlineStyle = React.useMemo(() => ({
+  ...virtuosoStyle,
+  zIndex: 1,
+  position: 'relative'
+}), [virtuosoStyle]);
+
 // 🎨 JSX RENDER  
   return (
     <div style={{
@@ -2610,19 +2625,10 @@ const virtuosoFooterStyle = React.useMemo(() => ({
           <div style={chatMessagesWrapperStyle}>
             <Virtuoso
               ref={virtuosoRef}
-              style={{
-                ...virtuosoStyle,
-                zIndex: 1,
-                position: 'relative'
-              }}
+              style={virtuosoInlineStyle}
               overscan={1200}
               atBottomThreshold={100}
-              components={{
-                Footer: () => <div style={virtuosoFooterStyle} />,
-                List: React.forwardRef((props, ref) => (
-                  <div {...props} ref={ref} style={{...props.style, paddingBottom: '475px'}} />
-                ))
-              }}
+              components={virtuosoComponents}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
@@ -2638,7 +2644,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
               }
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
-            itemContent={(index, msg) => {
+            itemContent={useCallback((index, msg) => {
 
               return (
               <div 
@@ -2915,11 +2921,11 @@ const virtuosoFooterStyle = React.useMemo(() => ({
               )}
             </div>
           ); // Close return statement
-          }} // Close itemContent function
+          }, [setPreviewImage, setImageContextMenu, t])} // Close itemContent function
             followOutput={false}
-            atBottomStateChange={(atBottom) => {
+            atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
-            }}
+            }, [setShowScrollToBottom])}
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
