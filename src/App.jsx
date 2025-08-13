@@ -2355,12 +2355,14 @@ const welcomeSubtitleStyle = React.useMemo(() => ({
 const chatMessagesWrapperStyle = React.useMemo(() => ({
   flex: 1,
   position: 'relative',
-  zIndex: 1
+  zIndex: 1,
+  overflowY: 'hidden'
 }), []);
 
 const virtuosoStyle = React.useMemo(() => ({
   width: '100%',
   flex: 1,
+  overflowY: 'auto'
 }), []);
 
 const virtuosoFooterStyle = React.useMemo(() => ({
