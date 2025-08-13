@@ -2246,12 +2246,12 @@ const modelDescriptionStyle = React.useMemo(() => ({
 }), []);
 
 const mainContainerStyle = React.useMemo(() => ({
-  height: '100vh',
+  flex: 1,
   display: 'flex',
   flexDirection: 'column',
   color: '#ffffff',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-  width: '100vw',
+  width: '100%',
   margin: 0,
   transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: 'hidden'
@@ -3060,7 +3060,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
       <style>{`
         * { box-sizing: border-box; }
         html { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
-        body { margin: 0 !important; padding: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden !important; }
+        body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
         #root { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; display: flex; flex-direction: column; }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
