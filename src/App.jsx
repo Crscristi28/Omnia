@@ -311,9 +311,22 @@ function App() {
   const sttRecorderRef = useRef(null);
   const mainContentRef = useRef(null);
   const virtuosoRef = useRef(null);
+  const chatWrapperRef = useRef(null);
   
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+
+  // 📏 MEASURE CHAT WRAPPER HEIGHT
+  const measureChatWrapperHeight = () => {
+    if (chatWrapperRef.current) {
+      const height = chatWrapperRef.current.clientHeight;
+      const offsetHeight = chatWrapperRef.current.offsetHeight;
+      console.log('📐 Chat wrapper clientHeight:', height + 'px');
+      console.log('📐 Chat wrapper offsetHeight:', offsetHeight + 'px');
+      console.log('📐 Current overscan:', 1400 + 'px');
+      console.log('📐 Overscan ratio:', (1400 / height).toFixed(2) + 'x container height');
+    }
+  };
 
   // 💾 SAVE SELECTED MODEL TO LOCALSTORAGE
   useEffect(() => {
@@ -331,6 +344,14 @@ function App() {
     console.log('📱 User agent:', navigator.userAgent);
     
     // Service Worker is now handled automatically
+  }, []);
+
+  // 📏 EXPOSE MEASUREMENT FUNCTION TO WINDOW
+  useEffect(() => {
+    window.measureChatHeight = measureChatWrapperHeight;
+    return () => {
+      delete window.measureChatHeight;
+    };
   }, []);
 
   // 🆕 AUDIO INITIALIZATION (UNCHANGED)
@@ -2622,7 +2643,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
 
 
           {/* 💬 CHAT MESSAGES - WRAPPER */}
-          <div style={chatMessagesWrapperStyle}>
+          <div ref={chatWrapperRef} style={chatMessagesWrapperStyle}>
             <Virtuoso
               ref={virtuosoRef}
               style={{
