@@ -2617,6 +2617,35 @@ const virtuosoInlineStyle = React.useMemo(() => ({
               overscan={1200}
               atBottomThreshold={100}
               components={virtuosoComponents}
+              useWindowScroll={true}
+              itemSize={useCallback((index) => {
+                const msg = messages.filter(m => !m.isHidden)[index];
+                if (!msg) return 200; // Default fallback
+                
+                // Estimate height based on text length
+                const textLength = msg.text?.length || 0;
+                const hasAttachments = msg.attachments?.length > 0;
+                const hasImage = msg.image != null;
+                
+                // Base height calculation
+                let estimatedHeight = 100; // Base padding + margins
+                
+                // Text height (roughly 25px per 100 characters on mobile)
+                estimatedHeight += Math.ceil(textLength / 100) * 25;
+                
+                // Add height for attachments
+                if (hasAttachments) {
+                  estimatedHeight += msg.attachments.length * 80;
+                }
+                
+                // Add height for images
+                if (hasImage) {
+                  estimatedHeight += 300;
+                }
+                
+                // Minimum height for short messages
+                return Math.max(estimatedHeight, 150);
+              }, [messages])}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
