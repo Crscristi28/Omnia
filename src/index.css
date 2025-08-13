@@ -8,6 +8,17 @@ main, article, section, div, aside, header, footer, nav, hgroup, search {
   padding: 0;
 }
 
+/* Typography Reset - Essential for virtualized scrolling stability */
+h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, blockquote, hr {
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove list styles if not explicitly needed */
+ul, ol {
+  list-style: none;
+}
+
 /* Global box-sizing for consistent layout calculations */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -43,6 +54,7 @@ body {
   position: fixed;
   width: 100%;
   overscroll-behavior: none;
+  line-height: 1.5;
 }
 
 #root {
