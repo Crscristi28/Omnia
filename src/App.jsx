@@ -2360,9 +2360,6 @@ const chatMessagesWrapperStyle = React.useMemo(() => ({
 
 const virtuosoStyle = React.useMemo(() => ({
   width: '100%',
-  transform: 'translateZ(0)',
-  willChange: 'transform',
-  backfaceVisibility: 'hidden',
   flex: 1,
 }), []);
 
@@ -2615,7 +2612,7 @@ const virtuosoFooterStyle = React.useMemo(() => ({
                 zIndex: 1,
                 position: 'relative'
               }}
-              overscan={1570}
+              overscan={1500}
               atBottomThreshold={100}
               components={{
                 Footer: () => <div style={virtuosoFooterStyle} />,
