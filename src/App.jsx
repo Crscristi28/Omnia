@@ -547,7 +547,7 @@ function App() {
               index: 'LAST',
               align: 'start',
               behavior: 'smooth',
-              offset: 32
+              offset: 64
             });
           } else {
             console.log('❌ virtuosoRef not ready after chat load');
