@@ -2355,14 +2355,14 @@ const virtuosoStyle = React.useMemo(() => ({
 }), []);
 
 const virtuosoFooterStyle = React.useMemo(() => ({
-  height: '120px'
+  height: '595px'
 }), []);
 
 // 🎯 VIRTUOSO COMPONENTS - Memoized to prevent re-renders
 const virtuosoComponents = React.useMemo(() => ({
   Footer: () => <div style={virtuosoFooterStyle} />,
   List: React.forwardRef((props, ref) => (
-    <div {...props} ref={ref} style={{...props.style, paddingBottom: '475px'}} />
+    <div {...props} ref={ref} style={{...props.style}} />
   ))
 }), [virtuosoFooterStyle]);
 
