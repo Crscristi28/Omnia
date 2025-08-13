@@ -38,7 +38,6 @@ ul, ol {
 /* PWA & Mobile Optimizations */
 html {
   height: 100%;
-  overflow: hidden;
   -webkit-text-size-adjust: 100%;
   padding-top: env(safe-area-inset-top);
   background: linear-gradient(135deg, #000428, #004e92, #009ffd);
@@ -55,9 +54,7 @@ body {
 }
 
 #root {
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+  height: 100%;
   position: relative;
 }
 
