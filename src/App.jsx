@@ -1100,12 +1100,8 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
-          scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message  
-        });
-      });
+      console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
+      scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
@@ -1732,12 +1728,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
-      scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
-    });
-  });
+  console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
+  scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
 
   // ❌ REMOVED: DOC-AUTO-SAVE - using unified auto-save system instead (every 10 messages)
   
