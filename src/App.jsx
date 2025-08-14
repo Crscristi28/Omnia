@@ -2028,7 +2028,7 @@ const handleModelChange = useCallback((newModel) => {
 
 const messageContainerBaseStyle = React.useMemo(() => ({
   display: 'flex',
-  marginBottom: '2rem',
+  paddingBottom: '1.5rem',
   paddingLeft: '0.5rem',
   paddingRight: '0.5rem'
 }), []);
