@@ -30,6 +30,7 @@ import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utiliti
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
 import { isImageFile, getViewerType } from './utils/fileTypeUtils.js'; // 📁 File type detection
 import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './utils/scrollUtils.js'; // 📜 Scroll utilities
+import { convertMessagesForOpenAI } from './utils/messageConverters.js'; // 🔄 Message format converters
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator } from './components/ui';
@@ -699,12 +700,6 @@ function App() {
   };
 
 
-  const convertMessagesForOpenAI = (messages) => {
-    return messages.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'assistant',
-      content: msg.text || ''
-    }));
-  };
 
   // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE (UNCHANGED)
   const handleVoiceScreenOpen = () => {
