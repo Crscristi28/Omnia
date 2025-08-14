@@ -2365,19 +2365,18 @@ const virtuosoStyle = React.useMemo(() => ({
 // Dynamická výška Footer podle Gemini doporučení
 const virtuosoFooterStyle = React.useMemo(() => {
   const isMobile = window.innerWidth <= 768;
-  const viewportHeight = window.innerHeight;
-  const inputBarHeight = isMobile ? 120 : 140; // Estimate based on responsive design
+  const virtuosoContainerHeight = 723; // Actual Virtuoso container height
   const scrollEffectSpace = 475; // Original scroll effect space
   
-  // Gemini formula: Footer = viewport - inputBar - some margin for messages
-  // But ensure minimum space for scroll effect
-  const dynamicHeight = Math.max(
-    scrollEffectSpace, // Minimum 475px for scroll effect
-    viewportHeight * 0.6 // Or 60% of viewport, whichever is larger
+  // Pro Virtuoso kontejner 723px, počítáme rozumnou část pro Footer
+  // Necháme místo pro zprávy + scroll efekt
+  const dynamicHeight = Math.min(
+    scrollEffectSpace, // Maximum 475px pro scroll effect
+    virtuosoContainerHeight * 0.4 // Nebo 40% kontejneru (289px)
   );
   
   return {
-    height: `${dynamicHeight}px`
+    height: `${Math.max(dynamicHeight, 300)}px` // Minimum 300px
   };
 }, []);
 
