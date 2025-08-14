@@ -462,7 +462,6 @@ function App() {
     }
     handleNewChat();
     const newKeepSidebarId = chatDB.generateChatId();
-    console.log('🔴 [DEBUG] handleNewChatKeepSidebar - setting new chatId:', newKeepSidebarId);
     updateCurrentChatId(newKeepSidebarId);
     // ❌ REMOVED: loadChatHistories() - historie se aktualizuje lazy
     // Note: sidebar stays open
@@ -471,14 +470,12 @@ function App() {
   // 📚 CHAT TITLES FUNCTION - Only metadata, no full messages
   const loadChatTitles = async () => {
     try {
-      console.log('📋 [MONITOR] Loading chat titles only (metadata)...');
       const startTime = performance.now();
       
       const titles = await chatDB.getChatTitles(); // ONLY titles/metadata - NO messages
       setChatHistories(titles);
       
       const loadTime = performance.now() - startTime;
-      console.log(`✅ [MONITOR] Loaded ${titles.length} chat titles (metadata only) in ${loadTime.toFixed(2)}ms`);
       
     } catch (error) {
       console.error('❌ [MONITOR] Error loading chat titles:', error);
@@ -491,16 +488,13 @@ function App() {
     try {
       // ✅ SAVE POINT #2: Save current chat before switching
       if (currentChatId && messages.length > 0) {
-        console.log('🔄 [MONITOR-V2] Saving current chat before switch:', currentChatId);
         const wasSaved = await smartIncrementalSave(currentChatId, messages);
         if (wasSaved) {
           crashMonitor.trackIndexedDB('save', currentChatId, true);
         }
-        console.log('✅ [MONITOR-V2] Current chat saved successfully');
       }
       
       // 📖 Load selected chat - V2 BOTTOM-FIRST LOADING
-      console.log('📖 [MONITOR-V2] Loading chat with V2 API:', chatId);
       
       // V2: Load ALL messages for chat (unlimited - Virtuoso optimized)
       const chatData = await chatDB.getAllMessagesForChat(chatId);
@@ -531,35 +525,24 @@ function App() {
           totalMessages: chatData.totalCount,
           hasMore: chatData.hasMore
         });
-        console.log('✅ [MONITOR-V2] Chat loaded successfully with V2 API:', {
-          chatId,
-          loadedMessages: chatData.messages.length,
-          totalMessages: chatData.totalCount,
-          hasMore: chatData.hasMore,
-          loadedRange: chatData.loadedRange
-        });
         
         // 🎯 SCROLL FIX: Ensure chat opens with latest message at TOP
         setTimeout(() => {
           if (virtuosoRef.current) {
-            console.log('📂 Chat loaded, scrolling to LAST message at TOP');
             virtuosoRef.current.scrollToIndex({ 
               index: 'LAST',
               align: 'start',
               behavior: 'smooth',
             });
           } else {
-            console.log('❌ virtuosoRef not ready after chat load');
           }
         }, 100);
       } else if (chatData && chatData.messages.length === 0) {
         // 🧹 MEMORY CLEAR: Empty chat - ensure RAM is clean
-        console.log('🧹 [MEMORY] Clearing RAM for empty chat');
         setMessages([]);
         updateCurrentChatId(chatId);
         // V2: No offset tracking needed
-        console.log('🆕 [MONITOR] Starting with empty chat:', chatId);
-      } else {
+        } else {
         crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
         console.warn('⚠️ [MONITOR] Chat not found:', chatId);
       }
@@ -572,7 +555,6 @@ function App() {
       });
       console.error('❌ [MONITOR] Chat switch failed:', error);
       // No localStorage fallback - IndexedDB only
-      console.log('🔄 [MONITOR] Chat switch failed, no fallback used');
     }
   };
 
@@ -580,21 +562,17 @@ function App() {
   // 🔄 INITIALIZATION - Create chat ID but don't load messages (lazy loading)
   React.useEffect(() => {
     const initializeChat = async () => {
-      console.log('🔴 [DEBUG] useEffect init - currentChatId at mount:', currentChatId);
       
       let chatIdToUse = currentChatId;
       
       if (!chatIdToUse) {
         const newId = chatDB.generateChatId();
-        console.log('🔴 [DEBUG] useEffect generating NEW chatId (initial):', newId);
         updateCurrentChatId(newId);
         chatIdToUse = newId;
       } else {
-        console.log('🔴 [DEBUG] useEffect - using existing chatId:', chatIdToUse);
       }
       
       // ✅ LAZY LOADING: Don't load messages at startup - only when user selects chat
-      console.log('📭 [INIT] Starting with empty app - messages load only when chat selected');
       setMessages([]);
     };
     
@@ -609,7 +587,6 @@ function App() {
     const handleVisibilityChange = () => {
       // Primary save trigger for PWA (minimize, app switch)
       if (document.hidden && currentChatId && messages.length > 0) {
-        console.log('👁️ [MONITOR] PWA hidden - smart incremental save');
         
         smartIncrementalSave(currentChatId, messages).catch(error => {
           console.error('❌ Failed smart save on visibility change:', error);
@@ -622,7 +599,6 @@ function App() {
     const handleBeforeUnload = () => {
       // Emergency backup for PWA force close - also uses smart save
       if (currentChatId && messages.length > 0) {
-        console.log('🚪 [MONITOR] PWA force close - emergency smart save');
         
         smartIncrementalSave(currentChatId, messages).catch(error => {
           console.error('❌ Failed emergency smart save on close:', error);
@@ -649,23 +625,16 @@ function App() {
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
   const checkAutoSave = async (allMessages, chatId = currentChatId) => {
-    console.log(`🔴 [DEBUG] checkAutoSave() CALLED! Messages: ${allMessages.length}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
-    console.log(`🔴 [DEBUG] Auto-save - currentChatId from state: ${currentChatId}, passed chatId: ${chatId}`);
     
     if (!chatId || allMessages.length === 0) {
-      console.log(`🔴 [DEBUG] Early return: chatId=${chatId ? 'EXISTS' : 'NULL'}, length=${allMessages.length}`);
       return allMessages;
     }
     
-    console.log(`📊 [AUTO-SAVE-CHECK] Total messages (user+AI): ${allMessages.length}, Checking auto-save condition...`);
-    console.log(`🔍 [AUTO-SAVE-DEBUG] Length: ${allMessages.length}, Modulo 10: ${allMessages.length % 10}, ChatID: ${chatId ? 'EXISTS' : 'NULL'}`);
     
     // 💾 AUTO-SAVE - každých 10 zpráv (bez cleanup!)
     if (allMessages.length % 10 === 0 && allMessages.length > 0) {
-      console.log(`🔄 [AUTO-SAVE] Trigger: ${allMessages.length} total messages - exact multiple of 10!`);
       try {
         await smartIncrementalSave(chatId, allMessages);
-        console.log(`✅ [AUTO-SAVE] SUCCESS: ${allMessages.length} total messages saved to DB`);
       } catch (error) {
         console.error(`❌ [AUTO-SAVE] FAILED:`, error);
       }
@@ -683,7 +652,6 @@ function App() {
   // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
   const scrollToUserMessageAt = (userMessageIndex) => {
     if (virtuosoRef.current && userMessageIndex >= 0) {
-      console.log('🔼 Scrolling to user message at index:', userMessageIndex);
       
       virtuosoRef.current.scrollToIndex({
         index: userMessageIndex,
@@ -697,7 +665,6 @@ function App() {
     if (virtuosoRef.current && messages.length > 0) {
       const latestMessageIndex = messages.length - 1; // Index poslední přidané zprávy
       
-      console.log('🔼 Scrolling to latest message at index:', latestMessageIndex);
       virtuosoRef.current.scrollToIndex({
         index: latestMessageIndex, // Index poslední přidané zprávy
         align: 'start',
@@ -979,7 +946,6 @@ function App() {
       updateCurrentChatId(newChatId);
       
       crashMonitor.trackChatOperation('new_chat_success', { newChatId });
-      console.log('🆕 [MONITOR] New chat prepared:', newChatId);
       
     } catch (error) {
       crashMonitor.trackChatOperation('new_chat_failed', { error: error.message });
@@ -1078,19 +1044,15 @@ function App() {
 
     try {
       // 🔴 [DEBUG] Track currentChatId state at handleSend start
-      console.log("🔴 [DEBUG] handleSend start - currentChatId:", currentChatId, "ref:", currentChatIdRef.current);
       
       // 🎯 ENSURE CHAT ID EXISTS - use safe getter to prevent race condition
       let activeChatId = getSafeChatId();
-      console.log("🔴 [DEBUG] activeChatId from getSafeChatId():", activeChatId);
       
       if (!activeChatId) {
         activeChatId = chatDB.generateChatId();
         updateCurrentChatId(activeChatId);
-        console.log('🔴 [DEBUG] CREATING NEW CHAT - no chatId found! New chatId:', activeChatId);
         console.trace('🔍 [DEBUG] New chat creation call stack:');
       } else {
-        console.log('🔴 [DEBUG] Using existing safe chatId:', activeChatId);
       }
       
       const userMessage = { 
@@ -1104,7 +1066,6 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
-      console.log('🔼 User message sent - scrolling to user message at index:', newUserMessageIndex);
       scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
@@ -1435,7 +1396,6 @@ function App() {
             responseLength: responseText.length,
             sourcesCount: sourcesToSave?.length || 0 
           });
-          console.log('✅ [MONITOR] Conversation saved successfully');
           
         } catch (error) {
           crashMonitor.trackIndexedDB('save_conversation', currentChatId, false, error);
@@ -1448,7 +1408,6 @@ function App() {
           
           // No localStorage fallback - IndexedDB save failed but we continue
           sessionManager.saveCurrentChatId(currentChatId);
-          console.log('🔄 [MONITOR] IndexedDB save failed, no fallback used');
         }
       } else if (responseText) {
         crashMonitor.trackChatOperation('send_message_success', { 
@@ -1732,7 +1691,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
-  console.log('🔼 User message with documents sent - scrolling to user message at index:', newUserMessageIndex);
   scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
 
   // ❌ REMOVED: DOC-AUTO-SAVE - using unified auto-save system instead (every 10 messages)
@@ -1938,7 +1896,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             ? `${text.trim()}${documentContext}`
             : `Analyzuj nahraté soubory:${documentContext}`;
           
-          console.log('🔍 DEBUG - AI message preparation:');
           console.log('   - Original text:', `"${text.trim()}"`);
           console.log('   - Text files:', textFiles.length);
           console.log('   - Other files:', otherFiles.length);
@@ -3028,7 +2985,6 @@ const virtuosoInlineStyle = React.useMemo(() => ({
         currentChatId={currentChatId}
         onChatDeleted={() => {
           // Historie se aktualizuje lazy při příštím otevření sidebaru
-          console.log('🗑️ Chat deleted - lazy update on next sidebar open');
         }}
       />
 

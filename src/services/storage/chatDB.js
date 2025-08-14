@@ -19,12 +19,9 @@ class ChatDatabase extends Dexie {
       chats: 'id, title, createdAt, updatedAt, messageCount',
       messages: '++id, chatId, timestamp, sender, text, type, attachments, [chatId+timestamp]'
     }).upgrade(tx => {
-      console.log('🚀 [CHAT-DB-V2] Upgrading database to version 2...');
-      console.log('🗑️ [CHAT-DB-V2] Clearing all old data for clean start...');
       
       // Clear all old data - fresh start
       return tx.chats.clear().then(() => {
-        console.log('✅ [CHAT-DB-V2] Database cleared, ready for normalized schema!');
       });
     });
     
@@ -33,8 +30,6 @@ class ChatDatabase extends Dexie {
       chats: 'id, title, createdAt, updatedAt, messageCount',
       messages: '++id, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp]'
     }).upgrade(tx => {
-      console.log('🚀 [CHAT-DB-V3] Upgrading database to version 3 - adding image column...');
-      console.log('✅ [CHAT-DB-V3] Schema updated to support Imagen images persistence!');
     });
   }
 }
@@ -51,9 +46,6 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`💾 [CHAT-DB-V1] *** ACTUAL DATABASE SAVE OPERATION *** for chat ${chatId}`);
-      console.log(`📊 [CHAT-DB-V1] Messages to save: ${messages.length}, Memory: ${Math.round(memBefore/1024/1024)}MB`);
-      console.trace('💾 [CHAT-DB-V1] CALL STACK - Where was this called from?');
       
       const chatData = {
         id: chatId,
@@ -68,9 +60,7 @@ const chatDB = {
       const existingChat = await db.chats.get(chatId);
       if (existingChat) {
         chatData.createdAt = existingChat.createdAt; // Keep original creation time
-        console.log(`🔄 [CHAT-DB-V1] Updating existing chat, original date: ${new Date(existingChat.createdAt).toLocaleString()}`);
       } else {
-        console.log(`🆕 [CHAT-DB-V1] Creating new chat: ${chatId}`);
       }
 
       // Save/update the chat
@@ -80,9 +70,6 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      console.log(`✅ [CHAT-DB-V1] Chat saved successfully: ${chatId}`);
-      console.log(`⚡ [CHAT-DB-V1] Save duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`💾 [CHAT-DB-V1] Data size: ${Math.round(JSON.stringify(chatData).length / 1024)}KB`);
       
       return chatData;
       
@@ -105,7 +92,6 @@ const chatDB = {
         .limit(50) // Limit to prevent performance issues
         .toArray();
       
-      console.log(`📋 Loaded ${chats.length} chats from IndexedDB`);
       return chats;
       
     } catch (error) {
@@ -123,9 +109,7 @@ const chatDB = {
     
     CallStack will show you where this was called from.`);
     
-    console.error(`🚨 [CHAT-DB-V1] DISABLED METHOD CALLED: getChat(${chatId})`);
-    console.error('🔄 [CHAT-DB-V1] Use getLatestMessages() instead!');
-    console.trace('📍 [CHAT-DB-V1] Called from:');
+    // Method disabled - use getLatestMessages() instead
     
     throw error;
   },
@@ -140,9 +124,7 @@ const chatDB = {
     
     CallStack will show you where this was called from.`);
     
-    console.error(`🚨 [CHAT-DB-V1] DISABLED METHOD CALLED: getChatMessages(${chatId}, ${offset}, ${limit})`);
-    console.error('🔄 [CHAT-DB-V1] Use V2 methods instead!');
-    console.trace('📍 [CHAT-DB-V1] Called from:');
+    // Method disabled - use V2 methods instead
     
     throw error;
   },
@@ -151,7 +133,6 @@ const chatDB = {
   async deleteChat(chatId) {
     try {
       await db.chats.delete(chatId);
-      console.log('🗑️ Chat deleted from IndexedDB:', chatId);
       return true;
     } catch (error) {
       console.error('❌ Error deleting chat from IndexedDB:', error);
@@ -166,7 +147,6 @@ const chatDB = {
         ...metadata,
         updatedAt: Date.now()
       });
-      console.log('⚡ Chat metadata updated:', chatId);
       return true;
     } catch (error) {
       console.error('❌ Error updating chat metadata:', error);
@@ -182,11 +162,8 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`🚀 [CHAT-DB-V2] Converting V1 saveChat to V2 format: ${chatId}`);
-      console.log(`📊 [CHAT-DB-V2] Messages to convert: ${messages.length}`);
       
       if (messages.length === 0) {
-        console.log(`⚠️ [CHAT-DB-V2] No messages to save for chat: ${chatId}`);
         return;
       }
 
@@ -311,9 +288,6 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      console.log(`✅ [CHAT-DB-V2] Message saved: ID ${messageId}`);
-      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`🎯 [CHAT-DB-V2] EFFICIENT: Single message insert, no arrays!`);
       
       return messageId;
       
@@ -329,7 +303,6 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`📖 [CHAT-DB-V2] Getting latest ${limit} messages for: ${chatId}`);
       
       // Get messages using compound index [chatId+timestamp] for efficient querying
       const messages = await db.messages
@@ -349,9 +322,6 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      console.log(`✅ [CHAT-DB-V2] Latest messages loaded: ${orderedMessages.length}/${totalCount}`);
-      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`🎯 [CHAT-DB-V2] TRUE PAGINATION: Only ${orderedMessages.length} messages in memory!`);
       
       return {
         messages: orderedMessages,
@@ -372,7 +342,6 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`📚 [CHAT-DB-FULL] Getting ALL messages for: ${chatId}`);
       
       // Get ALL messages using compound index [chatId+timestamp] for efficient querying
       const messages = await db.messages
@@ -386,9 +355,6 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      console.log(`✅ [CHAT-DB-FULL] ALL messages loaded: ${totalCount} messages`);
-      console.log(`⚡ [CHAT-DB-FULL] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`🎯 [CHAT-DB-FULL] COMPLETE HISTORY: All ${totalCount} messages loaded for Virtuoso!`);
       
       return {
         messages: messages,
@@ -409,7 +375,6 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`📄 [CHAT-DB-V2] Getting ${limit} messages before timestamp ${beforeTimestamp}`);
       
       // Get older messages using compound index
       const messages = await db.messages
@@ -426,9 +391,6 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      console.log(`✅ [CHAT-DB-V2] Older messages loaded: ${orderedMessages.length}`);
-      console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`🎯 [CHAT-DB-V2] SMART LOADING: Only requested messages loaded!`);
       
       return orderedMessages;
       
@@ -461,7 +423,6 @@ const chatDB = {
   async clearAllChats() {
     try {
       await db.chats.clear();
-      console.log('🧹 All chats cleared from IndexedDB');
       return true;
     } catch (error) {
       console.error('❌ Error clearing chats:', error);
@@ -475,7 +436,6 @@ const chatDB = {
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
     try {
-      console.log(`📋 [CHAT-DB-V1] Loading chat titles...`);
       
       // TRUE lazy loading - use each() to prevent loading messages into memory
       const chatTitles = [];
@@ -499,9 +459,6 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      console.log(`✅ [CHAT-DB-V1] Chat titles loaded: ${chatTitles.length}`);
-      console.log(`⚡ [CHAT-DB-V1] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
-      console.log(`🎯 [CHAT-DB-V1] GOOD: True lazy loading, messages never touched!`);
       
       return chatTitles;
       
@@ -563,7 +520,6 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       if (confirmed) {
         await db.chats.clear();
         await db.messages.clear();
-        console.log('🧹 All chats and messages cleared from IndexedDB V2');
         return true;
       }
       return false;
@@ -577,26 +533,22 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       ];
       const chatId = chatDB.generateChatId();
       await chatDB.saveChat(chatId, testMessages);
-      console.log('✅ Test chat V1 saved:', chatId);
       return chatId;
     },
     
     // V2 Test (new way)
     async saveTestChatV2() {
       const chatId = chatDB.generateChatId();
-      console.log('🚀 Testing V2 API...');
       
       // Save messages individually
       await chatDB.saveMessage(chatId, { sender: 'user', text: 'Test user message V2' });
       await chatDB.saveMessage(chatId, { sender: 'bot', text: 'Test AI response V2' });
       
-      console.log('✅ Test chat V2 saved:', chatId);
       return chatId;
     },
     
     // Compare V1 vs V2 performance
     async comparePerformance() {
-      console.log('🏁 Performance comparison V1 vs V2...');
       
       const messages = Array.from({ length: 100 }, (_, i) => ({
         sender: i % 2 === 0 ? 'user' : 'bot',
@@ -627,9 +579,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     }
   };
   
-  console.log('🐛 Development mode: IndexedDB V2 debugging available');
-  console.log('📋 V1 Commands: omniaDB.saveTestChatV1(), omniaDB.showStats(), omniaDB.clearAll()');
-  console.log('🚀 V2 Commands: omniaDB.saveTestChatV2(), omniaDB.comparePerformance()');
+  // Development debugging available in omniaDB object
 }
 
 export default chatDB;

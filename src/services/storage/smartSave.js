@@ -8,11 +8,9 @@ import chatDB from './chatDB.js';
  */
 export const smartIncrementalSave = async (chatId, messages) => {
   if (!chatId || !messages || messages.length === 0) {
-    console.log('⚠️ [SMART-SAVE] No chatId or messages provided');
     return false;
   }
 
-  console.log('💾 [SMART-SAVE] Checking for unsaved messages:', chatId);
   
   // Get existing message count from database
   const existingData = await chatDB.getLatestMessages(chatId, 1);
@@ -22,12 +20,9 @@ export const smartIncrementalSave = async (chatId, messages) => {
   // Save only NEW messages since last save
   if (currentCount > lastSavedCount) {
     const unsavedMessages = messages.slice(lastSavedCount);
-    console.log(`💾 [SMART-SAVE] Saving ${unsavedMessages.length} new messages (${lastSavedCount} already saved)`);
     await chatDB.saveChatV2(chatId, unsavedMessages);
-    console.log('✅ [SMART-SAVE] New messages saved successfully');
     return true;
   } else {
-    console.log('✅ [SMART-SAVE] All messages already saved - no duplicates');
     return false;
   }
 };
