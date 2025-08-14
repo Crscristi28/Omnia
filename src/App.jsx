@@ -2368,15 +2368,9 @@ const virtuosoFooterStyle = React.useMemo(() => {
   const virtuosoContainerHeight = 723; // Actual Virtuoso container height
   const scrollEffectSpace = 475; // Original scroll effect space
   
-  // Pro Virtuoso kontejner 723px, počítáme rozumnou část pro Footer
-  // Necháme místo pro zprávy + scroll efekt
-  const dynamicHeight = Math.min(
-    scrollEffectSpace, // Maximum 475px pro scroll effect
-    virtuosoContainerHeight * 0.4 // Nebo 40% kontejneru (289px)
-  );
-  
+  // Vrácení k funkční hodnotě - původní 475px scroll efekt fungoval dobře
   return {
-    height: `${Math.max(dynamicHeight, 300)}px` // Minimum 300px
+    height: '475px' // Původní funkční hodnota pro scroll-to-top
   };
 }, []);
 
