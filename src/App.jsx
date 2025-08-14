@@ -28,21 +28,20 @@ import { welcomeTexts } from './constants/welcomeTexts.js'; // 🌍 Welcome text
 import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔 Notifications
 import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
-import { isImageFile, getViewerType } from './utils/fileTypeUtils.js'; // 📁 File type detection
 import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './utils/scrollUtils.js'; // 📜 Scroll utilities
 import { convertMessagesForOpenAI } from './utils/messageConverters.js'; // 🔄 Message format converters
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator } from './components/ui';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, OfflineIndicator } from './components/ui';
 
 import { VoiceScreen } from './components/chat';
-import MessageRenderer from './components/MessageRenderer';
+import MessageItem from './components/chat/MessageItem';
 
 // 🆕 IMPORT INPUT BAR (MODULAR)
 import { InputBar } from './components/input';
 
 // 🔗 IMPORT SOURCES COMPONENTS (UNCHANGED)
-import { SourcesButton, SourcesModal } from './components/sources';
+import { SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
@@ -1682,29 +1681,8 @@ const handleModelChange = useCallback((newModel) => {
 
 // 🎯 STYLE CONSTANTS - Prevent inline style object recreation that causes re-renders
 
-// All style constants imported from styles/ChatStyles.js
+// Style constants still needed in App.jsx (MessageItem styles now in component)
 const { 
-  messageContainerBaseStyle,
-  userMessageContainerStyle, 
-  botMessageContainerStyle,
-  loadingContainerStyle,
-  loadingBoxStyle,
-  userContainerStyle,
-  userBubbleStyle,
-  botContainerStyle,
-  botHeaderStyle,
-  botNameStyle,
-  loadingAnimationContainerStyle,
-  loadingSpinnerStyle,
-  loadingTextStyleStreaming,
-  loadingTextStyleNormal,
-  loadingDotsContainerStyle,
-  loadingDotStyle,
-  loadingDot2Style,
-  loadingDot3Style,
-  imageStyle,
-  userAttachmentsContainerStyle,
-  userAttachmentWrapperStyle,
   modelDropdownSpanStyle,
   modelDropdownIconStyle,
   modelDropdownContainerStyle,
@@ -1722,7 +1700,6 @@ const {
   welcomeTitleStyle,
   welcomeSubtitleStyle,
   chatMessagesWrapperStyle,
-  virtuosoStyle,
   virtuosoFooterStyle,
   virtuosoInlineStyle
 } = styles;
@@ -1998,268 +1975,16 @@ const virtuosoComponents = React.useMemo(() => ({
               }
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
-            itemContent={useCallback((index, msg) => {
-
-              return (
-              <div 
-                key={msg.id || `fallback_${index}`} 
-                data-sender={msg.sender}
-                style={msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle}
-            >
-              {/* Special rendering for loading indicator */}
-              {msg.isLoading ? (
-                <div style={loadingContainerStyle}>
-                  <div style={loadingBoxStyle}>
-                    <div style={loadingAnimationContainerStyle}>
-                      <div style={loadingSpinnerStyle}></div>
-                      <span style={msg.isStreaming ? loadingTextStyleStreaming : loadingTextStyleNormal}>
-                        {msg.isStreaming ? (
-                          <span style={loadingDotsContainerStyle}>
-                            <span style={loadingDotStyle}>●</span>
-                            <span style={loadingDot2Style}>●</span>
-                            <span style={loadingDot3Style}>●</span>
-                          </span>
-                        ) : msg.text}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : msg.sender === 'user' ? (
-                <div style={userContainerStyle}>
-                  {/* User text bubble */}
-                  {msg.text && (
-                    <div style={userBubbleStyle}>
-                      <MessageRenderer 
-                        content={msg.text || ''}
-                        className="user-message-content"
-                      />
-                    </div>
-                  )}
-                  
-                  {/* File attachments - separate display for generated vs uploaded */}
-                  {msg.attachments && msg.attachments.length > 0 && (
-                    <div style={userAttachmentsContainerStyle}>
-                      {msg.attachments.map((attachment, index) => {
-                        // Generated images display as large standalone images
-                        if (attachment.isGenerated && attachment.type && attachment.type.startsWith('image/')) {
-                          return (
-                            <div
-                              key={index}
-                              style={userAttachmentWrapperStyle}
-                            >
-                              <img 
-                                src={attachment.base64}
-                                alt={attachment.name}
-                                onClick={() => {
-                                  setPreviewImage({
-                                    url: attachment.base64,
-                                    name: attachment.name
-                                  });
-                                }}
-                                style={imageStyle}
-                                onMouseEnter={(e) => {
-                                  e.target.style.transform = 'scale(1.02) translateZ(0)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.transform = 'scale(1) translateZ(0)';
-                                }}
-                                onLoad={() => {
-                                  // Image loaded - scroll handled by useEffect
-                                }}
-                              />
-                            </div>
-                          );
-                        }
-                        
-                        // Upload attachments - smart viewer selection
-                        const viewerType = getViewerType(attachment.type, attachment.name);
-                        
-                        return (
-                        <div
-                          key={index}
-                          onClick={() => {
-                            // Route to appropriate viewer based on file type
-                            if (viewerType === 'image') {
-                              setPreviewImage({
-                                url: attachment.base64,
-                                name: attachment.name
-                              });
-                            } else {
-                              setDocumentViewer({
-                                isOpen: true,
-                                document: {
-                                  url: attachment.base64,
-                                  name: attachment.name,
-                                  mimeType: attachment.type,
-                                  base64: attachment.base64
-                                }
-                              });
-                            }
-                          }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.8rem',
-                            padding: '1rem',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            color: 'white',
-                            backdropFilter: 'blur(10px)',
-                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-                          }}
-                        >
-                          {/* File icon/thumbnail */}
-                          <div style={{
-                            width: '48px',
-                            height: '48px',
-                            backgroundColor: 'rgba(96, 165, 250, 0.2)',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '20px',
-                            flexShrink: 0,
-                            overflow: 'hidden',
-                            position: 'relative'
-                          }}>
-                            {attachment.type && attachment.type.startsWith('image/') ? (
-                              <img 
-                                src={attachment.base64}
-                                alt={attachment.name}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  borderRadius: '8px'
-                                }}
-                              />
-                            ) : (
-                              attachment.name.match(/\.(png|jpe?g|gif|webp)$/i) ? '🖼️' : '📄'
-                            )}
-                          </div>
-                          
-                          {/* File info */}
-                          <div style={{
-                            flex: 1,
-                            minWidth: 0
-                          }}>
-                            <div style={{
-                              fontWeight: '500',
-                              fontSize: '0.95rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              marginBottom: '0.2rem'
-                            }}>
-                              {attachment.name}
-                            </div>
-                            <div style={{
-                              fontSize: '0.8rem',
-                              opacity: 0.7
-                            }}>
-                              {attachment.size && typeof attachment.size === 'number' && !isNaN(attachment.size) 
-                                ? `${Math.round(attachment.size / 1024)} KB` 
-                                : 'Generated'}
-                            </div>
-                          </div>
-                          
-                        </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div 
-                  className="p-4"
-                  style={botContainerStyle}>
-                  <div style={botHeaderStyle}>
-                    <span style={botNameStyle}>
-                      <ChatOmniaLogo size={18} />
-                      Omnia {msg.isStreaming ? ' • streaming' : ''}
-                    </span>
-                  </div>
-                  
-                  {/* 🎨 GENERATED IMAGE - Display if message contains image */}
-                  {msg.image && (
-                    <div style={{
-                      paddingTop: '1rem',
-                      paddingBottom: '1rem',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      maxWidth: '100%'
-                    }}>
-                      <img 
-                        src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
-                        alt={`Generated image for: ${msg.text}`}
-                        onClick={() => {
-                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
-                          setPreviewImage({
-                            url: imageUrl,
-                            name: `Generated: ${msg.text.slice(0, 30)}...`
-                          });
-                        }}
-                        style={imageStyle}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = 'scale(1.02) translateZ(0)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = 'scale(1) translateZ(0)';
-                        }}
-                        onLoad={() => {
-                          // Image loaded - scroll handled by useEffect
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  <MessageRenderer 
-                    content={msg.text || ''}
-                    className="text-white"
-                  />
-                  
-                  {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '10px', 
-                    paddingTop: '1.5rem',
-                    justifyContent: 'flex-start',
-                    opacity: msg.isStreaming ? 0 : 1,
-                    pointerEvents: msg.isStreaming ? 'none' : 'auto',
-                    transition: 'opacity 0.3s ease'
-                  }}>
-                    <SourcesButton 
-                      sources={msg.sources || []}
-                      onClick={() => handleSourcesClick(msg.sources || [])}
-                      language={detectLanguage(msg.text)}
-                    />
-                    <VoiceButton 
-                      text={msg.text} 
-                      onAudioStart={() => setIsAudioPlaying(true)}
-                      onAudioEnd={() => setIsAudioPlaying(false)}
-                    />
-                    <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
-                  </div>
-                </div>
-              )}
-            </div>
-          ); // Close return statement
-          }, [setPreviewImage, t])} // Close itemContent function
+            itemContent={useCallback((index, msg) => (
+              <MessageItem
+                msg={msg}
+                index={index}
+                onPreviewImage={setPreviewImage}
+                onDocumentView={setDocumentViewer}
+                onSourcesClick={handleSourcesClick}
+                onAudioStateChange={setIsAudioPlaying}
+              />
+            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
