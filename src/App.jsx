@@ -26,6 +26,8 @@ import * as styles from './styles/ChatStyles.js'; // 🎨 All chat styles
 import { generateMessageId } from './utils/messageUtils.js'; // 📝 Message utilities
 import { welcomeTexts } from './constants/welcomeTexts.js'; // 🌍 Welcome texts
 import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔 Notifications
+import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
+import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
@@ -1230,14 +1232,6 @@ function App() {
   };
 
   // 🔄 Helper function to convert File object to base64 string
-  const convertFileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
 
 
   // Custom code component for syntax highlighting
@@ -1246,36 +1240,6 @@ function App() {
 // ✅ NEW: Logo zmizí po první zprávě + clean layout
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
 
-// 📄 UPLOAD ERROR MESSAGES - Multilingual
-const getUploadErrorMessages = (language) => {
-  const messages = {
-    'cs': {
-      pdfOnly: 'Podporované formáty: PDF, Word, Text, Obrázky (PNG/JPG)',
-      fileTooBig: 'Soubor je příliš velký. Maximum je 15MB.',
-      dailyLimit: (remainingMB) => `Překročen denní limit 20MB. Zbývá ${remainingMB}MB do půlnoci.`,
-      processing: 'Zpracovávám dokument...',
-      preparing: 'Připravuji dokument pro AI...',
-      success: 'Dokument je připraven pro AI!'
-    },
-    'en': {
-      pdfOnly: 'Supported formats: PDF, Word, Text, Images (PNG/JPG)',
-      fileTooBig: 'File is too large. Maximum is 15MB.',
-      dailyLimit: (remainingMB) => `Daily limit of 20MB exceeded. ${remainingMB}MB remaining until midnight.`,
-      processing: 'Processing document...',
-      preparing: 'Preparing document for AI...',
-      success: 'Document is ready for AI!'
-    },
-    'ro': {
-      pdfOnly: 'Formate acceptate: PDF, Word, Text, Imagini (PNG/JPG)',
-      fileTooBig: 'Fișierul este prea mare. Maximul este 15MB.',
-      dailyLimit: (remainingMB) => `Limita zilnică de 20MB a fost depășită. ${remainingMB}MB rămase până la miezul nopții.`,
-      processing: 'Procesez documentul...',
-      preparing: 'Pregătesc documentul pentru AI...',
-      success: 'Documentul este gata pentru AI!'
-    }
-  };
-  return messages[language] || messages['cs'];
-};
 
 const handleDocumentUpload = async (event) => {
   const file = event.target.files?.[0];
