@@ -22,6 +22,7 @@ import { smartIncrementalSave } from './services/storage/smartSave.js';
 import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 import mobileAudioManager from './utils/MobileAudioManager.js'; // 🎵 Mobile audio handling
+import * as styles from './styles/ChatStyles.js'; // 🎨 All chat styles
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
@@ -1838,142 +1839,27 @@ const handleModelChange = useCallback((newModel) => {
 
 // 🎯 STYLE CONSTANTS - Prevent inline style object recreation that causes re-renders
 
-const messageContainerBaseStyle = React.useMemo(() => ({
-  display: 'flex',
-  paddingBottom: '1.5rem',
-  paddingLeft: '0.5rem',
-  paddingRight: '0.5rem'
-}), []);
-
-const userMessageContainerStyle = React.useMemo(() => ({
-  ...messageContainerBaseStyle,
-  justifyContent: 'flex-end',
-  paddingBottom: '2rem'
-}), [messageContainerBaseStyle]);
-
-const botMessageContainerStyle = React.useMemo(() => ({
-  ...messageContainerBaseStyle,
-  justifyContent: 'flex-start'
-}), [messageContainerBaseStyle]);
-
-const loadingContainerStyle = React.useMemo(() => ({
-  display: 'flex',
-  justifyContent: 'flex-start',
-  width: '100%'
-}), []);
-
-const loadingBoxStyle = React.useMemo(() => ({
-  width: '95%',
-  padding: '1.2rem',
-  paddingLeft: '1rem',
-  fontSize: '1rem',
-  color: '#ffffff',
-  background: 'rgba(255, 255, 255, 0.03)',
-  borderRadius: '12px',
-  backdropFilter: 'blur(10px)',
-  textAlign: 'left'
-}), []);
-
-const userContainerStyle = React.useMemo(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-end',
-  gap: '0.8rem',
-  width: '100%',
-  paddingLeft: '0',
-  paddingRight: '0'
-}), []);
-
-const userBubbleStyle = React.useMemo(() => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  color: '#ffffff',
-  padding: '1.2rem 1.4rem',
-  borderRadius: '25px',
-  fontSize: '1rem',
-  lineHeight: '1.3',
-  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  backdropFilter: 'blur(10px)',
-  wordBreak: 'break-word',
-  overflowWrap: 'break-word',
-  width: '95%',
-  margin: '0 auto'
-}), []);
-
-const botContainerStyle = React.useMemo(() => ({
-  width: '95%',
-  margin: '0 auto',
-  fontSize: '1rem',
-  lineHeight: '1.3',
-  whiteSpace: 'normal',
-  color: '#FFFFFF',
-  textAlign: 'left'
-}), []);
-
-const botHeaderStyle = React.useMemo(() => ({
-  fontSize: '0.75rem',
-  opacity: 0.7,
-  display: 'flex',
-  alignItems: 'center',
-  paddingBottom: '1.4rem'
-}), []);
-
-const botNameStyle = React.useMemo(() => ({
-  fontWeight: '600',
-  color: '#a0aec0',
-  display: 'flex',
-  alignItems: 'center'
-}), []);
-
-const loadingAnimationContainerStyle = React.useMemo(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.8rem'
-}), []);
-
-const loadingSpinnerStyle = React.useMemo(() => ({
-  width: '18px',
-  height: '18px',
-  border: '2px solid rgba(255,255,255,0.3)',
-  borderTop: '2px solid #00ffff',
-  borderRadius: '50%',
-  animation: 'spin 1s linear infinite',
-  flexShrink: 0
-}), []);
-
-const loadingTextStyleStreaming = React.useMemo(() => ({
-  color: '#00ffff',
-  fontWeight: '500'
-}), []);
-
-const loadingTextStyleNormal = React.useMemo(() => ({
-  color: '#a0aec0',
-  fontWeight: '500'
-}), []);
-
-const loadingDotsContainerStyle = React.useMemo(() => ({
-  display: 'flex',
-  gap: '4px',
-  alignItems: 'center'
-}), []);
-
-const loadingDotStyle = React.useMemo(() => ({
-  animation: 'pulse 1.4s ease-in-out infinite',
-  fontSize: '24px',
-  textShadow: '0 0 10px rgba(0, 255, 255, 0.8)',
-  color: '#00ffff',
-  transform: 'translateZ(0)'
-}), []);
-
-const loadingDot2Style = React.useMemo(() => ({
-  ...loadingDotStyle,
-  animation: 'pulse 1.4s ease-in-out 0.2s infinite'
-}), [loadingDotStyle]);
-
-const loadingDot3Style = React.useMemo(() => ({
-  ...loadingDotStyle,
-  animation: 'pulse 1.4s ease-in-out 0.4s infinite'
-}), [loadingDotStyle]);
+// All style constants imported from styles/ChatStyles.js
+const { 
+  messageContainerBaseStyle,
+  userMessageContainerStyle, 
+  botMessageContainerStyle,
+  loadingContainerStyle,
+  loadingBoxStyle,
+  userContainerStyle,
+  userBubbleStyle,
+  botContainerStyle,
+  botHeaderStyle,
+  botNameStyle,
+  loadingAnimationContainerStyle,
+  loadingSpinnerStyle,
+  loadingTextStyleStreaming,
+  loadingTextStyleNormal,
+  loadingDotsContainerStyle,
+  loadingDotStyle,
+  loadingDot2Style,
+  loadingDot3Style
+} = styles;
 
 const imageStyle = React.useMemo(() => ({
   maxWidth: '280px',
