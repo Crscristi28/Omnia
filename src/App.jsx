@@ -700,14 +700,14 @@ function App() {
 
 
 
-  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GPT FORCE (UNCHANGED)
+  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GEMINI FORCE
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
-    if (model !== 'gpt-4o') {
-      console.log('🎤 Voice mode: Auto-switching to GPT for faster responses');
+    if (model !== 'gemini-2.5-flash') {
+      console.log('🎤 Voice mode: Auto-switching to Gemini for cost-effective responses');
       setPreviousModel(model);
-      setModel('gpt-4o');
+      setModel('gemini-2.5-flash');
     }
     
     mobileAudioManager.unlockAudioContext();
@@ -716,7 +716,7 @@ function App() {
   const handleVoiceScreenClose = () => {
     setShowVoiceScreen(false);
     
-    if (previousModel && previousModel !== 'gpt-4o') {
+    if (previousModel && previousModel !== 'gemini-2.5-flash') {
       console.log('🔄 Voice closed: Restoring previous model:', previousModel);
       setModel(previousModel);
       setPreviousModel(null);
