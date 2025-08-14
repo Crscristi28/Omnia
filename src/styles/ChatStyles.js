@@ -155,35 +155,39 @@ export const loadingDot3Style = {
 
 // 🖼️ IMAGE STYLES
 export const imageStyle = {
-  maxWidth: '100%',
-  maxHeight: '300px',
-  borderRadius: '8px',
+  maxWidth: '280px',
+  width: '100%',
+  height: 'auto',
+  borderRadius: '12px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
   cursor: 'pointer',
-  transition: 'transform 0.2s ease',
-  transform: 'scale(1) translateZ(0)',
-  willChange: 'transform'
+  transition: 'transform 0.2s',
+  transform: 'translateZ(0)'
 };
 
 export const userAttachmentsContainerStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '0.5rem',
+  paddingTop: '1rem',
   width: '100%'
 };
 
 export const userAttachmentWrapperStyle = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  width: '100%'
+  paddingTop: '1rem',
+  paddingBottom: '1rem',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  maxWidth: '100%'
 };
 
 // 📱 MODEL DROPDOWN STYLES
 export const modelDropdownSpanStyle = {
-  fontSize: '0.8rem'
+  color: 'rgba(255, 255, 255, 0.9)'
 };
 
 export const modelDropdownIconStyle = {
-  fontSize: '0.8rem'
+  color: 'rgba(255, 255, 255, 0.9)'
 };
 
 export const modelDropdownContainerStyle = {
@@ -192,47 +196,51 @@ export const modelDropdownContainerStyle = {
   left: '50%',
   transform: 'translateX(-50%)',
   marginTop: '8px',
-  zIndex: 1000,
-  backgroundColor: 'rgba(31, 41, 55, 0.95)',
+  minWidth: '220px',
+  maxWidth: '280px',
   borderRadius: '12px',
-  backdropFilter: 'blur(20px)',
+  backgroundColor: 'rgba(55, 65, 81, 0.95)',
+  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+  backdropFilter: 'blur(12px)',
   border: '1px solid rgba(255, 255, 255, 0.1)',
-  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)',
-  minWidth: '200px',
-  padding: '0.5rem 0'
+  overflow: 'hidden',
+  zIndex: 1001
 };
 
 export const modelButtonBaseStyle = {
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '12px',
   width: '100%',
   padding: '12px 16px',
   border: 'none',
+  color: 'white',
+  fontSize: '14px',
   cursor: 'pointer',
-  fontSize: '0.9rem',
-  fontWeight: '500',
-  transition: 'all 0.2s ease'
+  transition: 'all 0.2s',
+  fontFamily: 'inherit'
 };
 
 export const modelNameStyle = {
-  fontSize: '0.9rem',
-  fontWeight: '600'
+  fontWeight: '500'
 };
 
 export const modelDescriptionStyle = {
-  fontSize: '0.75rem',
-  opacity: 0.7
+  marginLeft: 'auto',
+  fontSize: '12px',
+  color: 'rgba(255, 255, 255, 0.7)'
 };
 
 // 🏠 MAIN LAYOUT STYLES
 export const mainContainerStyle = {
+  flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  minHeight: '100vh',
+  color: '#ffffff',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
   width: '100%',
-  position: 'relative',
+  margin: 0,
+  transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: 'hidden'
 };
 
@@ -241,97 +249,111 @@ export const topHeaderStyle = {
   top: 0,
   left: 0,
   right: 0,
-  zIndex: 1000,
+  transform: 'translateZ(0)',
+  background: 'rgba(0, 0, 0, 0.1)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  backdropFilter: 'blur(20px)',
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-  background: 'rgba(0, 4, 40, 0.8)'
+  paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+  paddingRight: 'max(1rem, env(safe-area-inset-right))',
+  zIndex: 1000
 };
 
 export const hamburgerButtonStyle = {
-  background: 'rgba(255, 255, 255, 0.1)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: '8px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.2s ease'
-};
-
-export const newChatButtonStyle = {
-  background: 'rgba(255, 255, 255, 0.1)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: '8px',
+  borderRadius: '12px',
+  border: 'none',
+  background: 'transparent',
   color: 'white',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s ease'
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  outline: 'none'
+};
+
+export const newChatButtonStyle = {
+  borderRadius: '12px',
+  border: 'none',
+  background: 'transparent',
+  color: 'rgba(255, 255, 255, 0.9)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  outline: 'none'
 };
 
 // 💬 CHAT CONTENT STYLES
 export const mainContentStyle = {
+  flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  flex: 1,
-  width: '100%',
+  overflow: 'hidden',
   position: 'relative',
-  overflow: 'hidden'
+  zIndex: 1,
+  background: 'transparent'
 };
 
 export const messagesContainerStyle = {
   flex: 1,
-  overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
+  transform: 'translateZ(0)',
+  maxWidth: '1000px',
+  margin: '0 auto',
   width: '100%',
-  position: 'relative'
+  position: 'relative',
+  zIndex: 1
 };
 
 // 🎉 WELCOME SCREEN STYLES
 export const welcomeScreenStyle = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
+  flex: 1,
+  textAlign: 'center',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center'
 };
 
 export const welcomeTextContainerStyle = {
-  textAlign: 'center',
-  zIndex: 2,
-  maxWidth: '600px',
-  padding: '0 2rem'
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '1rem'
 };
 
 export const welcomeTitleStyle = {
-  fontWeight: 'bold',
-  marginBottom: '1rem',
-  color: 'white'
+  fontWeight: '700',
+  margin: 0,
+  color: '#ffffff',
+  letterSpacing: '0.02em'
 };
 
 export const welcomeSubtitleStyle = {
+  fontWeight: '400',
+  margin: 0,
   color: 'rgba(255, 255, 255, 0.8)',
-  marginBottom: '2rem'
+  letterSpacing: '0.01em'
 };
 
 // 🗨️ CHAT WRAPPER STYLES
 export const chatMessagesWrapperStyle = {
   flex: 1,
-  overflow: 'hidden',
   position: 'relative',
-  zIndex: 1
+  zIndex: 1,
+  overflowY: 'hidden'
 };
 
 // 📜 VIRTUOSO STYLES
 export const virtuosoStyle = {
-  height: '100%',
-  width: '100%'
+  width: '100%',
+  flex: 1,
+  overflowY: 'auto',
+  overscrollBehavior: 'none'
 };
 
 export const virtuosoFooterStyle = {

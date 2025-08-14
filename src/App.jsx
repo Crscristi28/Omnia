@@ -1858,209 +1858,19 @@ const {
   loadingDotsContainerStyle,
   loadingDotStyle,
   loadingDot2Style,
-  loadingDot3Style
+  loadingDot3Style,
+  imageStyle,
+  userAttachmentsContainerStyle,
+  userAttachmentWrapperStyle,
+  modelDropdownSpanStyle,
+  modelDropdownIconStyle,
+  modelDropdownContainerStyle,
+  modelButtonBaseStyle,
+  modelNameStyle,
+  modelDescriptionStyle
 } = styles;
 
-const imageStyle = React.useMemo(() => ({
-  maxWidth: '280px',
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-  cursor: 'pointer',
-  transition: 'transform 0.2s',
-  transform: 'translateZ(0)'
-}), []);
 
-const userAttachmentsContainerStyle = React.useMemo(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-  paddingTop: '1rem',
-  width: '100%'
-}), []);
-
-const userAttachmentWrapperStyle = React.useMemo(() => ({
-  paddingTop: '1rem',
-  paddingBottom: '1rem',
-  borderRadius: '12px',
-  overflow: 'hidden',
-  maxWidth: '100%'
-}), []);
-
-const modelDropdownSpanStyle = React.useMemo(() => ({
-  color: 'rgba(255, 255, 255, 0.9)'
-}), []);
-
-const modelDropdownIconStyle = React.useMemo(() => ({
-  color: 'rgba(255, 255, 255, 0.9)'
-}), []);
-
-const modelDropdownContainerStyle = React.useMemo(() => ({
-  position: 'absolute',
-  top: '100%',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  marginTop: '8px',
-  minWidth: '220px',
-  maxWidth: '280px',
-  borderRadius: '12px',
-  backgroundColor: 'rgba(55, 65, 81, 0.95)',
-  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
-  backdropFilter: 'blur(12px)',
-  border: '1px solid rgba(255, 255, 255, 0.1)',
-  overflow: 'hidden',
-  zIndex: 1001,
-}), []);
-
-const modelButtonBaseStyle = React.useMemo(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  width: '100%',
-  padding: '12px 16px',
-  border: 'none',
-  color: 'white',
-  fontSize: '14px',
-  cursor: 'pointer',
-  transition: 'all 0.2s',
-  fontFamily: 'inherit',
-}), []);
-
-const modelNameStyle = React.useMemo(() => ({
-  fontWeight: '500'
-}), []);
-
-const modelDescriptionStyle = React.useMemo(() => ({
-  marginLeft: 'auto',
-  fontSize: '12px',
-  color: 'rgba(255, 255, 255, 0.7)'
-}), []);
-
-const mainContainerStyle = React.useMemo(() => ({
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  color: '#ffffff',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-  width: '100%',
-  margin: 0,
-  transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-  overflow: 'hidden'
-}), []);
-
-const topHeaderStyle = React.useMemo(() => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  transform: 'translateZ(0)',
-  background: 'rgba(0, 0, 0, 0.1)',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingLeft: 'max(1rem, env(safe-area-inset-left))',
-  paddingRight: 'max(1rem, env(safe-area-inset-right))',
-  zIndex: 1000,
-}), []);
-
-const hamburgerButtonStyle = React.useMemo(() => ({
-  borderRadius: '12px',
-  border: 'none',
-  background: 'transparent',
-  color: 'white',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  outline: 'none',
-}), []);
-
-const newChatButtonStyle = React.useMemo(() => ({
-  borderRadius: '12px',
-  border: 'none',
-  background: 'transparent',
-  color: 'rgba(255, 255, 255, 0.9)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  outline: 'none',
-}), []);
-
-const mainContentStyle = React.useMemo(() => ({
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-  position: 'relative',
-  zIndex: 1,
-  background: 'transparent'
-}), []);
-
-const messagesContainerStyle = React.useMemo(() => ({
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  transform: 'translateZ(0)',
-  maxWidth: '1000px',
-  margin: '0 auto',
-  width: '100%',
-  position: 'relative',
-  zIndex: 1
-}), []);
-
-const welcomeScreenStyle = React.useMemo(() => ({
-  flex: 1,
-  textAlign: 'center',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-}), []);
-
-const welcomeTextContainerStyle = React.useMemo(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '1rem'
-}), []);
-
-const welcomeTitleStyle = React.useMemo(() => ({
-  fontWeight: '700',
-  margin: 0,
-  color: '#ffffff',
-  letterSpacing: '0.02em'
-}), []);
-
-const welcomeSubtitleStyle = React.useMemo(() => ({
-  fontWeight: '400',
-  margin: 0,
-  color: 'rgba(255, 255, 255, 0.8)',
-  letterSpacing: '0.01em'
-}), []);
-
-const chatMessagesWrapperStyle = React.useMemo(() => ({
-  flex: 1,
-  position: 'relative',
-  zIndex: 1,
-  overflowY: 'hidden'
-}), []);
-
-const virtuosoStyle = React.useMemo(() => ({
-  width: '100%',
-  flex: 1,
-  overflowY: 'auto',
-  overscrollBehavior: 'none'
-}), []);
-
-// Footer jen pro scroll efekt (475px)
-const virtuosoFooterStyle = React.useMemo(() => ({
-  height: '475px' // Jen scroll efekt, main kontejner má paddingBottom pro InputBar
-}), []);
 
 // 🎯 VIRTUOSO COMPONENTS - Footer + main paddingBottom kombinace
 const virtuosoComponents = React.useMemo(() => ({
@@ -2070,12 +1880,6 @@ const virtuosoComponents = React.useMemo(() => ({
   ))
 }), [virtuosoFooterStyle]);
 
-// 🎯 VIRTUOSO STYLE - Memoized inline style
-const virtuosoInlineStyle = React.useMemo(() => ({
-  ...virtuosoStyle,
-  zIndex: 1,
-  position: 'relative'
-}), [virtuosoStyle]);
 
 // 🎨 JSX RENDER  
   return (
