@@ -2389,7 +2389,7 @@ const virtuosoInlineStyle = React.useMemo(() => ({
         ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
         : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: '140px', // Prostor pro InputBar - původní funkční hodnota
+      paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
     }}>
       
       {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
