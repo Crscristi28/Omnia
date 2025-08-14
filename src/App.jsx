@@ -952,7 +952,9 @@ function App() {
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
-          await processVoiceResponse(responseText, detectedLang);
+          setTimeout(async () => {
+            await processVoiceResponse(responseText, detectedLang);
+          }, 500);
         }
       }
       else if (model === 'grok-3') {
@@ -998,7 +1000,9 @@ function App() {
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Grok response complete, processing voice...');
-          await processVoiceResponse(responseText, detectedLang);
+          setTimeout(async () => {
+            await processVoiceResponse(responseText, detectedLang);
+          }, 500);
         }
       }
       
@@ -1091,7 +1095,9 @@ function App() {
         
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
-          await processVoiceResponse(responseText, detectedLang);
+          setTimeout(async () => {
+            await processVoiceResponse(responseText, detectedLang);
+          }, 500);
         }
       }
 
