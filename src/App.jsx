@@ -28,6 +28,7 @@ import { welcomeTexts } from './constants/welcomeTexts.js'; // 🌍 Welcome text
 import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔 Notifications
 import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
+import { isImageFile, getViewerType } from './utils/fileTypeUtils.js'; // 📁 File type detection
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator } from './components/ui';
@@ -43,6 +44,7 @@ import { SourcesButton, SourcesModal } from './components/sources';
 
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
+import DocumentViewer from './components/modals/DocumentViewer.jsx'; // 📄 Document viewer
 
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -74,6 +76,7 @@ function App() {
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const [previewImage, setPreviewImage] = useState(null); // For fullscreen photo preview
+  const [documentViewer, setDocumentViewer] = useState({ isOpen: false, document: null }); // For document viewer
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
   
@@ -2117,16 +2120,30 @@ const virtuosoComponents = React.useMemo(() => ({
                           );
                         }
                         
-                        // Upload attachments display as compact cards
+                        // Upload attachments - smart viewer selection
+                        const viewerType = getViewerType(attachment.type, attachment.name);
+                        
                         return (
                         <div
                           key={index}
                           onClick={() => {
-                            // Show attachment in preview modal using base64 data
-                            setPreviewImage({
-                              url: attachment.base64,
-                              name: attachment.name
-                            });
+                            // Route to appropriate viewer based on file type
+                            if (viewerType === 'image') {
+                              setPreviewImage({
+                                url: attachment.base64,
+                                name: attachment.name
+                              });
+                            } else {
+                              setDocumentViewer({
+                                isOpen: true,
+                                document: {
+                                  url: attachment.base64,
+                                  name: attachment.name,
+                                  mimeType: attachment.type,
+                                  base64: attachment.base64
+                                }
+                              });
+                            }
                           }}
                           style={{
                             display: 'flex',
@@ -2554,6 +2571,13 @@ const virtuosoComponents = React.useMemo(() => ({
         </div>
       )}
       
+      {/* 📄 DOCUMENT VIEWER */}
+      <DocumentViewer
+        isOpen={documentViewer.isOpen}
+        onClose={() => setDocumentViewer({ isOpen: false, document: null })}
+        document={documentViewer.document}
+        uiLanguage={uiLanguage}
+      />
       
       {/* 📶 OFFLINE INDICATOR */}
       <OfflineIndicator
