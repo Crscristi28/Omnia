@@ -2035,7 +2035,8 @@ const messageContainerBaseStyle = React.useMemo(() => ({
 
 const userMessageContainerStyle = React.useMemo(() => ({
   ...messageContainerBaseStyle,
-  justifyContent: 'flex-end'
+  justifyContent: 'flex-end',
+  paddingBottom: '2rem'
 }), [messageContainerBaseStyle]);
 
 const botMessageContainerStyle = React.useMemo(() => ({
