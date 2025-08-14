@@ -361,7 +361,10 @@ export const virtuosoFooterStyle = {
 };
 
 export const virtuosoInlineStyle = {
-  ...virtuosoStyle,
+  width: '100%',
+  flex: 1,
+  overflowY: 'auto',
+  overscrollBehavior: 'none',
   zIndex: 1,
   position: 'relative'
 };

@@ -1867,7 +1867,21 @@ const {
   modelDropdownContainerStyle,
   modelButtonBaseStyle,
   modelNameStyle,
-  modelDescriptionStyle
+  modelDescriptionStyle,
+  mainContainerStyle,
+  topHeaderStyle,
+  hamburgerButtonStyle,
+  newChatButtonStyle,
+  mainContentStyle,
+  messagesContainerStyle,
+  welcomeScreenStyle,
+  welcomeTextContainerStyle,
+  welcomeTitleStyle,
+  welcomeSubtitleStyle,
+  chatMessagesWrapperStyle,
+  virtuosoStyle,
+  virtuosoFooterStyle,
+  virtuosoInlineStyle
 } = styles;
 
 
