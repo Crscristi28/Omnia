@@ -29,6 +29,7 @@ import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔
 import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
 import { isImageFile, getViewerType } from './utils/fileTypeUtils.js'; // 📁 File type detection
+import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './utils/scrollUtils.js'; // 📜 Scroll utilities
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator } from './components/ui';
@@ -435,51 +436,6 @@ function App() {
   // ❌ REMOVED: Auto-scroll useEffect - caused scrolling on AI responses too
   // Now scroll happens ONLY when user sends message, in handleSend function
 
-  // 🔼 SCROLL TO SPECIFIC USER MESSAGE - ONLY called when user sends message
-  const scrollToUserMessageAt = (userMessageIndex) => {
-    if (virtuosoRef.current && userMessageIndex >= 0) {
-      
-      virtuosoRef.current.scrollToIndex({
-        index: userMessageIndex,
-        align: 'start'
-      });
-    }
-  };
-
-  // 🔼 SCROLL TO LATEST MESSAGE - Show latest message at TOP of viewport (legacy)
-  const scrollToLatestMessage = () => {
-    if (virtuosoRef.current && messages.length > 0) {
-      const latestMessageIndex = messages.length - 1; // Index poslední přidané zprávy
-      
-      virtuosoRef.current.scrollToIndex({
-        index: latestMessageIndex, // Index poslední přidané zprávy
-        align: 'start',
-        behavior: 'smooth' // Pro plynulou animaci skrolování
-      });
-    } else if (virtuosoRef.current) {
-      console.log('⚠️ No messages to scroll to');
-    } else {
-      console.log('❌ virtuosoRef.current is null in scrollToLatestMessage');
-    }
-  };
-
-  // ❌ REMOVED: scrollToUserMessage - replaced with direct calls in handleSend functions
-
-  // 🔼 SCROLL TO BOTTOM - For scroll button and chat opening (shows last message at TOP)
-  const scrollToBottom = () => {
-    console.log('🚀 scrollToBottom called - scrolling to last message at TOP');
-    
-    if (virtuosoRef.current) {
-      console.log('✅ virtuosoRef available, calling scrollToIndex LAST');
-      virtuosoRef.current.scrollToIndex({ 
-        index: 'LAST',
-        align: 'start',
-        behavior: 'smooth'
-      });
-    } else {
-      console.log('❌ virtuosoRef.current is null in scrollToBottom');
-    }
-  };
 
   // ❌ REMOVED: Problematic auto-save useEffect that caused UI freezing
   // 📝 Chat saving moved to strategic moments (user send, stream end, chat switch, etc.)
@@ -852,7 +808,7 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
-      scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
+      scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
@@ -1439,7 +1395,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
-  scrollToUserMessageAt(newUserMessageIndex); // Scroll to the new user message
+  scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
 
   // ❌ REMOVED: DOC-AUTO-SAVE - using unified auto-save system instead (every 10 messages)
   
@@ -2324,7 +2280,7 @@ const virtuosoComponents = React.useMemo(() => ({
       {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay */}
       {showScrollToBottom && (
         <button
-          onClick={scrollToBottom}
+          onClick={() => scrollToBottom(virtuosoRef)}
           style={{
             position: 'fixed',
             bottom: isMobile ? '110px' : '120px', // Above input bar
