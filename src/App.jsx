@@ -23,6 +23,8 @@ import { crashMonitor } from './utils/crashMonitor';
 import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // 🆕 STREAMING
 import mobileAudioManager from './utils/MobileAudioManager.js'; // 🎵 Mobile audio handling
 import * as styles from './styles/ChatStyles.js'; // 🎨 All chat styles
+import { generateMessageId } from './utils/messageUtils.js'; // 📝 Message utilities
+import { welcomeTexts } from './constants/welcomeTexts.js'; // 🌍 Welcome texts
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
@@ -42,24 +44,6 @@ import { ChatSidebar } from './components/layout';
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 
-// 🆔 HELPER FUNCTION: Generate unique message ID for Virtuoso
-const generateMessageId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-// 🌍 MULTILINGUAL WELCOME TEXTS - NEW!
-const welcomeTexts = {
-  cs: { 
-    hello: "Ahoj!", 
-    subtitle: "Jak se dnes máš?" 
-  },
-  en: { 
-    hello: "Hello!", 
-    subtitle: "How's it going today?" 
-  },
-  ro: { 
-    hello: "Salut!", 
-    subtitle: "Cum îți merge astăzi?" 
-  }
-};
 
 // 🆕 SENTENCE SPLITTER (UNCHANGED)
 
