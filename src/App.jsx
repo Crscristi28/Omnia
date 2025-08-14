@@ -2914,8 +2914,7 @@ const virtuosoInlineStyle = React.useMemo(() => ({
                   <div style={{ 
                     display: 'flex', 
                     gap: '10px', 
-                    marginTop: '1rem',
-                    paddingTop: '0.8rem',
+                    paddingTop: '1.5rem',
                     justifyContent: 'flex-start',
                     opacity: msg.isStreaming ? 0 : 1,
                     pointerEvents: msg.isStreaming ? 'none' : 'auto',
