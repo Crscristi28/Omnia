@@ -405,13 +405,14 @@ const InputBar = ({
         bottom: 0,
         left: 0,
         right: 0,
-        transform: 'translateZ(0)',
+        transform: isMobile && isKeyboardOpen 
+          ? 'translateZ(0) translateY(0)' 
+          : 'translateZ(0)',
         padding: isMobile ? '0.5rem' : '1.5rem',
         paddingBottom: isMobile 
           ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
           : '1.5rem',
         zIndex: 10,
-        transform: isMobile && isKeyboardOpen ? 'translateY(0)' : 'none',
       }}>
         
         <div style={{
