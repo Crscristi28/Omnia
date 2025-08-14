@@ -73,14 +73,11 @@ const preprocessCzechTextForTTS = (text) => {
     processedText = processedText.replace(regex, word);
   });
   
-  // 🤖 AI & TECH TERMS
+  // 🇨🇿 CZECH ABBREVIATIONS (only genuine Czech abbreviations)
   const abbreviations = {
     'atd': 'a tak dále', 'apod': 'a podobně', 'tj': 'to jest',
     'tzn': 'to znamená', 'např': 'například', 'resp': 'respektive',
-    'tzv': 'takzvaný', 'AI': 'éj áj', 'API': 'éj pí áj',
-    'URL': 'jú ár el', 'USD': 'jú es dolar', 'EUR': 'euro',
-    'GPT': 'džípítí', 'TTS': 'tí tí es', 'ChatGPT': 'čet džípítí',
-    'OpenAI': 'oupn éj áj', 'Claude': 'klód', 'Anthropic': 'antropik'
+    'tzv': 'takzvaný'
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -135,12 +132,9 @@ const preprocessEnglishTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*€/gi, '$1 euros');
   processedText = processedText.replace(/(\d+)\s*%/gi, '$1 percent');
   
-  // AI & Tech terms
+  // 🇺🇸 ENGLISH ABBREVIATIONS (only genuine English abbreviations)
   const abbreviations = {
-    'etc': 'et cetera', 'vs': 'versus', 'AI': 'A I',
-    'API': 'A P I', 'URL': 'U R L', 'USD': 'U S dollars',
-    'EUR': 'euros', 'GPT': 'G P T', 'TTS': 'T T S',
-    'ChatGPT': 'Chat G P T', 'OpenAI': 'Open A I'
+    'etc': 'et cetera', 'vs': 'versus'
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {
@@ -197,11 +191,9 @@ const preprocessRomanianTextForTTS = (text) => {
   processedText = processedText.replace(/(\d+)\s*\$/gi, '$1 dolari');
   processedText = processedText.replace(/(\d+)\s*%/gi, '$1 la sută');
   
-  // AI & Tech terms
+  // 🇷🇴 ROMANIAN ABBREVIATIONS (only genuine Romanian abbreviations) 
   const abbreviations = {
-    'AI': 'a i', 'API': 'a pi i', 'URL': 'u ăr el',
-    'USD': 'dolari americani', 'EUR': 'euro', 'GPT': 'g p t',
-    'TTS': 't t s', 'ChatGPT': 'cet g p t', 'OpenAI': 'oupăn a i'
+    // Keep empty - no specific Romanian abbreviations needed
   };
   
   Object.entries(abbreviations).forEach(([abbr, expansion]) => {

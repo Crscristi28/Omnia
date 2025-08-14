@@ -700,7 +700,7 @@ function App() {
 
 
 
-  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GEMINI FORCE
+  // 🆕 VOICE SCREEN OPEN/CLOSE WITH GEMINI FORCE (UPDATED)
   const handleVoiceScreenOpen = () => {
     setShowVoiceScreen(true);
     
