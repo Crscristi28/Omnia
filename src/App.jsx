@@ -547,7 +547,6 @@ function App() {
               index: 'LAST',
               align: 'start',
               behavior: 'smooth',
-              offset: 64
             });
           } else {
             console.log('❌ virtuosoRef not ready after chat load');
@@ -2362,19 +2361,12 @@ const virtuosoStyle = React.useMemo(() => ({
   overscrollBehavior: 'none'
 }), []);
 
-// Dynamická výška Footer podle Gemini doporučení
-const virtuosoFooterStyle = React.useMemo(() => {
-  const isMobile = window.innerWidth <= 768;
-  const virtuosoContainerHeight = 723; // Actual Virtuoso container height
-  const scrollEffectSpace = 475; // Original scroll effect space
-  
-  // Vrácení k funkční hodnotě - původní 475px scroll efekt fungoval dobře
-  return {
-    height: '475px' // Původní funkční hodnota pro scroll-to-top
-  };
-}, []);
+// Footer jen pro scroll efekt (475px)
+const virtuosoFooterStyle = React.useMemo(() => ({
+  height: '475px' // Jen scroll efekt, main kontejner má paddingBottom pro InputBar
+}), []);
 
-// 🎯 VIRTUOSO COMPONENTS - Memoized to prevent re-renders
+// 🎯 VIRTUOSO COMPONENTS - Footer + main paddingBottom kombinace
 const virtuosoComponents = React.useMemo(() => ({
   Footer: () => <div style={virtuosoFooterStyle} />,
   List: React.forwardRef((props, ref) => (
@@ -2397,6 +2389,7 @@ const virtuosoInlineStyle = React.useMemo(() => ({
         ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
         : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       paddingTop: isMobile ? '70px' : '90px',
+      paddingBottom: '140px', // Prostor pro InputBar - původní funkční hodnota
     }}>
       
       {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
