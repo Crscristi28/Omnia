@@ -30,7 +30,7 @@ import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utiliti
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator, ImageContextMenu } from './components/ui';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, ChatOmniaLogo, VoiceButton, CopyButton, OfflineIndicator } from './components/ui';
 
 import { VoiceScreen } from './components/chat';
 import MessageRenderer from './components/MessageRenderer';
@@ -76,13 +76,6 @@ function App() {
   const [previewImage, setPreviewImage] = useState(null); // For fullscreen photo preview
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   
-  // 📱 IMAGE CONTEXT MENU STATE - For long press menu on Imagen images
-  const [imageContextMenu, setImageContextMenu] = useState({
-    isOpen: false,
-    imageData: null,
-    imageName: null,
-    position: { x: 0, y: 0 }
-  });
   
   // 🆕 MODEL SWITCH STATE FOR VOICE (UNCHANGED)
   const [previousModel, setPreviousModel] = useState(null);
@@ -2246,63 +2239,12 @@ const virtuosoComponents = React.useMemo(() => ({
                       <img 
                         src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
                         alt={`Generated image for: ${msg.text}`}
-                        onClick={(e) => {
-                          // Only show preview if not a long press
-                          if (!e.target.longPressDetected) {
-                            const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
-                            setPreviewImage({
-                              url: imageUrl,
-                              name: `Generated: ${msg.text.slice(0, 30)}...`
-                            });
-                          }
-                        }}
-                        onTouchStart={(e) => {
-                          // Start long press timer
-                          const startTime = Date.now();
-                          const startX = e.touches[0].clientX;
-                          const startY = e.touches[0].clientY;
-                          
-                          e.target.longPressTimer = setTimeout(() => {
-                            e.target.longPressDetected = true;
-                            
-                            // Show context menu
-                            setImageContextMenu({
-                              isOpen: true,
-                              imageData: `data:${msg.image.mimeType};base64,${msg.image.base64}`,
-                              imageName: `generated-image-${Date.now()}.png`,
-                              position: { x: startX, y: startY }
-                            });
-                            
-                            console.log('🔥 Long press detected - showing context menu');
-                          }, 500); // 500ms for long press
-                          
-                          e.target.longPressDetected = false;
-                        }}
-                        onTouchEnd={(e) => {
-                          // Clear long press timer
-                          if (e.target.longPressTimer) {
-                            clearTimeout(e.target.longPressTimer);
-                          }
-                          // Reset long press flag after short delay
-                          setTimeout(() => {
-                            e.target.longPressDetected = false;
-                          }, 100);
-                        }}
-                        onTouchMove={(e) => {
-                          // Cancel long press if user moves finger too much
-                          if (e.target.longPressTimer) {
-                            const currentX = e.touches[0].clientX;
-                            const currentY = e.touches[0].clientY;
-                            const startX = e.touches[0].pageX; // Will need to store this properly
-                            const startY = e.touches[0].pageY;
-                            
-                            // Cancel if moved more than 10px
-                            const distance = Math.sqrt((currentX - startX) ** 2 + (currentY - startY) ** 2);
-                            if (distance > 10) {
-                              clearTimeout(e.target.longPressTimer);
-                              e.target.longPressDetected = false;
-                            }
-                          }
+                        onClick={() => {
+                          const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                          setPreviewImage({
+                            url: imageUrl,
+                            name: `Generated: ${msg.text.slice(0, 30)}...`
+                          });
                         }}
                         style={imageStyle}
                         onMouseEnter={(e) => {
@@ -2349,7 +2291,7 @@ const virtuosoComponents = React.useMemo(() => ({
               )}
             </div>
           ); // Close return statement
-          }, [setPreviewImage, setImageContextMenu, t])} // Close itemContent function
+          }, [setPreviewImage, t])} // Close itemContent function
             followOutput={false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
@@ -2612,14 +2554,6 @@ const virtuosoComponents = React.useMemo(() => ({
         </div>
       )}
       
-      {/* 📱 IMAGE CONTEXT MENU */}
-      <ImageContextMenu
-        isOpen={imageContextMenu.isOpen}
-        onClose={() => setImageContextMenu(prev => ({ ...prev, isOpen: false }))}
-        imageData={imageContextMenu.imageData}
-        imageName={imageContextMenu.imageName}
-        position={imageContextMenu.position}
-      />
       
       {/* 📶 OFFLINE INDICATOR */}
       <OfflineIndicator
