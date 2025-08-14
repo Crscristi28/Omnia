@@ -950,11 +950,16 @@ function App() {
 
         // ❌ REMOVED: Save after OpenAI response (to prevent race conditions)
         
+        // 🔍 DEBUG: Check TTS conditions for GPT
+        console.log('🔍 [DEBUG] GPT TTS Conditions:', { fromVoice, showVoiceScreen, responseText: !!responseText });
+        
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
           setTimeout(async () => {
             await processVoiceResponse(responseText, detectedLang);
           }, 500);
+        } else {
+          console.log('❌ [DEBUG] GPT TTS skipped');
         }
       }
       else if (model === 'grok-3') {
@@ -1093,11 +1098,21 @@ function App() {
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
+        // 🔍 DEBUG: Check TTS conditions
+        console.log('🔍 [DEBUG] TTS Conditions Check:', {
+          fromVoice,
+          showVoiceScreen,
+          responseText: responseText ? `"${responseText.substring(0, 50)}..."` : 'null',
+          responseLength: responseText?.length || 0
+        });
+        
         if (fromVoice && showVoiceScreen && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
           setTimeout(async () => {
             await processVoiceResponse(responseText, detectedLang);
           }, 500);
+        } else {
+          console.log('❌ [DEBUG] TTS skipped - conditions not met');
         }
       }
 
