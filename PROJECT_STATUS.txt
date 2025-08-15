@@ -1,0 +1,47 @@
+OMNIA PROJECT STATUS - AKTUÁLNÍ STAV
+======================================
+
+DATUM: 2025-08-15
+
+AI MODELY (4):
+- Gemini 2.5 Flash (Google) - hlavní model
+- Claude Sonnet 4 (Anthropic) 
+- GPT-4o (OpenAI)
+- Grok-3 (X.AI)
+
+HLAVNÍ FUNKCE:
+- Multi-model AI chat - FUNGUJE
+- Voice chat s TTS/STT - FUNGUJE (ElevenLabs + Google fallback)
+- Document processing - FUNGUJE (PDF, DOCX, obrázky, kód)
+- Image generation - FUNGUJE (Google Imagen 4.0)
+- Web search - FUNGUJE (integrace pro všechny modely)
+- PWA s offline support - FUNGUJE
+- Chat history s IndexedDB - FUNGUJE
+- Multijazyčnost (CS/EN/RO) - FUNGUJE
+
+ZNÁMÉ PROBLÉMY:
+- Mobile audio unlock pro TTS (iOS/Safari problém)
+- Vercel 4.5MB limit pro upload (hosting omezení)
+- Voice chat mikrofon position (work in progress)
+
+TECHNICKÁ INFORMACE:
+- App.jsx: 2290 řádků (sníženo z 3200)
+- Modularita: postupný refaktoring
+- Hosting: Vercel (plán migrace na Firebase)
+- Storage: IndexedDB pro chaty, Google Cloud pro dokumenty
+
+DEPLOYMENT:
+- Automatický deploy z main branch na Vercel
+- PWA manifest a service workers aktivní
+- Environment variables nastavené
+
+DALŠÍ PLÁNY:
+- Dokončení mobile audio unlock řešení
+- Migrace z Vercel na Firebase
+- Dokončení voice chat UX
+- Pokračování modulárního refaktoringu
+
+POZNÁMKY:
+- Projekt je funkční a stabilní
+- Všechny core funkce pracují spolehlivě
+- Priorita: nedělat breaking changes
