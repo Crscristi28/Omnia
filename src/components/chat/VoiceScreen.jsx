@@ -55,7 +55,6 @@ const VoiceScreen = ({
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
         zIndex: 1001,
         padding: isMobile ? '1rem' : '2rem',
         minHeight: '100vh',
@@ -71,7 +70,7 @@ const VoiceScreen = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '2rem'
+        alignSelf: 'center'
       }}>
         <div style={{
           fontSize: isMobile ? '1.5rem' : '2rem',
@@ -111,85 +110,94 @@ const VoiceScreen = ({
           ✕
         </button>
       </div>
-
-      {/* 🎤 VOICE RECORDER - NEMĚNÍM HO! */}
-      <div 
-        style={{ 
-          marginBottom: '2rem',
-          position: 'relative'
-        }}
-      >
-        <SimpleVoiceRecorder 
-          onTranscript={handleTranscript}
-          onListeningChange={handleVoiceStateChange}
-          disabled={isLoading}
-          isAudioPlaying={isAudioPlaying}
-          uiLanguage={uiLanguage}
-        />
-        
-        {/* 🌊 VOICE VISUALIZER */}
-        {isListening && (
-          <div 
-            className="voice-visualizer"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '150px',
-              height: '150px',
-              borderRadius: '50%',
-              border: '2px solid rgba(0, 255, 255, 0.3)',
-              animation: 'pulse-ring 1.5s ease-out infinite',
-              pointerEvents: 'none'
-            }}
-          />
-        )}
-      </div>
-
-      {/* 🔄 LOADING STATE */}
-      {isLoading && (
+      
+      {/* 🎤 CENTRAL CONTENT - Flex container for centering */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%'
+      }}>
+        {/* 🎤 VOICE RECORDER - NEMĚNÍM HO! */}
         <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.8rem',
-            marginBottom: '2rem'
+          style={{ 
+            marginBottom: '2rem',
+            position: 'relative'
           }}
         >
-          <div style={{ 
-            width: '20px', 
-            height: '20px', 
-            border: '2px solid rgba(255,255,255,0.3)', 
-            borderTop: '2px solid #9333ea',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <span>
-            {uiLanguage === 'cs' ? 'Omnia přemýšlí...' : 
-             uiLanguage === 'en' ? 'Omnia thinking...' : 'Omnia gândește...'}
-          </span>
+          <SimpleVoiceRecorder 
+            onTranscript={handleTranscript}
+            onListeningChange={handleVoiceStateChange}
+            disabled={isLoading}
+            isAudioPlaying={isAudioPlaying}
+            uiLanguage={uiLanguage}
+          />
+          
+          {/* 🌊 VOICE VISUALIZER */}
+          {isListening && (
+            <div 
+              className="voice-visualizer"
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '150px',
+                height: '150px',
+                borderRadius: '50%',
+                border: '2px solid rgba(0, 255, 255, 0.3)',
+                animation: 'pulse-ring 1.5s ease-out infinite',
+                pointerEvents: 'none'
+              }}
+            />
+          )}
         </div>
-      )}
 
-      {/* ℹ️ INSTRUCTIONS */}
-      <div 
-        style={{
-          position: 'absolute',
-          bottom: '2rem',
-          fontSize: '0.9rem',
-          opacity: 0.6,
-          textAlign: 'center'
-        }}
-      >
-        {isListening ? 
-          (uiLanguage === 'cs' ? 'Klepněte na mikrofon pro ukončení' : 
-           uiLanguage === 'en' ? 'Tap microphone to stop' : 
-           'Apasă microfonul pentru a opri') :
-          (uiLanguage === 'cs' ? 'Mluvte s Omnia' : 
-           uiLanguage === 'en' ? 'Talk with Omnia' : 
-           'Vorbește cu Omnia')
-        }
+        {/* 🔄 LOADING STATE */}
+        {isLoading && (
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.8rem',
+              marginTop: '2rem'
+            }}
+          >
+            <div style={{ 
+              width: '20px', 
+              height: '20px', 
+              border: '2px solid rgba(255,255,255,0.3)', 
+              borderTop: '2px solid #9333ea',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }}></div>
+            <span>
+              {uiLanguage === 'cs' ? 'Omnia přemýšlí...' : 
+               uiLanguage === 'en' ? 'Omnia thinking...' : 'Omnia gândește...'}
+            </span>
+          </div>
+        )}
+
+        {/* ℹ️ INSTRUCTIONS */}
+        <div 
+          style={{
+            marginTop: '2rem',
+            fontSize: '0.9rem',
+            opacity: 0.6,
+            textAlign: 'center'
+          }}
+        >
+          {isListening ? 
+            (uiLanguage === 'cs' ? 'Klepněte na mikrofon pro ukončení' : 
+             uiLanguage === 'en' ? 'Tap microphone to stop' : 
+             'Apasă microfonul pentru a opri') :
+            (uiLanguage === 'cs' ? 'Mluvte s Omnia' : 
+             uiLanguage === 'en' ? 'Talk with Omnia' : 
+             'Vorbește cu Omnia')
+          }
+        </div>
       </div>
 
       {/* 🎨 ANIMATIONS */}
