@@ -33,8 +33,7 @@ const VoiceScreen = ({
   const getBackgroundStyle = () => {
     if (isListening) {
       return {
-        background: 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)',
-        animation: 'pulse-bg 2s ease-in-out infinite'
+        background: 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
       };
     }
 
@@ -195,11 +194,6 @@ const VoiceScreen = ({
 
       {/* 🎨 ANIMATIONS */}
       <style>{`
-        @keyframes pulse-bg {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        
         @keyframes pulse-ring {
           0% {
             transform: translate(-50%, -50%) scale(1);
