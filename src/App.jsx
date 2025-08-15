@@ -918,9 +918,13 @@ function App() {
         
         if (fromVoice && showVoiceScreen && finalText) {
           console.log('🎵 Claude complete, instant voice playback...');
+          // 📱 Mobile fix: No delay on mobile to preserve user gesture chain
+          const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          const delay = isMobileDevice ? 0 : 500;
+          
           setTimeout(async () => {
             await processVoiceResponse(finalText, detectedLang);
-          }, 500);
+          }, delay);
         }
       }
       else if (model === 'gpt-4o') {
