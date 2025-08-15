@@ -4,31 +4,242 @@ OMNIA PROJECT STATUS - AKTUÁLNÍ STAV
 DATUM: 2025-08-15
 
 AI MODELY (4):
-- Gemini 2.5 Flash (Google) - hlavní model
+- Gemini 2.5 Flash (Google) - hlavní model s Google Search Grounding
 - Claude Sonnet 4 (Anthropic) 
 - GPT-4o (OpenAI)
 - Grok-3 (X.AI)
+
+JAZYKOVÁ PODPORA:
+30+ JAZYKŮ s optimalizovanými TTS/STT systémy
+- Evropa: CS, RO, EN, DE, FR, ES, IT, PL, PT, NL, SV, DA, NO, FI, HU, SK, RU, UK, BG, HR, SR
+- Asie: JA, KO, ZH, ZH-TW, HI, TH, VI
+- Středo/Blízký východ: AR, TR, HE
+- Regionální varianty: EN-GB, EN-AU, ES-MX, PT-BR
 
 HLAVNÍ FUNKCE:
 - Multi-model AI chat - FUNGUJE
 - Voice chat s TTS/STT - FUNGUJE (ElevenLabs + Google fallback)
 - Document processing - FUNGUJE (PDF, DOCX, obrázky, kód)
+- Document Viewer - FUNGUJE (in-app PDF viewer, text zobrazení, download)
 - Image generation - FUNGUJE (Google Imagen 4.0)
 - Web search - FUNGUJE (integrace pro všechny modely)
 - PWA s offline support - FUNGUJE
 - Chat history s IndexedDB - FUNGUJE
 - Multijazyčnost (CS/EN/RO) - FUNGUJE
+- Smart document context management - FUNGUJE
+
+POKROČILÉ FUNKCE:
+- Google Search Grounding v Gemini - FUNGUJE (native search integration)
+- Time-based document relevance - FUNGUJE (10 min recent upload, 15 min last access)
+- Explicit document forgetting - FUNGUJE (česky: "zapomeň na [dokument]")
+- Automatic context switching - FUNGUJE (focus shift po analýze)
+- OMNIA ONE AI personality prompt - FUNGUJE (optimalizováno pro Gemini)
+- Document lifecycle management - FUNGUJE (smart context persistence)
+- Multi-format in-app viewing - FUNGUJE (PDF iframe, text decode, Word info)
+
+ERROR HANDLING & MONITORING:
+- crashMonitor.js - Comprehensive error tracking s IndexedDB persistence
+- Global error handlers (window.error, unhandledrejection)
+- Memory warnings při 90% heap usage, page visibility tracking
+- Session recovery, exportable crash logs s system info
+- Performance memory monitoring s delta tracking
+- PWA lifecycle events tracking
+
+MOBILE AUDIO MANAGEMENT:
+- MobileAudioManager.js - iOS/Android audio context handling
+- Audio queue management, mobile unlock sequences
+- Haptic feedback system, audio level monitoring
+- WebKit audio context workarounds
+- Noise detection, silence handling, recording limits
+
+BIDIREKCIONÁLNÍ MARKDOWN SYSTÉM:
+- Full markdown support PRO USER I AI zprávy
+- KaTeX mathematical rendering (remark-math + rehype-katex)
+- GitHub Flavored Markdown (remark-gfm)
+- Syntax highlighting s Prism.js (20+ barev pro různé tokeny)
+- Dual rendering modes (streaming vs final)
+- Smart preprocessing během streamingu
+- Custom styling pro user bubbles (modrá) vs AI bubbles (žlutá)
+- Nested lists support (disc → circle → square)
+- Code blocks s proper padding a dark theme
+- Typography optimization pro readability
+
+UNIVERSAL DOCUMENT PROCESSING:
+- Google Document AI pro PDF/DOCX/složité dokumenty
+- Direct text extraction pro coding files (20+ extensions)
+- Plain text support: JS, TS, Python, Java, C++, CSS, HTML, JSON, YAML, SQL, CSV
+- File type detection (extension + MIME type)
+- Google Cloud Storage integration
+- Metadata extraction (character count, line count, processing duration)
+- Error handling s fallback strategies
+- Performance monitoring s timing metrics
+
+INTELIGENTNÍ JAZYKOVÁ DETEKCE:
+- Smart Language Detection - FUNGUJE (290 řádků ultra pokročilého algoritmu)
+- Detekce diakritiky (český vs rumunský)
+- Explicit language requests ("mluv česky", "speak english")
+- Conversational phrases scoring
+- Weighted vocabulary system (200+ českých slov bez diakritiky)
+- Confidence thresholding s tie-breaking
+- Comprehensive test suite
+
+TTS/STT PREPROCESSING (3 jazyky):
+- Math symbols převod (÷ × − + = ≠ ≤ ≥) do lokálních jazyků
+- Numbers to words (1-20 v každém jazyce)
+- Currency handling (Kč/€/$/dolari/euro)
+- Temperature units (°C/°F v lokálních formátech)
+- Markdown cleanup (před math symboly)
+- Abbreviations expansion (atd/etc/resp specificky pro jazyk)
+
+HLASOVÝ SYSTÉM (Multi-Provider):
+- Chirp3-HD (Ultra-realistic generative AI) pro angličtinu
+- Studio voices pro hlavní evropské jazyky
+- Neural2 pro ostatní jazyky
+- 4-úrovňový fallback systém (Chirp3-HD → Studio → Neural2 → Standard)
+- ElevenLabs optimalizované voice settings
+- Google TTS/STT s audio encoding detection
+- Size validation (1KB-10MB)
+- Enhanced error messages v lokálních jazycích
+
+RAM MANAGEMENT & STORAGE ARCHITEKTURA:
+- 3-vrstvý storage systém (SessionStorage/LocalStorage/IndexedDB)
+- IndexedDB s Dexie V3 schema evolution (postupná migrace V1→V2→V3)
+- Single chat in RAM - vždy jen 1 aktivní chat v paměti
+- Lazy loading metadata - sidebar načítá JEN titulky chatů (BEZ zpráv)
+- Compound indexy [chatId+timestamp] pro efektivní DB queries
+- Smart auto-save - každých 10 zpráv s append-only logikou
+- Memory delta tracking - monitoring memory usage při operacích
+- Performance metrics s heap size monitoring
+
+VIRTUALIZAČNÍ SYSTÉM:
+- React Virtuoso pro unlimited scalability (1000+ zpráv)
+- getAllMessagesForChat() pro Virtuoso optimalizaci
+- Overscan: 1200 pro smooth scrolling
+- Height jumping prevention - reserved space pro action buttons
+- True pagination z databáze (ne fake pagination)
+- Bottom-first loading pattern
+
+CHATGPT-STYLE SCROLLING SYSTÉM:
+- Custom scrolling behavior - user zpráva vždy nahoře viewportu
+- scrollToUserMessageAt() s align: 'start' - ChatGPT-style positioning
+- followOutput: false - plná manuální kontrola scrollingu
+- Žádný auto-scroll na AI odpovědi - jen user zprávy triggerují scroll
+- Virtuoso footer hack - umělý spacer 475px přímo ve Virtuoso
+- Input bar padding 140px - koordinace s footer space
+- Celkem ~600px bottom space - enough room pro scrolling bez layout jumping
+- Custom řešení - reverse-engineered Virtuoso behavior
+- Smooth scroll behavior s error handling a retry mechanism
+
+PERFORMANCE OPTIMALIZACE:
+- Paddings místo margins - margins rušily virtualizaci
+- Sjednocený main container - konzistentní layout
+- Extraktované styly - předchází re-renderům
+- Ref optimalizace - stabilní reference
+- React.memo a useCallback - minimalizace re-renderů
+- GPU akcelerace - transform3d a will-change kde potřeba
+- Vyčištěný dead code a logy - menší bundle size
+- CSS transforms s translateZ(0) - hardware acceleration
+
+STARTUP SEKVENCE & SESSION MANAGEMENT:
+- PWA Detection (standalone mode iOS/Android)
+- Audio Context Unlock pro mobile TTS/STT
+- Crash Monitoring s IndexedDB tracking
+- Session Recovery z sessionStorage (current chat ID)
+- Language preferences z localStorage
+- Service Worker s automatic PWA updates
 
 ZNÁMÉ PROBLÉMY:
 - Mobile audio unlock pro TTS (iOS/Safari problém)
 - Vercel 4.5MB limit pro upload (hosting omezení)
 - Voice chat mikrofon position (work in progress)
 
+SOPHISTICATED UI KOMPONENTY:
+- ChatSidebar: GPT-style design s animovaným slide-in/out
+- Long-press delete (800ms) pro chat management
+- Language switching integrace v sidebar settings
+- Responsive design (85% width mobile, 320px desktop)
+- Current chat highlighting s visual feedback
+- Backdrop blur s advanced CSS filters
+- Mobile audio unlock detection a handling
+
+ADVANCED STREAMING & SCROLL INTEGRACE:
+- Word-by-word streaming s natural typing effect
+- Adaptive speed pro dlouhé texty (>100 slov)
+- Punctuation awareness - extra pause po .!? (100ms)
+- Paragraph detection - delší pause po \n\n (200ms)
+- Speed variation ±30% pro přirozený efekt
+- Text height measurement - předchází jumping při renderingu
+- Smart scroll detection - zjišťuje jestli je user na bottom
+- Debounced scroll handlers - optimalizované pro performance
+- Stop mechanism - možnost zrušit streaming kdykoli
+
+SECURITY & MONITORING:
+- API key management s environment variables
+- CORS configuration s security headers
+- Content-Type validation, request sanitization
+- Usage tracking & monitoring, error rate tracking
+- Authentication failure masking
+
+ADVANCED BUILD SYSTEM:
+- vite.config.js - Sophisticated bundle splitting
+- Manual chunks (vendor-react, markdown-editor, math, db, ui, utils)
+- Tree shaking, code splitting, progressive loading
+- Bundle size warnings, chunk optimization
+- GPU acceleration s transform3d, will-change
+
 TECHNICKÁ INFORMACE:
 - App.jsx: 2290 řádků (sníženo z 3200)
 - Modularita: postupný refaktoring
 - Hosting: Vercel (plán migrace na Firebase)
 - Storage: IndexedDB pro chaty, Google Cloud pro dokumenty
+- Gemini service: OMNIA ONE AI prompt s personality, Google grounding
+- Document context: time-based relevance algoritmus v App.jsx
+- DocumentViewer: univerzální viewer pro PDF/text/Word/images
+
+PWA & NETWORK KOMPONENTY:
+- OfflineIndicator.jsx - Network status s connection quality
+- UpdatePrompt.jsx - PWA update notifications s haptic feedback
+- Service Worker s sophisticated caching strategies
+- Runtime caching (API calls, static assets, documents)
+- Network-first vs Cache-first strategies
+- 5MB file cache limit, automatic updates
+
+RENDERING & UI MODULY:
+- MessageRenderer.jsx: Bidirectional markdown s dual modes (streaming/final)
+- @uiw/react-md-editor: Professional markdown editor integration
+- KaTeX CSS: Mathematical formula rendering
+- Custom syntax highlighting: 8 token types s custom barvami
+- React.memo optimization pro performance
+- Smooth transitions mezi streaming a final content
+- SimpleVoiceRecorder.jsx - ElevenLabs STT s audio level monitoring
+- ThemeContext.jsx - Centralized theme management
+
+JAZYKOVÉ MODULY:
+- smartLanguageDetection.js: 290-řádkový algoritmus s comprehensive test suite
+- ttsPreprocessing.js: 3 kompletní preprocessing systémy (CS/EN/RO)
+- elevenlabs-tts.js: optimalizované voice settings pro kvalitu
+- google-tts.js: 30+ jazyků s hierarchií hlasů (Chirp3-HD/Studio/Neural2)
+- google-stt.js: fallback STT s enhanced language detection
+- Audio encoding detection: WebM/MP4/WAV support
+- Fallback strategie: ElevenLabs → Google TTS → Google STT
+
+DOKUMENT PROCESSING MODULY:
+- process-document.js: Universal document processor s Google Document AI
+- upload-to-gemini.js: Cloud storage integration
+- DocumentViewer.jsx: In-app document viewer (PDF/text/Word)
+- fileTypeUtils.js: MIME type detection a file validation
+- fileUtils.js: Base64 conversion a file handling
+
+SPECIÁLNÍ MODULY:
+- chatDB.js: 585 řádků IndexedDB architektury s V3 schema
+- sessionManager.js: Simplified storage jen pro UI settings
+- crashMonitor.js: Comprehensive error tracking s exportable logs
+- mobileAudioManager.js: iOS/Android audio context s haptic feedback
+- scrollUtils.js: ChatGPT-style scrolling s Virtuoso reverse-engineering
+- streamingUtils.js: Word-by-word streaming s natural typing effects
+- smartSave.js: Incremental save system s append-only logika
+- sanitizeText.js: Voice-optimized text processing
+- Performance debugging tools: window.omniaDB.* development helpers
 
 DEPLOYMENT:
 - Automatický deploy z main branch na Vercel
@@ -41,7 +252,35 @@ DALŠÍ PLÁNY:
 - Dokončení voice chat UX
 - Pokračování modulárního refaktoringu
 
+VÝVOJOVÝ ČAS:
+- Celkový čas: 50 dní (březen-duben 2025)
+- IndexedDB + Virtuoso + optimalizace: 2-3 týdny
+- Implementace rychlá, ale optimalizace časově náročná
+- Mezitím přidány: plná podpora dokumentů, opravy, vylepšení
+- ChatGPT scrolling: pár dní debugging + reverse engineering Virtuoso
+- Footer hack objev: kritický breakthrough po experimentech s CSS/spacers
+- Performance tuning: padding/margin refactor, style extraction, memoization
+- Code cleanup: dead code removal, log cleanup, bundle optimization
+
 POZNÁMKY:
 - Projekt je funkční a stabilní
-- Všechny core funkce pracují spolehlivě
+- Všechny core funkce pracují spolehlivě  
 - Priorita: nedělat breaking changes
+- OMNIA = ENTERPRISE-LEVEL MEZINÁRODNÍ AI PLATFORMA, ne appka!
+- Pokročilost: Ultra-sophisticated language detection + multi-provider TTS/STT
+- Architektura: World-class s podporou 30+ jazyků a intelligent voice processing
+- RAM Management: Enterprise-level s lazy loading a memory monitoring
+- Storage: 3-vrstvý systém s IndexedDB V3 schema evolution
+- Markdown: Publishing-grade bidirectional system s KaTeX mathematics
+- Document Support: Universal processing pro všechny běžné formáty
+- User Experience: Full markdown support i pro user input (rare feature!)
+- Scrolling Innovation: Custom ChatGPT-style behavior s Virtuoso footer hack
+- Problem Solving: Reverse-engineered complex libraries bez dokumentace
+- Original Solutions: Custom řešení která nikde nejsou dokumentovaná
+- Performance Excellence: Production-ready optimalizace s GPU acceleration
+- Code Quality: Clean, maintainable codebase s best practices
+- Monitoring Excellence: Comprehensive crash tracking a error handling
+- Mobile Excellence: Advanced audio management s haptic feedback
+- PWA Excellence: Sophisticated caching a offline capabilities
+- Security Excellence: Proper API management a validation
+- CELKEM: Production-ready mezinárodní AI platforma světové úrovně
