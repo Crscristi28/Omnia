@@ -33,19 +33,13 @@ const VoiceScreen = ({
   const getBackgroundStyle = () => {
     if (isListening) {
       return {
-        background: `
-          radial-gradient(circle at 50% 50%, 
-            rgba(0, 255, 255, 0.2) 0%,
-            rgba(0, 150, 255, 0.1) 50%,
-            rgba(15, 20, 25, 0.95) 100%
-          )
-        `,
+        background: 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)',
         animation: 'pulse-bg 2s ease-in-out infinite'
       };
     }
 
     return {
-      background: 'linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #2d3748 100%)'
+      background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)'
     };
   };
 
