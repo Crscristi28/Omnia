@@ -111,7 +111,7 @@ export default async function handler(req) {
         maxAlternatives: 1,
         profanityFilter: false,
         useEnhanced: true, // Use enhanced model for better accuracy
-        model: 'latest_short', // Better for short recordings like ElevenLabs
+        model: 'latest_long', // Better accuracy (per project docs)
       },
       audio: {
         content: base64Audio
