@@ -77,7 +77,8 @@ const VoiceScreen = ({
         minHeight: '100vh',
         overflowY: 'auto',
         backdropFilter: 'blur(10px)',
-        transition: 'background 0.5s ease'
+        transition: 'background 0.5s ease',
+        animation: isAudioPlaying ? 'screenPulse 1.5s ease-in-out infinite' : 'none'
       }}
     >
       {/* 🎯 HEADER WITH CLOSE BUTTON */}
@@ -284,6 +285,21 @@ const VoiceScreen = ({
               inset 0 0 120px rgba(147, 51, 234, 0.4),
               0 0 60px rgba(66, 153, 225, 0.6),
               0 0 120px rgba(147, 51, 234, 0.5);
+          }
+        }
+
+        @keyframes screenPulse {
+          0% {
+            transform: scale(1);
+            filter: brightness(1);
+          }
+          50% {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+          }
+          100% {
+            transform: scale(1);
+            filter: brightness(1);
           }
         }
       `}</style>
