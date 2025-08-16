@@ -24,7 +24,7 @@ import { streamMessageWithEffect, smartScrollToBottom } from './utils/ui'; // �
 import mobileAudioManager from './utils/MobileAudioManager.js'; // 🎵 Mobile audio handling
 import * as styles from './styles/ChatStyles.js'; // 🎨 All chat styles
 import { generateMessageId } from './utils/messageUtils.js'; // 📝 Message utilities
-import { welcomeTexts } from './constants/welcomeTexts.js'; // 🌍 Welcome texts
+import { welcomeTexts, getTimeBasedGreeting } from './constants/welcomeTexts.js'; // 🌍 Welcome texts
 import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔 Notifications
 import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
@@ -1986,7 +1986,7 @@ const virtuosoComponents = React.useMemo(() => ({
                   ...welcomeTitleStyle,
                   fontSize: isMobile ? '2rem' : '2.5rem',
                 }}>
-                  {welcomeTexts[uiLanguage]?.hello || welcomeTexts.cs.hello}
+                  {getTimeBasedGreeting(uiLanguage)}
                 </h1>
                 
                 <p className="text-shadow shadow-white/20 drop-shadow" style={{
