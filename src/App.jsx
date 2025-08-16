@@ -462,14 +462,21 @@ function App() {
       // console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
       // const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
       
-      // 🔧 Use Google TTS as primary (ElevenLabs disabled)
+      // 🔧 CRITICAL: Detect language from actual text, not parameter
+      const actualLanguage = detectLanguage(textToSpeak);
       console.log('🎵 Using Google TTS as primary service...');
+      console.log('🌍 Language detection:', {
+        parameterLanguage: language,
+        detectedFromText: actualLanguage,
+        using: actualLanguage
+      });
+      
       const googleResponse = await fetch('/api/google-tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({ 
           text: textToSpeak,  // Use sanitized text
-          language: language,
+          language: actualLanguage, // Use detected language from text!
           voice: 'natural'
         })
       });
