@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}/stream`,
       {
         method: 'POST',
         headers: {
@@ -102,14 +102,30 @@ export default async function handler(req, res) {
       });
     }
 
-    // Get audio data
-    const audioBuffer = await response.arrayBuffer();
+    // 🔧 STREAMING: Collect chunks as they arrive  
+    const reader = response.body.getReader();
+    const chunks = [];
     
-    console.log('✅ ElevenLabs TTS SUCCESS (BALANCED):', {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    
+    // Combine all chunks into single buffer
+    const audioBuffer = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+    let offset = 0;
+    for (const chunk of chunks) {
+      audioBuffer.set(chunk, offset);
+      offset += chunk.length;
+    }
+    
+    console.log('✅ ElevenLabs STREAMING TTS SUCCESS:', {
       textContainedNumbers: hasNumbers,
       textContainedTemperature: hasTemperature,
       audioSize: audioBuffer.byteLength,
       sizeKB: Math.round(audioBuffer.byteLength / 1024),
+      chunksReceived: chunks.length,
       settings: {
         stability: voice_settings.stability,
         similarity_boost: voice_settings.similarity_boost,
