@@ -99,7 +99,7 @@ export default async function handler(req) {
     const sttRequest = {
       config: {
         encoding: audioEncoding,
-        sampleRateHertz: 16000, // Required - STT compatibility (per docs) 
+        // sampleRateHertz: auto-detect from audio header (Google supports 8000-48000 Hz) 
         
         // 🔧 SMART LANGUAGE DETECTION using Omnia's system
         languageCode: 'cs-CZ', // Primary language (most common)
@@ -264,8 +264,8 @@ function detectGoogleAudioEncoding(audioBuffer) {
     return 'LINEAR16';
   }
   
-  // Default fallback
-  return 'WEBM_OPUS';
+  // Default fallback - use OGG_OPUS for consistency
+  return 'OGG_OPUS';  // Correct fallback for WebM/Opus
 }
 
 // 🔧 Enhanced language detection combining text analysis (SAME AS ELEVENLABS)
