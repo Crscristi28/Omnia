@@ -111,37 +111,49 @@ class MobileAudioManager {
   async playAudio(audioBlob) {
     this.stop();
     
-    if (!this.isUnlocked) {
+    // Ujistit se že máme unlocked AudioContext
+    if (!this.isUnlocked || this.audioContext?.state === 'suspended') {
       const unlocked = await this.unlockAudioContext();
       if (!unlocked) {
         throw new Error('Audio context locked');
       }
     }
     
-    return new Promise((resolve, reject) => {
-      const audioUrl = URL.createObjectURL(audioBlob);
-      this.currentAudio = new Audio(audioUrl);
+    try {
+      console.log('🎵 Playing audio via Web Audio API...');
       
-      this.currentAudio.onended = () => {
-        console.log('🎵 Audio ended naturally');
-        URL.revokeObjectURL(audioUrl);
-        this.currentAudio = null;
-        resolve();
-      };
+      // Dekódovat audio blob pomocí Web Audio API
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
       
-      this.currentAudio.onerror = (e) => {
-        console.error('❌ Audio playback error:', e);
-        URL.revokeObjectURL(audioUrl);
-        this.currentAudio = null;
-        reject(e);
-      };
+      // Vytvořit a připojit source node
+      const source = this.audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.audioContext.destination);
       
-      this.currentAudio.play()
-        .then(() => {
-          console.log('▶️ Audio started playing');
-        })
-        .catch(reject);
-    });
+      console.log('▶️ Web Audio API source started');
+      
+      // Spustit přehrávání
+      source.start(0);
+      
+      // Vrátit Promise která se resolvne až audio skončí
+      return new Promise((resolve, reject) => {
+        source.onended = () => {
+          console.log('🎵 Web Audio API source ended');
+          resolve();
+        };
+        
+        // Web Audio API nemá onerror, ale můžeme catch errors z decodeAudioData
+        source.onerror = (e) => {
+          console.error('❌ Web Audio API source error:', e);
+          reject(e);
+        };
+      });
+      
+    } catch (error) {
+      console.error('❌ Web Audio API playback failed:', error);
+      throw error;
+    }
   }
   
   stop() {

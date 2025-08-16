@@ -491,9 +491,9 @@ function App() {
     }
   };
 
-  // 🎵 VOICE PROCESSING - SIMPLE HTML5 AUDIO
+  // 🎵 VOICE PROCESSING - WEB AUDIO API VIA MOBILE AUDIO MANAGER
   const processVoiceResponse = async (responseText, language) => {
-    console.log('🎵 Processing voice response - SIMPLE AUDIO MODE:', {
+    console.log('🎵 Processing voice response - WEB AUDIO API MODE:', {
       textLength: responseText.length,
       language: language
     });
@@ -501,34 +501,16 @@ function App() {
     try {
       const audioBlob = await generateAudioForSentence(responseText, language);
       
-      // Use simple HTML5 Audio (no mobileAudioManager)
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // Use mobileAudioManager with Web Audio API (maintains unlocked context)
+      setIsAudioPlaying(true);
+      await mobileAudioManager.playAudio(audioBlob);
+      setIsAudioPlaying(false);
       
-      // Set up event handlers
-      audio.onplay = () => {
-        console.log('▶️ Simple audio started playing');
-        setIsAudioPlaying(true);
-      };
-      
-      audio.onended = () => {
-        console.log('🏁 Simple audio ended');
-        setIsAudioPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = (e) => {
-        console.error('❌ Simple audio error:', e);
-        setIsAudioPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      // Play audio
-      await audio.play();
-      console.log('✅ Simple audio playing successfully');
+      console.log('✅ Web Audio API playing successfully via mobileAudioManager');
       
     } catch (error) {
-      console.error('❌ Failed to generate/play audio:', error);
+      console.error('❌ Failed to generate/play audio via Web Audio API:', error);
+      setIsAudioPlaying(false);
     }
   };
 
