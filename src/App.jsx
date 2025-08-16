@@ -458,35 +458,41 @@ function App() {
         });
       }
       
-      // 🔧 DISABLED: ElevenLabs TTS - using Google TTS as primary
-      // console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
-      // const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
+      // 🔧 ENABLED: ElevenLabs TTS as primary with Google fallback
+      console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
       
-      // 🔧 CRITICAL: Detect language from actual text, not parameter
-      const actualLanguage = detectLanguage(textToSpeak);
-      console.log('🎵 Using Google TTS as primary service...');
-      console.log('🌍 Language detection:', {
-        parameterLanguage: language,
-        detectedFromText: actualLanguage,
-        using: actualLanguage
-      });
-      
-      const googleResponse = await fetch('/api/google-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ 
-          text: textToSpeak,  // Use sanitized text
-          language: actualLanguage, // Use detected language from text!
-          voice: 'natural'
-        })
-      });
-      
-      if (!googleResponse.ok) {
-        throw new Error(`Google TTS failed: ${googleResponse.status}`);
+      try {
+        const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
+        console.log('✅ ElevenLabs TTS success in generateAudioForSentence');
+        return audioBlob;
+      } catch (error) {
+        console.warn('⚠️ ElevenLabs TTS failed, using Google TTS fallback...', error);
+        
+        // 🔧 FALLBACK: Use Google TTS with language detection
+        const actualLanguage = detectLanguage(textToSpeak);
+        console.log('🌍 Language detection for Google fallback:', {
+          parameterLanguage: language,
+          detectedFromText: actualLanguage,
+          using: actualLanguage
+        });
+        
+        const googleResponse = await fetch('/api/google-tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ 
+            text: textToSpeak,  // Use sanitized text
+            language: actualLanguage, // Use detected language from text!
+            voice: 'natural'
+          })
+        });
+        
+        if (!googleResponse.ok) {
+          throw new Error(`Google TTS fallback failed: ${googleResponse.status}`);
+        }
+        
+        console.log('✅ Google TTS fallback success');
+        return await googleResponse.blob();
       }
-      
-      console.log('✅ Google TTS Success');
-      return await googleResponse.blob();
       
     } catch (error) {
       console.error('💥 Google TTS failed:', error);

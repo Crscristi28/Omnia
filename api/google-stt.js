@@ -99,7 +99,7 @@ export default async function handler(req) {
     const sttRequest = {
       config: {
         encoding: audioEncoding,
-        // sampleRateHertz: auto-detect from audio header (Google supports 8000-48000 Hz) 
+        sampleRateHertz: 44100, // High quality sample rate for better recognition 
         
         // 🔧 SMART LANGUAGE DETECTION using Omnia's system
         languageCode: 'cs-CZ', // Primary language (most common)

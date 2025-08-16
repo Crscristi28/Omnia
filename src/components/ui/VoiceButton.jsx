@@ -7,7 +7,7 @@ import { detectLanguage, sanitizeText } from '../../utils/text';
 import { elevenLabsService } from '../../services/voice';
 
 // 🆕 CONFIG - ElevenLabs vs Google TTS
-const USE_ELEVENLABS = false;
+const USE_ELEVENLABS = true;
 
 const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
   const [isPlaying, setIsPlaying] = useState(false);

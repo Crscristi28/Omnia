@@ -235,31 +235,30 @@ const SimpleVoiceRecorder = ({
           const arrayBuffer = await audioBlob.arrayBuffer();
           console.log('📤 Sending to Google STT API...');
           
-          // 🔧 DISABLED: ElevenLabs STT - using Google STT as primary
-          // let response = await fetch('/api/elevenlabs-stt', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/octet-stream',
-          //   },
-          //   body: arrayBuffer
-          // });
-
-          // let data;
-          // let usedService = 'ElevenLabs';
-
-          // 🔧 Use Google STT as primary (ElevenLabs disabled)
-          console.log('🎤 Using Google STT as primary service...');
-          
-          let response = await fetch('/api/google-stt', {
+          // 🔧 ENABLED: ElevenLabs STT as primary with Google fallback
+          let response = await fetch('/api/elevenlabs-stt', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/octet-stream',
             },
             body: arrayBuffer
           });
-          
+
           let data;
-          let usedService = 'Google';
+          let usedService = 'ElevenLabs';
+
+          // 🔧 If ElevenLabs fails, use Google STT as fallback
+          if (!response.ok) {
+            console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
+            response = await fetch('/api/google-stt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/octet-stream',
+              },
+              body: arrayBuffer
+            });
+            usedService = 'Google';
+          }
 
           if (!response.ok) {
             throw new Error(`STT failed: HTTP ${response.status}`);
