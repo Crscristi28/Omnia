@@ -108,17 +108,17 @@ export default async function handler(req, res) {
       // Chirp3-HD hlasy nepodporují pitch/volume parametry
       audioConfig = {
         audioEncoding: 'MP3',
-        speakingRate: 1.15,  // Pouze rychlost podporována
+        speakingRate: 1.0,   // Normal speed for better punctuation respect
         effectsProfileId: ['headphone-class-device']
       };
     } else {
       // Standardní config pro ostatní hlasy  
       audioConfig = {
         audioEncoding: 'MP3',
-        speakingRate: 1.15,  // 15% rychleji - příjemná rychlost
-        pitch: 0.4,          // Mírně vyšší, ale ne moc
-        volumeGainDb: 2.5,   // Hlasitější, ale ne příliš
-        effectsProfileId: ['headphone-class-device'] // Kvalitní ale ne agresivní
+        speakingRate: 1.0,   // Normal speed - respect punctuation better
+        pitch: 0.0,          // Normal pitch - more natural
+        volumeGainDb: 0.0,   // Normal volume - clearer speech
+        effectsProfileId: ['headphone-class-device']
       };
     }
 
