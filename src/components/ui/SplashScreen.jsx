@@ -2,7 +2,6 @@
 // 🎨 PWA Splash Screen Component
 
 import React from 'react';
-import omniaSphere from '../../assets/omnia-sphere.png';
 
 const SplashScreen = ({ isVisible, onComplete }) => {
   
@@ -34,25 +33,66 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       transform: 'translateZ(0)'
     }}>
       
-      {/* FLUID LOGO - přesně tvůj design */}
+      {/* FLUID SPHERE - CSS vytvořená koule */}
       <div style={{
         width: '200px',
         height: '200px',
+        borderRadius: '50%',
         marginBottom: '40px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        position: 'relative',
+        background: `
+          radial-gradient(circle at 30% 30%, 
+            #ffffff 0%,
+            #00ccff 8%,
+            #0088ff 25%,
+            #4466ff 45%,
+            #8844ff 65%,
+            #cc22ff 85%,
+            #000044 100%
+          )
+        `,
+        boxShadow: `
+          0 0 80px rgba(0, 200, 255, 0.8),
+          0 0 160px rgba(200, 100, 255, 0.6),
+          0 0 240px rgba(255, 50, 200, 0.4),
+          inset 0 0 50px rgba(255, 255, 255, 0.15)
+        `,
+        overflow: 'hidden'
       }}>
-        <img 
-          src={omniaSphere}
-          alt="OMNIA Sphere"
-          style={{
-            width: '200px',
-            height: '200px',
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 0 40px rgba(0, 255, 255, 0.5))'
-          }}
-        />
+        
+        {/* Fluid vlny efekt */}
+        <div style={{
+          position: 'absolute',
+          top: '10%',
+          left: '10%',
+          width: '80%',
+          height: '80%',
+          borderRadius: '50%',
+          background: `
+            conic-gradient(from 45deg,
+              transparent 0deg,
+              rgba(0, 255, 255, 0.3) 60deg,
+              rgba(147, 51, 234, 0.4) 120deg,
+              transparent 180deg,
+              rgba(0, 150, 255, 0.3) 240deg,
+              transparent 300deg
+            )
+          `,
+          filter: 'blur(4px)',
+          animation: 'rotate 8s linear infinite'
+        }} />
+        
+        {/* Highlight efekt */}
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '25%',
+          width: '40%',
+          height: '30%',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.2)',
+          filter: 'blur(8px)'
+        }} />
       </div>
       
       {/* OMNIA TEXT */}
@@ -67,6 +107,14 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       }}>
         OMNIA
       </h1>
+
+      {/* CSS animace pro rotaci */}
+      <style>{`
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       
     </div>
   );
