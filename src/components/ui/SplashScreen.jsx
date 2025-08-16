@@ -5,12 +5,17 @@ import React from 'react';
 import fluidSphere from '../../assets/fluid-sphere.png';
 
 const SplashScreen = ({ isVisible, onComplete }) => {
+  const [fadeOut, setFadeOut] = React.useState(false);
   
   React.useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
-        onComplete();
-      }, 1500); // 1.5 sekund
+        setFadeOut(true);
+        // Po fade out animaci zavolej onComplete
+        setTimeout(() => {
+          onComplete();
+        }, 500); // 500ms fade out
+      }, 1500); // 1.5 sekund zobrazení
       
       return () => clearTimeout(timer);
     }
@@ -31,7 +36,9 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 10000,
-      transform: 'translateZ(0)'
+      transform: 'translateZ(0)',
+      opacity: fadeOut ? 0 : 1,
+      transition: 'opacity 500ms ease-out'
     }}>
       
       {/* OMNIA GRADIENT CIRCLE LOGO */}
