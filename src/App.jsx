@@ -701,7 +701,7 @@ function App() {
 
 
   // 🆕 VOICE SCREEN OPEN/CLOSE WITH GEMINI FORCE (UPDATED)
-  const handleVoiceScreenOpen = () => {
+  const handleVoiceScreenOpen = async () => {
     setShowVoiceScreen(true);
     
     if (model !== 'gemini-2.5-flash') {
@@ -710,7 +710,13 @@ function App() {
       setModel('gemini-2.5-flash');
     }
     
-    mobileAudioManager.unlockAudioContext();
+    console.log('🔓 Attempting audio unlock on VoiceScreen open...');
+    try {
+      await mobileAudioManager.unlockAudioContext();
+      console.log('✅ VoiceScreen audio unlock completed');
+    } catch (error) {
+      console.error('❌ VoiceScreen audio unlock failed:', error);
+    }
   };
 
   const handleVoiceScreenClose = () => {

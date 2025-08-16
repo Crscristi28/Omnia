@@ -36,7 +36,16 @@ class MobileAudioManager {
       }
       
       if (this.audioContext.state === 'suspended') {
-        await this.audioContext.resume();
+        console.log('🔄 AudioContext suspended, attempting resume...');
+        try {
+          await this.audioContext.resume();
+          console.log('✅ AudioContext resume successful, new state:', this.audioContext.state);
+        } catch (resumeError) {
+          console.error('❌ AudioContext resume failed:', resumeError);
+          throw resumeError;
+        }
+      } else {
+        console.log('ℹ️ AudioContext already in state:', this.audioContext.state);
       }
       
       const oscillator = this.audioContext.createOscillator();
