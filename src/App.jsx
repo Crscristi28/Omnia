@@ -1970,15 +1970,6 @@ const virtuosoComponents = React.useMemo(() => ({
               gap: isMobile ? '1.5rem' : '2rem'
             }}>
               
-              {/* OMNIA LOGO */}
-              <div className="drop-shadow-2xl shadow-white/20">
-                <OmniaLogo 
-                  size={isMobile ? 80 : 100} 
-                  animate={streaming || loading}
-                  isListening={isListening || isRecordingSTT}
-                  shouldHide={false}
-                />
-              </div>
               
               {/* 🌍 MULTILINGUAL WELCOME TEXT */}
               <div style={welcomeTextContainerStyle}>
