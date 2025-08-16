@@ -10,7 +10,8 @@ const VoiceScreen = ({
   onTranscript,
   isLoading,
   isAudioPlaying,
-  uiLanguage
+  uiLanguage,
+  audioManager
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [lastTranscript, setLastTranscript] = useState('');
@@ -37,9 +38,9 @@ const VoiceScreen = ({
     }
     
     // 🔧 CRITICAL: Stop audio if available via props
-    if (window.mobileAudioManager && window.mobileAudioManager.stop) {
+    if (audioManager && audioManager.stop) {
       console.log('🛑 Stopping audio from VoiceScreen X button');
-      window.mobileAudioManager.stop();
+      audioManager.stop();
     }
     
     onClose();
