@@ -32,7 +32,7 @@ import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './
 import { convertMessagesForOpenAI } from './utils/messageConverters.js'; // 🔄 Message format converters
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
-import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, OfflineIndicator } from './components/ui';
+import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, OfflineIndicator, SplashScreen } from './components/ui';
 
 import { VoiceScreen } from './components/chat';
 import MessageItem from './components/chat/MessageItem';
@@ -99,6 +99,9 @@ function App() {
   const [currentChatId, setCurrentChatId] = useState(null);
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
+
+  // 🎬 SPLASH SCREEN STATE - PWA startup animation
+  const [showSplashScreen, setShowSplashScreen] = useState(true);
 
   // 🔧 Helper functions for safe chatId management
   const updateCurrentChatId = (newId) => {
@@ -2301,6 +2304,12 @@ const virtuosoComponents = React.useMemo(() => ({
         connectionInfo={connectionInfo}
         uiLanguage={uiLanguage}
         position="top-left"
+      />
+
+      {/* 🎬 SPLASH SCREEN - PWA startup animation */}
+      <SplashScreen
+        isVisible={showSplashScreen}
+        onComplete={() => setShowSplashScreen(false)}
       />
     </div>
   );
