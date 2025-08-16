@@ -95,20 +95,24 @@ export default async function handler(req) {
     const audioEncoding = detectGoogleAudioEncoding(audioBuffer);
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
 
-    // 🔧 Google STT request with optimized settings
+    // 🔧 Google STT request with ElevenLabs-style settings (auto-detect language)
     const sttRequest = {
       config: {
         encoding: audioEncoding,
-        sampleRateHertz: 16000, // Standard rate for good quality
-        languageCode: 'cs-CZ', // Default to Czech, auto-detect will override
-        alternativeLanguageCodes: ['en-US', 'ro-RO'], // Support other languages
+        // Auto-detect sample rate like ElevenLabs (remove fixed 16000)
+        // sampleRateHertz: 16000, 
+        
+        // 🆕 AUTO-DETECT LANGUAGE like ElevenLabs (no fixed languageCode)
+        // languageCode: 'cs-CZ', // REMOVED - let Google auto-detect
+        alternativeLanguageCodes: ['cs-CZ', 'en-US', 'ro-RO'], // Support all languages
+        
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: true,
         enableWordConfidence: true,
         maxAlternatives: 1,
         profanityFilter: false,
         useEnhanced: true, // Use enhanced model for better accuracy
-        model: 'latest_long', // Best model for speech recognition
+        model: 'latest_short', // Better for short recordings like ElevenLabs
       },
       audio: {
         content: base64Audio
