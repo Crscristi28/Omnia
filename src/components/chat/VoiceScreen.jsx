@@ -1,7 +1,7 @@
 // 📁 src/components/voice/VoiceScreen.jsx
 // 🎙️ Simplified Voice Screen Modal
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SimpleVoiceRecorder } from '../voice';
 
 const VoiceScreen = ({ 
@@ -15,8 +15,28 @@ const VoiceScreen = ({
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [lastTranscript, setLastTranscript] = useState('');
+  const [showParticleBurst, setShowParticleBurst] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   
   const isMobile = window.innerWidth <= 768;
+
+  // 🎆 Opening animation trigger
+  useEffect(() => {
+    if (isOpen && !isOpening) {
+      setIsOpening(true);
+      setShowParticleBurst(true);
+      
+      // Hide particles after animation
+      setTimeout(() => {
+        setShowParticleBurst(false);
+      }, 1200);
+      
+      // Reset opening state
+      setTimeout(() => {
+        setIsOpening(false);
+      }, 1500);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -78,7 +98,8 @@ const VoiceScreen = ({
         overflowY: 'auto',
         backdropFilter: 'blur(10px)',
         transition: 'background 0.5s ease',
-        animation: isAudioPlaying ? 'screenPulse 1.5s ease-in-out infinite' : 'none'
+        animation: isOpening ? 'voiceChatFadeIn 1s ease-out 0.5s both' : 
+                  isAudioPlaying ? 'screenPulse 1.5s ease-in-out infinite' : 'none'
       }}
     >
       {/* 🎯 HEADER WITH CLOSE BUTTON */}
@@ -243,6 +264,48 @@ const VoiceScreen = ({
         />
       )}
 
+      {/* 🎆 PARTICLE BURST OPENING ANIMATION */}
+      {showParticleBurst && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'none',
+            zIndex: 1100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          {/* Generate 12 particles in different directions */}
+          {Array.from({ length: 12 }, (_, i) => {
+            const angle = (i * 30) * (Math.PI / 180); // 30 degree intervals
+            const distance = 200 + (i % 3) * 100; // Varying distances
+            const size = 4 + (i % 3) * 2; // Different sizes
+            const duration = 0.8 + (i % 3) * 0.2; // Varying speeds
+            
+            return (
+              <div
+                key={i}
+                className={`particle particle-${i}`}
+                style={{
+                  position: 'absolute',
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  background: `radial-gradient(circle, rgba(66, 153, 225, 0.9), rgba(147, 51, 234, 0.7))`,
+                  borderRadius: '50%',
+                  boxShadow: `0 0 ${size * 2}px rgba(66, 153, 225, 0.8)`,
+                  animation: `particleBurst${i} ${duration}s ease-out forwards`
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+
       {/* 🎨 ANIMATIONS */}
       <style>{`
         @keyframes pulse-ring {
@@ -302,6 +365,31 @@ const VoiceScreen = ({
             filter: brightness(1);
           }
         }
+
+        @keyframes voiceChatFadeIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        /* Particle burst animations - 12 different directions */
+        @keyframes particleBurst0 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(200px, 0px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst1 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(173px, 100px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst2 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(100px, 173px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst3 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(0px, 200px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst4 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(-100px, 173px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst5 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(-173px, 100px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst6 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(-200px, 0px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst7 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(-173px, -100px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst8 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(-100px, -173px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst9 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(0px, -200px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst10 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(100px, -173px) scale(0.5); opacity: 0; } }
+        @keyframes particleBurst11 { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 50% { opacity: 1; } 100% { transform: translate(173px, -100px) scale(0.5); opacity: 0; } }
       `}</style>
     </div>
   );
