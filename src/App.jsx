@@ -736,6 +736,11 @@ function App() {
   };
 
   const handleVoiceScreenClose = () => {
+    // 🔧 CRITICAL: Stop all audio playback when closing voice chat
+    console.log('🛑 Stopping all audio playback on voice chat close...');
+    mobileAudioManager.stop();
+    setIsAudioPlaying(false);
+    
     setShowVoiceScreen(false);
     
     if (previousModel && previousModel !== 'gemini-2.5-flash') {
