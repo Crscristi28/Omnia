@@ -102,9 +102,9 @@ export default async function handler(req) {
         // Auto-detect sample rate like ElevenLabs (remove fixed 16000)
         // sampleRateHertz: 16000, 
         
-        // 🆕 AUTO-DETECT LANGUAGE like ElevenLabs (no fixed languageCode)
-        // languageCode: 'cs-CZ', // REMOVED - let Google auto-detect
-        alternativeLanguageCodes: ['cs-CZ', 'en-US', 'ro-RO'], // Support all languages
+        // 🔧 PRIMARY LANGUAGE required by Google (unlike ElevenLabs auto-detect)
+        languageCode: 'cs-CZ', // Required by Google API
+        alternativeLanguageCodes: ['en-US', 'ro-RO'], // Support other languages
         
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: true,
