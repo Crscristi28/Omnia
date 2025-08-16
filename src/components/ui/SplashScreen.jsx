@@ -38,7 +38,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
         width: '200px',
         height: '200px',
         borderRadius: '50%',
-        marginBottom: '40px',
+        marginBottom: '80px',
         position: 'relative',
         background: `
           radial-gradient(circle at 30% 30%, 
