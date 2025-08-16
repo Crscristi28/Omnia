@@ -230,13 +230,13 @@ const VoiceScreen = ({
             bottom: 0,
             pointerEvents: 'none',
             zIndex: 900,
-            border: '4px solid transparent',
+            border: '12px solid transparent',
             borderImage: 'linear-gradient(45deg, #4299e1, #9333ea, #06b6d4, #3b82f6) 1',
             boxShadow: `
-              inset 0 0 30px rgba(66, 153, 225, 0.3),
-              inset 0 0 60px rgba(147, 51, 234, 0.2),
-              0 0 30px rgba(66, 153, 225, 0.4),
-              0 0 60px rgba(147, 51, 234, 0.3)
+              inset 0 0 60px rgba(66, 153, 225, 0.4),
+              inset 0 0 120px rgba(147, 51, 234, 0.3),
+              0 0 60px rgba(66, 153, 225, 0.5),
+              0 0 120px rgba(147, 51, 234, 0.4)
             `,
             animation: 'aiSpeakingPulse 2s ease-in-out infinite alternate'
           }}
@@ -263,28 +263,28 @@ const VoiceScreen = ({
 
         @keyframes aiSpeakingPulse {
           0% {
-            opacity: 0.3;
+            opacity: 0.5;
             box-shadow: 
-              inset 0 0 20px rgba(66, 153, 225, 0.2),
-              inset 0 0 40px rgba(147, 51, 234, 0.1),
-              0 0 20px rgba(66, 153, 225, 0.3),
-              0 0 40px rgba(147, 51, 234, 0.2);
+              inset 0 0 40px rgba(66, 153, 225, 0.3),
+              inset 0 0 80px rgba(147, 51, 234, 0.2),
+              0 0 40px rgba(66, 153, 225, 0.4),
+              0 0 80px rgba(147, 51, 234, 0.3);
           }
           50% {
-            opacity: 0.6;
-            box-shadow: 
-              inset 0 0 40px rgba(66, 153, 225, 0.4),
-              inset 0 0 80px rgba(147, 51, 234, 0.3),
-              0 0 40px rgba(66, 153, 225, 0.5),
-              0 0 80px rgba(147, 51, 234, 0.4);
-          }
-          100% {
             opacity: 0.8;
             box-shadow: 
-              inset 0 0 60px rgba(66, 153, 225, 0.5),
-              inset 0 0 120px rgba(147, 51, 234, 0.4),
-              0 0 60px rgba(66, 153, 225, 0.6),
-              0 0 120px rgba(147, 51, 234, 0.5);
+              inset 0 0 80px rgba(66, 153, 225, 0.5),
+              inset 0 0 160px rgba(147, 51, 234, 0.4),
+              0 0 80px rgba(66, 153, 225, 0.6),
+              0 0 160px rgba(147, 51, 234, 0.5);
+          }
+          100% {
+            opacity: 1.0;
+            box-shadow: 
+              inset 0 0 120px rgba(66, 153, 225, 0.6),
+              inset 0 0 240px rgba(147, 51, 234, 0.5),
+              0 0 120px rgba(66, 153, 225, 0.7),
+              0 0 240px rgba(147, 51, 234, 0.6);
           }
         }
 
