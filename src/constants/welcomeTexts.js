@@ -10,21 +10,18 @@ export const welcomeTexts = {
     morning: "Dobré ráno!",
     afternoon: "Dobrý den!",
     evening: "Dobrý večer!",
-    night: "Dobrú noc!",
     subtitle: "Jak vám dnes mohu pomoci?"
   },
   en: { 
     morning: "Good morning!",
     afternoon: "Good afternoon!",
     evening: "Good evening!",
-    night: "Good night!",
     subtitle: "How can I help you today?"
   },
   ro: { 
     morning: "Bună dimineața!",
     afternoon: "Bună ziua!",
     evening: "Bună seara!",
-    night: "Noapte bună!",
     subtitle: "Cu ce vă pot ajuta astăzi?"
   }
 };
