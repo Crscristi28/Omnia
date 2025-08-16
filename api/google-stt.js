@@ -99,8 +99,7 @@ export default async function handler(req) {
     const sttRequest = {
       config: {
         encoding: audioEncoding,
-        // Auto-detect sample rate like ElevenLabs (remove fixed 16000)
-        // sampleRateHertz: 16000, 
+        sampleRateHertz: 16000, // Required - STT compatibility (per docs) 
         
         // 🔧 PRIMARY LANGUAGE required by Google (unlike ElevenLabs auto-detect)
         languageCode: 'cs-CZ', // Required by Google API
