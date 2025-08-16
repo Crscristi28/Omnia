@@ -25,7 +25,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: '#f8fafc',
+      background: '#1e3a5f',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -61,7 +61,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
           width: '120px',
           height: '120px',
           borderRadius: '50%',
-          background: '#f8fafc'
+          background: '#1e3a5f'
         }} />
       </div>
       
@@ -70,7 +70,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
         <h1 style={{
           fontSize: '3.5rem',
           fontWeight: '600',
-          color: '#1e293b',
+          color: '#ffffff',
           letterSpacing: '0.5rem',
           margin: '0 0 0.5rem 0',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -80,7 +80,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
         <p style={{
           fontSize: '1.2rem',
           fontWeight: '300',
-          color: '#64748b',
+          color: '#94a3b8',
           letterSpacing: '0.2rem',
           margin: 0,
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
