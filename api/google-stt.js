@@ -246,14 +246,14 @@ export default async function handler(req) {
 function detectGoogleAudioEncoding(audioBuffer) {
   const uint8Array = new Uint8Array(audioBuffer.slice(0, 12));
   
-  // Check for WebM signature
+  // Check for WebM signature - WebM with Opus codec
   if (uint8Array[0] === 0x1A && uint8Array[1] === 0x45 && uint8Array[2] === 0xDF && uint8Array[3] === 0xA3) {
-    return 'WEBM_OPUS';
+    return 'OGG_OPUS';  // Correct encoding for WebM/Opus (not WEBM_OPUS)
   }
   
-  // Check for MP4 signature - MP4 containers usually have AAC audio
+  // Check for MP4 signature - iOS audio/mp4
   if (uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70) {
-    return 'LINEAR16';  // Use LINEAR16 - more compatible with MP4/AAC
+    return 'MP3';  // MP4 container closest to MP3 encoding
   }
   
   // Check for WAV signature
