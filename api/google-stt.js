@@ -102,8 +102,8 @@ export default async function handler(req) {
         sampleRateHertz: 16000, // Required - STT compatibility (per docs) 
         
         // 🔧 PRIMARY LANGUAGE required by Google (unlike ElevenLabs auto-detect)
-        languageCode: 'cs-CZ', // Required by Google API
-        alternativeLanguageCodes: ['en-US', 'ro-RO'], // Support other languages
+        languageCode: 'en-US', // English primary for better recognition 
+        alternativeLanguageCodes: ['cs-CZ', 'ro-RO'], // Czech/Romanian alternatives
         
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: true,
