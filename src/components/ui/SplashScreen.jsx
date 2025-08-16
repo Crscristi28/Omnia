@@ -25,7 +25,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: '#1e3a5f',
+      background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -38,7 +38,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       <div style={{
         width: '200px',
         height: '200px',
-        marginBottom: '30px',
+        marginBottom: '60px',
         borderRadius: '50%',
         background: `
           conic-gradient(from 0deg,
@@ -61,7 +61,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
           width: '120px',
           height: '120px',
           borderRadius: '50%',
-          background: '#1e3a5f'
+          background: 'linear-gradient(135deg, #000428, #004e92, #009ffd)'
         }} />
       </div>
       
