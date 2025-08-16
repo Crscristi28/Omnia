@@ -44,8 +44,8 @@ export default async function handler(req, res) {
       'fr': { code: 'fr-FR', voice: 'fr-FR-Studio-A', name: 'French (Studio)' },
       
       // Fallback na nejlepší Neural2 pro ostatní jazyky
-      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Neural2-A', name: 'Czech (Neural2 Premium)' },
-      'ro': { code: 'ro-RO', voice: 'ro-RO-Neural2-A', name: 'Romanian (Neural2)' },
+      'cs': { code: 'cs-CZ', voice: 'cs-CZ-Wavenet-B', name: 'Czech (Wavenet Premium)' },
+      'ro': { code: 'ro-RO', voice: 'ro-RO-Wavenet-B', name: 'Romanian (Wavenet)' },
       'it': { code: 'it-IT', voice: 'it-IT-Neural2-C', name: 'Italian (Neural2)' },
       'pl': { code: 'pl-PL', voice: 'pl-PL-Neural2-A', name: 'Polish' },
       'pt': { code: 'pt-PT', voice: 'pt-PT-Neural2-A', name: 'Portuguese' },
