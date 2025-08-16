@@ -252,9 +252,9 @@ function detectGoogleAudioEncoding(audioBuffer) {
     return 'WEBM_OPUS';
   }
   
-  // Check for MP4 signature
+  // Check for MP4 signature - MP4 containers usually have AAC audio
   if (uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70) {
-    return 'ENCODING_UNSPECIFIED';  // Google doesn't support MP4, let it auto-detect
+    return 'MP3';  // Try MP3 as closest supported format to MP4/AAC
   }
   
   // Check for WAV signature
