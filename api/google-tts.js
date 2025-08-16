@@ -31,6 +31,9 @@ export default async function handler(req, res) {
     });
   }
 
+  // 🔧 CRITICAL: Apply same text sanitization as ElevenLabs TTS
+  const sanitizedText = sanitizeTextForTTS(text, language);
+
   try {
     // 🎵 CHIRP 3: HD VOICES - NEJVYŠŠÍ LIGA GOOGLE TTS 2025
     const languageMapping = {
@@ -129,7 +132,7 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          input: { text },
+          input: { text: sanitizedText }, // Use sanitized text instead of raw
           voice: { 
             languageCode: langConfig.code,
             name: selectedVoice
@@ -155,7 +158,7 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              input: { text },
+              input: { text: sanitizedText }, // Use sanitized text in fallback too
               voice: { 
                 languageCode: langConfig.code,
                 name: fallbackVoice
@@ -194,7 +197,7 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              input: { text },
+              input: { text: sanitizedText }, // Use sanitized text in fallback too
               voice: { 
                 languageCode: langConfig.code,
                 name: fallbackVoice
@@ -233,7 +236,7 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              input: { text },
+              input: { text: sanitizedText }, // Use sanitized text in fallback too
               voice: { 
                 languageCode: langConfig.code,
                 name: fallbackVoice
@@ -296,4 +299,69 @@ export default async function handler(req, res) {
       fallback: 'Standard voices available as backup'
     });
   }
+}
+
+// 🔧 CRITICAL: Same text sanitization as ElevenLabs TTS (remove **bold**, emoji, etc.)
+function sanitizeTextForTTS(text, language = 'cs') {
+  if (!text || typeof text !== 'string') return '';
+  
+  let processedText = text;
+  
+  // 🚫 MARKDOWN CLEANUP - UNIVERSAL (same as ElevenLabs sanitizeText)
+  processedText = processedText
+    .replace(/\*\*([^*]+)\*\*/g, '$1')           // Remove **bold**
+    .replace(/\*([^*]+)\*/g, '$1')               // Remove *italic*
+    .replace(/#{1,6}\s*/g, '')                   // Remove ### headers
+    .replace(/`([^`]+)`/g, '$1')                 // Remove `inline code`
+    .replace(/```[\s\S]*?```/g, '')              // Remove ```code blocks```
+    .replace(/_([^_]+)_/g, '$1')                 // Remove _underline_
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')    // Remove [links](url)
+    .replace(/~~([^~]+)~~/g, '$1');              // Remove ~~strikethrough~~
+  
+  // 🚫 REMOVE ALL EMOJI (same as ElevenLabs)
+  processedText = processedText
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ' ');
+  
+  // Apply language-specific transformations like ElevenLabs
+  switch (language.toLowerCase()) {
+    case 'ro': // Romanian
+      processedText = processedText
+        .replace(/(\d+)\s*%/gi, '$1 la sută')
+        .replace(/(\d+)[\s]*°C/gi, '$1 grade Celsius')
+        .replace(/(\d+)[\s]*°F/gi, '$1 grade Fahrenheit')
+        .replace(/(\d{1,2}):(\d{2})/g, '$1 și $2 minute')
+        .replace(/(\d+)\s*€/gi, '$1 euro')
+        .replace(/(\d+)\s*\$/gi, '$1 dolari')
+        .replace(/(\d+)[.,](\d+)/g, '$1 virgulă $2');
+      break;
+      
+    case 'cs': // Czech
+      processedText = processedText
+        .replace(/(\d+)\s*%/gi, '$1 procent')
+        .replace(/(\d+)[\s]*°C/gi, '$1 stupňů Celsia')
+        .replace(/(\d+)[\s]*°F/gi, '$1 stupňů Fahrenheita')
+        .replace(/(\d{1,2}):(\d{2})/g, '$1 hodin $2 minut')
+        .replace(/(\d+)\s*€/gi, '$1 eur')
+        .replace(/(\d+)\s*Kč/gi, '$1 korun')
+        .replace(/(\d+)[.,](\d+)/g, '$1 celá $2');
+      break;
+      
+    case 'en': // English  
+      processedText = processedText
+        .replace(/(\d+)\s*%/gi, '$1 percent')
+        .replace(/(\d+)[\s]*°C/gi, '$1 degrees Celsius')
+        .replace(/(\d+)[\s]*°F/gi, '$1 degrees Fahrenheit')
+        .replace(/(\d{1,2}):(\d{2})/g, '$1 hours $2 minutes')
+        .replace(/(\d+)\s*€/gi, '$1 euros')
+        .replace(/(\d+)\s*\$/gi, '$1 dollars')
+        .replace(/(\d+)[.,](\d+)/g, '$1 point $2');
+      break;
+  }
+  
+  // Clean up whitespace
+  processedText = processedText
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  return processedText;
 }
