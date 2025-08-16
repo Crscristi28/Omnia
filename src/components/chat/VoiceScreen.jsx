@@ -29,6 +29,15 @@ const VoiceScreen = ({
     setIsListening(listening);
   };
 
+  const handleClose = () => {
+    // 🔧 CRITICAL: Stop all voice activities before closing
+    if (isListening) {
+      console.log('🛑 Force stopping voice recording before close');
+      // The SimpleVoiceRecorder should handle cleanup in its own useEffect
+    }
+    onClose();
+  };
+
   // 🎨 ENHANCED UI s glow efektem
   const getBackgroundStyle = () => {
     if (isListening) {
@@ -83,7 +92,7 @@ const VoiceScreen = ({
         </div>
         
         <button
-          onClick={onClose}
+          onClick={handleClose}
           style={{
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
