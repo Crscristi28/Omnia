@@ -35,6 +35,13 @@ const VoiceScreen = ({
       console.log('🛑 Force stopping voice recording before close');
       // The SimpleVoiceRecorder should handle cleanup in its own useEffect
     }
+    
+    // 🔧 CRITICAL: Stop audio if available via props
+    if (window.mobileAudioManager && window.mobileAudioManager.stop) {
+      console.log('🛑 Stopping audio from VoiceScreen X button');
+      window.mobileAudioManager.stop();
+    }
+    
     onClose();
   };
 
