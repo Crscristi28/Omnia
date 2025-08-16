@@ -37,9 +37,8 @@ export const getTimeBasedGreeting = (language = 'cs') => {
     return welcomeTexts[language].morning;
   } else if (hour >= 12 && hour < 17) {
     return welcomeTexts[language].afternoon;
-  } else if (hour >= 17 && hour < 22) {
-    return welcomeTexts[language].evening;
   } else {
-    return welcomeTexts[language].night;
+    // Pro večer a noc použijeme jen "Dobrý večer!" - neposíláme lidi spát! 😄
+    return welcomeTexts[language].evening;
   }
 };
