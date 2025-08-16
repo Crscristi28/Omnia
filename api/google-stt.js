@@ -101,9 +101,9 @@ export default async function handler(req) {
         encoding: audioEncoding,
         sampleRateHertz: 16000, // Required - STT compatibility (per docs) 
         
-        // 🔧 PRIMARY LANGUAGE required by Google (unlike ElevenLabs auto-detect)
-        languageCode: 'en-US', // English primary for better recognition 
-        alternativeLanguageCodes: ['cs-CZ', 'ro-RO'], // Czech/Romanian alternatives
+        // 🔧 AUTO-DETECT like ElevenLabs - let Google detect best language
+        // languageCode: 'en-US', // Removed - auto-detect instead
+        alternativeLanguageCodes: ['en-US', 'cs-CZ', 'ro-RO'], // All supported languages
         
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: true,
@@ -198,7 +198,10 @@ export default async function handler(req) {
     const detectedLanguage = enhancedLanguageDetection(transcriptText, null);
     
     // 🔧 Text post-processing (same logic as ElevenLabs)
-    const cleanedText = postProcessTranscription(transcriptText, detectedLanguage);
+    let cleanedText = postProcessTranscription(transcriptText, detectedLanguage);
+    
+    // 🔧 CRITICAL: Apply same sanitization as ElevenLabs (remove **bold**, emoji, etc.)
+    cleanedText = sanitizeTextForSTT(cleanedText);
 
     // 🔧 Extract word timestamps for compatibility
     const words = bestResult.words || [];
@@ -360,4 +363,33 @@ function getLocalizedErrorMessage(status, errorText) {
 function isRetryableError(status) {
   // Retryable errors: server errors, rate limits, timeouts
   return [429, 500, 502, 503, 504].includes(status);
+}
+
+// 🔧 CRITICAL: Same sanitization as ElevenLabs (remove **bold**, emoji, etc.)
+function sanitizeTextForSTT(text) {
+  if (!text || typeof text !== 'string') return '';
+  
+  let processedText = text;
+  
+  // 🚫 MARKDOWN CLEANUP - UNIVERSAL (same as ElevenLabs sanitizeText)
+  processedText = processedText
+    .replace(/\*\*([^*]+)\*\*/g, '$1')           // Remove **bold**
+    .replace(/\*([^*]+)\*/g, '$1')               // Remove *italic*
+    .replace(/#{1,6}\s*/g, '')                   // Remove ### headers
+    .replace(/`([^`]+)`/g, '$1')                 // Remove `inline code`
+    .replace(/```[\s\S]*?```/g, '')              // Remove ```code blocks```
+    .replace(/_([^_]+)_/g, '$1')                 // Remove _underline_
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')    // Remove [links](url)
+    .replace(/~~([^~]+)~~/g, '$1');              // Remove ~~strikethrough~~
+  
+  // 🚫 REMOVE ALL EMOJI (same as ElevenLabs)
+  processedText = processedText
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ' ');
+  
+  // Clean up whitespace
+  processedText = processedText
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  return processedText;
 }
