@@ -24,97 +24,92 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+      background: '#0a1428',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: '30px',
       zIndex: 10000,
       transform: 'translateZ(0)'
     }}>
       
-      {/* FLUID SPHERE - CSS vytvořená koule */}
+      {/* OMNIA SPHERE - vylepšený fluid design */}
       <div style={{
-        width: '200px',
-        height: '200px',
+        width: '80px',
+        height: '80px',
         borderRadius: '50%',
-        marginBottom: '80px',
         position: 'relative',
         background: `
-          radial-gradient(circle at 30% 30%, 
-            #ffffff 0%,
-            #00ccff 8%,
-            #0088ff 25%,
-            #4466ff 45%,
-            #8844ff 65%,
-            #cc22ff 85%,
-            #000044 100%
+          radial-gradient(ellipse 60% 40% at 35% 25%, 
+            rgba(255, 255, 255, 0.9) 0%,
+            rgba(0, 200, 255, 0.8) 15%,
+            rgba(0, 150, 255, 0.9) 30%,
+            rgba(80, 100, 255, 1) 50%,
+            rgba(150, 80, 255, 1) 70%,
+            rgba(200, 50, 200, 1) 85%,
+            rgba(50, 20, 100, 1) 100%
+          ),
+          radial-gradient(ellipse 80% 60% at 60% 70%, 
+            transparent 0%,
+            rgba(0, 255, 200, 0.3) 20%,
+            rgba(100, 150, 255, 0.4) 40%,
+            rgba(200, 100, 255, 0.3) 60%,
+            transparent 80%
           )
-        `,
-        boxShadow: `
-          0 0 80px rgba(0, 200, 255, 0.8),
-          0 0 160px rgba(200, 100, 255, 0.6),
-          0 0 240px rgba(255, 50, 200, 0.4),
-          inset 0 0 50px rgba(255, 255, 255, 0.15)
         `,
         overflow: 'hidden'
       }}>
         
-        {/* Fluid vlny efekt */}
+        {/* Fluid tekutý vnitřní efekt */}
         <div style={{
           position: 'absolute',
-          top: '10%',
-          left: '10%',
-          width: '80%',
-          height: '80%',
+          top: '20%',
+          left: '15%',
+          width: '70%',
+          height: '60%',
           borderRadius: '50%',
           background: `
-            conic-gradient(from 45deg,
-              transparent 0deg,
-              rgba(0, 255, 255, 0.3) 60deg,
-              rgba(147, 51, 234, 0.4) 120deg,
-              transparent 180deg,
-              rgba(0, 150, 255, 0.3) 240deg,
-              transparent 300deg
+            radial-gradient(ellipse 70% 50% at 40% 30%,
+              rgba(255, 255, 255, 0.6) 0%,
+              rgba(0, 255, 255, 0.4) 25%,
+              rgba(100, 200, 255, 0.3) 50%,
+              transparent 75%
             )
           `,
-          filter: 'blur(4px)',
-          animation: 'rotate 8s linear infinite'
+          filter: 'blur(1px)'
         }} />
         
-        {/* Highlight efekt */}
+        {/* Další fluid vrstva pro depth */}
         <div style={{
           position: 'absolute',
-          top: '15%',
-          left: '25%',
+          top: '30%',
+          left: '30%',
           width: '40%',
-          height: '30%',
+          height: '40%',
           borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.2)',
-          filter: 'blur(8px)'
+          background: `
+            radial-gradient(circle,
+              rgba(255, 255, 255, 0.8) 0%,
+              rgba(200, 255, 255, 0.5) 40%,
+              transparent 70%
+            )
+          `,
+          filter: 'blur(0.5px)'
         }} />
       </div>
       
       {/* OMNIA TEXT */}
       <h1 style={{
-        fontSize: '4rem',
+        fontSize: '3rem',
         fontWeight: '300',
         color: '#ffffff',
-        letterSpacing: '0.5rem',
+        letterSpacing: '0.3rem',
         margin: 0,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        textShadow: '0 0 20px rgba(0, 255, 255, 0.5)'
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
         OMNIA
       </h1>
-
-      {/* CSS animace pro rotaci */}
-      <style>{`
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
       
     </div>
   );
