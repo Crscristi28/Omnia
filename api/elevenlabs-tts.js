@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     voice_settings = {
       stability: 0.50,        // Balanced pro čísla (původně 0.30)
       similarity_boost: 0.75, // Mírně vyšší než original (původně 0.25)
-      style: 0.25,           // Téměř original (původně 0.30)
+      style: 0.0,            // Optimized for speed and stability (ElevenLabs recommendation)
       use_speaker_boost: false // Vypnuto - může zrychlovat
     }
   } = req.body;

@@ -12,10 +12,10 @@ const elevenLabsService = {
         voice_id: process.env.ELEVENLABS_VOICE_ID || 'MpbYQvoTmXjHkaxtLiSh',
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.30,
-          similarity_boost: 0.25,
-          style: 0.30,
-          use_speaker_boost: true
+          stability: 0.50,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: false
         }
       })
     });
