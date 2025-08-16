@@ -491,19 +491,44 @@ function App() {
     }
   };
 
-  // 🎵 VOICE PROCESSING (UNCHANGED)
+  // 🎵 VOICE PROCESSING - SIMPLE HTML5 AUDIO
   const processVoiceResponse = async (responseText, language) => {
-    console.log('🎵 Processing voice response - INSTANT MODE:', {
+    console.log('🎵 Processing voice response - SIMPLE AUDIO MODE:', {
       textLength: responseText.length,
       language: language
     });
     
     try {
       const audioBlob = await generateAudioForSentence(responseText, language);
-      await mobileAudioManager.playAudio(audioBlob);
-      console.log('✅ Audio playing instantly');
+      
+      // Use simple HTML5 Audio (no mobileAudioManager)
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      // Set up event handlers
+      audio.onplay = () => {
+        console.log('▶️ Simple audio started playing');
+        setIsAudioPlaying(true);
+      };
+      
+      audio.onended = () => {
+        console.log('🏁 Simple audio ended');
+        setIsAudioPlaying(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = (e) => {
+        console.error('❌ Simple audio error:', e);
+        setIsAudioPlaying(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      // Play audio
+      await audio.play();
+      console.log('✅ Simple audio playing successfully');
+      
     } catch (error) {
-      console.error('❌ Failed to generate audio:', error);
+      console.error('❌ Failed to generate/play audio:', error);
     }
   };
 

@@ -2,7 +2,6 @@
 // ✅ NOVÉ: Cancel button, Audio level meter, Recording timer, Haptic feedback
 
 import React, { useState, useRef, useEffect } from 'react';
-import mobileAudioManager from '../../utils/MobileAudioManager';
 
 const SimpleVoiceRecorder = ({ 
   onTranscript, 
@@ -137,15 +136,6 @@ const SimpleVoiceRecorder = ({
   const startListening = async () => {
     try {
       console.log('🎙️ Starting ElevenLabs voice recording...');
-
-      // 🔓 KRITICKÉ: Audio unlock při user gesture (click na mikrofon)
-      console.log('🔓 Attempting audio unlock during record button click...');
-      try {
-        await mobileAudioManager.unlockAudioContext();
-        console.log('✅ Record button audio unlock completed');
-      } catch (unlockError) {
-        console.error('❌ Record button audio unlock failed:', unlockError);
-      }
 
       if (!permissionGranted) {
         const hasPermission = await requestMicrophonePermission();
