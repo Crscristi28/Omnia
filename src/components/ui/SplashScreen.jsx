@@ -2,7 +2,7 @@
 // 🎨 PWA Splash Screen Component
 
 import React from 'react';
-import omniaLogo from '../../assets/omnia-logo.png';
+import omniaSphere from '../../assets/omnia-sphere.png';
 
 const SplashScreen = ({ isVisible, onComplete }) => {
   
@@ -44,8 +44,8 @@ const SplashScreen = ({ isVisible, onComplete }) => {
         justifyContent: 'center'
       }}>
         <img 
-          src={omniaLogo}
-          alt="OMNIA Logo"
+          src={omniaSphere}
+          alt="OMNIA Sphere"
           style={{
             width: '200px',
             height: '200px',
