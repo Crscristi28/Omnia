@@ -101,9 +101,9 @@ export default async function handler(req) {
         encoding: audioEncoding,
         sampleRateHertz: 16000, // Required - STT compatibility (per docs) 
         
-        // 🔧 AUTO-DETECT like ElevenLabs - let Google detect best language
-        // languageCode: 'en-US', // Removed - auto-detect instead
-        alternativeLanguageCodes: ['en-US', 'cs-CZ', 'ro-RO'], // All supported languages
+        // 🔧 SMART LANGUAGE DETECTION using Omnia's system
+        languageCode: 'cs-CZ', // Primary language (most common)
+        alternativeLanguageCodes: ['en-US', 'ro-RO'], // Alternative languages
         
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: true,
@@ -289,10 +289,40 @@ function enhancedLanguageDetection(text, originalLanguage) {
     if (lowerText.includes(phrase)) return 'ro';
   }
   
-  // Enhanced word-based detection (real-world no-diacritics support)
-  const czechWords = ['muzes', 'muzeme', 'dekuji', 'prosim', 'ahoj', 'jsem', 'jsi', 'mas', 'jak', 'co', 'kde'];
-  const englishWords = ['what', 'how', 'where', 'when', 'why', 'doing', 'think', 'help', 'please', 'the', 'and'];
-  const romanianWords = ['ce', 'cum', 'unde', 'faci', 'esti', 'sunt', 'multumesc', 'salut', 'cine', 'sa', 'si'];
+  // Enhanced word-based detection (real-world comprehensive support)
+  const czechWords = [
+    // Common words (no diacritics)
+    'muzes', 'muzeme', 'dekuji', 'prosim', 'ahoj', 'jsem', 'jsi', 'mas', 'jak', 'co', 'kde',
+    // Extended vocabulary  
+    'dobre', 'spatne', 'ano', 'ne', 'ted', 'vcera', 'zitra', 'cas', 'den', 'noc', 
+    'den', 'tyden', 'mesic', 'rok', 'clovek', 'lide', 'zena', 'muz', 'dite', 'rodina',
+    'prace', 'skola', 'dom', 'auto', 'jidlo', 'voda', 'penize', 'cena', 'nakup', 'obchod',
+    'mluvit', 'rikat', 'delat', 'jit', 'prijit', 'odejit', 'vidět', 'slyšet', 'rozumet',
+    'chci', 'potrebuji', 'mam', 'nemam', 'vim', 'nevim', 'myslim', 'citim'
+  ];
+  
+  const englishWords = [
+    // Original core words
+    'what', 'how', 'where', 'when', 'why', 'doing', 'think', 'help', 'please', 'the', 'and',
+    // Extended common words
+    'hi', 'hello', 'you', 'are', 'is', 'was', 'were', 'have', 'has', 'had', 'will', 'would',
+    'good', 'bad', 'fine', 'great', 'nice', 'okay', 'yes', 'no', 'thanks', 'thank', 'welcome',
+    'today', 'tomorrow', 'yesterday', 'time', 'day', 'night', 'week', 'month', 'year',
+    'people', 'person', 'man', 'woman', 'child', 'family', 'friend', 'work', 'school', 'home',
+    'can', 'could', 'should', 'must', 'need', 'want', 'like', 'love', 'know', 'understand',
+    'tell', 'say', 'speak', 'talk', 'listen', 'hear', 'see', 'look', 'watch', 'feel'
+  ];
+  
+  const romanianWords = [
+    // Original core words  
+    'ce', 'cum', 'unde', 'faci', 'esti', 'sunt', 'multumesc', 'salut', 'cine', 'sa', 'si',
+    // Extended vocabulary
+    'buna', 'ziua', 'seara', 'noapte', 'dimineata', 'bine', 'rau', 'da', 'nu', 'poate',
+    'vreau', 'trebuie', 'pot', 'stiu', 'inteleg', 'vorbesc', 'spun', 'aud', 'vad', 'simt',
+    'azi', 'maine', 'ieri', 'timp', 'zi', 'saptamana', 'luna', 'an', 'ora', 'minut',
+    'oameni', 'om', 'femeie', 'barbat', 'copil', 'familie', 'prieten', 'munca', 'scoala', 'casa',
+    'bani', 'mancare', 'apa', 'masina', 'telefon', 'computer', 'internet', 'email'
+  ];
   
   const czechCount = czechWords.filter(word => lowerText.includes(word)).length;
   const englishCount = englishWords.filter(word => lowerText.includes(word)).length;
