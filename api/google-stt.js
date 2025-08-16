@@ -253,7 +253,7 @@ function detectGoogleAudioEncoding(audioBuffer) {
   
   // Check for MP4 signature - MP4 containers usually have AAC audio
   if (uint8Array[4] === 0x66 && uint8Array[5] === 0x74 && uint8Array[6] === 0x79 && uint8Array[7] === 0x70) {
-    return 'FLAC';  // Use FLAC for better speech recognition (Google recommended)
+    return 'LINEAR16';  // Use LINEAR16 - more compatible with MP4/AAC
   }
   
   // Check for WAV signature
