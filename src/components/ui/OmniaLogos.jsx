@@ -3,110 +3,90 @@
 
 import React from 'react';
 
-// 🎨 MAIN OMNIA LOGO - Fluid animated logo with liquid effect
+// 🎨 MAIN OMNIA LOGO - Large animated logo
 export const OmniaLogo = ({ size = 80, animate = false, shouldHide = false, isListening = false }) => {
   if (shouldHide) return null;
   
+  const getAnimation = () => {
+    if (isListening) return 'omnia-listening 2s ease-in-out infinite';
+    if (animate) return 'omnia-breathe 4s ease-in-out infinite';
+    return 'none';
+  };
+  
+  const getGradient = () => {
+    if (isListening) {
+      return `
+        radial-gradient(circle at 30% 40%, 
+          #00ffff 0%,
+          #00d4ff 25%,
+          #0099ff 50%,
+          #6432ff 75%,
+          #9932cc 90%,
+          #4b0082 100%
+        )
+      `;
+    }
+    return `
+      radial-gradient(circle at 30% 40%, 
+        #00ffff 0%,
+        #0096ff 30%,
+        #6432ff 60%,
+        #9932cc 80%,
+        #4b0082 100%
+      )
+    `;
+  };
+  
   return (
     <div
-      className="omnia-logo-fluid"
+      className="omnia-logo"
       style={{
         width: size,
         height: size,
         borderRadius: '50%',
+        background: getGradient(),
+        boxShadow: `0 0 ${size * 0.4}px rgba(100, 50, 255, 0.6)`,
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',
-        background: '#0a0a0a',
-        boxShadow: `
-          0 0 ${size * 0.3}px rgba(0, 255, 255, 0.4),
-          0 0 ${size * 0.6}px rgba(100, 50, 255, 0.3),
-          inset 0 0 ${size * 0.1}px rgba(255, 255, 255, 0.1)
-        `,
-        border: '2px solid rgba(0, 255, 255, 0.2)',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        border: '2px solid rgba(255, 255, 255, 0.15)',
+        animation: getAnimation(),
         transform: 'translateZ(0)'
       }}
     >
-      {/* Fluid layer 1 - Main liquid */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '10%',
-          left: '10%',
-          width: '80%',
-          height: '80%',
-          borderRadius: '50%',
-          background: `
-            radial-gradient(ellipse at 30% 20%, 
-              rgba(0, 255, 255, 0.9) 0%,
-              rgba(0, 150, 255, 0.8) 25%,
-              rgba(100, 50, 255, 0.7) 50%,
-              rgba(150, 50, 200, 0.6) 75%,
-              transparent 100%
-            )
-          `,
-          animation: 'fluidMove1 6s ease-in-out infinite',
-          filter: 'blur(2px)'
-        }}
-      />
-      
-      {/* Fluid layer 2 - Secondary waves */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '20%',
-          right: '15%',
-          width: '60%',
-          height: '60%',
-          borderRadius: '50%',
-          background: `
-            radial-gradient(ellipse at 70% 80%, 
-              rgba(150, 50, 200, 0.8) 0%,
-              rgba(100, 50, 255, 0.6) 30%,
-              rgba(0, 150, 255, 0.4) 60%,
-              transparent 100%
-            )
-          `,
-          animation: 'fluidMove2 8s ease-in-out infinite reverse',
-          filter: 'blur(1px)'
-        }}
-      />
-      
-      {/* Fluid layer 3 - Small bubbles */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '25%',
-          left: '25%',
-          width: '40%',
-          height: '40%',
-          borderRadius: '50%',
-          background: `
-            radial-gradient(circle at 50% 50%, 
-              rgba(0, 255, 255, 0.7) 0%,
-              rgba(0, 200, 255, 0.5) 40%,
-              transparent 70%
-            )
-          `,
-          animation: 'fluidMove3 4s ease-in-out infinite',
-          filter: 'blur(0.5px)'
-        }}
-      />
-      
-      {/* Organic highlight */}
       <div
         style={{
           position: 'absolute',
           top: '15%',
-          left: '25%',
-          width: '30%',
-          height: '25%',
+          left: '20%',
+          width: '35%',
+          height: '35%',
           borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.2)',
-          filter: 'blur(6px)',
-          animation: 'fluidHighlight 5s ease-in-out infinite'
+          background: isListening 
+            ? 'rgba(255, 255, 255, 0.4)' 
+            : 'rgba(255, 255, 255, 0.3)',
+          filter: 'blur(8px)',
+          transition: 'all 0.3s ease'
         }}
       />
+      
+      {(animate || isListening) && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+            animation: isListening 
+              ? 'shimmer 1.5s ease-in-out infinite' 
+              : 'shimmer 3s ease-in-out infinite',
+            pointerEvents: 'none'
+          }}
+        />
+      )}
     </div>
   );
 };

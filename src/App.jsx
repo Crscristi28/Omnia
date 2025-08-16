@@ -2160,32 +2160,6 @@ const virtuosoComponents = React.useMemo(() => ({
         @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
         @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
         
-        /* 🌊 FLUID LOGO ANIMATIONS - Liquid movement inside sphere */
-        @keyframes fluidMove1 { 
-          0% { transform: translateX(0) translateY(0) scale(1) rotateZ(0deg); } 
-          25% { transform: translateX(10%) translateY(-5%) scale(1.1) rotateZ(90deg); } 
-          50% { transform: translateX(-5%) translateY(10%) scale(0.9) rotateZ(180deg); } 
-          75% { transform: translateX(-10%) translateY(-5%) scale(1.05) rotateZ(270deg); } 
-          100% { transform: translateX(0) translateY(0) scale(1) rotateZ(360deg); } 
-        }
-        @keyframes fluidMove2 { 
-          0% { transform: translateX(0) translateY(0) scale(1); } 
-          33% { transform: translateX(-8%) translateY(12%) scale(1.15); } 
-          66% { transform: translateX(12%) translateY(-8%) scale(0.85); } 
-          100% { transform: translateX(0) translateY(0) scale(1); } 
-        }
-        @keyframes fluidMove3 { 
-          0% { transform: translateX(0) translateY(0) scale(1); opacity: 0.7; } 
-          50% { transform: translateX(15%) translateY(-10%) scale(1.2); opacity: 0.9; } 
-          100% { transform: translateX(0) translateY(0) scale(1); opacity: 0.7; } 
-        }
-        @keyframes fluidHighlight { 
-          0% { opacity: 0.2; transform: scale(1) translateX(0) translateY(0); } 
-          30% { opacity: 0.4; transform: scale(1.3) translateX(-20%) translateY(10%); } 
-          60% { opacity: 0.3; transform: scale(0.8) translateX(25%) translateY(-15%); } 
-          100% { opacity: 0.2; transform: scale(1) translateX(0) translateY(0); } 
-        }
-        
         /* User message markdown styles */
         .user-message-content .markdown-container {
           max-width: 100%;
