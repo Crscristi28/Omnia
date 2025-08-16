@@ -458,36 +458,32 @@ function App() {
         });
       }
       
-      console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
-      const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
+      // 🔧 DISABLED: ElevenLabs TTS - using Google TTS as primary
+      // console.log('🎵 Using elevenLabsService.generateSpeech (same as VoiceButton)');
+      // const audioBlob = await elevenLabsService.generateSpeech(textToSpeak);
       
-      console.log('✅ TTS Success - same path as VoiceButton');
-      return audioBlob;
+      // 🔧 Use Google TTS as primary (ElevenLabs disabled)
+      console.log('🎵 Using Google TTS as primary service...');
+      const googleResponse = await fetch('/api/google-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ 
+          text: textToSpeak,  // Use sanitized text
+          language: language,
+          voice: 'natural'
+        })
+      });
+      
+      if (!googleResponse.ok) {
+        throw new Error(`Google TTS failed: ${googleResponse.status}`);
+      }
+      
+      console.log('✅ Google TTS Success');
+      return await googleResponse.blob();
       
     } catch (error) {
-      console.error('💥 TTS generation failed:', error);
-      
-      try {
-        console.warn('⚠️ ElevenLabs failed, trying Google TTS...');
-        const googleResponse = await fetch('/api/google-tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
-          body: JSON.stringify({ 
-            text: sentence,
-            language: language,
-            voice: 'natural'
-          })
-        });
-        
-        if (!googleResponse.ok) {
-          throw new Error(`Google TTS failed: ${googleResponse.status}`);
-        }
-        
-        return await googleResponse.blob();
-      } catch (fallbackError) {
-        console.error('💥 Both TTS services failed:', fallbackError);
-        throw error;
-      }
+      console.error('💥 Google TTS failed:', error);
+      throw error;
     }
   };
 
