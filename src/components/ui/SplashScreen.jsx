@@ -34,7 +34,7 @@ const SplashScreen = ({ isVisible, onComplete }) => {
       transform: 'translateZ(0)'
     }}>
       
-      {/* OMNIA NETWORK LOGO - SVG */}
+      {/* OMNIA 3D NETWORK LOGO - SVG s 3D efekty */}
       <svg
         width="200"
         height="200"
@@ -42,137 +42,204 @@ const SplashScreen = ({ isVisible, onComplete }) => {
         style={{ marginBottom: '30px' }}
       >
         <defs>
-          <radialGradient id="nodeGradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#4A90E2" />
-            <stop offset="50%" stopColor="#357ABD" />
-            <stop offset="100%" stopColor="#1E3A8A" />
+          {/* 3D gradient pro uzly */}
+          <radialGradient id="node3D" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+            <stop offset="20%" stopColor="#7dd3fc" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#0ea5e9" stopOpacity="0.9" />
+            <stop offset="80%" stopColor="#0284c7" stopOpacity="1" />
+            <stop offset="100%" stopColor="#0c4a6e" stopOpacity="1" />
           </radialGradient>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#60A5FA" />
-            <stop offset="30%" stopColor="#3B82F6" />
-            <stop offset="70%" stopColor="#1D4ED8" />
-            <stop offset="100%" stopColor="#1E3A8A" />
+          
+          {/* Gradient pro connection lines s perspektivou */}
+          <linearGradient id="connection3D" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.8" />
+            <stop offset="30%" stopColor="#22d3ee" stopOpacity="0.6" />
+            <stop offset="70%" stopColor="#0891b2" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#164e63" stopOpacity="0.2" />
           </linearGradient>
-          <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06B6D4" />
-            <stop offset="25%" stopColor="#0891B2" />
-            <stop offset="50%" stopColor="#0E7490" />
-            <stop offset="75%" stopColor="#155E75" />
-            <stop offset="100%" stopColor="#164E63" />
-          </linearGradient>
+          
+          {/* Glow efekt */}
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          
+          {/* Stín pro depth */}
+          <filter id="shadow">
+            <feDropShadow dx="2" dy="3" stdDeviation="1" floodColor="#0c4a6e" floodOpacity="0.3"/>
+          </filter>
         </defs>
         
-        {/* Vnější kruh */}
+        {/* Pozadí kruhu s 3D efektem */}
         <circle 
           cx="100" 
           cy="100" 
-          r="90" 
+          r="85" 
           fill="none" 
-          stroke="url(#circleGradient)" 
-          strokeWidth="2"
-          opacity="0.6"
+          stroke="url(#connection3D)" 
+          strokeWidth="1"
+          opacity="0.3"
         />
         
-        {/* Vnitřní kruh */}
-        <circle 
-          cx="100" 
-          cy="100" 
-          r="35" 
-          fill="none" 
-          stroke="url(#circleGradient)" 
-          strokeWidth="1.5"
-          opacity="0.8"
-        />
-        
-        {/* Síť propojení - radiální čáry */}
-        {Array.from({ length: 16 }).map((_, i) => {
-          const angle = (i * 22.5 * Math.PI) / 180;
-          const innerX = 100 + 35 * Math.cos(angle);
-          const innerY = 100 + 35 * Math.sin(angle);
-          const outerX = 100 + 85 * Math.cos(angle);
-          const outerY = 100 + 85 * Math.sin(angle);
+        {/* Komplexní síť spojení - více vrstev pro 3D efekt */}
+        {/* Vrstva 1 - nejzadnější */}
+        {Array.from({ length: 24 }).map((_, i) => {
+          const angle = (i * 15 * Math.PI) / 180;
+          const radius1 = 75 + Math.sin(i * 0.5) * 10; // variabilní vzdálenost
+          const radius2 = 45 + Math.cos(i * 0.3) * 8;
+          const x1 = 100 + radius1 * Math.cos(angle);
+          const y1 = 100 + radius1 * Math.sin(angle) * 0.8; // perspektiva
+          const x2 = 100 + radius2 * Math.cos(angle + 1.2);
+          const y2 = 100 + radius2 * Math.sin(angle + 1.2) * 0.9;
           
           return (
             <line
-              key={`radial-${i}`}
-              x1={innerX}
-              y1={innerY}
-              x2={outerX}
-              y2={outerY}
-              stroke="url(#lineGradient)"
-              strokeWidth="1"
-              opacity="0.5"
-            />
-          );
-        })}
-        
-        {/* Síť propojení - tangenciální čáry */}
-        {Array.from({ length: 12 }).map((_, i) => {
-          const angle1 = (i * 30 * Math.PI) / 180;
-          const angle2 = ((i + 2) * 30 * Math.PI) / 180;
-          const x1 = 100 + 70 * Math.cos(angle1);
-          const y1 = 100 + 70 * Math.sin(angle1);
-          const x2 = 100 + 70 * Math.cos(angle2);
-          const y2 = 100 + 70 * Math.sin(angle2);
-          
-          return (
-            <line
-              key={`tangent-${i}`}
+              key={`back-${i}`}
               x1={x1}
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="url(#lineGradient)"
-              strokeWidth="0.8"
-              opacity="0.4"
+              stroke="url(#connection3D)"
+              strokeWidth="1"
+              opacity="0.2"
             />
           );
         })}
         
-        {/* Uzly na vnějším kruhu */}
-        {Array.from({ length: 16 }).map((_, i) => {
-          const angle = (i * 22.5 * Math.PI) / 180;
-          const x = 100 + 85 * Math.cos(angle);
-          const y = 100 + 85 * Math.sin(angle);
-          const size = i % 3 === 0 ? 6 : i % 2 === 0 ? 4 : 3;
+        {/* Vrstva 2 - střední */}
+        {Array.from({ length: 18 }).map((_, i) => {
+          const angle = (i * 20 * Math.PI) / 180;
+          const radius1 = 65 + Math.sin(i * 0.7) * 8;
+          const radius2 = 35 + Math.cos(i * 0.4) * 6;
+          const x1 = 100 + radius1 * Math.cos(angle);
+          const y1 = 100 + radius1 * Math.sin(angle) * 0.85;
+          const x2 = 100 + radius2 * Math.cos(angle + 0.8);
+          const y2 = 100 + radius2 * Math.sin(angle + 0.8) * 0.95;
+          
+          return (
+            <line
+              key={`mid-${i}`}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="url(#connection3D)"
+              strokeWidth="1.2"
+              opacity="0.4"
+              filter="url(#glow)"
+            />
+          );
+        })}
+        
+        {/* Vrstva 3 - přední */}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const angle = (i * 30 * Math.PI) / 180;
+          const radius1 = 55 + Math.sin(i * 0.9) * 6;
+          const radius2 = 25 + Math.cos(i * 0.6) * 4;
+          const x1 = 100 + radius1 * Math.cos(angle);
+          const y1 = 100 + radius1 * Math.sin(angle) * 0.9;
+          const x2 = 100 + radius2 * Math.cos(angle + 0.5);
+          const y2 = 100 + radius2 * Math.sin(angle + 0.5);
+          
+          return (
+            <line
+              key={`front-${i}`}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="url(#connection3D)"
+              strokeWidth="1.5"
+              opacity="0.6"
+              filter="url(#glow)"
+            />
+          );
+        })}
+        
+        {/* 3D Uzly - zadní vrstva */}
+        {Array.from({ length: 20 }).map((_, i) => {
+          const angle = (i * 18 * Math.PI) / 180;
+          const radius = 70 + Math.sin(i * 0.4) * 12;
+          const x = 100 + radius * Math.cos(angle);
+          const y = 100 + radius * Math.sin(angle) * 0.8; // perspektiva
+          const size = 2 + Math.sin(i * 0.8) * 1.5;
           
           return (
             <circle
-              key={`outer-node-${i}`}
+              key={`back-node-${i}`}
               cx={x}
               cy={y}
               r={size}
-              fill="url(#nodeGradient)"
-              opacity="0.9"
+              fill="url(#node3D)"
+              opacity="0.4"
+              filter="url(#shadow)"
             />
           );
         })}
         
-        {/* Uzly na vnitřním kruhu */}
-        {Array.from({ length: 8 }).map((_, i) => {
-          const angle = (i * 45 * Math.PI) / 180;
-          const x = 100 + 35 * Math.cos(angle);
-          const y = 100 + 35 * Math.sin(angle);
+        {/* 3D Uzly - střední vrstva */}
+        {Array.from({ length: 16 }).map((_, i) => {
+          const angle = (i * 22.5 * Math.PI) / 180;
+          const radius = 50 + Math.sin(i * 0.6) * 8;
+          const x = 100 + radius * Math.cos(angle);
+          const y = 100 + radius * Math.sin(angle) * 0.85;
+          const size = 3 + Math.sin(i * 0.5) * 2;
           
           return (
             <circle
-              key={`inner-node-${i}`}
+              key={`mid-node-${i}`}
               cx={x}
               cy={y}
-              r="3"
-              fill="url(#nodeGradient)"
-              opacity="0.8"
+              r={size}
+              fill="url(#node3D)"
+              opacity="0.7"
+              filter="url(#glow)"
             />
           );
         })}
         
-        {/* Střední uzel */}
+        {/* 3D Uzly - přední vrstva */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i * 45 * Math.PI) / 180;
+          const radius = 30 + Math.sin(i * 0.8) * 5;
+          const x = 100 + radius * Math.cos(angle);
+          const y = 100 + radius * Math.sin(angle) * 0.9;
+          const size = 4 + Math.sin(i * 0.3) * 2;
+          
+          return (
+            <circle
+              key={`front-node-${i}`}
+              cx={x}
+              cy={y}
+              r={size}
+              fill="url(#node3D)"
+              opacity="0.9"
+              filter="url(#glow)"
+            />
+          );
+        })}
+        
+        {/* Centrální uzel s maximální 3D efekt */}
         <circle
           cx="100"
           cy="100"
-          r="4"
-          fill="url(#nodeGradient)"
+          r="6"
+          fill="url(#node3D)"
           opacity="1"
+          filter="url(#glow)"
+        />
+        
+        {/* Světelný efekt v centru */}
+        <circle
+          cx="100"
+          cy="100"
+          r="2"
+          fill="#ffffff"
+          opacity="0.8"
         />
       </svg>
       
