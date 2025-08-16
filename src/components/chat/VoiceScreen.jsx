@@ -284,7 +284,7 @@ const VoiceScreen = ({
           {Array.from({ length: 12 }, (_, i) => {
             const angle = (i * 30) * (Math.PI / 180); // 30 degree intervals
             const distance = 200 + (i % 3) * 100; // Varying distances
-            const size = 4 + (i % 3) * 2; // Different sizes
+            const size = 8 + (i % 3) * 4; // Bigger sizes: 8-16px
             const duration = 0.8 + (i % 3) * 0.2; // Varying speeds
             
             return (
@@ -295,9 +295,13 @@ const VoiceScreen = ({
                   position: 'absolute',
                   width: `${size}px`,
                   height: `${size}px`,
-                  background: `radial-gradient(circle, rgba(66, 153, 225, 0.9), rgba(147, 51, 234, 0.7))`,
+                  background: `radial-gradient(circle, rgba(66, 153, 225, 1), rgba(147, 51, 234, 1))`,
                   borderRadius: '50%',
-                  boxShadow: `0 0 ${size * 2}px rgba(66, 153, 225, 0.8)`,
+                  boxShadow: `
+                    0 0 ${size * 3}px rgba(66, 153, 225, 1),
+                    0 0 ${size * 6}px rgba(147, 51, 234, 0.8),
+                    0 0 ${size * 9}px rgba(6, 182, 212, 0.6)
+                  `,
                   animation: `particleBurst${i} ${duration}s ease-out forwards`
                 }}
               />
