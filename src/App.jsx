@@ -1239,6 +1239,25 @@ function App() {
 // 🎯 UNCHANGED: Chat messages, sources, copy buttons - vše stejné
 
 
+// Helper function to check supported file extensions (fallback for MIME type detection)
+const isFileExtensionSupported = (fileName) => {
+  if (!fileName) return false;
+  
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  const supportedExtensions = [
+    // Documents
+    'pdf',
+    // Images
+    'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'gif',
+    // Text files
+    'txt', 'md', 'json', 'js', 'jsx', 'ts', 'tsx', 'css', 'html', 'htm',
+    'xml', 'yaml', 'yml', 'py', 'java', 'cpp', 'c', 'h', 'php', 'rb', 'go',
+    'sql', 'csv', 'log', 'config', 'ini', 'env'
+  ];
+  
+  return supportedExtensions.includes(extension);
+};
+
 const handleDocumentUpload = async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -1267,7 +1286,11 @@ const handleDocumentUpload = async (event) => {
     'text/html'              // HTML
   ];
   
-  if (!supportedTypes.includes(file.type)) {
+  // Check MIME type or fallback to file extension for better compatibility
+  const isSupported = supportedTypes.includes(file.type) || 
+                      isFileExtensionSupported(file.name);
+  
+  if (!isSupported) {
     showNotification(messages.pdfOnly, 'error');
     return;
   }
@@ -1516,7 +1539,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           'text/html'
         ];
         
-        if (!supportedTypes.includes(doc.file.type)) {
+        // Check MIME type or fallback to file extension for better compatibility
+        const isSupported = supportedTypes.includes(doc.file.type) || 
+                            isFileExtensionSupported(doc.file.name);
+        
+        if (!isSupported) {
           throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
         }
         
