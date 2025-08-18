@@ -22,13 +22,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields: fileName, fileType' });
     }
 
-    // Check file size (optional - you can set your own limits)
-    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
-    if (fileSize && fileSize > MAX_FILE_SIZE) {
-      return res.status(400).json({ 
-        error: `File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)} MB` 
-      });
-    }
+    // File size validation is handled on frontend
+    console.log(`📏 [GET-UPLOAD-URL] File size: ${fileSize ? (fileSize / 1024 / 1024).toFixed(2) + ' MB' : 'unknown'}`);
 
     // Initialize Cloud Storage
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
@@ -58,9 +53,7 @@ export default async function handler(req, res) {
       action: 'write',
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
       contentType: normalizedContentType,
-      extensionHeaders: {
-        'x-goog-content-length-range': `0,${MAX_FILE_SIZE}`,
-      },
+      // Remove problematic extension headers for better compatibility
     });
 
     // Generate signed URL for reading (after upload)
