@@ -47,14 +47,19 @@ export default async function handler(req, res) {
     const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET);
     const file = bucket.file(uniqueFileName);
 
+    // Normalize content type for better compatibility
+    const normalizedContentType = fileType || 'application/octet-stream';
+    
+    console.log(`📝 [GET-UPLOAD-URL] Generating signed URL for ${fileName} (${normalizedContentType})`);
+    
     // Generate signed URL for upload
     const [uploadUrl] = await file.getSignedUrl({
       version: 'v4',
       action: 'write',
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-      contentType: fileType,
+      contentType: normalizedContentType,
       extensionHeaders: {
-        'x-goog-content-length-range': `0,${MAX_FILE_SIZE}`, // Enforce size limit
+        'x-goog-content-length-range': `0,${MAX_FILE_SIZE}`,
       },
     });
 

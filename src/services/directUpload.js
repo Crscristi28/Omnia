@@ -32,11 +32,14 @@ export async function uploadDirectToGCS(file, onProgress = null) {
 
     // Step 2: Upload file directly to GCS
     console.log(`⬆️ [DIRECT-UPLOAD] Starting direct upload to GCS...`);
+    console.log(`📍 [DIRECT-UPLOAD] Upload URL: ${uploadUrl.substring(0, 100)}...`);
     
     const uploadResponse = await uploadWithProgress(uploadUrl, file, onProgress);
     
     if (!uploadResponse.ok) {
-      throw new Error(`Upload failed with status: ${uploadResponse.status}`);
+      const errorText = await uploadResponse.text();
+      console.error(`❌ [DIRECT-UPLOAD] Upload failed (${uploadResponse.status}): ${errorText}`);
+      throw new Error(`Upload failed with status: ${uploadResponse.status} - ${errorText || uploadResponse.statusText}`);
     }
 
     console.log(`✅ [DIRECT-UPLOAD] File uploaded successfully to GCS`);
@@ -111,7 +114,9 @@ async function uploadWithProgress(url, file, onProgress) {
 
     // Start upload
     xhr.open('PUT', url);
-    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    const contentType = file.type || 'application/octet-stream';
+    console.log(`📤 [XHR-UPLOAD] Setting Content-Type: ${contentType}`);
+    xhr.setRequestHeader('Content-Type', contentType);
     xhr.send(file);
   });
 }
