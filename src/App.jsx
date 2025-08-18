@@ -28,6 +28,7 @@ import { welcomeTexts, getTimeBasedGreeting } from './constants/welcomeTexts.js'
 import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔 Notifications
 import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
+import { uploadDirectToGCS, processGCSDocument, shouldUseDirectUpload, formatFileSize } from './services/directUpload.js'; // 🗂️ Direct upload to GCS
 import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './utils/scrollUtils.js'; // 📜 Scroll utilities
 import { convertMessagesForOpenAI } from './utils/messageConverters.js'; // 🔄 Message format converters
 
@@ -1271,13 +1272,15 @@ const handleDocumentUpload = async (event) => {
     return;
   }
   
-  // Check file size (15MB limit)
-  if (file.size > 15 * 1024 * 1024) {
-    showNotification(messages.fileTooBig, 'error');
+  // Check file size - now supporting much larger files with direct upload
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for direct upload
+  if (file.size > MAX_FILE_SIZE) {
+    showNotification(`Soubor je příliš velký. Maximální velikost je ${MAX_FILE_SIZE / (1024 * 1024)} MB.`, 'error');
     return;
   }
 
-  // Check daily upload limit (20MB per device)
+  // Check daily upload limit - increased for direct upload
+  const DAILY_LIMIT = 200 * 1024 * 1024; // 200 MB daily limit with direct upload
   const todayUploaded = JSON.parse(localStorage.getItem('dailyUploads') || '{"date": "", "bytes": 0}');
   const today = new Date().toDateString();
 
@@ -1288,39 +1291,74 @@ const handleDocumentUpload = async (event) => {
   }
 
   // Check if adding this file would exceed daily limit
-  if (todayUploaded.bytes + file.size > 20 * 1024 * 1024) {
-    const remainingMB = Math.max(0, (20 * 1024 * 1024 - todayUploaded.bytes) / (1024 * 1024)).toFixed(1);
-    showNotification(messages.dailyLimit(remainingMB), 'error');
+  if (todayUploaded.bytes + file.size > DAILY_LIMIT) {
+    const remainingMB = Math.max(0, (DAILY_LIMIT - todayUploaded.bytes) / (1024 * 1024)).toFixed(1);
+    showNotification(messages.dailyLimit ? messages.dailyLimit(remainingMB) : `Denní limit překročen. Zbývá ${remainingMB} MB.`, 'error');
     return;
   }
   
   setLoading(true);
-  // showNotification(messages.processing, 'info');
+  console.log(`📤 [UPLOAD] Starting upload: ${file.name} (${formatFileSize(file.size)})`);
+  
+  // Decide upload method based on file size and type
+  const useDirectUpload = shouldUseDirectUpload(file);
+  console.log(`🎯 [UPLOAD] Using ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload method`);
   
   try {
-    const formData = new FormData();
-    formData.append('file', file);
+    let result;
     
-    const response = await fetch('/api/process-document', {
-      method: 'POST',
-      body: formData
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Upload failed');
+    if (useDirectUpload) {
+      // 🚀 DIRECT UPLOAD TO GCS - bypasses Vercel limits
+      console.log('🚀 [DIRECT-UPLOAD] Starting direct upload to GCS...');
+      
+      // Progress callback for user feedback
+      const onProgress = (progress) => {
+        console.log(`⬆️ [DIRECT-UPLOAD] Progress: ${progress.percent}% (${formatFileSize(progress.loaded)}/${formatFileSize(progress.total)})`);
+        // TODO: Add progress UI if needed
+      };
+      
+      // Upload directly to GCS
+      const uploadResult = await uploadDirectToGCS(file, onProgress);
+      console.log('✅ [DIRECT-UPLOAD] File uploaded to GCS');
+      
+      // Process document from GCS
+      console.log('🔄 [DIRECT-UPLOAD] Processing document...');
+      result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
+      
+      // Add GCS metadata to result
+      result.gcsUri = uploadResult.gcsUri;
+      result.publicUrl = uploadResult.publicUrl;
+      
+    } else {
+      // 🔄 TRADITIONAL UPLOAD via Vercel API
+      console.log('🔄 [TRADITIONAL-UPLOAD] Using traditional upload...');
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/process-document', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload failed');
+      }
+      
+      result = await response.json();
     }
     
-    const result = await response.json();
+    console.log('✅ [UPLOAD] Document processing completed');
     
-    // Upload to Gemini File API
-    // showNotification(messages.preparing, 'info');
-
+    // Upload to Gemini File API (works for both upload methods)
+    console.log('🔄 [UPLOAD] Uploading to Gemini...');
+    
     const geminiResponse = await fetch('/api/upload-to-gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        pdfUrl: result.originalPdfUrl,
+        pdfUrl: result.originalPdfUrl || result.gcsUri,
         originalName: result.originalName
       })
     });
@@ -1330,17 +1368,19 @@ const handleDocumentUpload = async (event) => {
     }
 
     const geminiResult = await geminiResponse.json();
+    console.log('✅ [UPLOAD] Gemini upload completed');
 
     // Save document reference with Gemini file URI
     const newDoc = {
       id: Date.now(),
       name: result.originalName,
       documentUrl: result.documentUrl,
-      originalPdfUrl: result.originalPdfUrl,
-      geminiFileUri: geminiResult.fileUri, // DŮLEŽITÉ - URI pro Gemini
-      fileName: result.fileName,
-      pageCount: result.pageCount,
-      preview: result.preview,
+      originalPdfUrl: result.originalPdfUrl || result.gcsUri,
+      geminiFileUri: geminiResult.fileUri,
+      fileName: result.fileName || file.name,
+      pageCount: result.pageCount || 0,
+      preview: result.preview || '',
+      uploadMethod: useDirectUpload ? 'direct-gcs' : 'traditional',
       uploadedAt: new Date()
     };
 
@@ -1366,16 +1406,17 @@ const handleDocumentUpload = async (event) => {
     const hiddenContextMessage = {
       id: generateMessageId(),
       sender: 'system',
-      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount} stran). AI má plný přístup k dokumentu a může jej analyzovat.`,
+      text: `📄 Dokument "${result.originalName}" byl úspěšně nahrán (${result.pageCount || 0} stran, ${formatFileSize(file.size)}). AI má plný přístup k dokumentu a může jej analyzovat.`,
       isHidden: true
     };
 
     // Add to messages context but don't display to user
     setMessages(prev => [...prev, hiddenContextMessage]);
-    // showNotification(messages.success, 'success');
+    
+    console.log(`✅ [UPLOAD] Successfully uploaded: ${file.name} via ${useDirectUpload ? 'direct GCS' : 'traditional'} method`);
     
   } catch (error) {
-    console.error('Document upload error:', error);
+    console.error('❌ [UPLOAD] Document upload error:', error);
     showNotification(error.message || 'Chyba při zpracování dokumentu', 'error');
   } finally {
     setLoading(false);
@@ -1479,21 +1520,41 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
         }
         
-        // Create FormData for upload
-        const formData = new FormData();
-        formData.append('file', doc.file);
+        // Decide upload method based on file size and type
+        const useDirectUpload = shouldUseDirectUpload(doc.file);
+        console.log(`🎯 [DRAG-DROP] Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
         
-        // Process document (similar to handleDocumentUpload)
-        const response = await fetch('/api/process-document', {
-          method: 'POST',
-          body: formData
-        });
+        let result;
         
-        if (!response.ok) {
-          throw new Error('Document processing failed');
+        if (useDirectUpload) {
+          // 🚀 DIRECT UPLOAD TO GCS for drag & drop
+          console.log('🚀 [DRAG-DROP-DIRECT] Starting direct upload to GCS...');
+          
+          const uploadResult = await uploadDirectToGCS(doc.file);
+          console.log('✅ [DRAG-DROP-DIRECT] File uploaded to GCS');
+          
+          result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
+          
+          // Add GCS metadata to result
+          result.gcsUri = uploadResult.gcsUri;
+          result.publicUrl = uploadResult.publicUrl;
+          
+        } else {
+          // 🔄 TRADITIONAL UPLOAD for smaller files
+          const formData = new FormData();
+          formData.append('file', doc.file);
+          
+          const response = await fetch('/api/process-document', {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!response.ok) {
+            throw new Error('Document processing failed');
+          }
+          
+          result = await response.json();
         }
-        
-        const result = await response.json();
         
         let newDoc;
         
@@ -1518,7 +1579,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              pdfUrl: result.originalPdfUrl,
+              pdfUrl: result.originalPdfUrl || result.gcsUri,
               originalName: result.originalName
             })
           });
@@ -1534,11 +1595,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             id: Date.now() + Math.random(),
             name: result.originalName,
             documentUrl: result.documentUrl,
-            originalPdfUrl: result.originalPdfUrl,
+            originalPdfUrl: result.originalPdfUrl || result.gcsUri,
             geminiFileUri: geminiResult.fileUri,
             fileName: result.fileName,
             pageCount: result.pageCount,
             preview: result.preview,
+            uploadMethod: useDirectUpload ? 'direct-gcs' : 'traditional',
             uploadedAt: new Date()
           };
         }
