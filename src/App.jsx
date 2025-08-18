@@ -1090,26 +1090,53 @@ function App() {
           name: doc.name 
         }));
         
-        // 🆕 STREAMING: Enable real-time streaming for Gemini
+        // 🆕 STREAMING: Enable real-time streaming for Gemini with debouncing
         let geminiSources = [];
+        let debounceTimer = null;
         
-        const result = await geminiService.sendMessage(
-          messagesWithUser,
-          (text, isStreaming, sources = []) => {
-            // Real-time streaming updates
-            if (sources.length > 0) {
-              geminiSources = sources;
-            }
-            
+        // Debounced update function for better markdown rendering
+        const debouncedSetMessages = (text, isStreaming, sources) => {
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          
+          // Update immediately if streaming finished
+          if (!isStreaming) {
             setMessages([
               ...messagesWithUser,
               { 
                 sender: 'bot', 
                 text: text, 
-                isStreaming: isStreaming,
-                sources: isStreaming ? [] : geminiSources
+                isStreaming: false,
+                sources: sources
               }
             ]);
+            return;
+          }
+          
+          // Debounce updates during streaming (100ms)
+          debounceTimer = setTimeout(() => {
+            setMessages([
+              ...messagesWithUser,
+              { 
+                sender: 'bot', 
+                text: text, 
+                isStreaming: true,
+                sources: []
+              }
+            ]);
+          }, 100);
+        };
+        
+        const result = await geminiService.sendMessage(
+          messagesWithUser,
+          (text, isStreaming, sources = []) => {
+            // Real-time streaming updates with debouncing
+            if (sources.length > 0) {
+              geminiSources = sources;
+            }
+            
+            debouncedSetMessages(text, isStreaming, geminiSources);
           },
           () => {
             setIsSearching(true);
