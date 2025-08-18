@@ -1090,53 +1090,26 @@ function App() {
           name: doc.name 
         }));
         
-        // 🆕 STREAMING: Enable real-time streaming for Gemini with debouncing
+        // 🆕 STREAMING: Enable markdown-aware streaming for Gemini
         let geminiSources = [];
-        let debounceTimer = null;
-        
-        // Debounced update function for better markdown rendering
-        const debouncedSetMessages = (text, isStreaming, sources) => {
-          if (debounceTimer) {
-            clearTimeout(debounceTimer);
-          }
-          
-          // Update immediately if streaming finished
-          if (!isStreaming) {
-            setMessages([
-              ...messagesWithUser,
-              { 
-                sender: 'bot', 
-                text: text, 
-                isStreaming: false,
-                sources: sources
-              }
-            ]);
-            return;
-          }
-          
-          // Debounce updates during streaming (100ms)
-          debounceTimer = setTimeout(() => {
-            setMessages([
-              ...messagesWithUser,
-              { 
-                sender: 'bot', 
-                text: text, 
-                isStreaming: true,
-                sources: []
-              }
-            ]);
-          }, 100);
-        };
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (text, isStreaming, sources = []) => {
-            // Real-time streaming updates with debouncing
+            // Real-time streaming updates with markdown-aware chunks
             if (sources.length > 0) {
               geminiSources = sources;
             }
             
-            debouncedSetMessages(text, isStreaming, geminiSources);
+            setMessages([
+              ...messagesWithUser,
+              { 
+                sender: 'bot', 
+                text: text, 
+                isStreaming: isStreaming,
+                sources: isStreaming ? [] : geminiSources
+              }
+            ]);
           },
           () => {
             setIsSearching(true);

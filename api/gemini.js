@@ -1,6 +1,92 @@
 // api/gemini.js - GEMINI 2.5 FLASH WITH GOOGLE SEARCH GROUNDING
 import { VertexAI } from '@google-cloud/vertexai';
 
+// 🎯 MARKDOWN-AWARE CHUNKING FUNCTION
+function createMarkdownChunks(text) {
+  if (!text) return [];
+  
+  const chunks = [];
+  let currentPos = 0;
+  
+  while (currentPos < text.length) {
+    let chunk = '';
+    let nextPos = currentPos;
+    
+    // Check for different markdown patterns
+    const remainingText = text.slice(currentPos);
+    
+    // 1. Bullet point lines (complete with newline)
+    const bulletMatch = remainingText.match(/^[\s]*[•·∙‣⁃\*\-]\s+[^\n]*\n?/);
+    if (bulletMatch) {
+      chunk = bulletMatch[0];
+      nextPos = currentPos + chunk.length;
+    }
+    // 2. Numbered list lines
+    else if (remainingText.match(/^\s*\d+\.\s/)) {
+      const lineEnd = remainingText.indexOf('\n');
+      chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
+      nextPos = currentPos + chunk.length;
+    }
+    // 3. Bold text (complete **text**)
+    else if (remainingText.startsWith('**')) {
+      const endPos = remainingText.indexOf('**', 2);
+      if (endPos > -1) {
+        chunk = remainingText.slice(0, endPos + 2) + ' ';
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Incomplete bold - take just the word
+        const spacePos = remainingText.indexOf(' ');
+        chunk = spacePos > -1 ? remainingText.slice(0, spacePos + 1) : remainingText;
+        nextPos = currentPos + chunk.length;
+      }
+    }
+    // 4. Inline code (complete `code`)
+    else if (remainingText.startsWith('`')) {
+      const endPos = remainingText.indexOf('`', 1);
+      if (endPos > -1) {
+        chunk = remainingText.slice(0, endPos + 1) + ' ';
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Incomplete code - take just the word
+        const spacePos = remainingText.indexOf(' ');
+        chunk = spacePos > -1 ? remainingText.slice(0, spacePos + 1) : remainingText;
+        nextPos = currentPos + chunk.length;
+      }
+    }
+    // 5. Headers (complete line)
+    else if (remainingText.match(/^#{1,6}\s/)) {
+      const lineEnd = remainingText.indexOf('\n');
+      chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
+      nextPos = currentPos + chunk.length;
+    }
+    // 6. Regular words
+    else {
+      const spacePos = remainingText.indexOf(' ');
+      if (spacePos > -1) {
+        chunk = remainingText.slice(0, spacePos + 1);
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Last word
+        chunk = remainingText;
+        nextPos = text.length;
+      }
+    }
+    
+    if (chunk) {
+      chunks.push(chunk);
+    }
+    
+    currentPos = nextPos;
+    
+    // Prevent infinite loop
+    if (nextPos <= currentPos) {
+      currentPos++;
+    }
+  }
+  
+  return chunks;
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -134,31 +220,22 @@ export default async function handler(req, res) {
         const textChunk = item.candidates[0].content.parts[0].text;
         fullText += textChunk; // Build complete text
         
-        // 🚀 SMART STREAMING: Handle complex content better
-        // For long content with code blocks, send larger chunks to prevent bullet parsing issues
-        if (textChunk.length > 100 || textChunk.includes('```') || textChunk.includes('•') || /\d+\./.test(textChunk)) {
-          // Send in larger chunks for complex content
-          const chunks = textChunk.match(/.{1,20}/g) || [textChunk];
-          for (const chunk of chunks) {
-            if (chunk.trim()) {
-              res.write(JSON.stringify({ 
-                type: 'text', 
-                content: chunk
-              }) + '\n');
-              await new Promise(resolve => setTimeout(resolve, 15));
-            }
-          }
-        } else {
-          // Regular word-by-word streaming for simple content
-          const words = textChunk.split(' ');
-          for (const word of words) {
-            if (word.trim()) {
-              res.write(JSON.stringify({ 
-                type: 'text', 
-                content: word + ' ' 
-              }) + '\n');
-              await new Promise(resolve => setTimeout(resolve, 5));
-            }
+        // 🚀 MARKDOWN-AWARE STREAMING: Stream by complete markdown blocks
+        const markdownChunks = createMarkdownChunks(textChunk);
+        
+        for (const chunk of markdownChunks) {
+          if (chunk.trim()) {
+            res.write(JSON.stringify({ 
+              type: 'text', 
+              content: chunk
+            }) + '\n');
+            
+            // Adjust delay based on chunk type
+            const delay = chunk.includes('\n') ? 50 : // Line breaks - slower
+                         chunk.includes('**') || chunk.includes('`') ? 25 : // Formatting - medium
+                         15; // Regular text - faster
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
       }
