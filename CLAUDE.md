@@ -49,6 +49,9 @@
 - ✅ IndexedDB chat storage (bez pagination - záměrně!)
 - ✅ Virtuoso rendering (zvládá 1000+ zpráv)
 - ✅ Limit 1000 zpráv/1M tokenů na chat
+- ✅ **NOVÝ: Direct upload systém do GCS (až 100MB soubory!)**
+- ✅ **NOVÝ: Automatické rozhodování upload metody (<3MB=Vercel, ≥3MB=GCS)**
+- ✅ **NOVÝ: Dual URL format support (gs:// + https://)**
 
 ### Známé quirks (neopravovat pokud není kritické):
 - TTS na mobilu potřebuje 0ms delay (iOS gesture chain)
