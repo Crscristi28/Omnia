@@ -48,19 +48,23 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   if (isStreaming) {
     return (
       <div className={className}>
-        <div className="streaming-text" style={{ 
-          whiteSpace: 'normal',
-          lineHeight: '1.6',
-          color: 'inherit',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
-          fontSize: 'inherit',
+        <div className="streaming-markdown" style={{ 
           opacity: 0.9
         }}>
-          {content}
+          <MDEditor.Markdown 
+            source={content} 
+            style={{ 
+              backgroundColor: 'transparent',
+              color: 'inherit'
+            }}
+            data-color-mode="dark"
+            remarkPlugins={[remarkMath, remarkGfm]}
+            rehypePlugins={[rehypeKatex]}
+          />
         </div>
         
         <style>{`
-          .streaming-text {
+          .streaming-markdown {
             animation: subtlePulse 2s ease-in-out infinite;
           }
           
@@ -70,7 +74,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           }
           
           /* Smooth text appearance */
-          .streaming-text {
+          .streaming-markdown {
             position: relative;
           }
         `}</style>
