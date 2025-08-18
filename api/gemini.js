@@ -106,9 +106,9 @@ export default async function handler(req, res) {
       contents: geminiMessages,
       generationConfig: {
         maxOutputTokens: max_tokens,
-        temperature: 0.7,
-        topP: 0.8,
-        topK: 40
+        temperature: 0.5,  // Sníženo pro rychlejší odpovědi
+        topP: 0.7,         // Sníženo pro méně exploration
+        topK: 20           // Sníženo pro rychlejší sampling
       }
     });
     
