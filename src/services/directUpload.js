@@ -86,10 +86,17 @@ async function uploadWithProgress(url, file, onProgress) {
 
     // Handle completion
     xhr.addEventListener('load', () => {
+      // Parse headers string into object
+      const headersString = xhr.getAllResponseHeaders();
+      const headersArray = headersString.trim().split('\r\n').map(line => {
+        const parts = line.split(': ');
+        return [parts[0], parts.slice(1).join(': ')];
+      }).filter(([key]) => key);
+      
       resolve(new Response(xhr.response, {
         status: xhr.status,
         statusText: xhr.statusText,
-        headers: new Headers(xhr.getAllResponseHeaders())
+        headers: new Headers(headersArray)
       }));
     });
 
