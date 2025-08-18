@@ -1043,8 +1043,6 @@ function App() {
       }
       
       else if (model === 'gemini-2.5-flash') {
-        let streamingSources = []; // Add this to capture sources during streaming
-        
         // 🧠 Smart document filtering logic
         let currentActiveDocs = [...activeDocumentContexts];
 
@@ -1092,12 +1090,27 @@ function App() {
           name: doc.name 
         }));
         
-        // Don't update UI during streaming - collect full response first
+        // 🆕 STREAMING: Enable real-time streaming for Gemini
+        let geminiSources = [];
         
-        // Collect full response without showing partial text
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          null, // No streaming updates to UI
+          (text, isStreaming, sources = []) => {
+            // Real-time streaming updates
+            if (sources.length > 0) {
+              geminiSources = sources;
+            }
+            
+            setMessages([
+              ...messagesWithUser,
+              { 
+                sender: 'bot', 
+                text: text, 
+                isStreaming: isStreaming,
+                sources: isStreaming ? [] : geminiSources
+              }
+            ]);
+          },
           () => {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
@@ -1106,15 +1119,15 @@ function App() {
           documentsToPassToGemini
         );
         
-        // Use Gemini response directly without post-processing
+        // Use final result for saving
         responseText = result.text;
-        const sources = result.sources || [];
+        const sources = geminiSources.length > 0 ? geminiSources : (result.sources || []);
         sourcesToSave = sources;
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // Final message update with isStreaming: false
-        const finalMessages = [...messagesWithUser, { 
+        // Messages already updated via streaming, just check auto-save
+        const currentMessages = [...messagesWithUser, { 
           sender: 'bot', 
           text: responseText,
           sources: sources,
@@ -1122,7 +1135,7 @@ function App() {
         }];
         
         // 🔄 Check auto-save after AI response
-        const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
+        const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
         setMessages(cleanedMessages);
         
         // ❌ REMOVED: Scroll limit activation
