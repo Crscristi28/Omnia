@@ -23,20 +23,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Extrahuj název souboru z URL
-    // Z: https://storage.googleapis.com/omnia-temp-docs/documents/pdf/xxx.pdf
-    // Na: gs://omnia-temp-docs/documents/pdf/xxx.pdf
+    let gcsUri;
     
-    const urlParts = pdfUrl.split('?')[0]; // Odstranit query parametry
-    const pathMatch = urlParts.match(/storage\.googleapis\.com\/([^\/]+)\/(.+)$/);
-    
-    if (!pathMatch) {
-      throw new Error('Invalid Cloud Storage URL format');
+    // Handle both gs:// and https:// URL formats
+    if (pdfUrl.startsWith('gs://')) {
+      // Already in GCS format (from direct upload)
+      gcsUri = pdfUrl;
+      console.log('✅ Already in GCS format:', gcsUri);
+    } else if (pdfUrl.includes('storage.googleapis.com')) {
+      // Convert HTTPS URL to GCS format (from traditional upload)
+      const urlParts = pdfUrl.split('?')[0]; // Remove query parameters
+      const pathMatch = urlParts.match(/storage\.googleapis\.com\/([^\/]+)\/(.+)$/);
+      
+      if (!pathMatch) {
+        throw new Error('Invalid HTTPS Cloud Storage URL format');
+      }
+      
+      const bucket = pathMatch[1];
+      const filePath = pathMatch[2];
+      gcsUri = `gs://${bucket}/${filePath}`;
+      console.log('🔄 Converted HTTPS to GCS format:', gcsUri);
+    } else {
+      throw new Error('Unsupported URL format. Expected gs:// or https://storage.googleapis.com/');
     }
-    
-    const bucket = pathMatch[1];
-    const filePath = pathMatch[2];
-    const gcsUri = `gs://${bucket}/${filePath}`;
     
     console.log('Vertex AI will use Cloud Storage file:', gcsUri);
     console.log('🎯 Returning gcsUri:', gcsUri);
