@@ -59,7 +59,25 @@ function createMarkdownChunks(text) {
       chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
       nextPos = currentPos + chunk.length;
     }
-    // 6. Regular words
+    // 6. Smart word phrases (2-3 words together)
+    else if (remainingText.match(/^\w+\s+\w+\s+\w+\s/)) {
+      const match = remainingText.match(/^\w+\s+\w+\s+\w+\s+/);
+      chunk = match[0];
+      nextPos = currentPos + chunk.length;
+    }
+    // 7. Two words together
+    else if (remainingText.match(/^\w+\s+\w+\s/)) {
+      const match = remainingText.match(/^\w+\s+\w+\s+/);
+      chunk = match[0];
+      nextPos = currentPos + chunk.length;
+    }
+    // 8. Word with punctuation
+    else if (remainingText.match(/^\w+[.,;:!?]\s/)) {
+      const match = remainingText.match(/^\w+[.,;:!?]\s+/);
+      chunk = match[0];
+      nextPos = currentPos + chunk.length;
+    }
+    // 9. Fallback: single word
     else {
       const spacePos = remainingText.indexOf(' ');
       if (spacePos > -1) {
