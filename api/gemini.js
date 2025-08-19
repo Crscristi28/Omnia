@@ -265,7 +265,7 @@ export default async function handler(req, res) {
             content: textChunk
           }) + '\n');
           
-          await new Promise(resolve => setTimeout(resolve, 30)); // Chunk-level timing
+          await new Promise(resolve => setTimeout(resolve, 15)); // Chunk-level timing
         }
       }
     }
