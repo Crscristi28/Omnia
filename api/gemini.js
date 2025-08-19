@@ -238,23 +238,34 @@ export default async function handler(req, res) {
         const textChunk = item.candidates[0].content.parts[0].text;
         fullText += textChunk; // Build complete text
         
-        // 🚀 MARKDOWN-AWARE STREAMING: Stream by complete markdown blocks
-        const markdownChunks = createMarkdownChunks(textChunk);
-        
-        for (const chunk of markdownChunks) {
-          if (chunk.trim()) {
-            res.write(JSON.stringify({ 
-              type: 'text', 
-              content: chunk
-            }) + '\n');
-            
-            // Adjust delay based on chunk type
-            const delay = chunk.includes('\n') ? 50 : // Line breaks - slower
-                         chunk.includes('**') || chunk.includes('`') ? 25 : // Formatting - medium
-                         15; // Regular text - faster
-            
-            await new Promise(resolve => setTimeout(resolve, delay));
+        // 🚀 CHUNK-LEVEL STREAMING: Send whole chunks for better word integrity
+        if (textChunk.includes('**') || textChunk.includes('`') || textChunk.includes('•') || textChunk.includes('#')) {
+          // Has markdown → use smart chunking
+          const markdownChunks = createMarkdownChunks(textChunk);
+          
+          for (const chunk of markdownChunks) {
+            if (chunk.trim()) {
+              res.write(JSON.stringify({ 
+                type: 'text', 
+                content: chunk
+              }) + '\n');
+              
+              // Adjust delay based on chunk type
+              const delay = chunk.includes('\n') ? 50 : // Line breaks - slower
+                           chunk.includes('**') || chunk.includes('`') ? 25 : // Formatting - medium
+                           15; // Regular text - faster
+              
+              await new Promise(resolve => setTimeout(resolve, delay));
+            }
           }
+        } else {
+          // Plain text → send whole chunk at once
+          res.write(JSON.stringify({ 
+            type: 'text', 
+            content: textChunk
+          }) + '\n');
+          
+          await new Promise(resolve => setTimeout(resolve, 150)); // Slower for chunk-level
         }
       }
     }
