@@ -251,9 +251,9 @@ export default async function handler(req, res) {
               }) + '\n');
               
               // Adjust delay based on chunk type
-              const delay = chunk.includes('\n') ? 50 : // Line breaks - slower
-                           chunk.includes('**') || chunk.includes('`') ? 25 : // Formatting - medium
-                           15; // Regular text - faster
+              const delay = chunk.includes('\n') ? 25 : // Line breaks - medium
+                           chunk.includes('**') || chunk.includes('`') ? 15 : // Formatting - faster
+                           5; // Regular text - fastest
               
               await new Promise(resolve => setTimeout(resolve, delay));
             }
@@ -265,7 +265,7 @@ export default async function handler(req, res) {
             content: textChunk
           }) + '\n');
           
-          await new Promise(resolve => setTimeout(resolve, 150)); // Slower for chunk-level
+          await new Promise(resolve => setTimeout(resolve, 30)); // Chunk-level timing
         }
       }
     }
