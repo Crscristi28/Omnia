@@ -15,8 +15,12 @@ const MultilineInput = ({
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey && !disabled) {
-      e.preventDefault();
-      if (onKeyDown) onKeyDown(e);
+      if (!isMobile) {
+        // Desktop: Enter sends message, Shift+Enter = new line
+        e.preventDefault();
+        if (onKeyDown) onKeyDown(e);
+      }
+      // Mobile: Return = new line (default behavior), send button = send message
     }
   };
 
