@@ -1773,10 +1773,27 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // No streaming for document uploads - same as regular Gemini chat
       
-      // Send to Gemini with FILTERED documents only
+      // Send to Gemini with FILTERED documents only - WITH STREAMING
+      let geminiSourcesForDocs = [];
+      
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
-        null, // No streaming updates - get full response at once
+        (text, isStreaming, sources = []) => {
+          // Real-time streaming updates for documents too
+          if (sources.length > 0) {
+            geminiSourcesForDocs = sources;
+          }
+          
+          setMessages([
+            ...messagesForAI,
+            { 
+              sender: 'bot', 
+              text: text, 
+              isStreaming: isStreaming,
+              sources: isStreaming ? [] : geminiSourcesForDocs
+            }
+          ]);
+        },
         (searchMsg) => {
           setIsSearching(true);
           setTimeout(() => setIsSearching(false), 3000);
