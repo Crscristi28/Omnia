@@ -15,79 +15,106 @@ function createMarkdownChunks(text) {
     // Check for different markdown patterns
     const remainingText = text.slice(currentPos);
     
-    // 1. Bullet point lines (complete with newline)
-    const bulletMatch = remainingText.match(/^[\s]*[•·∙‣⁃\*\-]\s+[^\n]*\n?/);
-    if (bulletMatch) {
-      chunk = bulletMatch[0];
+    // 1. Code blocks (```) - complete block
+    if (remainingText.startsWith('```')) {
+      const endPos = remainingText.indexOf('```', 3);
+      if (endPos > -1) {
+        chunk = remainingText.slice(0, endPos + 3);
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Incomplete code block - take what we have
+        chunk = remainingText;
+        nextPos = text.length;
+      }
+    }
+    // 2. Headers (complete line)
+    else if (remainingText.match(/^#{1,6}\s/)) {
+      const lineEnd = remainingText.indexOf('\n');
+      chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
       nextPos = currentPos + chunk.length;
     }
-    // 2. Numbered list lines
+    // 3. Blockquotes (>) - complete line
+    else if (remainingText.match(/^>\s/)) {
+      const lineEnd = remainingText.indexOf('\n');
+      chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
+      nextPos = currentPos + chunk.length;
+    }
+    // 4. Bullet point lines (complete with newline)
+    else if (remainingText.match(/^[\s]*[•·∙‣⁃\*\-]\s+/)) {
+      const lineEnd = remainingText.indexOf('\n');
+      chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
+      nextPos = currentPos + chunk.length;
+    }
+    // 5. Numbered list lines
     else if (remainingText.match(/^\s*\d+\.\s/)) {
       const lineEnd = remainingText.indexOf('\n');
       chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
       nextPos = currentPos + chunk.length;
     }
-    // 3. Bold text (complete **text**)
+    // 6. Bold text (complete **text**)
     else if (remainingText.startsWith('**')) {
       const endPos = remainingText.indexOf('**', 2);
       if (endPos > -1) {
         chunk = remainingText.slice(0, endPos + 2) + ' ';
         nextPos = currentPos + chunk.length;
       } else {
-        // Incomplete bold - take just the word
-        const spacePos = remainingText.indexOf(' ');
-        chunk = spacePos > -1 ? remainingText.slice(0, spacePos + 1) : remainingText;
-        nextPos = currentPos + chunk.length;
+        // Incomplete bold - take the rest as plain text
+        chunk = remainingText;
+        nextPos = text.length;
       }
     }
-    // 4. Inline code (complete `code`)
-    else if (remainingText.startsWith('`')) {
+    // 7. Italic text with underscore (_text_)
+    else if (remainingText.startsWith('_') && !remainingText.startsWith('__')) {
+      const endPos = remainingText.indexOf('_', 1);
+      if (endPos > -1) {
+        chunk = remainingText.slice(0, endPos + 1) + ' ';
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Incomplete italic - take the rest as plain text
+        chunk = remainingText;
+        nextPos = text.length;
+      }
+    }
+    // 8. Italic text with asterisk (*text*)
+    else if (remainingText.startsWith('*') && !remainingText.startsWith('**')) {
+      const endPos = remainingText.indexOf('*', 1);
+      if (endPos > -1) {
+        chunk = remainingText.slice(0, endPos + 1) + ' ';
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Incomplete italic - take the rest as plain text
+        chunk = remainingText;
+        nextPos = text.length;
+      }
+    }
+    // 9. Inline code (complete `code`)
+    else if (remainingText.startsWith('`') && !remainingText.startsWith('```')) {
       const endPos = remainingText.indexOf('`', 1);
       if (endPos > -1) {
         chunk = remainingText.slice(0, endPos + 1) + ' ';
         nextPos = currentPos + chunk.length;
       } else {
-        // Incomplete code - take just the word
-        const spacePos = remainingText.indexOf(' ');
-        chunk = spacePos > -1 ? remainingText.slice(0, spacePos + 1) : remainingText;
-        nextPos = currentPos + chunk.length;
-      }
-    }
-    // 5. Headers (complete line)
-    else if (remainingText.match(/^#{1,6}\s/)) {
-      const lineEnd = remainingText.indexOf('\n');
-      chunk = lineEnd > -1 ? remainingText.slice(0, lineEnd + 1) : remainingText;
-      nextPos = currentPos + chunk.length;
-    }
-    // 6. Smart word phrases (2-3 words together)
-    else if (remainingText.match(/^\w+\s+\w+\s+\w+\s/)) {
-      const match = remainingText.match(/^\w+\s+\w+\s+\w+\s+/);
-      chunk = match[0];
-      nextPos = currentPos + chunk.length;
-    }
-    // 7. Two words together
-    else if (remainingText.match(/^\w+\s+\w+\s/)) {
-      const match = remainingText.match(/^\w+\s+\w+\s+/);
-      chunk = match[0];
-      nextPos = currentPos + chunk.length;
-    }
-    // 8. Word with punctuation
-    else if (remainingText.match(/^\w+[.,;:!?]\s/)) {
-      const match = remainingText.match(/^\w+[.,;:!?]\s+/);
-      chunk = match[0];
-      nextPos = currentPos + chunk.length;
-    }
-    // 9. Fallback: single word
-    else {
-      const spacePos = remainingText.indexOf(' ');
-      if (spacePos > -1) {
-        chunk = remainingText.slice(0, spacePos + 1);
-        nextPos = currentPos + chunk.length;
-      } else {
-        // Last word
+        // Incomplete code - take the rest as plain text
         chunk = remainingText;
         nextPos = text.length;
       }
+    }
+    // 10. Links [text](url)
+    else if (remainingText.startsWith('[')) {
+      const linkMatch = remainingText.match(/^\[([^\]]+)\]\(([^)]+)\)/);
+      if (linkMatch) {
+        chunk = linkMatch[0] + ' ';
+        nextPos = currentPos + chunk.length;
+      } else {
+        // Not a complete link, treat as plain text
+        chunk = remainingText;
+        nextPos = text.length;
+      }
+    }
+    // 11. Plain text: send everything remaining as one chunk
+    else {
+      chunk = remainingText;
+      nextPos = text.length;
     }
     
     if (chunk) {
@@ -239,7 +266,9 @@ export default async function handler(req, res) {
         fullText += textChunk; // Build complete text
         
         // 🚀 CHUNK-LEVEL STREAMING: Send whole chunks for better word integrity
-        if (textChunk.includes('**') || textChunk.includes('`') || textChunk.includes('•') || textChunk.includes('#')) {
+        if (textChunk.includes('**') || textChunk.includes('`') || textChunk.includes('•') || 
+            textChunk.includes('#') || textChunk.includes('>') || textChunk.includes('[') || 
+            textChunk.includes('_') || textChunk.includes('*') || textChunk.includes('```')) {
           // Has markdown → use smart chunking
           const markdownChunks = createMarkdownChunks(textChunk);
           
@@ -250,22 +279,16 @@ export default async function handler(req, res) {
                 content: chunk
               }) + '\n');
               
-              // Adjust delay based on chunk type
-              const delay = chunk.includes('\n') ? 25 : // Line breaks - medium
-                           chunk.includes('**') || chunk.includes('`') ? 15 : // Formatting - faster
-                           5; // Regular text - fastest
-              
-              await new Promise(resolve => setTimeout(resolve, delay));
+              // Fixed delay for all markdown chunks
+              await new Promise(resolve => setTimeout(resolve, 5));
             }
           }
         } else {
-          // Plain text → send whole chunk at once
+          // Plain text → send whole chunk at once (no delay)
           res.write(JSON.stringify({ 
             type: 'text', 
             content: textChunk
           }) + '\n');
-          
-          await new Promise(resolve => setTimeout(resolve, 15)); // Chunk-level timing
         }
       }
     }
