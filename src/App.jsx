@@ -773,6 +773,9 @@ function App() {
     
     if (!finalTextInput.trim() || loading) return;
     
+    // Transform single newlines to double newlines for proper markdown rendering in user messages
+    const userMessageText = finalTextInput.replace(/\n/g, '\n\n');
+    
     // 📶 Check if offline - prevent sending
     if (isOffline) {
       console.warn('📵 Cannot send message - device is offline');
@@ -825,7 +828,7 @@ function App() {
       const userMessage = { 
   id: generateMessageId(),
   sender: 'user', 
-  text: finalTextInput 
+  text: userMessageText 
 };
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
