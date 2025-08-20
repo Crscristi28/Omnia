@@ -279,8 +279,7 @@ export default async function handler(req, res) {
                 content: chunk
               }) + '\n');
               
-              // Fixed delay for all markdown chunks
-              await new Promise(resolve => setTimeout(resolve, 5));
+              // No delay for markdown chunks - they're natural units
             }
           }
         } else {
