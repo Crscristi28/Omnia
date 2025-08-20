@@ -317,12 +317,11 @@ function App() {
           hasMore: chatData.hasMore
         });
         
-        // 🎯 SCROLL FIX: Ensure chat opens with latest message at TOP
+        // 🎯 SCROLL FIX: Ensure chat opens at bottom (default behavior)
         setTimeout(() => {
           if (virtuosoRef.current) {
             virtuosoRef.current.scrollToIndex({ 
               index: 'LAST',
-              align: 'start',
               behavior: 'smooth',
             });
           } else {

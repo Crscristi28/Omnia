@@ -36,15 +36,14 @@ export const scrollToLatestMessage = (virtuosoRef, messages) => {
   }
 };
 
-// 🔼 SCROLL TO BOTTOM - For scroll button and chat opening (shows last message at TOP)
+// 🔼 SCROLL TO BOTTOM - For scroll button (default bottom behavior)
 export const scrollToBottom = (virtuosoRef) => {
-  console.log('🚀 scrollToBottom called - scrolling to last message at TOP');
+  console.log('🚀 scrollToBottom called - scrolling to bottom');
   
   if (virtuosoRef.current) {
     console.log('✅ virtuosoRef available, calling scrollToIndex LAST');
     virtuosoRef.current.scrollToIndex({ 
       index: 'LAST',
-      align: 'start',
       behavior: 'smooth'
     });
   } else {
@@ -56,7 +55,6 @@ export const scrollToBottom = (virtuosoRef) => {
 export const smartScrollToBottom = (virtuosoRef, options = {}) => {
   const { 
     behavior = 'smooth',
-    align = 'start',
     timeout = 100 
   } = options;
 
@@ -64,7 +62,6 @@ export const smartScrollToBottom = (virtuosoRef, options = {}) => {
     if (virtuosoRef?.current) {
       virtuosoRef.current.scrollToIndex({
         index: 'LAST',
-        align,
         behavior
       });
       console.log('✅ Smart scroll to bottom successful');
@@ -74,7 +71,6 @@ export const smartScrollToBottom = (virtuosoRef, options = {}) => {
         if (virtuosoRef?.current) {
           virtuosoRef.current.scrollToIndex({
             index: 'LAST',
-            align,
             behavior: 'auto' // Use auto behavior for retry
           });
           console.log('✅ Smart scroll retry successful');
