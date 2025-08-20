@@ -284,11 +284,17 @@ export default async function handler(req, res) {
             }
           }
         } else {
-          // Plain text → send whole chunk at once (no delay)
-          res.write(JSON.stringify({ 
-            type: 'text', 
-            content: textChunk
-          }) + '\n');
+          // Plain text → word-by-word streaming
+          const words = textChunk.split(/(\s+)/); // Keep whitespace
+          for (const word of words) {
+            if (word.trim()) {
+              res.write(JSON.stringify({ 
+                type: 'text', 
+                content: word + ' ' // Add space after each word
+              }) + '\n');
+              await new Promise(resolve => setTimeout(resolve, 5)); // 5ms delay between words
+            }
+          }
         }
       }
     }
