@@ -2279,6 +2279,15 @@ const virtuosoComponents = React.useMemo(() => ({
         @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
         @keyframes omnia-listening { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } 50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.9); } 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }
         
+        /* Hide scrollbar for attachment cards */
+        .hide-scrollbar {
+          scrollbar-width: none;           /* Firefox */
+          -ms-overflow-style: none;        /* Edge */
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;                   /* Chrome/Safari */
+        }
+        
         /* User message markdown styles */
         .user-message-content .markdown-container {
           max-width: 100%;

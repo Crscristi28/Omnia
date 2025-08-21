@@ -85,7 +85,7 @@ const MessageItem = ({
           
           {/* File attachments - separate display for generated vs uploaded */}
           {msg.attachments && msg.attachments.length > 0 && (
-            <div style={{
+            <div className="hide-scrollbar" style={{
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'flex-end',
