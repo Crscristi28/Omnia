@@ -88,7 +88,7 @@ const MessageItem = ({
             <div style={{
               display: 'flex',
               flexDirection: 'row',
-              justifyContent: 'flex-start',
+              justifyContent: 'flex-end',
               gap: '0.75rem',
               width: '100%',
               paddingTop: '1rem',
