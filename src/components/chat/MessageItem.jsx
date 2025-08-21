@@ -85,7 +85,13 @@ const MessageItem = ({
           
           {/* File attachments - separate display for generated vs uploaded */}
           {msg.attachments && msg.attachments.length > 0 && (
-            <div style={userAttachmentsContainerStyle}>
+            <div style={{
+              ...userAttachmentsContainerStyle,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+              gap: '0.75rem',
+              maxWidth: '400px'
+            }}>
               {msg.attachments.map((attachment, index) => {
                 // Generated images display as large standalone images
                 if (attachment.isGenerated && attachment.type && attachment.type.startsWith('image/')) {
@@ -120,6 +126,7 @@ const MessageItem = ({
                 
                 // Upload attachments - smart viewer selection
                 const viewerType = getViewerType(attachment.type, attachment.name);
+                const isImage = attachment.type && attachment.type.startsWith('image/');
                 
                 return (
                 <div
@@ -144,87 +151,76 @@ const MessageItem = ({
                     }
                   }}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.8rem',
-                    padding: '1rem',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    position: 'relative',
+                    aspectRatio: '1',
+                    background: 'rgba(30, 41, 59, 0.95)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '12px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    color: 'white',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-                  }}
-                >
-                  {/* File icon/thumbnail */}
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    backgroundColor: 'rgba(96, 165, 250, 0.2)',
-                    borderRadius: '8px',
+                    overflow: 'hidden',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '20px',
-                    flexShrink: 0,
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    {attachment.type && attachment.type.startsWith('image/') ? (
-                      <img 
-                        src={attachment.base64}
-                        alt={attachment.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          borderRadius: '8px'
-                        }}
-                      />
-                    ) : (
-                      attachment.name.match(/\.(png|jpe?g|gif|webp)$/i) ? '🖼️' : '📄'
-                    )}
-                  </div>
-                  
-                  {/* File info */}
-                  <div style={{
-                    flex: 1,
-                    minWidth: 0
-                  }}>
-                    <div style={{
-                      fontWeight: '500',
-                      fontSize: '0.95rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      marginBottom: '0.2rem'
-                    }}>
-                      {attachment.name}
-                    </div>
-                    <div style={{
-                      fontSize: '0.8rem',
-                      opacity: 0.7
-                    }}>
-                      {attachment.size && typeof attachment.size === 'number' && !isNaN(attachment.size) 
-                        ? `${Math.round(attachment.size / 1024)} KB` 
-                        : 'Generated'}
-                    </div>
-                  </div>
-                  
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    color: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.98)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.95)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  {isImage ? (
+                    /* Image thumbnail */
+                    <img 
+                      src={attachment.base64}
+                      alt={attachment.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    /* Document preview */
+                    <>
+                      <div style={{
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        fontSize: '12px',
+                        textAlign: 'center',
+                        padding: '8px',
+                        wordBreak: 'break-word',
+                        lineHeight: '1.2',
+                        maxHeight: '60%',
+                        overflow: 'hidden',
+                      }}>
+                        {attachment.name}
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        left: '0',
+                        right: '0',
+                        textAlign: 'center',
+                        fontSize: '10px',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                      }}>
+                        {attachment.size && typeof attachment.size === 'number' && !isNaN(attachment.size) 
+                          ? attachment.size < 1024 
+                            ? `${attachment.size}B`
+                            : attachment.size < 1024 * 1024
+                            ? `${Math.round(attachment.size / 1024)}KB`
+                            : `${(attachment.size / (1024 * 1024)).toFixed(1)}MB`
+                          : 'File'}
+                      </div>
+                    </>
+                  )}
                 </div>
                 );
               })}
