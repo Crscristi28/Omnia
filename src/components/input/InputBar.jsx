@@ -296,12 +296,14 @@ const InputBar = ({
 
   // Handle document upload to chips ONLY
   const handleDocumentUploadToChips = (event) => {
-    console.log('📄 Document selected for chips:', event);
+    console.log('📄 Document(s) selected for chips:', event);
     
-    const file = event.target.files?.[0];
-    if (file) {
+    const files = Array.from(event.target.files || []);
+    console.log(`🔍 Processing ${files.length} file(s)`);
+    
+    files.forEach((file, index) => {
       // Debug file properties
-      console.log('🔍 DEBUG - File object:', {
+      console.log(`🔍 DEBUG - File ${index + 1}:`, {
         name: file.name,
         size: file.size,
         type: file.type,
@@ -313,7 +315,7 @@ const InputBar = ({
       let formattedSize = 'Unknown size';
       if (file.size !== undefined && file.size !== null && typeof file.size === 'number' && !isNaN(file.size)) {
         const sizeInBytes = file.size;
-        console.log('🔍 DEBUG - Size in bytes:', sizeInBytes);
+        console.log(`🔍 DEBUG - File ${index + 1} size in bytes:`, sizeInBytes);
         
         if (sizeInBytes < 1024) {
           formattedSize = `${sizeInBytes}B`;
@@ -323,23 +325,23 @@ const InputBar = ({
           formattedSize = `${(sizeInBytes / (1024 * 1024)).toFixed(1)}MB`;
         }
         
-        console.log('🔍 DEBUG - Formatted size:', formattedSize);
+        console.log(`🔍 DEBUG - File ${index + 1} formatted size:`, formattedSize);
       } else {
-        console.log('🔍 DEBUG - Invalid file.size:', file.size, typeof file.size);
+        console.log(`🔍 DEBUG - Invalid file.size for file ${index + 1}:`, file.size, typeof file.size);
       }
       
       // Only add chip - NO background upload yet
       const docChip = {
-        id: Date.now(),
+        id: Date.now() + index, // Unique ID for each file
         name: file.name,
         size: formattedSize,
         file: file // Store file for later upload
       };
       setPendingDocuments(prev => [...prev, docChip]);
-      
-      // Clear the file input for next time
-      event.target.value = '';
-    }
+    });
+    
+    // Clear the file input for next time
+    event.target.value = '';
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
@@ -645,6 +647,7 @@ const InputBar = ({
                     setTimeout(() => {
                       const input = document.createElement('input');
                       input.type = 'file';
+                      input.multiple = true;
                       input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.txt,.md,.js,.jsx,.ts,.tsx,.css,.html,.json,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif,text/*,application/json,application/javascript';
                       input.onchange = handleDocumentUploadToChips;
                       input.click();
