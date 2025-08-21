@@ -90,7 +90,7 @@ const MessageItem = ({
               flexDirection: 'row',
               flexWrap: 'wrap',
               justifyContent: 'flex-end',
-              gap: '0.75rem',
+              gap: '1.5rem',
               width: '100%',
               paddingTop: '1rem'
             }}>
