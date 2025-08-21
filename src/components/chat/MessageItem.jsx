@@ -87,9 +87,9 @@ const MessageItem = ({
           {msg.attachments && msg.attachments.length > 0 && (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fill, 100px)',
               gap: '0.75rem',
-              justifyItems: 'center',
+              justifyContent: 'end',
               width: '100%',
               paddingTop: '1rem',
               maxWidth: '340px',
