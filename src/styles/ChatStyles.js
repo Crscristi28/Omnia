@@ -71,7 +71,7 @@ export const userBubbleStyle = {
   overflowWrap: 'break-word',
   width: 'fit-content',
   maxWidth: '95%',
-  margin: '0 auto'
+  margin: '0 0 0 auto'
 };
 
 // 🤖 BOT MESSAGE STYLES  
