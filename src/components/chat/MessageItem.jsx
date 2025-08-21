@@ -87,8 +87,9 @@ const MessageItem = ({
           {msg.attachments && msg.attachments.length > 0 && (
             <div style={{
               ...userAttachmentsContainerStyle,
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
               gap: '0.75rem',
               maxWidth: '400px'
             }}>
@@ -152,7 +153,8 @@ const MessageItem = ({
                   }}
                   style={{
                     position: 'relative',
-                    aspectRatio: '1',
+                    width: '100px',
+                    height: '100px',
                     background: 'rgba(30, 41, 59, 0.95)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '12px',
