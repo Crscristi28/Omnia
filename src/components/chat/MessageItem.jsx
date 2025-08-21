@@ -91,6 +91,7 @@ const MessageItem = ({
               justifyContent: 'space-between',
               alignItems: 'center',
               width: '90%',
+              marginLeft: 'auto',
               paddingTop: '1rem'
             }}>
               {msg.attachments.map((attachment, index) => {
