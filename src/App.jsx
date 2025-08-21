@@ -1745,18 +1745,22 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             documentContext += '\n\n--- NAHRANÉ SOUBORY ---\n' + documentReferences;
           }
           
-          const combinedText = text.trim() 
+          // Create separate texts: one for UI display, one for AI processing
+          const displayText = text.trim() || `📄 ${processedDocuments.length} document(s) uploaded`;
+          const aiText = text.trim() 
             ? `${text.trim()}${documentContext}`
             : `Analyzuj nahraté soubory:${documentContext}`;
           
           console.log('   - Original text:', `"${text.trim()}"`);
           console.log('   - Text files:', textFiles.length);
           console.log('   - Other files:', otherFiles.length);
-          console.log('   - Combined text for AI:', `"${combinedText}"`);
+          console.log('   - Display text for user:', `"${displayText}"`);
+          console.log('   - AI text with context:', `"${aiText}"`);
           
           return {
             ...msg,
-            text: combinedText
+            text: displayText,      // User sees clean message
+            aiText: aiText         // AI gets full context
           };
         }
         return msg;

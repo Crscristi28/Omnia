@@ -108,11 +108,15 @@ const geminiService = {
         msg.sender === 'user' || msg.sender === 'bot'
       );
 
-      let geminiMessages = validMessages.map(msg => ({
-        sender: msg.sender,
-        text: msg.text || '',
-        content: msg.text || ''
-      }));
+      let geminiMessages = validMessages.map(msg => {
+        // Use aiText for AI processing if available, otherwise fall back to text
+        const messageText = msg.aiText || msg.text || '';
+        return {
+          sender: msg.sender,
+          text: messageText,
+          content: messageText
+        };
+      });
 
       // Return all messages from current chat (no artificial limit)
       // Each chat is isolated, so full context is preserved per chat
@@ -121,11 +125,14 @@ const geminiService = {
     } catch (error) {
       console.error('Error preparing Gemini messages:', error);
       const lastUserMessage = messages.filter(msg => msg.sender === 'user').slice(-1);
-      return lastUserMessage.map(msg => ({
-        sender: 'user',
-        text: msg.text || '',
-        content: msg.text || ''
-      }));
+      return lastUserMessage.map(msg => {
+        const messageText = msg.aiText || msg.text || '';
+        return {
+          sender: 'user',
+          text: messageText,
+          content: messageText
+        };
+      });
     }
   },
 
