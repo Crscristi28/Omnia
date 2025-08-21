@@ -6,6 +6,7 @@ import { formatSource } from './sourcesUtils.js';
 
 const SourceCard = ({ source, index = 0 }) => {
   const [imageError, setImageError] = useState(false);
+  const isMobile = window.innerWidth <= 768;
   
   // Format source using utils
   const formattedSource = formatSource(source);
@@ -151,7 +152,7 @@ const SourceCard = ({ source, index = 0 }) => {
       {formattedSource.url ? (
         <a
           href={formattedSource.url}
-          target="_blank"
+          {...(!isMobile && { target: "_blank" })}
           rel="noopener noreferrer"
           style={baseStyle}
           {...hoverHandlers}

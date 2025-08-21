@@ -162,7 +162,7 @@ const SourcesModal = ({ isOpen, onClose, sources = [], language = 'cs' }) => {
                 <a
                   key={index}
                   href={source.url || '#'}
-                  target="_blank"
+                  {...(!isMobile && { target: "_blank" })}
                   rel="noopener noreferrer"
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
