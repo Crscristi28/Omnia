@@ -433,10 +433,12 @@ const InputBar = ({
             
             {/* DOCUMENT PREVIEW CARDS */}
             {pendingDocuments.length > 0 && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
-                gap: isMobile ? '12px' : '8px',
+              <div className="hide-scrollbar" style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: '12px',
+                overflowX: 'auto',
+                overflowY: 'hidden',
                 marginBottom: '0.5rem',
                 paddingBottom: '0.5rem',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
@@ -481,7 +483,9 @@ const InputBar = ({
                       onMouseLeave={handleTouchEnd}
                       style={{
                         position: 'relative',
-                        aspectRatio: '1',
+                        width: '80px',
+                        height: '80px',
+                        flexShrink: 0,
                         background: 'rgba(255, 255, 255, 0.1)',
                         border: '1px solid rgba(255, 255, 255, 0.15)',
                         borderRadius: '12px',
