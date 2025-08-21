@@ -159,8 +159,11 @@ const SourcesModal = ({ isOpen, onClose, sources = [], language = 'cs' }) => {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {sources.map((source, index) => (
-                <div
+                <a
                   key={index}
+                  href={source.url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(74, 85, 104, 0.3)',
@@ -168,7 +171,8 @@ const SourcesModal = ({ isOpen, onClose, sources = [], language = 'cs' }) => {
                     padding: '1rem',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    display: 'block'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -177,11 +181,6 @@ const SourcesModal = ({ isOpen, onClose, sources = [], language = 'cs' }) => {
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
                     e.currentTarget.style.borderColor = 'rgba(74, 85, 104, 0.3)';
-                  }}
-                  onClick={() => {
-                    if (source.url) {
-                      window.open(source.url, '_blank', 'noopener,noreferrer');
-                    }
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
@@ -241,7 +240,7 @@ const SourcesModal = ({ isOpen, onClose, sources = [], language = 'cs' }) => {
                       <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
                     </svg>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           )}
