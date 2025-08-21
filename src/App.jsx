@@ -1746,7 +1746,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           }
           
           // Create separate texts: one for UI display, one for AI processing
-          const displayText = text.trim() || `📄 ${processedDocuments.length} document(s) uploaded`;
+          const displayText = text.trim();
           const aiText = text.trim() 
             ? `${text.trim()}${documentContext}`
             : `Analyzuj nahraté soubory:${documentContext}`;
