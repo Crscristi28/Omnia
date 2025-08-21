@@ -90,7 +90,7 @@ const MessageItem = ({
               flexDirection: 'row',
               flexWrap: 'wrap',
               justifyContent: 'flex-end',
-              gap: '1.5rem',
+              gap: '1rem',
               width: '100%',
               paddingTop: '1rem'
             }}>
@@ -154,8 +154,8 @@ const MessageItem = ({
                   }}
                   style={{
                     position: 'relative',
-                    width: '100px',
-                    height: '100px',
+                    width: '120px',
+                    height: '120px',
                     background: 'rgba(30, 41, 59, 0.95)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '12px',
