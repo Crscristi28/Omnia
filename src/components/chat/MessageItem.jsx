@@ -88,11 +88,12 @@ const MessageItem = ({
             <div style={{
               display: 'flex',
               flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
+              justifyContent: 'flex-start',
               gap: '0.75rem',
               width: '100%',
-              paddingTop: '1rem'
+              paddingTop: '1rem',
+              overflowX: 'auto',
+              overflowY: 'hidden'
             }}>
               {msg.attachments.map((attachment, index) => {
                 // Generated images display as large standalone images
@@ -166,7 +167,8 @@ const MessageItem = ({
                     justifyContent: 'center',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    color: 'white'
+                    color: 'white',
+                    flexShrink: 0
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.98)';
