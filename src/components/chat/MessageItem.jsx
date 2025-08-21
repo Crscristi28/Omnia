@@ -86,13 +86,14 @@ const MessageItem = ({
           {/* File attachments - separate display for generated vs uploaded */}
           {msg.attachments && msg.attachments.length > 0 && (
             <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, 100px)',
               gap: '0.75rem',
+              justifyContent: 'end',
               width: '100%',
-              paddingTop: '1rem'
+              paddingTop: '1rem',
+              maxWidth: '340px',
+              marginLeft: 'auto'
             }}>
               {msg.attachments.map((attachment, index) => {
                 // Generated images display as large standalone images
