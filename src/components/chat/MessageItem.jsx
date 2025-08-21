@@ -87,9 +87,11 @@ const MessageItem = ({
           {msg.attachments && msg.attachments.length > 0 && (
             <div style={{
               display: 'flex',
+              flexDirection: 'row-reverse',
               justifyContent: 'space-between',
               alignItems: 'center',
-              width: '100%',
+              width: '90%',
+              marginLeft: 'auto',
               paddingTop: '1rem'
             }}>
               {msg.attachments.map((attachment, index) => {
