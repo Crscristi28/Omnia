@@ -1,14 +1,18 @@
 // 🏗️ SUPABASE CLIENT - Cloudová databáze a storage
-// Používá Vercel environment variables (bez VITE_ prefixů)
+// Používá environment variables z Vercelu
 
 import { createClient } from '@supabase/supabase-js'
 
-// Environment variables z Vercel (ne VITE_!)
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+// Get environment variables - Vite uses import.meta.env in browser
+// These are replaced at build time by Vercel
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 
+                   typeof process !== 'undefined' && process.env?.SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 
+                       typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('⚠️ [SUPABASE] Missing environment variables. Cloud sync disabled.')
+  console.log('Available env:', import.meta.env)
 }
 
 // Vytvoření Supabase klienta
