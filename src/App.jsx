@@ -106,6 +106,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [resetPasswordEmail, setResetPasswordEmail] = useState('');
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
 
@@ -1992,8 +1993,8 @@ const virtuosoComponents = React.useMemo(() => ({
           onSuccess={setUser}
           onForgotPassword={(email) => {
             // Close auth modal and open reset password modal
+            setResetPasswordEmail(email || '');
             setShowResetPasswordModal(true);
-            // Optionally pass email to reset modal if needed
             console.log('Opening reset password modal for:', email || 'no email provided');
           }}
         />
@@ -2002,8 +2003,12 @@ const virtuosoComponents = React.useMemo(() => ({
       {/* 🔐 RESET PASSWORD MODAL */}
       <ResetPasswordModal 
         isOpen={showResetPasswordModal}
-        onClose={() => setShowResetPasswordModal(false)}
+        onClose={() => {
+          setShowResetPasswordModal(false);
+          setResetPasswordEmail('');
+        }}
         user={user}
+        initialEmail={resetPasswordEmail}
       />
 
       {/* 🎨 MAIN APP - VŽDY renderovaná, jen možná překrytá modalem */}

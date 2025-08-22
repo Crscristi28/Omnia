@@ -1,17 +1,82 @@
 // 🔐 Reset Password Modal Component - Password reset/change with Glassmorphism design
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import authService from '../../services/auth/supabaseAuth';
 
-const ResetPasswordModal = ({ isOpen, onClose, user }) => {
-  const [email, setEmail] = useState(user?.email || '');
+const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
+  const [step, setStep] = useState('email'); // 'email', 'otp', 'newPassword'
+  const [email, setEmail] = useState(initialEmail || user?.email || '');
+  const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [otpSentTime, setOtpSentTime] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
   
   // Determine if user is logged in
   const isLoggedIn = !!user;
+  
+  // Countdown timer for OTP expiration
+  useEffect(() => {
+    if (otpSentTime && step === 'otp') {
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - otpSentTime;
+        const remaining = Math.max(0, 600000 - elapsed); // 10 minutes in ms
+        setTimeRemaining(remaining);
+        
+        if (remaining === 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [otpSentTime, step]);
+  
+  // Format time remaining as MM:SS
+  const formatTime = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
+  // Resend OTP
+  const handleResendOTP = async () => {
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    
+    try {
+      const result = await authService.sendPasswordResetOTP(email);
+      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess('Nový kód byl odeslán!');
+        setOtpSentTime(Date.now());
+        setOtp('');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      setError('Něco se pokazilo. Zkuste to prosím znovu.');
+      console.error('Resend OTP error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset modal to initial state when closing
+  const handleClose = () => {
+    setStep('email');
+    setOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setError('');
+    setSuccess('');
+    setOtpSentTime(null);
+    onClose();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,16 +110,54 @@ const ResetPasswordModal = ({ isOpen, onClose, user }) => {
           }, 2000);
         }
       } else {
-        // User is not logged in - send reset email
-        const result = await authService.resetPasswordForEmail(email);
-        
-        if (result.error) {
-          setError(result.error);
-        } else {
-          setSuccess('Email pro reset hesla byl odeslán. Zkontrolujte svou emailovou schránku.');
-          setTimeout(() => {
-            onClose();
-          }, 3000);
+        // Handle OTP flow for non-logged in users
+        if (step === 'email') {
+          // Step 1: Send OTP
+          const result = await authService.sendPasswordResetOTP(email);
+          
+          if (result.error) {
+            setError(result.error);
+          } else {
+            setSuccess('Kód byl odeslán na váš email.');
+            setOtpSentTime(Date.now());
+            setStep('otp');
+            setTimeout(() => setSuccess(''), 3000);
+          }
+        } else if (step === 'otp') {
+          // Step 2: Verify OTP
+          const result = await authService.verifyOTP(email, otp);
+          
+          if (result.error) {
+            setError(result.error);
+          } else {
+            setSuccess('Kód ověřen! Nyní nastavte nové heslo.');
+            setStep('newPassword');
+            setTimeout(() => setSuccess(''), 3000);
+          }
+        } else if (step === 'newPassword') {
+          // Step 3: Update password
+          if (newPassword !== confirmPassword) {
+            setError('Hesla se neshodují');
+            setLoading(false);
+            return;
+          }
+          
+          if (newPassword.length < 6) {
+            setError('Heslo musí mít alespoň 6 znaků');
+            setLoading(false);
+            return;
+          }
+
+          const result = await authService.updatePassword(newPassword);
+          
+          if (result.error) {
+            setError(result.error);
+          } else {
+            setSuccess('Heslo bylo úspěšně změněno!');
+            setTimeout(() => {
+              handleClose();
+            }, 2000);
+          }
         }
       }
     } catch (err) {
@@ -108,7 +211,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user }) => {
             🔐 {isLoggedIn ? 'Změnit heslo' : 'Reset hesla'}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{
               background: 'none',
               border: 'none',
@@ -130,12 +233,17 @@ const ResetPasswordModal = ({ isOpen, onClose, user }) => {
         }}>
           {isLoggedIn 
             ? 'Zadejte nové heslo pro váš účet' 
-            : 'Zadejte email a my vám pošleme odkaz pro reset hesla'}
+            : step === 'email' 
+              ? 'Zadejte email a my vám pošleme kód pro reset hesla'
+              : step === 'otp'
+                ? 'Zadejte 6-místný kód z emailu'
+                : 'Nastavte nové heslo pro váš účet'}
         </p>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          {!isLoggedIn && (
+          {/* Email input - show for non-logged users in email step */}
+          {!isLoggedIn && step === 'email' && (
             <div style={{ marginBottom: '1rem' }}>
               <input
                 type="email"
@@ -165,8 +273,91 @@ const ResetPasswordModal = ({ isOpen, onClose, user }) => {
               />
             </div>
           )}
+          
+          {/* OTP input - show in OTP step */}
+          {!isLoggedIn && step === 'otp' && (
+            <div style={{ marginBottom: '1rem' }}>
+              <input
+                type="text"
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setOtp(value);
+                }}
+                required
+                maxLength={6}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  color: 'white',
+                  fontSize: '1.2rem',
+                  textAlign: 'center',
+                  letterSpacing: '0.5rem',
+                  outline: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                  e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+                }}
+              />
+              
+              {/* Timer and resend functionality */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '0.75rem'
+              }}>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  fontSize: '0.8rem',
+                  margin: 0
+                }}>
+                  Kód odeslán na: {email}
+                </p>
+                
+                {timeRemaining > 0 ? (
+                  <p style={{
+                    color: 'rgba(59, 130, 246, 0.8)',
+                    fontSize: '0.9rem',
+                    margin: 0,
+                    fontWeight: 'bold'
+                  }}>
+                    {formatTime(timeRemaining)}
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOTP}
+                    disabled={loading}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: loading ? 'rgba(59, 130, 246, 0.5)' : 'rgba(59, 130, 246, 0.8)',
+                      fontSize: '0.85rem',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      textDecoration: 'underline',
+                      padding: 0
+                    }}
+                  >
+                    {loading ? 'Odesílá...' : 'Poslat znovu'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
-          {isLoggedIn && (
+          {/* Password inputs - show for logged users OR in newPassword step */}
+          {(isLoggedIn || (!isLoggedIn && step === 'newPassword')) && (
             <>
               <div style={{ marginBottom: '1rem' }}>
                 <input
@@ -260,40 +451,120 @@ const ResetPasswordModal = ({ isOpen, onClose, user }) => {
             </div>
           )}
 
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={loading || success}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: loading || success ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
-              border: 'none',
-              borderRadius: '10px',
-              color: 'white',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: loading || success ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease',
-              opacity: loading || success ? 0.7 : 1
-            }}
-            onMouseEnter={(e) => {
-              if (!loading && !success) {
-                e.target.style.backgroundColor = '#2563eb';
-                e.target.style.transform = 'translateY(-1px)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading && !success) {
-                e.target.style.backgroundColor = '#3b82f6';
-                e.target.style.transform = 'translateY(0)';
-              }
-            }}
-          >
-            {loading ? 'Načítání...' : 
-             success ? 'Hotovo!' :
-             isLoggedIn ? 'Změnit heslo' : 'Odeslat reset email'}
-          </button>
+          {/* Back button for OTP and newPassword steps */}
+          {!isLoggedIn && (step === 'otp' || step === 'newPassword') && (
+            <div style={{
+              display: 'flex',
+              gap: '0.75rem',
+              marginBottom: '1rem'
+            }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (step === 'otp') {
+                    setStep('email');
+                  } else if (step === 'newPassword') {
+                    setStep('otp');
+                  }
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '10px',
+                  color: 'white',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+              >
+                ← Zpět
+              </button>
+              
+              {/* Submit button */}
+              <button
+                type="submit"
+                disabled={loading || success}
+                style={{
+                  flex: 2,
+                  padding: '0.75rem',
+                  backgroundColor: loading || success ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  cursor: loading || success ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  opacity: loading || success ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading && !success) {
+                    e.target.style.backgroundColor = '#2563eb';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading && !success) {
+                    e.target.style.backgroundColor = '#3b82f6';
+                    e.target.style.transform = 'translateY(0)';
+                  }
+                }}
+              >
+                {loading ? 'Načítání...' : 
+                 success ? 'Hotovo!' :
+                 step === 'otp' ? 'Ověřit kód' :
+                 'Změnit heslo'}
+              </button>
+            </div>
+          )}
+          
+          {/* Single submit button for logged users and email step */}
+          {(isLoggedIn || step === 'email') && (
+            <button
+              type="submit"
+              disabled={loading || success}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                backgroundColor: loading || success ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
+                border: 'none',
+                borderRadius: '10px',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                cursor: loading || success ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                opacity: loading || success ? 0.7 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && !success) {
+                  e.target.style.backgroundColor = '#2563eb';
+                  e.target.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && !success) {
+                  e.target.style.backgroundColor = '#3b82f6';
+                  e.target.style.transform = 'translateY(0)';
+                }
+              }}
+            >
+              {loading ? 'Načítání...' : 
+               success ? 'Hotovo!' :
+               isLoggedIn ? 'Změnit heslo' :
+               'Odeslat kód'}
+            </button>
+          )}
         </form>
       </div>
 

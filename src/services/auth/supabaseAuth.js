@@ -87,20 +87,42 @@ class SupabaseAuthService {
     return subscription;
   }
 
-  // Reset password - sends email with reset link
-  async resetPasswordForEmail(email) {
+  // Send OTP to email for password reset
+  async sendPasswordResetOTP(email) {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin, // Redirect back to app after reset
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false, // Don't create new user if email doesn't exist
+        }
       });
       
       if (error) throw error;
       
-      console.log('✅ Password reset email sent to:', email);
+      console.log('✅ OTP sent to:', email);
       return { success: true, error: null };
     } catch (error) {
-      console.error('❌ Password reset error:', error.message);
+      console.error('❌ Send OTP error:', error.message);
       return { success: false, error: error.message };
+    }
+  }
+
+  // Verify OTP and sign in user
+  async verifyOTP(email, token) {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email'
+      });
+      
+      if (error) throw error;
+      
+      console.log('✅ OTP verified for:', email);
+      return { success: true, user: data.user, session: data.session, error: null };
+    } catch (error) {
+      console.error('❌ OTP verification error:', error.message);
+      return { success: false, user: null, session: null, error: error.message };
     }
   }
 
