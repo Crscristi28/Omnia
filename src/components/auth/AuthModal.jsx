@@ -8,29 +8,70 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
       let result;
       if (isLogin) {
         result = await authService.signInWithEmail(email, password);
+        
+        if (result.error) {
+          setError(result.error);
+        } else if (result.user) {
+          console.log('✅ Login success:', result.user.email);
+          onSuccess(result.user);
+        }
       } else {
+        // Signup flow
         result = await authService.signUpWithEmail(email, password);
-      }
-
-      if (result.error) {
-        setError(result.error);
-      } else if (result.user) {
-        console.log('✅ Auth success:', result.user.email);
-        onSuccess(result.user);
+        
+        if (result.error) {
+          setError(result.error);
+        } else {
+          console.log('✅ Signup success, needs confirmation:', result.user?.email || email);
+          setSuccess('Registrace proběhla úspěšně! Zadejte kód z emailu.');
+          setNeedsConfirmation(true);
+          setTimeout(() => setSuccess(''), 3000);
+        }
       }
     } catch (err) {
       setError('Něco se pokazilo. Zkuste to prosím znovu.');
       console.error('Auth error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle OTP confirmation for signup
+  const handleConfirmSignup = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const result = await authService.verifySignupOTP(email, otp);
+      
+      if (result.error) {
+        setError(result.error);
+      } else if (result.user) {
+        console.log('✅ Signup confirmed:', result.user.email);
+        setSuccess('Účet byl úspěšně potvrzen!');
+        setTimeout(() => {
+          onSuccess(result.user);
+        }, 1500);
+      }
+    } catch (err) {
+      setError('Něco se pokazilo. Zkuste to prosím znovu.');
+      console.error('Signup confirmation error:', err);
     } finally {
       setLoading(false);
     }
@@ -78,25 +119,29 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
             fontWeight: 'bold',
             margin: 0
           }}>
-            Vítejte v Omnii
+            {needsConfirmation ? 'Potvrzení registrace' : 'Vítejte v Omnii'}
           </h2>
           <p style={{
             color: 'rgba(255, 255, 255, 0.6)',
             fontSize: '0.9rem',
             marginTop: '0.5rem'
           }}>
-            {isLogin ? 'Přihlaste se do svého účtu' : 'Vytvořte si nový účet'}
+            {needsConfirmation 
+              ? 'Zadejte 6-místný kód z emailu pro potvrzení účtu'
+              : isLogin ? 'Přihlaste se do svého účtu' : 'Vytvořte si nový účet'}
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+        <form onSubmit={needsConfirmation ? handleConfirmSignup : handleSubmit}>
+          {/* Email input - show only when not in OTP confirmation mode */}
+          {!needsConfirmation && (
+            <div style={{ marginBottom: '1rem' }}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               required
               style={{
                 width: '100%',
@@ -118,9 +163,12 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
                 e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
               }}
             />
-          </div>
+            </div>
+          )}
 
-          <div style={{ marginBottom: '1.5rem' }}>
+          {/* Password input - show only when not in OTP confirmation mode */}
+          {!needsConfirmation && (
+            <div style={{ marginBottom: '1.5rem' }}>
             <input
               type="password"
               placeholder="Heslo"
@@ -148,10 +196,59 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
                 e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
               }}
             />
-          </div>
+            </div>
+          )}
 
-          {/* Forgot password link - only show for login */}
-          {isLogin && (
+          {/* OTP input - show when in confirmation mode */}
+          {needsConfirmation && (
+            <div style={{ marginBottom: '1rem' }}>
+              <input
+                type="text"
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setOtp(value);
+                }}
+                required
+                maxLength={6}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  color: 'white',
+                  fontSize: '1.2rem',
+                  textAlign: 'center',
+                  letterSpacing: '0.5rem',
+                  outline: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                  e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+                }}
+              />
+              
+              {/* Show email for reference */}
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.4)',
+                fontSize: '0.8rem',
+                textAlign: 'center',
+                marginTop: '0.5rem'
+              }}>
+                Kód byl odeslán na: {email}
+              </p>
+            </div>
+          )}
+
+          {/* Forgot password link - only show for login and not in OTP mode */}
+          {isLogin && !needsConfirmation && (
             <div style={{
               textAlign: 'right',
               marginBottom: '1rem'
@@ -175,6 +272,21 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
               >
                 Zapomenuté heslo?
               </button>
+            </div>
+          )}
+
+          {/* Success message */}
+          {success && (
+            <div style={{
+              padding: '0.75rem',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.3)',
+              borderRadius: '8px',
+              color: '#22c55e',
+              fontSize: '0.9rem',
+              marginBottom: '1rem'
+            }}>
+              {success}
             </div>
           )}
 
@@ -223,12 +335,15 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
               }
             }}
           >
-            {loading ? 'Načítání...' : (isLogin ? 'Přihlásit se' : 'Registrovat')}
+            {loading ? 'Načítání...' : 
+             needsConfirmation ? 'Potvrdit kód' :
+             isLogin ? 'Přihlásit se' : 'Registrovat'}
           </button>
         </form>
 
-        {/* Toggle login/signup */}
-        <div style={{
+        {/* Toggle login/signup - hide during OTP confirmation */}
+        {!needsConfirmation && (
+          <div style={{
           textAlign: 'center',
           marginTop: '1.5rem',
           paddingTop: '1.5rem',
@@ -259,7 +374,8 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
               {isLogin ? 'Registrovat se' : 'Přihlásit se'}
             </button>
           </p>
-        </div>
+          </div>
+        )}
       </div>
 
       <style>{`

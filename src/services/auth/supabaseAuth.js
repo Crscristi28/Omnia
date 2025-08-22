@@ -107,7 +107,7 @@ class SupabaseAuthService {
     }
   }
 
-  // Verify OTP and sign in user
+  // Verify OTP for password recovery
   async verifyOTP(email, token) {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
@@ -118,10 +118,29 @@ class SupabaseAuthService {
       
       if (error) throw error;
       
-      console.log('✅ OTP verified for:', email);
+      console.log('✅ Password reset OTP verified for:', email);
       return { success: true, user: data.user, session: data.session, error: null };
     } catch (error) {
-      console.error('❌ OTP verification error:', error.message);
+      console.error('❌ Password reset OTP verification error:', error.message);
+      return { success: false, user: null, session: null, error: error.message };
+    }
+  }
+
+  // Verify OTP for signup confirmation
+  async verifySignupOTP(email, token) {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'signup'
+      });
+      
+      if (error) throw error;
+      
+      console.log('✅ Signup OTP verified for:', email);
+      return { success: true, user: data.user, session: data.session, error: null };
+    } catch (error) {
+      console.error('❌ Signup OTP verification error:', error.message);
       return { success: false, user: null, session: null, error: error.message };
     }
   }
