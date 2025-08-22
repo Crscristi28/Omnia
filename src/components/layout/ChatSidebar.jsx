@@ -3,7 +3,7 @@
 // 🚀 Animované slide-in/out, responsive
 
 import React, { useState } from 'react';
-import { MessageCircle, Check, X, ChevronDown, LogOut, User } from 'lucide-react';
+import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2 } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import chatDB from '../../services/storage/chatDB';
 
@@ -30,6 +30,9 @@ const ChatSidebar = ({
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
   const [isUserMenuExpanded, setIsUserMenuExpanded] = useState(false);
+  
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, chatId: null, chatTitle: '' });
   
   // 👤 USER HELPERS
   const getUserInitials = (email) => {
@@ -90,7 +93,33 @@ const ChatSidebar = ({
     }
   };
 
+  // 🗑️ DELETE MODAL HANDLERS
+  const openDeleteModal = (chatId, chatTitle) => {
+    setDeleteModal({ isOpen: true, chatId, chatTitle });
+  };
+  
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, chatId: null, chatTitle: '' });
+  };
+  
+  const confirmDeleteChat = async () => {
+    const { chatId } = deleteModal;
+    
+    // If deleting the current chat, start new chat but keep sidebar open
+    const isDeletingCurrentChat = chatId === currentChatId;
+    
+    await chatDB.deleteChat(chatId);
+    
+    if (isDeletingCurrentChat) {
+      onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open
+    }
+    
+    onChatDeleted(); // Refresh the chat history
+    closeDeleteModal();
+  };
+
   const handleDeleteChat = async (chatId, chatTitle) => {
+    // Keep old confirm for long press (backward compatibility)
     const confirmText = uiLanguage === 'cs' ? 
       `Opravdu chcete smazat chat "${chatTitle}"?` :
       uiLanguage === 'en' ? 
@@ -322,10 +351,20 @@ const ChatSidebar = ({
                           if (currentChatId !== chat.id) {
                             e.target.style.background = 'rgba(255, 255, 255, 0.06)';
                           }
+                          // Show delete button on hover (desktop)
+                          const deleteBtn = e.target.querySelector('button');
+                          if (deleteBtn && !isMobile) {
+                            deleteBtn.style.opacity = '1';
+                          }
                         }}
                         onMouseLeave={(e) => {
                           if (currentChatId !== chat.id) {
                             e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                          }
+                          // Hide delete button when not hovering (desktop)
+                          const deleteBtn = e.target.querySelector('button');
+                          if (deleteBtn && !isMobile) {
+                            deleteBtn.style.opacity = '0';
                           }
                           handleLongPressEnd();
                         }}
@@ -346,6 +385,43 @@ const ChatSidebar = ({
                         }}>
                           {chat.title || `Chat ${index + 1}`}
                         </span>
+                        
+                        {/* DELETE BUTTON */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent chat selection
+                            openDeleteModal(chat.id, chat.title || `Chat ${index + 1}`);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'rgba(255, 255, 255, 0.4)',
+                            cursor: 'pointer',
+                            padding: '0.25rem',
+                            borderRadius: '4px',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: isMobile ? 1 : 0, // Always visible on mobile
+                            flexShrink: 0
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                            e.target.style.color = 'rgba(255, 100, 100, 0.8)';
+                            e.target.style.opacity = '1';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = 'transparent';
+                            e.target.style.color = 'rgba(255, 255, 255, 0.4)';
+                            e.target.style.opacity = isMobile ? '1' : '0';
+                          }}
+                          title={uiLanguage === 'cs' ? 'Smazat chat' : 
+                                 uiLanguage === 'en' ? 'Delete chat' : 
+                                 'Șterge chat'}
+                        >
+                          <Trash2 size={14} strokeWidth={2} />
+                        </button>
                       </button>
                     ))
                   )}
@@ -762,6 +838,139 @@ const ChatSidebar = ({
           </div>
         )}
       </div>
+      
+      {/* 🗑️ DELETE CONFIRMATION MODAL */}
+      {deleteModal.isOpen && (
+        <>
+          {/* MODAL OVERLAY */}
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 2000,
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+            onClick={closeDeleteModal}
+          >
+            {/* MODAL CONTENT */}
+            <div 
+              style={{
+                background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '1.5rem',
+                minWidth: '280px',
+                maxWidth: '400px',
+                width: '100%',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* MODAL HEADER */}
+              <div style={{
+                marginBottom: '1rem',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  fontSize: '1.1rem',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  marginBottom: '0.5rem'
+                }}>
+                  {uiLanguage === 'cs' ? 'Smazat chat' : 
+                   uiLanguage === 'en' ? 'Delete chat' : 
+                   'Șterge chat'}
+                </div>
+                <div style={{
+                  fontSize: '0.9rem',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  lineHeight: '1.4'
+                }}>
+                  {uiLanguage === 'cs' ? 
+                    `Opravdu chcete smazat chat "${deleteModal.chatTitle}"? Tato akce nelze vrátit zpět.` :
+                   uiLanguage === 'en' ? 
+                    `Are you sure you want to delete "${deleteModal.chatTitle}"? This action cannot be undone.` :
+                    `Sigur doriți să ștergeți "${deleteModal.chatTitle}"? Această acțiune nu poate fi anulată.`}
+                </div>
+              </div>
+              
+              {/* MODAL BUTTONS */}
+              <div style={{
+                display: 'flex',
+                gap: '0.75rem',
+                justifyContent: 'flex-end'
+              }}>
+                {/* CANCEL BUTTON */}
+                <button
+                  onClick={closeDeleteModal}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1.25rem',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.12)';
+                    e.target.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                    e.target.style.color = 'rgba(255, 255, 255, 0.8)';
+                  }}
+                >
+                  {uiLanguage === 'cs' ? 'Zrušit' : 
+                   uiLanguage === 'en' ? 'Cancel' : 
+                   'Anulează'}
+                </button>
+                
+                {/* DELETE BUTTON */}
+                <button
+                  onClick={confirmDeleteChat}
+                  style={{
+                    background: 'linear-gradient(135deg, #DC2626, #B91C1C)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1.25rem',
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)';
+                    e.target.style.boxShadow = '0 6px 16px rgba(220, 38, 38, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'linear-gradient(135deg, #DC2626, #B91C1C)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
+                  }}
+                >
+                  {uiLanguage === 'cs' ? 'Smazat' : 
+                   uiLanguage === 'en' ? 'Delete' : 
+                   'Șterge'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };
