@@ -276,6 +276,32 @@ function App() {
 
 
 
+  // 🔐 AUTH HANDLERS
+  const handleSignOut = async () => {
+    try {
+      const { error } = await authService.signOut();
+      if (error) {
+        console.error('❌ Sign out error:', error);
+        return;
+      }
+      
+      console.log('✅ User signed out successfully');
+      
+      // Clear all app state
+      setUser(null);
+      setMessages([]);
+      setCurrentChatId(null);
+      setChatHistories([]);
+      sessionManager.clearSession();
+      
+      // Close sidebar
+      setShowChatSidebar(false);
+      
+    } catch (error) {
+      console.error('❌ Sign out error:', error);
+    }
+  };
+
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
   const handleSidebarOpen = () => {
     setShowChatSidebar(true);
@@ -2309,6 +2335,8 @@ const virtuosoComponents = React.useMemo(() => ({
         onChatDeleted={() => {
           // Historie se aktualizuje lazy při příštím otevření sidebaru
         }}
+        user={user}
+        onSignOut={handleSignOut}
       />
 
       {/* 🎤 VOICE SCREEN - UNCHANGED */}

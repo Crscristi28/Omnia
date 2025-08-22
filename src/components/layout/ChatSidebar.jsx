@@ -3,7 +3,7 @@
 // 🚀 Animované slide-in/out, responsive
 
 import React, { useState } from 'react';
-import { MessageCircle, Check, X, ChevronDown } from 'lucide-react';
+import { MessageCircle, Check, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import chatDB from '../../services/storage/chatDB';
 
@@ -16,7 +16,9 @@ const ChatSidebar = ({
   chatHistory = [],
   onSelectChat,
   currentChatId = null,
-  onChatDeleted = () => {} // Callback to refresh history after deletion
+  onChatDeleted = () => {}, // Callback to refresh history after deletion
+  user = null, // Current user object
+  onSignOut = () => {} // Sign out handler
 }) => {
   const isMobile = window.innerWidth <= 768;
   
@@ -26,6 +28,23 @@ const ChatSidebar = ({
   // Settings expansion states
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+  
+  // 👤 USER HELPERS
+  const getUserInitials = (email) => {
+    if (!email) return 'U';
+    const parts = email.split('@')[0].split('.');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return email[0].toUpperCase();
+  };
+  
+  const getDisplayEmail = (email) => {
+    if (!email) return '';
+    if (email.length <= 20) return email;
+    const [local, domain] = email.split('@');
+    return `${local.slice(0, 8)}...@${domain}`;
+  };
 
   // 📱 CLOSE ON OVERLAY CLICK
   const handleOverlayClick = (e) => {
@@ -469,6 +488,104 @@ const ChatSidebar = ({
             </div>
           </div>
         </div>
+        
+        {/* 👤 USER CARD - FIXED BOTTOM */}
+        {user && (
+          <div style={{
+            flexShrink: 0,
+            padding: '1rem 0.5rem 1.5rem',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.98), rgba(0, 78, 146, 0.95))',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)'
+          }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              padding: '0.75rem',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
+            }}>
+              {/* USER AVATAR */}
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                color: '#ffffff',
+                flexShrink: 0
+              }}>
+                {getUserInitials(user.email)}
+              </div>
+              
+              {/* USER INFO */}
+              <div style={{
+                flex: 1,
+                minWidth: 0
+              }}>
+                <div style={{
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  marginBottom: '0.125rem'
+                }}>
+                  {uiLanguage === 'cs' ? 'Přihlášen jako' : 
+                   uiLanguage === 'en' ? 'Signed in as' : 
+                   'Autentificat ca'}
+                </div>
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {getDisplayEmail(user.email)}
+                </div>
+              </div>
+              
+              {/* LOGOUT BUTTON */}
+              <button
+                onClick={onSignOut}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.5rem',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.12)';
+                  e.target.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.color = 'rgba(255, 255, 255, 0.7)';
+                }}
+                title={uiLanguage === 'cs' ? 'Odhlásit se' : 
+                       uiLanguage === 'en' ? 'Sign out' : 
+                       'Deconectare'}
+              >
+                <LogOut size={16} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
