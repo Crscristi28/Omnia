@@ -49,6 +49,7 @@ import { SourcesModal } from './components/sources';
 import { ChatSidebar } from './components/layout';
 import DocumentViewer from './components/modals/DocumentViewer.jsx'; // 📄 Document viewer
 import AuthModal from './components/auth/AuthModal.jsx'; // 🔐 Auth modal
+import ResetPasswordModal from './components/auth/ResetPasswordModal.jsx'; // 🔐 Reset password modal
 
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -104,6 +105,7 @@ function App() {
   // 🔐 AUTH STATE - for Supabase authentication
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
 
@@ -300,6 +302,11 @@ function App() {
     } catch (error) {
       console.error('❌ Sign out error:', error);
     }
+  };
+
+  // 🔐 RESET PASSWORD HANDLER
+  const handleResetPassword = () => {
+    setShowResetPasswordModal(true);
   };
 
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
@@ -1984,6 +1991,13 @@ const virtuosoComponents = React.useMemo(() => ({
         <AuthModal onSuccess={setUser} />
       )}
 
+      {/* 🔐 RESET PASSWORD MODAL */}
+      <ResetPasswordModal 
+        isOpen={showResetPasswordModal}
+        onClose={() => setShowResetPasswordModal(false)}
+        user={user}
+      />
+
       {/* 🎨 MAIN APP - VŽDY renderovaná, jen možná překrytá modalem */}
       <div style={{
           ...mainContainerStyle,
@@ -2337,6 +2351,7 @@ const virtuosoComponents = React.useMemo(() => ({
         }}
         user={user}
         onSignOut={handleSignOut}
+        onResetPassword={handleResetPassword}
       />
 
       {/* 🎤 VOICE SCREEN - UNCHANGED */}

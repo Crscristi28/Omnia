@@ -86,6 +86,40 @@ class SupabaseAuthService {
     
     return subscription;
   }
+
+  // Reset password - sends email with reset link
+  async resetPasswordForEmail(email) {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin, // Redirect back to app after reset
+      });
+      
+      if (error) throw error;
+      
+      console.log('✅ Password reset email sent to:', email);
+      return { success: true, error: null };
+    } catch (error) {
+      console.error('❌ Password reset error:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update password for logged in user
+  async updatePassword(newPassword) {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      
+      console.log('✅ Password updated successfully');
+      return { success: true, error: null };
+    } catch (error) {
+      console.error('❌ Password update error:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 // Export singleton instance

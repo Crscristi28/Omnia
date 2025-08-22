@@ -18,7 +18,8 @@ const ChatSidebar = ({
   currentChatId = null,
   onChatDeleted = () => {}, // Callback to refresh history after deletion
   user = null, // Current user object
-  onSignOut = () => {} // Sign out handler
+  onSignOut = () => {}, // Sign out handler
+  onResetPassword = () => {} // Reset password handler
 }) => {
   const isMobile = window.innerWidth <= 768;
   
@@ -664,8 +665,8 @@ const ChatSidebar = ({
                   {/* 🔐 RESET PASSWORD */}
                   <button
                     onClick={() => {
-                      // TODO: Implement reset password
-                      console.log('Reset password - TODO');
+                      onResetPassword();
+                      setHamburgerOpen(false);
                     }}
                     style={{
                       width: '100%',
