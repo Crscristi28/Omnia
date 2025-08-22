@@ -13,6 +13,7 @@ import { Virtuoso } from 'react-virtuoso';
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, grokService, geminiService } from './services/ai';
 import { elevenLabsService } from './services/voice';
+import authService from './services/auth/supabaseAuth'; // 🔐 Auth service
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
@@ -98,6 +99,10 @@ function App() {
   // 🆕 NEW SIDEBAR STATE - Added for redesign
   const [showChatSidebar, setShowChatSidebar] = useState(false);
   const [currentChatId, setCurrentChatId] = useState(null);
+  
+  // 🔐 AUTH STATE - for Supabase authentication
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
 
@@ -168,6 +173,35 @@ function App() {
     // Service Worker is now handled automatically
   }, []);
 
+
+  // 🔐 AUTH INITIALIZATION - Test Supabase connection
+  useEffect(() => {
+    const initAuth = async () => {
+      console.log('🔐 Testing Supabase auth connection...');
+      
+      try {
+        // Get current user if exists
+        const currentUser = await authService.getCurrentUser();
+        console.log('👤 Current user:', currentUser?.email || 'Not logged in');
+        setUser(currentUser);
+        
+        // Listen to auth changes
+        const subscription = authService.onAuthStateChange((event, session) => {
+          console.log('🔄 Auth event:', event);
+          setUser(session?.user || null);
+        });
+        
+        // Cleanup subscription on unmount
+        return () => subscription?.unsubscribe();
+      } catch (error) {
+        console.error('❌ Auth initialization error:', error);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+    
+    initAuth();
+  }, []);
 
   // 🆕 AUDIO INITIALIZATION (UNCHANGED)
   useEffect(() => {
