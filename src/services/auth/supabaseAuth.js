@@ -113,7 +113,7 @@ class SupabaseAuthService {
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token,
-        type: 'email'
+        type: 'recovery'
       });
       
       if (error) throw error;
