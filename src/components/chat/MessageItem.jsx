@@ -157,7 +157,7 @@ const MessageItem = ({
                     position: 'relative',
                     width: '80px',
                     height: '80px',
-                    background: 'rgba(30, 41, 59, 0.95)',
+                    background: 'rgba(0, 0, 0, 0.3)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '12px',
                     overflow: 'hidden',
@@ -171,12 +171,12 @@ const MessageItem = ({
                     flexShrink: 0
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.98)';
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
                     e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
                     e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.95)';
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
                     e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
