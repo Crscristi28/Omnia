@@ -25,11 +25,10 @@ const ChatSidebar = ({
   // Long press state
   const [longPressTimer, setLongPressTimer] = useState(null);
   
-  // Settings expansion states
+  // Expansion states
+  const [isChatHistoryExpanded, setIsChatHistoryExpanded] = useState(true); // Default open
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
-  
-  // User menu expansion state
   const [isUserMenuExpanded, setIsUserMenuExpanded] = useState(false);
   
   // 👤 USER HELPERS
@@ -221,94 +220,138 @@ const ChatSidebar = ({
           WebkitOverflowScrolling: 'touch'
         }}>
           
-          {/* 📝 CHAT HISTORY SECTION */}
+          {/* 💬 CHATS SECTION */}
           <div style={{ padding: '1rem 0' }}>
-            <div style={{
-              padding: '0 1.25rem 0.75rem',
-              fontSize: '0.85rem',
-              fontWeight: '500',
-              color: 'rgba(255, 255, 255, 0.6)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
-              {uiLanguage === 'cs' ? 'Historie' : uiLanguage === 'en' ? 'History' : 'Istoric'}
+            <div style={{ padding: '0 0.5rem' }}>
+              {/* 💬 CHATS MAIN CARD */}
+              <button
+                onClick={() => setIsChatHistoryExpanded(!isChatHistoryExpanded)}
+                style={{
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '0.75rem',
+                  margin: '0.125rem 0',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+              >
+                <span style={{
+                  fontSize: '0.8rem',
+                  opacity: 0.7
+                }}>💬</span>
+                <span style={{ flex: 1 }}>
+                  Chats
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  style={{
+                    transform: isChatHistoryExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    opacity: 0.6
+                  }}
+                />
+              </button>
+
+              {/* EXPANDED CHATS CONTENT */}
+              {isChatHistoryExpanded && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  marginLeft: '0.5rem',
+                  animation: 'fadeIn 0.2s ease'
+                }}>
+                  {chatHistory.length === 0 ? (
+                    <div style={{
+                      padding: '1rem 0.75rem',
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      fontSize: '0.85rem',
+                      fontStyle: 'italic',
+                      textAlign: 'center'
+                    }}>
+                      {uiLanguage === 'cs' ? 'Žádné konverzace' : 
+                       uiLanguage === 'en' ? 'No conversations' : 
+                       'Nicio conversație'}
+                    </div>
+                  ) : (
+                    chatHistory.map((chat, index) => (
+                      <button
+                        key={chat.id || index}
+                        onClick={() => handleChatSelect(chat.id)}
+                        onTouchStart={() => handleLongPressStart(chat.id, chat.title)}
+                        onTouchEnd={handleLongPressEnd}
+                        onTouchCancel={handleLongPressEnd}
+                        onMouseDown={() => handleLongPressStart(chat.id, chat.title)}
+                        onMouseUp={handleLongPressEnd}
+                        style={{
+                          width: '100%',
+                          padding: '0.6rem 0.75rem',
+                          margin: '0.125rem 0',
+                          background: currentChatId === chat.id 
+                            ? 'rgba(255, 255, 255, 0.12)' 
+                            : 'rgba(255, 255, 255, 0.03)',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.85rem',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.6rem',
+                          userSelect: 'none',
+                          WebkitUserSelect: 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentChatId !== chat.id) {
+                            e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (currentChatId !== chat.id) {
+                            e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                          }
+                          handleLongPressEnd();
+                        }}
+                      >
+                        <span style={{ 
+                          fontSize: '0.75rem',
+                          opacity: 0.7,
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}>
+                          <MessageCircle size={12} strokeWidth={2} />
+                        </span>
+                        <span style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          flex: 1
+                        }}>
+                          {chat.title || `Chat ${index + 1}`}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
-            
-            {chatHistory.length === 0 ? (
-              <div style={{
-                padding: '1rem 1.25rem',
-                color: 'rgba(255, 255, 255, 0.5)',
-                fontSize: '0.9rem',
-                fontStyle: 'italic',
-                textAlign: 'center'
-              }}>
-                {uiLanguage === 'cs' ? 'Žádné konverzace' : 
-                 uiLanguage === 'en' ? 'No conversations' : 
-                 'Nicio conversație'}
-              </div>
-            ) : (
-              <div style={{ padding: '0 0.5rem' }}>
-                {chatHistory.map((chat, index) => (
-                  <button
-                    key={chat.id || index}
-                    onClick={() => handleChatSelect(chat.id)}
-                    onTouchStart={() => handleLongPressStart(chat.id, chat.title)}
-                    onTouchEnd={handleLongPressEnd}
-                    onTouchCancel={handleLongPressEnd}
-                    onMouseDown={() => handleLongPressStart(chat.id, chat.title)}
-                    onMouseUp={handleLongPressEnd}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem 0.75rem',
-                      margin: '0.125rem 0',
-                      background: currentChatId === chat.id 
-                        ? 'rgba(255, 255, 255, 0.1)' 
-                        : 'transparent',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#ffffff',
-                      fontSize: '0.9rem',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      userSelect: 'none', // Prevent text selection during long press
-                      WebkitUserSelect: 'none'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (currentChatId !== chat.id) {
-                        e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (currentChatId !== chat.id) {
-                        e.target.style.background = 'transparent';
-                      }
-                      handleLongPressEnd(); // Also clear long press on mouse leave
-                    }}
-                  >
-                    <span style={{ 
-                      fontSize: '0.8rem',
-                      opacity: 0.7,
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      <MessageCircle size={14} strokeWidth={2} />
-                    </span>
-                    <span style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      flex: 1
-                    }}>
-                      {chat.title || `Chat ${index + 1}`}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* 📏 DIVIDER */}
