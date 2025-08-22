@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import authService from '../../services/auth/supabaseAuth';
 
-const AuthModal = ({ onSuccess }) => {
+const AuthModal = ({ onSuccess, onForgotPassword }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -149,6 +149,34 @@ const AuthModal = ({ onSuccess }) => {
               }}
             />
           </div>
+
+          {/* Forgot password link - only show for login */}
+          {isLogin && (
+            <div style={{
+              textAlign: 'right',
+              marginBottom: '1rem'
+            }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onForgotPassword) {
+                    onForgotPassword(email); // Pass email if already entered
+                  }
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(59, 130, 246, 0.8)',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: 0
+                }}
+              >
+                Zapomenuté heslo?
+              </button>
+            </div>
+          )}
 
           {/* Error message */}
           {error && (

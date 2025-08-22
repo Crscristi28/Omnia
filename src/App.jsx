@@ -1988,7 +1988,15 @@ const virtuosoComponents = React.useMemo(() => ({
 
       {/* 🔐 AUTH MODAL - zobrazí se po splash screenu když není přihlášený */}
       {!showSplashScreen && !user && !authLoading && (
-        <AuthModal onSuccess={setUser} />
+        <AuthModal 
+          onSuccess={setUser}
+          onForgotPassword={(email) => {
+            // Close auth modal and open reset password modal
+            setShowResetPasswordModal(true);
+            // Optionally pass email to reset modal if needed
+            console.log('Opening reset password modal for:', email || 'no email provided');
+          }}
+        />
       )}
 
       {/* 🔐 RESET PASSWORD MODAL */}
