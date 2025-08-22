@@ -496,10 +496,7 @@ const ChatSidebar = ({
         {user && (
           <div style={{
             flexShrink: 0,
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)'
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)'
           }}>
             {/* EXPANDED USER MENU */}
             {isUserMenuExpanded && (
