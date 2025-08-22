@@ -1944,13 +1944,22 @@ const virtuosoComponents = React.useMemo(() => ({
   
   return (
     <>
+      {/* 🎬 SPLASH SCREEN - PWA startup animation */}
+      <SplashScreen
+        isVisible={showSplashScreen}
+        onComplete={() => {
+          console.log('✅ Splash screen completed');
+          setShowSplashScreen(false);
+        }}
+      />
+
       {/* 🔐 AUTH MODAL - zobrazí se po splash screenu když není přihlášený */}
       {!showSplashScreen && !user && !authLoading && (
         <AuthModal onSuccess={setUser} />
       )}
 
       {/* 🎨 MAIN APP - zobrazí se jen když je přihlášený */}
-      {user && (
+      {!showSplashScreen && user && (
         <div style={{
           ...mainContainerStyle,
           background: isListening 
@@ -2498,11 +2507,6 @@ const virtuosoComponents = React.useMemo(() => ({
         position="top-left"
       />
 
-      {/* 🎬 SPLASH SCREEN - PWA startup animation */}
-      <SplashScreen
-        isVisible={showSplashScreen}
-        onComplete={() => setShowSplashScreen(false)}
-      />
         </div>
       )}
     </>
