@@ -1936,11 +1936,11 @@ const virtuosoComponents = React.useMemo(() => ({
 
 // 🎨 JSX RENDER
   // Debug logs
-  console.log('🎨 Render state:', {
-    showSplashScreen,
-    user: user?.email || null,
-    authLoading
-  });
+  console.log('🎨 Render state:', 
+    'showSplashScreen:', showSplashScreen,
+    'user:', user?.email || null,
+    'authLoading:', authLoading
+  );
   
   return (
     <>
