@@ -3,7 +3,7 @@
 // 🚀 Animované slide-in/out, responsive
 
 import React, { useState } from 'react';
-import { MessageCircle, Check, X } from 'lucide-react';
+import { MessageCircle, Check, X, ChevronDown } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import chatDB from '../../services/storage/chatDB';
 
@@ -22,6 +22,10 @@ const ChatSidebar = ({
   
   // Long press state
   const [longPressTimer, setLongPressTimer] = useState(null);
+  
+  // Settings expansion states
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+  const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
 
   // 📱 CLOSE ON OVERLAY CLICK
   const handleOverlayClick = (e) => {
@@ -294,118 +298,174 @@ const ChatSidebar = ({
 
           {/* ⚙️ SETTINGS SECTION */}
           <div style={{ padding: '1rem 0 2rem' }}>
-            <div style={{
-              padding: '0 1.25rem 0.75rem',
-              fontSize: '0.85rem',
-              fontWeight: '500',
-              color: 'rgba(255, 255, 255, 0.6)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
-              {uiLanguage === 'cs' ? 'Nastavení' : uiLanguage === 'en' ? 'Settings' : 'Setări'}
-            </div>
-            
-            {/* 🎛️ SETTINGS CARD */}
             <div style={{ padding: '0 0.5rem' }}>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                padding: '0.75rem',
-                margin: '0.125rem 0',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                transition: 'all 0.2s ease'
-              }}>
-                {/* Settings Card Header */}
-                <div style={{
+              {/* 🎛️ SETTINGS MAIN CARD */}
+              <button
+                onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+                style={{
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '0.75rem',
+                  margin: '0.125rem 0',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.75rem',
+                  gap: '0.75rem',
                   color: '#ffffff',
                   fontSize: '0.9rem',
-                  fontWeight: '600'
-                }}>
-                  <span style={{
-                    fontSize: '0.8rem',
-                    opacity: 0.7
-                  }}>⚙️</span>
+                  fontWeight: '600',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+              >
+                <span style={{
+                  fontSize: '0.8rem',
+                  opacity: 0.7
+                }}>⚙️</span>
+                <span style={{ flex: 1 }}>
                   {uiLanguage === 'cs' ? 'Nastavení' : uiLanguage === 'en' ? 'Settings' : 'Setări'}
-                </div>
-                
-                {/* 🌍 LANGUAGE SELECTOR */}
-                <div>
-                  <div style={{
-                    padding: '0 0 0.5rem',
-                    fontSize: '0.8rem',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontWeight: '500'
-                  }}>
-                    {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
-                     uiLanguage === 'en' ? 'Interface Language' : 
-                     'Limba interfeței'}
-                  </div>
-                  
-                  {languageOptions.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  style={{
+                    transform: isSettingsExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    opacity: 0.6
+                  }}
+                />
+              </button>
+
+              {/* EXPANDED SETTINGS CONTENT */}
+              {isSettingsExpanded && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  marginLeft: '0.5rem',
+                  animation: 'fadeIn 0.2s ease'
+                }}>
+                  {/* 🌍 LANGUAGE ITEM */}
+                  <button
+                    onClick={() => setIsLanguageExpanded(!isLanguageExpanded)}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '8px',
+                      border: 'none',
+                      padding: '0.6rem 0.75rem',
+                      margin: '0.125rem 0',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      color: '#ffffff',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                    }}
+                  >
+                    <span style={{
+                      fontSize: '0.8rem',
+                      opacity: 0.7
+                    }}>🌍</span>
+                    <span style={{ flex: 1 }}>
+                      {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
+                       uiLanguage === 'en' ? 'Interface Language' : 
+                       'Limba interfeței'}
+                    </span>
+                    <ChevronDown 
+                      size={14} 
                       style={{
-                        width: '100%',
-                        padding: '0.6rem 0.75rem',
-                        margin: '0.125rem 0',
-                        background: uiLanguage === lang.code 
-                          ? 'rgba(255, 255, 255, 0.15)' 
-                          : 'rgba(255, 255, 255, 0.03)',
-                        border: 'none',
-                        borderRadius: '8px',
-                        color: '#ffffff',
-                        fontSize: '0.85rem',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem'
+                        transform: isLanguageExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                        opacity: 0.5
                       }}
-                      onMouseEnter={(e) => {
-                        if (uiLanguage !== lang.code) {
-                          e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (uiLanguage !== lang.code) {
-                          e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                        }
-                      }}
-                    >
-                      <span style={{ 
-                        fontSize: '0.7rem',
-                        fontWeight: '600',
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        minWidth: '24px',
-                        textAlign: 'center'
-                      }}>
-                        {lang.flag}
-                      </span>
-                      <span style={{ flex: 1 }}>{lang.label}</span>
-                      {uiLanguage === lang.code && (
-                        <span style={{ 
-                          fontSize: '0.75rem',
-                          color: 'rgba(255, 255, 255, 0.8)',
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}>
-                          <Check size={12} strokeWidth={2} />
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                    />
+                  </button>
+
+                  {/* LANGUAGE OPTIONS */}
+                  {isLanguageExpanded && (
+                    <div style={{
+                      marginTop: '0.25rem',
+                      marginLeft: '1rem',
+                      animation: 'fadeIn 0.2s ease'
+                    }}>
+                      {languageOptions.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => handleLanguageChange(lang.code)}
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem 0.75rem',
+                            margin: '0.125rem 0',
+                            background: uiLanguage === lang.code 
+                              ? 'rgba(255, 255, 255, 0.12)' 
+                              : 'rgba(255, 255, 255, 0.02)',
+                            border: 'none',
+                            borderRadius: '6px',
+                            color: '#ffffff',
+                            fontSize: '0.8rem',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.6rem'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (uiLanguage !== lang.code) {
+                              e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (uiLanguage !== lang.code) {
+                              e.target.style.background = 'rgba(255, 255, 255, 0.02)';
+                            }
+                          }}
+                        >
+                          <span style={{ 
+                            fontSize: '0.65rem',
+                            fontWeight: '600',
+                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                            padding: '1px 5px',
+                            borderRadius: '3px',
+                            minWidth: '22px',
+                            textAlign: 'center'
+                          }}>
+                            {lang.flag}
+                          </span>
+                          <span style={{ flex: 1 }}>{lang.label}</span>
+                          {uiLanguage === lang.code && (
+                            <span style={{ 
+                              fontSize: '0.7rem',
+                              color: 'rgba(255, 255, 255, 0.7)',
+                              display: 'flex',
+                              alignItems: 'center'
+                            }}>
+                              <Check size={10} strokeWidth={2} />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
