@@ -198,7 +198,7 @@ function App() {
         console.error('❌ Auth initialization error:', error);
       } finally {
         setAuthLoading(false);
-        console.log('✅ Auth loading complete. User:', user?.email || 'Not logged in');
+        console.log('✅ Auth loading complete');
       }
     };
     
