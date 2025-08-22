@@ -177,6 +177,8 @@ function App() {
 
   // 🔐 AUTH INITIALIZATION - Test Supabase connection
   useEffect(() => {
+    let subscription;
+    
     const initAuth = async () => {
       console.log('🔐 Testing Supabase auth connection...');
       
@@ -187,21 +189,27 @@ function App() {
         setUser(currentUser);
         
         // Listen to auth changes
-        const subscription = authService.onAuthStateChange((event, session) => {
+        subscription = authService.onAuthStateChange((event, session) => {
           console.log('🔄 Auth event:', event);
+          console.log('🔄 Session user:', session?.user?.email || 'No user in session');
           setUser(session?.user || null);
         });
-        
-        // Cleanup subscription on unmount
-        return () => subscription?.unsubscribe();
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
       } finally {
         setAuthLoading(false);
+        console.log('✅ Auth loading complete. User:', user?.email || 'Not logged in');
       }
     };
     
     initAuth();
+    
+    // Cleanup subscription on unmount
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   // 🆕 AUDIO INITIALIZATION (UNCHANGED)
@@ -1926,7 +1934,14 @@ const virtuosoComponents = React.useMemo(() => ({
 }), [virtuosoFooterStyle]);
 
 
-// 🎨 JSX RENDER  
+// 🎨 JSX RENDER
+  // Debug logs
+  console.log('🎨 Render state:', {
+    showSplashScreen,
+    user: user?.email || null,
+    authLoading
+  });
+  
   return (
     <>
       {/* 🔐 AUTH MODAL - zobrazí se po splash screenu když není přihlášený */}
