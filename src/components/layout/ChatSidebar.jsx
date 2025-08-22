@@ -29,6 +29,9 @@ const ChatSidebar = ({
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
   
+  // User menu expansion state
+  const [isUserMenuExpanded, setIsUserMenuExpanded] = useState(false);
+  
   // 👤 USER HELPERS
   const getUserInitials = (email) => {
     if (!email) return 'U';
@@ -489,99 +492,231 @@ const ChatSidebar = ({
           </div>
         </div>
         
-        {/* 👤 USER CARD - FIXED BOTTOM */}
+        {/* 👤 USER SECTION - FIXED BOTTOM */}
         {user && (
           <div style={{
             flexShrink: 0,
-            padding: '1rem 0.5rem 1.5rem',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.98), rgba(0, 78, 146, 0.95))',
+            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)'
           }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              padding: '0.75rem',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem'
-            }}>
-              {/* USER AVATAR */}
+            {/* EXPANDED USER MENU */}
+            {isUserMenuExpanded && (
               <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                color: '#ffffff',
-                flexShrink: 0
-              }}>
-                {getUserInitials(user.email)}
-              </div>
-              
-              {/* USER INFO */}
-              <div style={{
-                flex: 1,
-                minWidth: 0
+                padding: '1rem 0.5rem 0.5rem',
+                animation: 'fadeIn 0.2s ease'
               }}>
                 <div style={{
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  color: '#ffffff',
-                  marginBottom: '0.125rem'
+                  marginLeft: '0.5rem'
                 }}>
-                  {uiLanguage === 'cs' ? 'Přihlášen jako' : 
-                   uiLanguage === 'en' ? 'Signed in as' : 
-                   'Autentificat ca'}
-                </div>
-                <div style={{
-                  fontSize: '0.75rem',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {getDisplayEmail(user.email)}
+                  {/* 🚪 LOG OUT */}
+                  <button
+                    onClick={onSignOut}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '8px',
+                      border: 'none',
+                      padding: '0.6rem 0.75rem',
+                      margin: '0.125rem 0',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      color: '#ffffff',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                    }}
+                  >
+                    <LogOut size={16} strokeWidth={2} style={{ opacity: 0.7 }} />
+                    <span style={{ flex: 1 }}>
+                      {uiLanguage === 'cs' ? 'Odhlásit se' : 
+                       uiLanguage === 'en' ? 'Sign out' : 
+                       'Deconectare'}
+                    </span>
+                  </button>
+
+                  {/* 🔐 RESET PASSWORD */}
+                  <button
+                    onClick={() => {
+                      // TODO: Implement reset password
+                      console.log('Reset password - TODO');
+                    }}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '8px',
+                      border: 'none',
+                      padding: '0.6rem 0.75rem',
+                      margin: '0.125rem 0',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                      e.target.style.color = 'rgba(255, 255, 255, 0.8)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                      e.target.style.color = 'rgba(255, 255, 255, 0.6)';
+                    }}
+                  >
+                    <span style={{ fontSize: '16px', opacity: 0.7 }}>🔐</span>
+                    <span style={{ flex: 1 }}>
+                      {uiLanguage === 'cs' ? 'Změnit heslo' : 
+                       uiLanguage === 'en' ? 'Reset password' : 
+                       'Resetează parola'}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>
+                      {uiLanguage === 'cs' ? 'Brzy' : 
+                       uiLanguage === 'en' ? 'Soon' : 
+                       'Curând'}
+                    </span>
+                  </button>
+
+                  {/* 💳 BILLING */}
+                  <button
+                    onClick={() => {
+                      // TODO: Implement billing
+                      console.log('Billing - TODO');
+                    }}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '8px',
+                      border: 'none',
+                      padding: '0.6rem 0.75rem',
+                      margin: '0.125rem 0',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                      e.target.style.color = 'rgba(255, 255, 255, 0.8)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                      e.target.style.color = 'rgba(255, 255, 255, 0.6)';
+                    }}
+                  >
+                    <span style={{ fontSize: '16px', opacity: 0.7 }}>💳</span>
+                    <span style={{ flex: 1 }}>
+                      {uiLanguage === 'cs' ? 'Fakturace' : 
+                       uiLanguage === 'en' ? 'Billing' : 
+                       'Facturare'}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>
+                      {uiLanguage === 'cs' ? 'Brzy' : 
+                       uiLanguage === 'en' ? 'Soon' : 
+                       'Curând'}
+                    </span>
+                  </button>
                 </div>
               </div>
-              
-              {/* LOGOUT BUTTON */}
+            )}
+
+            {/* USER MAIN CARD - CLICKABLE */}
+            <div style={{ padding: '1rem 0.5rem 1.5rem' }}>
               <button
-                onClick={onSignOut}
+                onClick={() => setIsUserMenuExpanded(!isUserMenuExpanded)}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '0.5rem',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  cursor: 'pointer',
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '0.75rem',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
                   transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+              >
+                {/* USER AVATAR */}
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  color: '#ffffff',
                   flexShrink: 0
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.12)';
-                  e.target.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                  e.target.style.color = 'rgba(255, 255, 255, 0.7)';
-                }}
-                title={uiLanguage === 'cs' ? 'Odhlásit se' : 
-                       uiLanguage === 'en' ? 'Sign out' : 
-                       'Deconectare'}
-              >
-                <LogOut size={16} strokeWidth={2} />
+                }}>
+                  {getUserInitials(user.email)}
+                </div>
+                
+                {/* USER INFO */}
+                <div style={{
+                  flex: 1,
+                  minWidth: 0
+                }}>
+                  <div style={{
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    color: '#ffffff',
+                    marginBottom: '0.125rem'
+                  }}>
+                    {uiLanguage === 'cs' ? 'Přihlášen jako' : 
+                     uiLanguage === 'en' ? 'Signed in as' : 
+                     'Autentificat ca'}
+                  </div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {getDisplayEmail(user.email)}
+                  </div>
+                </div>
+                
+                {/* CHEVRON ARROW */}
+                <ChevronDown 
+                  size={16} 
+                  style={{
+                    transform: isUserMenuExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    opacity: 0.6,
+                    color: '#ffffff'
+                  }}
+                />
               </button>
             </div>
           </div>
