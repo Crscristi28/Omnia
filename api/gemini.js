@@ -148,7 +148,10 @@ export default async function handler(req, res) {
   const originalCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
   try {
-    const { messages, system, max_tokens = 5000, language, documents = [] } = req.body;
+    const { requestId, messages, system, max_tokens = 5000, language, documents = [] } = req.body;
+    
+    // Log request ID for debugging concurrent requests
+    console.log('🔄 [GEMINI] Processing request ID:', requestId || 'NO_ID');
     
     
     // Check for required environment variables
@@ -253,7 +256,7 @@ export default async function handler(req, res) {
       if (item.candidates && item.candidates[0].groundingMetadata) {
         const extractedSources = extractSources(item.candidates[0].groundingMetadata);
         if (extractedSources.length > 0 && !searchNotified) {
-          res.write(JSON.stringify({ type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
+          res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
           await new Promise(resolve => setTimeout(resolve, 50)); // Short pause for UI
           sources = extractedSources;
           searchNotified = true;
@@ -275,6 +278,7 @@ export default async function handler(req, res) {
           for (const chunk of markdownChunks) {
             if (chunk.trim()) {
               res.write(JSON.stringify({ 
+                requestId,
                 type: 'text', 
                 content: chunk
               }) + '\n');
@@ -288,6 +292,7 @@ export default async function handler(req, res) {
           for (const word of words) {
             if (word.trim()) {
               res.write(JSON.stringify({ 
+                requestId,
                 type: 'text', 
                 content: word + ' ' // Add space after each word
               }) + '\n');
@@ -300,6 +305,7 @@ export default async function handler(req, res) {
 
     // After stream completion, send final message with sources
     res.write(JSON.stringify({
+      requestId,
       type: 'completed',
       fullText: fullText,
       sources: sources,
@@ -310,16 +316,17 @@ export default async function handler(req, res) {
     res.end();
 
   } catch (error) {
-    console.error('💥 Gemini API error:', error);
+    console.error('💥 Gemini API error [ID:', requestId || 'NO_ID', ']:', error);
     
     // Specific message for service agents provisioning
     if (error.message && error.message.includes('Service agents are being provisioned')) {
       res.write(JSON.stringify({ 
+        requestId,
         error: true, 
         message: '⏳ Google Cloud nastavuje servisní agenty pro dokumenty. Zkus to znovu za 5 minut nebo piš bez dokumentu.' 
       }) + '\n');
     } else {
-      res.write(JSON.stringify({ error: true, message: 'Server error: ' + error.message }) + '\n');
+      res.write(JSON.stringify({ requestId, error: true, message: 'Server error: ' + error.message }) + '\n');
     }
     res.end();
   } finally {

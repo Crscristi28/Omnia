@@ -5,7 +5,10 @@
 const geminiService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs', documents = []) {
     try {
-      console.log('🤖 Omnia Gemini 2.5 Flash - Google Grounding');
+      // Generate unique request ID for concurrent user isolation
+      const requestId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      console.log('🤖 Omnia Gemini 2.5 Flash - Google Grounding [ID:', requestId, ']');
+      
       const geminiMessages = this.prepareGeminiMessages(messages);
       
       const systemPrompt = this.getOmniaPrompt();
@@ -16,6 +19,7 @@ const geminiService = {
           'Content-Type': 'application/json; charset=utf-8'
         },
         body: JSON.stringify({ 
+          requestId: requestId,
           messages: geminiMessages,
           system: systemPrompt,
           max_tokens: 5000,
@@ -50,6 +54,12 @@ const geminiService = {
               try {
                 const data = JSON.parse(line);
                 
+                // Only process chunks that belong to this request
+                if (data.requestId && data.requestId !== requestId) {
+                  console.log('⚠️ Ignoring chunk from different request:', data.requestId);
+                  continue;
+                }
+                
                 if (data.type === 'text' && data.content) {
                   fullText += data.content;
                   if (onStreamUpdate) {
@@ -57,7 +67,7 @@ const geminiService = {
                   }
                 }
                 else if (data.type === 'search_start') {
-                  console.log('🔍 Google Search detected');
+                  console.log('🔍 Google Search detected for request:', requestId);
                   if (onSearchNotification) {
                     onSearchNotification(this.getSearchMessage(detectedLanguage));
                   }
