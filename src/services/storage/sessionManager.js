@@ -15,7 +15,27 @@ const sessionManager = {
   },
 
   getUILanguage() {
-    return localStorage.getItem('omnia-ui-language') || 'cs';
+    const savedLanguage = localStorage.getItem('omnia-ui-language');
+    if (savedLanguage) {
+      return savedLanguage;
+    }
+    
+    // Detect system language if no saved preference
+    try {
+      const systemLang = navigator.language || navigator.userLanguage || 'cs';
+      const langCode = systemLang.toLowerCase().split('-')[0];
+      
+      // Map system language to supported languages
+      const supportedLanguages = ['cs', 'en', 'ro'];
+      if (supportedLanguages.includes(langCode)) {
+        return langCode;
+      }
+    } catch (error) {
+      console.log('System language detection failed:', error);
+    }
+    
+    // Fallback to Czech
+    return 'cs';
   },
 
 

@@ -305,76 +305,107 @@ const ChatSidebar = ({
               {uiLanguage === 'cs' ? 'Nastavení' : uiLanguage === 'en' ? 'Settings' : 'Setări'}
             </div>
             
-            {/* 🌍 LANGUAGE SELECTOR */}
+            {/* 🎛️ SETTINGS CARD */}
             <div style={{ padding: '0 0.5rem' }}>
               <div style={{
-                padding: '0.5rem 0.75rem 0.25rem',
-                fontSize: '0.8rem',
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontWeight: '500'
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '0.75rem',
+                margin: '0.125rem 0',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease'
               }}>
-                {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
-                 uiLanguage === 'en' ? 'Interface Language' : 
-                 'Limba interfeței'}
-              </div>
-              
-              {languageOptions.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleLanguageChange(lang.code)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 0.75rem',
-                    margin: '0.125rem 0',
-                    background: uiLanguage === lang.code 
-                      ? 'rgba(255, 255, 255, 0.1)' 
-                      : 'transparent',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (uiLanguage !== lang.code) {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (uiLanguage !== lang.code) {
-                      e.target.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <span style={{ 
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    minWidth: '26px',
-                    textAlign: 'center'
+                {/* Settings Card Header */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  fontWeight: '600'
+                }}>
+                  <span style={{
+                    fontSize: '0.8rem',
+                    opacity: 0.7
+                  }}>⚙️</span>
+                  {uiLanguage === 'cs' ? 'Nastavení' : uiLanguage === 'en' ? 'Settings' : 'Setări'}
+                </div>
+                
+                {/* 🌍 LANGUAGE SELECTOR */}
+                <div>
+                  <div style={{
+                    padding: '0 0 0.5rem',
+                    fontSize: '0.8rem',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontWeight: '500'
                   }}>
-                    {lang.flag}
-                  </span>
-                  <span style={{ flex: 1 }}>{lang.label}</span>
-                  {uiLanguage === lang.code && (
-                    <span style={{ 
-                      fontSize: '0.8rem',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      <Check size={14} strokeWidth={2} />
-                    </span>
-                  )}
-                </button>
-              ))}
+                    {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
+                     uiLanguage === 'en' ? 'Interface Language' : 
+                     'Limba interfeței'}
+                  </div>
+                  
+                  {languageOptions.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => handleLanguageChange(lang.code)}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem 0.75rem',
+                        margin: '0.125rem 0',
+                        background: uiLanguage === lang.code 
+                          ? 'rgba(255, 255, 255, 0.15)' 
+                          : 'rgba(255, 255, 255, 0.03)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.85rem',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (uiLanguage !== lang.code) {
+                          e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (uiLanguage !== lang.code) {
+                          e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                        }
+                      }}
+                    >
+                      <span style={{ 
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        minWidth: '24px',
+                        textAlign: 'center'
+                      }}>
+                        {lang.flag}
+                      </span>
+                      <span style={{ flex: 1 }}>{lang.label}</span>
+                      {uiLanguage === lang.code && (
+                        <span style={{ 
+                          fontSize: '0.75rem',
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}>
+                          <Check size={12} strokeWidth={2} />
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
