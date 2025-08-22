@@ -1958,9 +1958,8 @@ const virtuosoComponents = React.useMemo(() => ({
         <AuthModal onSuccess={setUser} />
       )}
 
-      {/* 🎨 MAIN APP - zobrazí se jen když je přihlášený */}
-      {!showSplashScreen && user && (
-        <div style={{
+      {/* 🎨 MAIN APP - VŽDY renderovaná, jen možná překrytá modalem */}
+      <div style={{
           ...mainContainerStyle,
           background: isListening 
             ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
@@ -2507,8 +2506,7 @@ const virtuosoComponents = React.useMemo(() => ({
         position="top-left"
       />
 
-        </div>
-      )}
+      </div>
     </>
   );
 };
