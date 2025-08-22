@@ -48,6 +48,7 @@ import { SourcesModal } from './components/sources';
 // 🆕 NEW COMPONENTS - Added for redesign
 import { ChatSidebar } from './components/layout';
 import DocumentViewer from './components/modals/DocumentViewer.jsx'; // 📄 Document viewer
+import AuthModal from './components/auth/AuthModal.jsx'; // 🔐 Auth modal
 
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -1927,16 +1928,24 @@ const virtuosoComponents = React.useMemo(() => ({
 
 // 🎨 JSX RENDER  
   return (
-    <div style={{
-      ...mainContainerStyle,
-      background: isListening 
-        ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
-        : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
-      paddingTop: isMobile ? '70px' : '90px',
-      paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
-    }}>
-      
-      {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
+    <>
+      {/* 🔐 AUTH MODAL - zobrazí se po splash screenu když není přihlášený */}
+      {!showSplashScreen && !user && !authLoading && (
+        <AuthModal onSuccess={setUser} />
+      )}
+
+      {/* 🎨 MAIN APP - zobrazí se jen když je přihlášený */}
+      {user && (
+        <div style={{
+          ...mainContainerStyle,
+          background: isListening 
+            ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
+            : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
+          paddingTop: isMobile ? '70px' : '90px',
+          paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
+        }}>
+          
+          {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
       <div style={{
         ...topHeaderStyle,
         height: isMobile ? '60px' : '70px',
@@ -2479,7 +2488,9 @@ const virtuosoComponents = React.useMemo(() => ({
         isVisible={showSplashScreen}
         onComplete={() => setShowSplashScreen(false)}
       />
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 
