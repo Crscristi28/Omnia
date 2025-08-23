@@ -3,7 +3,7 @@
 // 🚀 Animované slide-in/out, responsive
 
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2 } from 'lucide-react';
+import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2, Settings } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import chatDB from '../../services/storage/chatDB';
 
@@ -28,7 +28,6 @@ const ChatSidebar = ({
   
   // Expansion states
   const [isChatHistoryExpanded, setIsChatHistoryExpanded] = useState(true); // Default open
-  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
   const [isUserMenuExpanded, setIsUserMenuExpanded] = useState(false);
   
@@ -38,7 +37,6 @@ const ChatSidebar = ({
   // 🔧 Reset expansion states when sidebar closes
   useEffect(() => {
     if (!isOpen) {
-      setIsSettingsExpanded(false);
       setIsLanguageExpanded(false);
       setIsUserMenuExpanded(false);
     }
@@ -450,64 +448,24 @@ const ChatSidebar = ({
             margin: '0.5rem 1.25rem'
           }} />
 
-          {/* ⚙️ SETTINGS SECTION */}
-          <div style={{ padding: '1rem 0 2rem' }}>
-            <div style={{ padding: '0 0.5rem' }}>
-              {/* 🎛️ SETTINGS MAIN CARD */}
-              <button
-                onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
-                style={{
-                  width: '100%',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  padding: '0.75rem',
-                  margin: '0.125rem 0',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  color: '#ffffff',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  textAlign: 'left'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                }}
-              >
-                <span style={{
-                  fontSize: '0.8rem',
-                  opacity: 0.7
-                }}>⚙️</span>
-                <span style={{ flex: 1 }}>
-                  {uiLanguage === 'cs' ? 'Nastavení' : uiLanguage === 'en' ? 'Settings' : 'Setări'}
-                </span>
-                <ChevronDown 
-                  size={16} 
-                  style={{
-                    transform: isSettingsExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
-                    opacity: 0.6
-                  }}
-                />
-              </button>
-
-              {/* EXPANDED SETTINGS CONTENT */}
-              {isSettingsExpanded && (
+        </div>
+        
+        {/* 👤 USER SECTION - FIXED BOTTOM */}
+        {user && (
+          <div style={{
+            flexShrink: 0,
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+          }}>
+            {/* EXPANDED USER MENU */}
+            {isUserMenuExpanded && (
+              <div style={{
+                padding: '1rem 0.5rem 0.5rem',
+                animation: 'fadeIn 0.2s ease'
+              }}>
                 <div style={{
-                  marginTop: '0.5rem',
-                  marginLeft: '0.5rem',
-                  animation: 'fadeIn 0.2s ease'
+                  marginLeft: '0.5rem'
                 }}>
-                  {/* 🌍 LANGUAGE ITEM */}
+                  {/* 🌍 INTERFACE LANGUAGE */}
                   <button
                     onClick={() => setIsLanguageExpanded(!isLanguageExpanded)}
                     style={{
@@ -535,10 +493,7 @@ const ChatSidebar = ({
                       e.target.style.background = 'rgba(255, 255, 255, 0.03)';
                     }}
                   >
-                    <span style={{
-                      fontSize: '0.8rem',
-                      opacity: 0.7
-                    }}>🌍</span>
+                    <span style={{ fontSize: '16px', opacity: 0.7 }}>🌍</span>
                     <span style={{ flex: 1 }}>
                       {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
                        uiLanguage === 'en' ? 'Interface Language' : 
@@ -621,62 +576,6 @@ const ChatSidebar = ({
                       ))}
                     </div>
                   )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* 👤 USER SECTION - FIXED BOTTOM */}
-        {user && (
-          <div style={{
-            flexShrink: 0,
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)'
-          }}>
-            {/* EXPANDED USER MENU */}
-            {isUserMenuExpanded && (
-              <div style={{
-                padding: '1rem 0.5rem 0.5rem',
-                animation: 'fadeIn 0.2s ease'
-              }}>
-                <div style={{
-                  marginLeft: '0.5rem'
-                }}>
-                  {/* 🚪 LOG OUT */}
-                  <button
-                    onClick={onSignOut}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '8px',
-                      border: 'none',
-                      padding: '0.6rem 0.75rem',
-                      margin: '0.125rem 0',
-                      transition: 'all 0.2s ease',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      color: '#ffffff',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                    }}
-                  >
-                    <LogOut size={16} strokeWidth={2} style={{ opacity: 0.7 }} />
-                    <span style={{ flex: 1 }}>
-                      {uiLanguage === 'cs' ? 'Odhlásit se' : 
-                       uiLanguage === 'en' ? 'Sign out' : 
-                       'Deconectare'}
-                    </span>
-                  </button>
 
                   {/* 🔐 RESET PASSWORD */}
                   <button
@@ -764,6 +663,42 @@ const ChatSidebar = ({
                        'Curând'}
                     </span>
                   </button>
+
+                  {/* 🚪 LOG OUT */}
+                  <button
+                    onClick={onSignOut}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '8px',
+                      border: 'none',
+                      padding: '0.6rem 0.75rem',
+                      margin: '0.125rem 0',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      color: '#ffffff',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                    }}
+                  >
+                    <LogOut size={16} strokeWidth={2} style={{ opacity: 0.7 }} />
+                    <span style={{ flex: 1 }}>
+                      {uiLanguage === 'cs' ? 'Odhlásit se' : 
+                       uiLanguage === 'en' ? 'Sign out' : 
+                       'Deconectare'}
+                    </span>
+                  </button>
                 </div>
               </div>
             )}
@@ -838,12 +773,10 @@ const ChatSidebar = ({
                   </div>
                 </div>
                 
-                {/* CHEVRON ARROW */}
-                <ChevronDown 
+                {/* SETTINGS ICON */}
+                <Settings 
                   size={16} 
                   style={{
-                    transform: isUserMenuExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
                     opacity: 0.6,
                     color: '#ffffff'
                   }}
