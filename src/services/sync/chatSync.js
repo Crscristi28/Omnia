@@ -133,12 +133,33 @@ class ChatSyncService {
         return false;
       }
 
-      // Upload messages with UUID schema and UPSERT
+      // Check existing messages to avoid duplicates (Incremental Sync Pattern)
+      const { data: existingMessages } = await supabase
+        .from('messages')
+        .select('content, sender, timestamp')
+        .eq('chat_id', chatId);
+
+      // Filter only new messages that don't exist in Supabase
+      const newMessages = messages.filter(localMsg => 
+        !existingMessages?.some(existing => 
+          existing.content === localMsg.text && 
+          existing.sender === localMsg.sender
+        )
+      );
+
+      if (newMessages.length === 0) {
+        console.log(`✅ [SYNC-UUID] No new messages to upload for chat: ${chatId}`);
+        return true;
+      }
+
+      console.log(`📤 [SYNC-UUID] Uploading ${newMessages.length} new messages (${messages.length - newMessages.length} already exist)`);
+
+      // Upload only new messages with UUID schema and UPSERT
       const batchSize = 100;
       let uploadedCount = 0;
 
-      for (let i = 0; i < messages.length; i += batchSize) {
-        const batch = messages.slice(i, i + batchSize);
+      for (let i = 0; i < newMessages.length; i += batchSize) {
+        const batch = newMessages.slice(i, i + batchSize);
         const messagesToUpload = batch.map(msg => ({
           id: crypto.randomUUID(), // Generate UUID for each message
           chat_id: chatId, // Use original chat ID
@@ -333,8 +354,19 @@ class ChatSyncService {
       return;
     }
 
+    // Sync cooldown - only sync once per minute
+    const lastSyncTime = localStorage.getItem('lastSyncTime');
+    const now = Date.now();
+    if (lastSyncTime && (now - parseInt(lastSyncTime)) < 60000) {
+      console.log('⏰ [SYNC-UUID] Sync skipped - cooldown active (less than 1 minute since last sync)');
+      return;
+    }
+
     console.log('🚀 [SYNC-UUID] Starting background sync...');
     await this.fullSync();
+    
+    // Update last sync time
+    localStorage.setItem('lastSyncTime', now.toString());
   }
 
   // 📱 Auto-sync after saving message (called from chatDB hook)
