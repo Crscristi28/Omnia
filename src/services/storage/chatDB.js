@@ -133,6 +133,15 @@ const chatDB = {
   async deleteChat(chatId) {
     try {
       await db.chats.delete(chatId);
+      
+      // 🔄 SYNC DELETE - Remove from Supabase too
+      try {
+        const { chatSyncService } = await import('../sync/chatSync.js');
+        await chatSyncService.deleteChat(chatId);
+      } catch (error) {
+        console.error('❌ [SYNC] Delete sync failed:', error.message);
+      }
+      
       return true;
     } catch (error) {
       console.error('❌ Error deleting chat from IndexedDB:', error);

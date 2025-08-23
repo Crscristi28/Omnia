@@ -369,6 +369,48 @@ class ChatSyncService {
     localStorage.setItem('lastSyncTime', now.toString());
   }
 
+  // 🗑️ Delete chat from Supabase (called when user deletes chat)
+  async deleteChat(chatId) {
+    if (!isSupabaseReady()) {
+      console.warn('⚠️ [SYNC-UUID] Supabase not configured - delete sync disabled');
+      return false;
+    }
+    
+    if (!this.isOnline) {
+      console.log('📶 [SYNC-UUID] Offline - cannot delete from Supabase');
+      return false;
+    }
+
+    const userId = await this.getCurrentUserId();
+    if (!userId) {
+      console.warn('👤 [SYNC-UUID] User not authenticated - delete sync disabled');
+      return false;
+    }
+
+    try {
+      console.log(`🗑️ [SYNC-UUID] Deleting chat from Supabase: ${chatId}`);
+      
+      // Delete chat from Supabase (messages will be deleted automatically due to CASCADE)
+      const { error } = await supabase
+        .from('chats')
+        .delete()
+        .eq('id', chatId)
+        .eq('user_id', userId); // Security: only delete own chats
+
+      if (error) {
+        console.error('❌ [SYNC-UUID] Error deleting chat from Supabase:', error);
+        return false;
+      }
+
+      console.log(`✅ [SYNC-UUID] Successfully deleted chat from Supabase: ${chatId}`);
+      return true;
+
+    } catch (error) {
+      console.error(`❌ [SYNC-UUID] Error during chat deletion sync: ${error}`);
+      return false;
+    }
+  }
+
   // 📱 Auto-sync after saving message (called from chatDB hook)
   async autoSyncMessage(chatId) {
     const userId = await this.getCurrentUserId();
