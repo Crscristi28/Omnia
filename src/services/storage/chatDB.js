@@ -514,6 +514,35 @@ const chatDB = {
       console.error('❌ Error getting database stats:', error);
       return { chatCount: 0, totalSize: '0 KB' };
     }
+  },
+
+  // 🧹 Clear all data from IndexedDB (for logout)
+  async clearAllData() {
+    try {
+      console.log('🧹 [CHAT-DB] Clearing all IndexedDB data for logout...');
+      
+      // Clear both tables in a transaction
+      await db.transaction('rw', db.chats, db.messages, async () => {
+        await db.chats.clear();
+        await db.messages.clear();
+      });
+      
+      // Also clear any localStorage items related to sync timestamps
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('lastSync_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      console.log('✅ [CHAT-DB] All IndexedDB data cleared successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ [CHAT-DB] Error clearing IndexedDB:', error);
+      return false;
+    }
   }
 };
 

@@ -303,20 +303,26 @@ function App() {
   // 🔐 AUTH HANDLERS
   const handleSignOut = async () => {
     try {
+      // 🧹 STEP 1: Clear IndexedDB first (prevent data mixing between users)
+      console.log('🧹 Clearing IndexedDB before logout...');
+      await chatDB.clearAllData();
+      
+      // 🧹 STEP 2: Clear all React state immediately
+      setMessages([]);
+      setCurrentChatId(null);
+      setChatHistories([]);
+      sessionManager.clearSession();
+      
+      // 🔐 STEP 3: Sign out from Supabase
       const { error } = await authService.signOut();
       if (error) {
         console.error('❌ Sign out error:', error);
         return;
       }
       
-      console.log('✅ User signed out successfully');
-      
-      // Clear all app state
+      // ✅ STEP 4: Clear user and close UI
+      console.log('✅ User signed out successfully with clean IndexedDB');
       setUser(null);
-      setMessages([]);
-      setCurrentChatId(null);
-      setChatHistories([]);
-      sessionManager.clearSession();
       
       // Close sidebar
       setShowChatSidebar(false);
