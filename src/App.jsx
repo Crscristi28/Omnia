@@ -195,6 +195,8 @@ function App() {
         // 🔄 Start background sync for existing user
         if (currentUser) {
           console.log('🚀 [SYNC] Existing user found, starting background sync...');
+          // Clear cooldown to ensure immediate sync on app load
+          chatSyncService.clearSyncCooldown();
           try {
             await chatSyncService.backgroundSync();
           } catch (error) {
@@ -335,6 +337,25 @@ function App() {
   // 🔐 RESET PASSWORD HANDLER
   const handleResetPassword = () => {
     setShowResetPasswordModal(true);
+  };
+
+  // 🔐 AUTH SUCCESS HANDLER - Clear cooldown and sync immediately
+  const handleAuthSuccess = async (authenticatedUser) => {
+    console.log('✅ User authenticated successfully:', authenticatedUser?.email);
+    
+    // Set the user first
+    setUser(authenticatedUser);
+    
+    // Clear sync cooldown for immediate sync
+    chatSyncService.clearSyncCooldown();
+    
+    // Start immediate sync for the new user
+    console.log('🚀 [SYNC] Starting immediate sync for new login...');
+    try {
+      await chatSyncService.backgroundSync();
+    } catch (error) {
+      console.error('❌ [SYNC] Initial sync failed:', error);
+    }
   };
 
   // 🆕 SIDEBAR HANDLERS - NEW for redesign
@@ -2017,7 +2038,7 @@ const virtuosoComponents = React.useMemo(() => ({
       {/* 🔐 AUTH MODAL - zobrazí se po splash screenu když není přihlášený */}
       {!showSplashScreen && !user && !authLoading && (
         <AuthModal 
-          onSuccess={setUser}
+          onSuccess={handleAuthSuccess}
           onForgotPassword={(email) => {
             // Close auth modal and open reset password modal
             setResetPasswordEmail(email || '');

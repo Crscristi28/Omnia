@@ -563,6 +563,13 @@ class ChatSyncService {
       queuedSyncs: queueSize
     };
   }
+
+  // 🧹 Clear sync cooldown (for immediate sync after login)
+  clearSyncCooldown() {
+    localStorage.removeItem('lastSyncTime');
+    localStorage.removeItem('lastSyncTimestamp');
+    console.log('🧹 [SYNC-UUID] Sync cooldown cleared - ready for immediate sync');
+  }
 }
 
 // Export singleton instance
