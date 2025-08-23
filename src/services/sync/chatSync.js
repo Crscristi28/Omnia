@@ -330,7 +330,13 @@ class ChatSyncService {
     try {
       console.log('🔄 [SYNC-UUID] Starting full bidirectional sync...');
 
-      // Step 1: Upload all local chats to Supabase
+      // Step 1: Clean up ghost chats FIRST (prevent resurrection)
+      const ghostsExorcised = await this.syncDeletedChats();
+      if (ghostsExorcised > 0) {
+        console.log(`👻 [SYNC-UUID] Exorcised ${ghostsExorcised} ghost chats before sync`);
+      }
+
+      // Step 2: Upload remaining clean local chats to Supabase
       const localChats = await chatDB.getAllChats();
       console.log(`📤 [SYNC-UUID] Uploading ${localChats.length} local chats...`);
 
@@ -342,7 +348,7 @@ class ChatSyncService {
 
       console.log(`✅ [SYNC-UUID] Uploaded ${uploadedCount}/${localChats.length} chats`);
 
-      // Step 2: Download all remote chats from Supabase
+      // Step 3: Download all remote chats from Supabase
       await this.downloadChats();
 
       const duration = Math.round(performance.now() - startTime);
@@ -352,6 +358,63 @@ class ChatSyncService {
       console.error('❌ [SYNC-UUID] Error during full sync:', error);
     } finally {
       this.syncInProgress = false;
+    }
+  }
+
+  // 👻 Clean up ghost chats (exist locally but not in Supabase - deleted elsewhere)
+  async syncDeletedChats() {
+    if (!isSupabaseReady() || !this.isOnline) {
+      console.log('📶 [SYNC-UUID] Not ready for ghost cleanup (offline or Supabase not ready)');
+      return 0;
+    }
+
+    const userId = await this.getCurrentUserId();
+    if (!userId) {
+      console.log('👤 [SYNC-UUID] User not authenticated, skipping ghost cleanup');
+      return 0;
+    }
+
+    try {
+      console.log('👻 [SYNC-UUID] Starting ghost chat cleanup...');
+
+      // Get current truth from Supabase
+      const { data: supabaseChats, error: supabaseError } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('user_id', userId);
+
+      if (supabaseError) {
+        console.error('❌ [SYNC-UUID] Error fetching Supabase chats for cleanup:', supabaseError);
+        return 0;
+      }
+
+      // Get local IndexedDB state
+      const localChats = await chatDB.getAllChats();
+      
+      // Find ghost chats (exist locally but NOT in Supabase - deleted elsewhere)
+      const ghostChats = localChats.filter(local =>
+        !supabaseChats.some(remote => remote.id === local.id)
+      );
+
+      if (ghostChats.length === 0) {
+        console.log('✅ [SYNC-UUID] No ghost chats found');
+        return 0;
+      }
+
+      console.log(`🧹 [SYNC-UUID] Found ${ghostChats.length} ghost chats to exorcise`);
+
+      // Exorcise the ghosts (delete from local IndexedDB only)
+      for (const ghostChat of ghostChats) {
+        await chatDB.deleteChat(ghostChat.id, { skipSync: true });
+        console.log(`🗑️ [SYNC-UUID] Exorcised ghost chat: ${ghostChat.id}`);
+      }
+
+      console.log(`✅ [SYNC-UUID] Ghost cleanup complete - exorcised ${ghostChats.length} ghosts`);
+      return ghostChats.length;
+
+    } catch (error) {
+      console.error('❌ [SYNC-UUID] Error during ghost cleanup:', error);
+      return 0;
     }
   }
 
