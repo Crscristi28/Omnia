@@ -700,11 +700,6 @@ const ChatSidebar = ({
                        uiLanguage === 'en' ? 'Reset password' : 
                        'Resetează parola'}
                     </span>
-                    <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>
-                      {uiLanguage === 'cs' ? 'Brzy' : 
-                       uiLanguage === 'en' ? 'Soon' : 
-                       'Curând'}
-                    </span>
                   </button>
 
                   {/* 💳 BILLING */}
