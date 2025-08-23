@@ -179,7 +179,7 @@ class ChatSyncService {
       for (let i = 0; i < newMessages.length; i += batchSize) {
         const batch = newMessages.slice(i, i + batchSize);
         const messagesToUpload = batch.map(msg => ({
-          id: crypto.randomUUID(), // Generate UUID for each message
+          id: msg.uuid, // Use UUID from IndexedDB (stable ID)
           chat_id: chatId, // Use original chat ID
           user_id: userId,
           content: msg.text, // ✅ IndexedDB 'text' → Supabase 'content'
@@ -336,7 +336,7 @@ class ChatSyncService {
 
       // Convert Supabase format to IndexedDB format with proper schema mapping
       const localMessages = remoteMessages.map(msg => ({
-        id: msg.id, // Keep UUID from Supabase
+        uuid: msg.id, // Store Supabase UUID as primary key in IndexedDB
         timestamp: new Date(msg.timestamp).getTime(), // Convert timestamptz to bigint
         sender: msg.sender,
         text: msg.content, // ✅ Supabase 'content' → IndexedDB 'text'

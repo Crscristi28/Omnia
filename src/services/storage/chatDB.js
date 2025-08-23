@@ -31,6 +31,14 @@ class ChatDatabase extends Dexie {
       messages: '++id, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp]'
     }).upgrade(tx => {
     });
+    
+    // V4 Schema (UUID as primary key - fix duplicate sync bug)
+    this.version(4).stores({
+      chats: 'id, title, createdAt, updatedAt, messageCount',
+      messages: 'uuid, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp], [chatId+uuid]'
+    }).upgrade(tx => {
+      // Empty migration - all data cleared before deployment
+    });
   }
 }
 
@@ -197,6 +205,7 @@ const chatDB = {
         }
         
         const messageRecord = {
+          uuid: message.uuid || crypto.randomUUID(), // UUID as primary key
           chatId: chatId,
           timestamp: timestamp,
           sender: message.sender,
@@ -205,8 +214,9 @@ const chatDB = {
           attachments: message.attachments || null,
           image: message.image || null  // Fix: Save Imagen images too
         };
-        const messageId = await db.messages.add(messageRecord);
-        messageIds.push(messageId);
+        // Use put() instead of add() for upsert behavior with UUID
+        await db.messages.put(messageRecord);
+        messageIds.push(messageRecord.uuid);
         newMessageCount++;
       }
       
@@ -276,6 +286,7 @@ const chatDB = {
       
       // Prepare message for storage
       const messageRecord = {
+        uuid: message.uuid || crypto.randomUUID(), // UUID as primary key
         chatId: chatId,
         timestamp: message.timestamp || Date.now(),
         sender: message.sender,
@@ -284,8 +295,9 @@ const chatDB = {
         attachments: message.attachments || null
       };
       
-      // Save message to messages table
-      const messageId = await db.messages.add(messageRecord);
+      // Save message to messages table using put for upsert
+      await db.messages.put(messageRecord);
+      const messageId = messageRecord.uuid;
       
       // Update chat metadata
       const existingChat = await db.chats.get(chatId);
