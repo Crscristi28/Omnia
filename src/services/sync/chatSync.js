@@ -133,19 +133,37 @@ class ChatSyncService {
         return false;
       }
 
-      // Check existing messages to avoid duplicates (Incremental Sync Pattern)
-      const { data: existingMessages } = await supabase
-        .from('messages')
-        .select('content, sender, timestamp')
-        .eq('chat_id', chatId);
+      // 🚀 TIMESTAMP-BASED SYNC OPTIMIZATION
+      // Get last sync timestamp for this chat (if exists)
+      const lastSyncKey = `lastSync_${chatId}`;
+      const lastSyncTimestamp = localStorage.getItem(lastSyncKey);
+      
+      let newMessages;
+      
+      if (lastSyncTimestamp) {
+        // ⚡ OPTIMIZED: Filter messages by timestamp (much faster)
+        const lastSyncTime = new Date(lastSyncTimestamp).getTime();
+        newMessages = messages.filter(localMsg => 
+          new Date(localMsg.timestamp).getTime() > lastSyncTime
+        );
+        
+        console.log(`⚡ [SYNC-UUID] Using timestamp-based sync. Last sync: ${lastSyncTimestamp}, found ${newMessages.length} new messages`);
+      } else {
+        // 🐌 FALLBACK: Use content-based check for first sync (backward compatibility)
+        console.log(`🐌 [SYNC-UUID] First sync for chat ${chatId} - using content-based check`);
+        
+        const { data: existingMessages } = await supabase
+          .from('messages')
+          .select('content, sender, timestamp')
+          .eq('chat_id', chatId);
 
-      // Filter only new messages that don't exist in Supabase
-      const newMessages = messages.filter(localMsg => 
-        !existingMessages?.some(existing => 
-          existing.content === localMsg.text && 
-          existing.sender === localMsg.sender
-        )
-      );
+        newMessages = messages.filter(localMsg => 
+          !existingMessages?.some(existing => 
+            existing.content === localMsg.text && 
+            existing.sender === localMsg.sender
+          )
+        );
+      }
 
       if (newMessages.length === 0) {
         console.log(`✅ [SYNC-UUID] No new messages to upload for chat: ${chatId}`);
@@ -190,6 +208,12 @@ class ChatSyncService {
       }
 
       console.log(`✅ [SYNC-UUID] Successfully uploaded chat: ${chatId} (${uploadedCount} messages)`);
+      
+      // 🚀 SAVE SYNC TIMESTAMP for next optimization
+      const syncTimestamp = new Date().toISOString();
+      localStorage.setItem(`lastSync_${chatId}`, syncTimestamp);
+      console.log(`⏰ [SYNC-UUID] Saved sync timestamp: ${syncTimestamp}`);
+      
       return true;
 
     } catch (error) {
@@ -238,9 +262,38 @@ class ChatSyncService {
 
       console.log(`📋 [SYNC-UUID] Found ${remoteChats.length} chats in Supabase`);
 
-      // Process each chat
+      // 🚀 BATCH QUERIES OPTIMIZATION
+      // Instead of N queries (one per chat), use 1 query for all messages
+      console.log('⚡ [SYNC-UUID] Using batch query for all messages...');
+      
+      const { data: allRemoteMessages, error: allMessagesError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: true });
+
+      if (allMessagesError) {
+        console.error('❌ [SYNC-UUID] Error fetching all messages:', allMessagesError);
+        return false;
+      }
+
+      // Group messages by chat_id locally (much faster than N database queries)
+      const messagesByChat = {};
+      if (allRemoteMessages) {
+        allRemoteMessages.forEach(msg => {
+          if (!messagesByChat[msg.chat_id]) {
+            messagesByChat[msg.chat_id] = [];
+          }
+          messagesByChat[msg.chat_id].push(msg);
+        });
+      }
+
+      console.log(`⚡ [SYNC-UUID] Fetched ${allRemoteMessages?.length || 0} messages with 1 query, grouped into ${Object.keys(messagesByChat).length} chats`);
+
+      // Process each chat with its pre-fetched messages
       for (const remoteChat of remoteChats) {
-        await this.downloadChatMessages(remoteChat);
+        const chatMessages = messagesByChat[remoteChat.id] || [];
+        await this.processChatWithMessages(remoteChat, chatMessages);
       }
 
       // Clean up orphaned chats (exist locally but not in Supabase)
@@ -270,23 +323,11 @@ class ChatSyncService {
     }
   }
 
-  // 📥 Download messages for specific chat with UUID schema mapping
-  async downloadChatMessages(remoteChat) {
+  // 📥 Process chat with pre-fetched messages (optimized batch version)
+  async processChatWithMessages(remoteChat, remoteMessages) {
     try {
       const chatId = remoteChat.id;
-      console.log(`📥 [SYNC-UUID] Downloading messages for chat: ${chatId}`);
-
-      // Get messages for this chat from Supabase
-      const { data: remoteMessages, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('timestamp', { ascending: true });
-
-      if (messagesError) {
-        console.error(`❌ [SYNC-UUID] Error fetching messages for chat ${chatId}:`, messagesError);
-        return;
-      }
+      console.log(`📥 [SYNC-UUID] Processing ${remoteMessages.length} messages for chat: ${chatId}`);
 
       if (!remoteMessages || remoteMessages.length === 0) {
         console.log(`📭 [SYNC-UUID] No messages found for chat: ${chatId}`);
