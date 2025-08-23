@@ -104,17 +104,10 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
         animation: 'slideUp 0.3s ease-out'
       }}>
-        {/* Logo */}
         <div style={{
           textAlign: 'center',
           marginBottom: '2rem'
         }}>
-          <div style={{
-            fontSize: '3rem',
-            marginBottom: '0.5rem'
-          }}>
-            🔮
-          </div>
           <h2 style={{
             color: 'white',
             fontSize: '1.5rem',
