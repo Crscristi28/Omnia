@@ -2,7 +2,7 @@
 // ✅ Clean professional design podle fotky
 // 🚀 Animované slide-in/out, responsive
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2 } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import chatDB from '../../services/storage/chatDB';
@@ -34,6 +34,15 @@ const ChatSidebar = ({
   
   // Delete modal state
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, chatId: null, chatTitle: '' });
+  
+  // 🔧 Reset expansion states when sidebar closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsSettingsExpanded(false);
+      setIsLanguageExpanded(false);
+      setIsUserMenuExpanded(false);
+    }
+  }, [isOpen]);
   
   // 👤 USER HELPERS
   const getUserInitials = (email) => {
