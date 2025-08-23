@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2, Settings } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import chatDB from '../../services/storage/chatDB';
+import UserSettingsModal from '../modals/UserSettingsModal';
 
 const ChatSidebar = ({ 
   isOpen, 
@@ -28,17 +29,15 @@ const ChatSidebar = ({
   
   // Expansion states
   const [isChatHistoryExpanded, setIsChatHistoryExpanded] = useState(true); // Default open
-  const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
-  const [isUserMenuExpanded, setIsUserMenuExpanded] = useState(false);
   
-  // Delete modal state
+  // Modal states
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, chatId: null, chatTitle: '' });
+  const [showUserSettingsModal, setShowUserSettingsModal] = useState(false);
   
   // 🔧 Reset expansion states when sidebar closes
   useEffect(() => {
     if (!isOpen) {
-      setIsLanguageExpanded(false);
-      setIsUserMenuExpanded(false);
+      // Modal states are handled separately
     }
   }, [isOpen]);
   
@@ -456,257 +455,10 @@ const ChatSidebar = ({
             flexShrink: 0,
             borderTop: '1px solid rgba(255, 255, 255, 0.08)'
           }}>
-            {/* EXPANDED USER MENU */}
-            {isUserMenuExpanded && (
-              <div style={{
-                padding: '1rem 0.5rem 0.5rem',
-                animation: 'fadeIn 0.2s ease'
-              }}>
-                <div style={{
-                  marginLeft: '0.5rem'
-                }}>
-                  {/* 🌍 INTERFACE LANGUAGE */}
-                  <button
-                    onClick={() => setIsLanguageExpanded(!isLanguageExpanded)}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '8px',
-                      border: 'none',
-                      padding: '0.6rem 0.75rem',
-                      margin: '0.125rem 0',
-                      transition: 'all 0.2s ease',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      color: '#ffffff',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                    }}
-                  >
-                    <span style={{ fontSize: '16px', opacity: 0.7 }}>🌍</span>
-                    <span style={{ flex: 1 }}>
-                      {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
-                       uiLanguage === 'en' ? 'Interface Language' : 
-                       'Limba interfeței'}
-                    </span>
-                    <ChevronDown 
-                      size={14} 
-                      style={{
-                        transform: isLanguageExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s ease',
-                        opacity: 0.5
-                      }}
-                    />
-                  </button>
-
-                  {/* LANGUAGE OPTIONS */}
-                  {isLanguageExpanded && (
-                    <div style={{
-                      marginTop: '0.25rem',
-                      marginLeft: '1rem',
-                      animation: 'fadeIn 0.2s ease'
-                    }}>
-                      {languageOptions.map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => handleLanguageChange(lang.code)}
-                          style={{
-                            width: '100%',
-                            padding: '0.5rem 0.75rem',
-                            margin: '0.125rem 0',
-                            background: uiLanguage === lang.code 
-                              ? 'rgba(255, 255, 255, 0.12)' 
-                              : 'rgba(255, 255, 255, 0.02)',
-                            border: 'none',
-                            borderRadius: '6px',
-                            color: '#ffffff',
-                            fontSize: '0.8rem',
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            outline: 'none',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.6rem'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (uiLanguage !== lang.code) {
-                              e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (uiLanguage !== lang.code) {
-                              e.target.style.background = 'rgba(255, 255, 255, 0.02)';
-                            }
-                          }}
-                        >
-                          <span style={{ 
-                            fontSize: '0.65rem',
-                            fontWeight: '600',
-                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                            padding: '1px 5px',
-                            borderRadius: '3px',
-                            minWidth: '22px',
-                            textAlign: 'center'
-                          }}>
-                            {lang.flag}
-                          </span>
-                          <span style={{ flex: 1 }}>{lang.label}</span>
-                          {uiLanguage === lang.code && (
-                            <span style={{ 
-                              fontSize: '0.7rem',
-                              color: 'rgba(255, 255, 255, 0.7)',
-                              display: 'flex',
-                              alignItems: 'center'
-                            }}>
-                              <Check size={10} strokeWidth={2} />
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 🔐 RESET PASSWORD */}
-                  <button
-                    onClick={() => {
-                      onResetPassword();
-                      setHamburgerOpen(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '8px',
-                      border: 'none',
-                      padding: '0.6rem 0.75rem',
-                      margin: '0.125rem 0',
-                      transition: 'all 0.2s ease',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      color: '#ffffff',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
-                      e.target.style.color = 'rgba(255, 255, 255, 0.8)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                      e.target.style.color = 'rgba(255, 255, 255, 0.6)';
-                    }}
-                  >
-                    <span style={{ fontSize: '16px', opacity: 0.7 }}>🔐</span>
-                    <span style={{ flex: 1 }}>
-                      {uiLanguage === 'cs' ? 'Změnit heslo' : 
-                       uiLanguage === 'en' ? 'Reset password' : 
-                       'Resetează parola'}
-                    </span>
-                  </button>
-
-                  {/* 💳 BILLING */}
-                  <button
-                    onClick={() => {
-                      // TODO: Implement billing
-                      console.log('Billing - TODO');
-                    }}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '8px',
-                      border: 'none',
-                      padding: '0.6rem 0.75rem',
-                      margin: '0.125rem 0',
-                      transition: 'all 0.2s ease',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
-                      e.target.style.color = 'rgba(255, 255, 255, 0.8)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                      e.target.style.color = 'rgba(255, 255, 255, 0.6)';
-                    }}
-                  >
-                    <span style={{ fontSize: '16px', opacity: 0.7 }}>💳</span>
-                    <span style={{ flex: 1 }}>
-                      {uiLanguage === 'cs' ? 'Fakturace' : 
-                       uiLanguage === 'en' ? 'Billing' : 
-                       'Facturare'}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>
-                      {uiLanguage === 'cs' ? 'Brzy' : 
-                       uiLanguage === 'en' ? 'Soon' : 
-                       'Curând'}
-                    </span>
-                  </button>
-
-                  {/* 🚪 LOG OUT */}
-                  <button
-                    onClick={onSignOut}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderRadius: '8px',
-                      border: 'none',
-                      padding: '0.6rem 0.75rem',
-                      margin: '0.125rem 0',
-                      transition: 'all 0.2s ease',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      color: '#ffffff',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.06)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.03)';
-                    }}
-                  >
-                    <LogOut size={16} strokeWidth={2} style={{ opacity: 0.7 }} />
-                    <span style={{ flex: 1 }}>
-                      {uiLanguage === 'cs' ? 'Odhlásit se' : 
-                       uiLanguage === 'en' ? 'Sign out' : 
-                       'Deconectare'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* USER MAIN CARD - CLICKABLE */}
             <div style={{ padding: '1rem 0.5rem 1.5rem' }}>
               <button
-                onClick={() => setIsUserMenuExpanded(!isUserMenuExpanded)}
+                onClick={() => setShowUserSettingsModal(true)}
                 style={{
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -920,6 +672,19 @@ const ChatSidebar = ({
             </div>
           </div>
         </>
+      )}
+      
+      {/* USER SETTINGS MODAL */}
+      {showUserSettingsModal && (
+        <UserSettingsModal
+          isOpen={showUserSettingsModal}
+          onClose={() => setShowUserSettingsModal(false)}
+          user={user}
+          uiLanguage={uiLanguage}
+          setUILanguage={setUILanguage}
+          onResetPassword={onResetPassword}
+          onSignOut={onSignOut}
+        />
       )}
     </>
   );
