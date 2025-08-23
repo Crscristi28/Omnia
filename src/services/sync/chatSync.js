@@ -243,11 +243,25 @@ class ChatSyncService {
         await this.downloadChatMessages(remoteChat);
       }
 
+      // Clean up orphaned chats (exist locally but not in Supabase)
+      const localChats = await chatDB.getAllChats();
+      const orphanedChats = localChats.filter(local => 
+        !remoteChats.some(remote => remote.id === local.id)
+      );
+
+      if (orphanedChats.length > 0) {
+        console.log(`🧹 [SYNC-UUID] Found ${orphanedChats.length} orphaned chats to clean up`);
+        for (const chat of orphanedChats) {
+          await chatDB.deleteChat(chat.id, { skipSync: true });
+          console.log(`🗑️ [SYNC-UUID] Cleaned up deleted chat: ${chat.id}`);
+        }
+      }
+
       // Update last sync timestamp
       this.lastSyncTimestamp = Date.now().toString();
       localStorage.setItem('lastSyncTimestamp', this.lastSyncTimestamp);
 
-      console.log(`✅ [SYNC-UUID] Successfully downloaded ${remoteChats.length} chats`);
+      console.log(`✅ [SYNC-UUID] Successfully downloaded ${remoteChats.length} chats and cleaned ${orphanedChats.length} orphaned chats`);
       return true;
 
     } catch (error) {

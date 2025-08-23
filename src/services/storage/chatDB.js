@@ -130,16 +130,20 @@ const chatDB = {
   },
 
   // 🗑️ Delete a specific chat
-  async deleteChat(chatId) {
+  async deleteChat(chatId, options = {}) {
+    const { skipSync = false } = options;
+    
     try {
       await db.chats.delete(chatId);
       
-      // 🔄 SYNC DELETE - Remove from Supabase too
-      try {
-        const { chatSyncService } = await import('../sync/chatSync.js');
-        await chatSyncService.deleteChat(chatId);
-      } catch (error) {
-        console.error('❌ [SYNC] Delete sync failed:', error.message);
+      // 🔄 SYNC DELETE - Remove from Supabase too (unless skipped)
+      if (!skipSync) {
+        try {
+          const { chatSyncService } = await import('../sync/chatSync.js');
+          await chatSyncService.deleteChat(chatId);
+        } catch (error) {
+          console.error('❌ [SYNC] Delete sync failed:', error.message);
+        }
       }
       
       return true;
