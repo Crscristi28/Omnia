@@ -330,17 +330,54 @@ class ChatSyncService {
     try {
       console.log('🔄 [SYNC-UUID] Starting full bidirectional sync...');
 
-      // Step 1: Upload all local chats to Supabase
+      // Step 1: Check what chats exist in Supabase to avoid resurrecting deleted ones
+      const { data: supabaseChats, error: supabaseError } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('user_id', userId);
+
+      if (supabaseError) {
+        console.error('❌ [SYNC-UUID] Error checking Supabase chats:', supabaseError);
+        // Continue anyway - upload all local chats
+      }
+
       const localChats = await chatDB.getAllChats();
-      console.log(`📤 [SYNC-UUID] Uploading ${localChats.length} local chats...`);
+      console.log(`📤 [SYNC-UUID] Found ${localChats.length} local chats, ${supabaseChats?.length || 0} in Supabase`);
+
+      // Filter out chats that were deleted in Supabase (don't resurrect them)
+      const chatsToUpload = localChats.filter(localChat => {
+        // If we couldn't get Supabase data, upload everything
+        if (!supabaseChats) return true;
+        
+        // Upload if chat exists in Supabase OR if it's a very recent chat (new)
+        const existsInSupabase = supabaseChats.some(remote => remote.id === localChat.id);
+        const isRecentChat = (Date.now() - localChat.createdAt) < 5 * 60 * 1000; // 5 minutes
+        
+        return existsInSupabase || isRecentChat;
+      });
+
+      // Clean up orphaned local chats that shouldn't be uploaded
+      const orphanedLocalChats = localChats.filter(localChat => 
+        !chatsToUpload.includes(localChat)
+      );
+      
+      if (orphanedLocalChats.length > 0) {
+        console.log(`🧹 [SYNC-UUID] Found ${orphanedLocalChats.length} orphaned local chats to clean up before upload`);
+        for (const chat of orphanedLocalChats) {
+          await chatDB.deleteChat(chat.id, { skipSync: true });
+          console.log(`🗑️ [SYNC-UUID] Cleaned up orphaned local chat: ${chat.id}`);
+        }
+      }
+
+      console.log(`📤 [SYNC-UUID] Uploading ${chatsToUpload.length} valid chats (${orphanedLocalChats.length} cleaned up)`);
 
       let uploadedCount = 0;
-      for (const chat of localChats) {
+      for (const chat of chatsToUpload) {
         const success = await this.uploadChat(chat.id);
         if (success) uploadedCount++;
       }
 
-      console.log(`✅ [SYNC-UUID] Uploaded ${uploadedCount}/${localChats.length} chats`);
+      console.log(`✅ [SYNC-UUID] Uploaded ${uploadedCount}/${chatsToUpload.length} chats`);
 
       // Step 2: Download all remote chats from Supabase
       await this.downloadChats();
