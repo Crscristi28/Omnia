@@ -1,8 +1,10 @@
 // 🔐 Reset Password Modal Component - Password reset/change with Glassmorphism design
 import React, { useState, useEffect } from 'react';
 import authService from '../../services/auth/supabaseAuth';
+import { getTranslation } from '../../utils/text/translations';
 
-const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
+const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLanguage = 'cs' }) => {
+  const t = getTranslation(uiLanguage);
   const [step, setStep] = useState('email'); // 'email', 'otp', 'newPassword'
   const [email, setEmail] = useState(initialEmail || user?.email || '');
   const [otp, setOtp] = useState('');
@@ -53,13 +55,13 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
       if (result.error) {
         setError(result.error);
       } else {
-        setSuccess('Nový kód byl odeslán!');
+        setSuccess(t('newCodeSent'));
         setOtpSentTime(Date.now());
         setOtp('');
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
-      setError('Něco se pokazilo. Zkuste to prosím znovu.');
+      setError(t('somethingWentWrong'));
       console.error('Resend OTP error:', err);
     } finally {
       setLoading(false);
@@ -88,13 +90,13 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
       if (isLoggedIn) {
         // User is logged in - change password directly
         if (newPassword !== confirmPassword) {
-          setError('Hesla se neshodují');
+          setError(t('passwordsMismatch'));
           setLoading(false);
           return;
         }
         
         if (newPassword.length < 6) {
-          setError('Heslo musí mít alespoň 6 znaků');
+          setError(t('passwordTooShort'));
           setLoading(false);
           return;
         }
@@ -104,7 +106,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
         if (result.error) {
           setError(result.error);
         } else {
-          setSuccess('Heslo bylo úspěšně změněno!');
+          setSuccess(t('passwordChanged'));
           setTimeout(() => {
             onClose();
           }, 2000);
@@ -118,7 +120,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
           if (result.error) {
             setError(result.error);
           } else {
-            setSuccess('Kód byl odeslán na váš email.');
+            setSuccess(t('codeSent'));
             setOtpSentTime(Date.now());
             setStep('otp');
             setTimeout(() => setSuccess(''), 3000);
@@ -130,20 +132,20 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
           if (result.error) {
             setError(result.error);
           } else {
-            setSuccess('Kód ověřen! Nyní nastavte nové heslo.');
+            setSuccess(t('codeVerified'));
             setStep('newPassword');
             setTimeout(() => setSuccess(''), 3000);
           }
         } else if (step === 'newPassword') {
           // Step 3: Update password
           if (newPassword !== confirmPassword) {
-            setError('Hesla se neshodují');
+            setError(t('passwordsMismatch'));
             setLoading(false);
             return;
           }
           
           if (newPassword.length < 6) {
-            setError('Heslo musí mít alespoň 6 znaků');
+            setError(t('passwordTooShort'));
             setLoading(false);
             return;
           }
@@ -153,7 +155,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
           if (result.error) {
             setError(result.error);
           } else {
-            setSuccess('Heslo bylo úspěšně změněno!');
+            setSuccess(t('passwordChanged'));
             setTimeout(() => {
               handleClose();
             }, 2000);
@@ -161,7 +163,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
         }
       }
     } catch (err) {
-      setError('Něco se pokazilo. Zkuste to prosím znovu.');
+      setError(t('somethingWentWrong'));
       console.error('Password reset/update error:', err);
     } finally {
       setLoading(false);
@@ -208,7 +210,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
             fontWeight: 'bold',
             margin: 0
           }}>
-            🔐 {isLoggedIn ? 'Změnit heslo' : 'Reset hesla'}
+            🔐 {isLoggedIn ? t('changePassword') : t('resetPassword')}
           </h2>
           <button
             onClick={handleClose}
@@ -232,12 +234,12 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
           marginBottom: '1.5rem'
         }}>
           {isLoggedIn 
-            ? 'Zadejte nové heslo pro váš účet' 
+            ? t('enterNewPassword') 
             : step === 'email' 
-              ? 'Zadejte email a my vám pošleme kód pro reset hesla'
+              ? t('enterEmailForReset')
               : step === 'otp'
-                ? 'Zadejte 6-místný kód z emailu'
-                : 'Nastavte nové heslo pro váš účet'}
+                ? t('enterCodeFromEmailReset')
+                : t('setNewPassword')}
         </p>
 
         {/* Form */}
@@ -247,7 +249,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
             <div style={{ marginBottom: '1rem' }}>
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t('email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -322,7 +324,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
                   fontSize: '0.8rem',
                   margin: 0
                 }}>
-                  Kód odeslán na: {email}
+                  {t('codeSentTo')} {email}
                 </p>
                 
                 {timeRemaining > 0 ? (
@@ -349,7 +351,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
                       padding: 0
                     }}
                   >
-                    {loading ? 'Odesílá...' : 'Poslat znovu'}
+                    {loading ? t('sending') : t('resendCode')}
                   </button>
                 )}
               </div>
@@ -362,7 +364,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
               <div style={{ marginBottom: '1rem' }}>
                 <input
                   type="password"
-                  placeholder="Nové heslo"
+                  placeholder={t('newPassword')}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -392,7 +394,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
               <div style={{ marginBottom: '1.5rem' }}>
                 <input
                   type="password"
-                  placeholder="Potvrdit nové heslo"
+                  placeholder={t('confirmNewPassword')}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -487,7 +489,7 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
                   e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                 }}
               >
-                ← Zpět
+                ← {t('back')}
               </button>
               
               {/* Submit button */}
@@ -520,10 +522,10 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
                   }
                 }}
               >
-                {loading ? 'Načítání...' : 
-                 success ? 'Hotovo!' :
-                 step === 'otp' ? 'Ověřit kód' :
-                 'Změnit heslo'}
+                {loading ? t('loading') : 
+                 success ? t('done') :
+                 step === 'otp' ? t('verifyCode') :
+                 t('changePassword')}
               </button>
             </div>
           )}
@@ -559,10 +561,10 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '' }) => {
                 }
               }}
             >
-              {loading ? 'Načítání...' : 
-               success ? 'Hotovo!' :
-               isLoggedIn ? 'Změnit heslo' :
-               'Odeslat kód'}
+              {loading ? t('loading') : 
+               success ? t('done') :
+               isLoggedIn ? t('changePassword') :
+               t('sendCode')}
             </button>
           )}
         </form>

@@ -2045,6 +2045,7 @@ const virtuosoComponents = React.useMemo(() => ({
             setShowResetPasswordModal(true);
             console.log('Opening reset password modal for:', email || 'no email provided');
           }}
+          uiLanguage={uiLanguage}
         />
       )}
 
@@ -2057,6 +2058,7 @@ const virtuosoComponents = React.useMemo(() => ({
         }}
         user={user}
         initialEmail={resetPasswordEmail}
+        uiLanguage={uiLanguage}
       />
 
       {/* 🎨 MAIN APP - VŽDY renderovaná, jen možná překrytá modalem */}

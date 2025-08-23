@@ -1,8 +1,10 @@
 // 🔐 Auth Modal Component - Login/Signup with Glassmorphism design
 import React, { useState } from 'react';
 import authService from '../../services/auth/supabaseAuth';
+import { getTranslation } from '../../utils/text/translations';
 
-const AuthModal = ({ onSuccess, onForgotPassword }) => {
+const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
+  const t = getTranslation(uiLanguage);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,13 +39,13 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
           setError(result.error);
         } else {
           console.log('✅ Signup success, needs confirmation:', result.user?.email || email);
-          setSuccess('Registrace proběhla úspěšně! Zadejte kód z emailu.');
+          setSuccess(t('registrationSuccessful'));
           setNeedsConfirmation(true);
           setTimeout(() => setSuccess(''), 3000);
         }
       }
     } catch (err) {
-      setError('Něco se pokazilo. Zkuste to prosím znovu.');
+      setError(t('somethingWentWrong'));
       console.error('Auth error:', err);
     } finally {
       setLoading(false);
@@ -64,13 +66,13 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
         setError(result.error);
       } else if (result.user) {
         console.log('✅ Signup confirmed:', result.user.email);
-        setSuccess('Účet byl úspěšně potvrzen!');
+        setSuccess(t('accountConfirmed'));
         setTimeout(() => {
           onSuccess(result.user);
         }, 1500);
       }
     } catch (err) {
-      setError('Něco se pokazilo. Zkuste to prosím znovu.');
+      setError(t('somethingWentWrong'));
       console.error('Signup confirmation error:', err);
     } finally {
       setLoading(false);
@@ -119,7 +121,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
             fontWeight: 'bold',
             margin: 0
           }}>
-            {needsConfirmation ? 'Potvrzení registrace' : 'Vítejte v Omnii'}
+            {needsConfirmation ? t('confirmRegistration') : t('welcomeToOmnia')}
           </h2>
           <p style={{
             color: 'rgba(255, 255, 255, 0.6)',
@@ -127,8 +129,8 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
             marginTop: '0.5rem'
           }}>
             {needsConfirmation 
-              ? 'Zadejte 6-místný kód z emailu pro potvrzení účtu'
-              : isLogin ? 'Přihlaste se do svého účtu' : 'Vytvořte si nový účet'}
+              ? t('enterCodeFromEmail')
+              : isLogin ? t('pleaseSignIn') : t('createNewAccount')}
           </p>
         </div>
 
@@ -139,7 +141,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
             <div style={{ marginBottom: '1rem' }}>
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t('email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               required
@@ -171,7 +173,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
             <div style={{ marginBottom: '1.5rem' }}>
             <input
               type="password"
-              placeholder="Heslo"
+              placeholder={t('password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -242,7 +244,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
                 textAlign: 'center',
                 marginTop: '0.5rem'
               }}>
-                Kód byl odeslán na: {email}
+                {t('codeSentTo')} {email}
               </p>
             </div>
           )}
@@ -270,7 +272,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
                   padding: 0
                 }}
               >
-                Zapomenuté heslo?
+                {t('forgotPassword')}
               </button>
             </div>
           )}
@@ -335,9 +337,9 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
               }
             }}
           >
-            {loading ? 'Načítání...' : 
-             needsConfirmation ? 'Potvrdit kód' :
-             isLogin ? 'Přihlásit se' : 'Registrovat'}
+            {loading ? t('loading') : 
+             needsConfirmation ? t('confirmCode') :
+             isLogin ? t('signIn') : t('register')}
           </button>
         </form>
 
@@ -353,7 +355,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
             color: 'rgba(255, 255, 255, 0.6)',
             fontSize: '0.9rem'
           }}>
-            {isLogin ? 'Nemáte účet?' : 'Již máte účet?'}
+            {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}
             <button
               type="button"
               onClick={() => {
@@ -371,7 +373,7 @@ const AuthModal = ({ onSuccess, onForgotPassword }) => {
                 textDecoration: 'underline'
               }}
             >
-              {isLogin ? 'Registrovat se' : 'Přihlásit se'}
+              {isLogin ? t('register') : t('signIn')}
             </button>
           </p>
           </div>
