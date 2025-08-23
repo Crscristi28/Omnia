@@ -157,7 +157,7 @@ const chatDB = {
   // 🔄 V1 → V2 MIGRATION HELPERS
 
   // 💾 Save multiple messages at once (V1 compatibility → V2 implementation)
-  async saveChatV2(chatId, messages, title = null) {
+  async saveChatV2(chatId, messages, title = null, skipSync = false) {
     const startTime = performance.now();
     const memBefore = performance.memory?.usedJSHeapSize || 0;
     
@@ -233,6 +233,16 @@ const chatDB = {
       console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
       console.log(`🎯 [CHAT-DB-V2] APPEND-ONLY: ${newMessageCount} new messages added, ${totalMessageCount} total messages`);
 
+      // 🔄 SYNC HOOK - Auto-sync to Supabase after successful bulk save (skip if called from download)
+      if (!skipSync) {
+        try {
+          const { chatSyncService } = await import('../sync/chatSync.js');
+          await chatSyncService.autoSyncMessage(chatId);
+        } catch (error) {
+          console.error('❌ [SYNC] Auto-sync failed:', error.message);
+        }
+      }
+
       return { chatId, messageIds, messageCount: totalMessageCount };
 
     } catch (error) {
@@ -288,6 +298,13 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
+      // 🔄 SYNC HOOK - Auto-sync to Supabase after successful save
+      try {
+        const { chatSyncService } = await import('../sync/chatSync.js');
+        await chatSyncService.autoSyncMessage(chatId);
+      } catch (error) {
+        console.error('❌ [SYNC] Auto-sync failed:', error.message);
+      }
       
       return messageId;
       

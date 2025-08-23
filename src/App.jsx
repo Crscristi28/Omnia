@@ -14,6 +14,7 @@ import { Virtuoso } from 'react-virtuoso';
 import { claudeService, openaiService, grokService, geminiService } from './services/ai';
 import { elevenLabsService } from './services/voice';
 import authService from './services/auth/supabaseAuth'; // 🔐 Auth service
+import { chatSyncService } from './services/sync/chatSync.js'; // 🔄 Chat sync service
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
@@ -191,11 +192,31 @@ function App() {
         console.log('👤 Current user:', currentUser?.email || 'Not logged in');
         setUser(currentUser);
         
+        // 🔄 Start background sync for existing user
+        if (currentUser) {
+          console.log('🚀 [SYNC] Existing user found, starting background sync...');
+          try {
+            await chatSyncService.backgroundSync();
+          } catch (error) {
+            console.error('❌ [SYNC] Background sync failed:', error);
+          }
+        }
+        
         // Listen to auth changes
-        subscription = authService.onAuthStateChange((event, session) => {
+        subscription = authService.onAuthStateChange(async (event, session) => {
           console.log('🔄 Auth event:', event);
           console.log('🔄 Session user:', session?.user?.email || 'No user in session');
           setUser(session?.user || null);
+          
+          // 🔄 Start background sync when user signs in
+          if (session?.user && event === 'SIGNED_IN') {
+            console.log('🚀 [SYNC] User signed in, starting background sync...');
+            try {
+              await chatSyncService.backgroundSync();
+            } catch (error) {
+              console.error('❌ [SYNC] Background sync failed:', error);
+            }
+          }
         });
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
