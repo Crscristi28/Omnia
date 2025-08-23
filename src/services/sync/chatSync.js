@@ -114,12 +114,9 @@ class ChatSyncService {
       
       console.log(`📋 [SYNC-UUID] Found ${messages.length} messages for chat: ${chatId}`);
 
-      // Generate UUID for chat if it doesn't exist
-      const chatUuid = crypto.randomUUID();
-
-      // Upload chat metadata with UUID schema
+      // Upload chat metadata with original IndexedDB ID (text format)
       const chatData = {
-        id: chatUuid,
+        id: chatId, // Use original IndexedDB chat ID
         user_id: userId,
         title: chatMetadata.title,
         created_at: new Date(chatMetadata.createdAt).toISOString(),
@@ -144,7 +141,7 @@ class ChatSyncService {
         const batch = messages.slice(i, i + batchSize);
         const messagesToUpload = batch.map(msg => ({
           id: crypto.randomUUID(), // Generate UUID for each message
-          chat_id: chatUuid,
+          chat_id: chatId, // Use original chat ID
           user_id: userId,
           content: msg.text, // ✅ IndexedDB 'text' → Supabase 'content'
           sender: msg.sender,
@@ -272,8 +269,8 @@ class ChatSyncService {
         image: msg.image
       }));
 
-      // Generate local chat ID (keep original IndexedDB format)
-      const localChatId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Use the same chat ID from Supabase (no conversion needed)
+      const localChatId = remoteChat.id;
 
       // Save messages using IndexedDB's existing logic (skip sync to prevent loop)
       await chatDB.saveChatV2(localChatId, localMessages, remoteChat.title, true);
