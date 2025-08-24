@@ -25,15 +25,27 @@ const UserSettingsModal = ({
       style.textContent = `
         .user-settings-modal button:focus,
         .user-settings-modal button:active,
-        .user-settings-modal button:focus-visible {
+        .user-settings-modal button:focus-visible,
+        .user-settings-modal button:focus-within {
           outline: none !important;
+          outline-style: none !important;
+          outline-width: 0 !important;
+          outline-color: transparent !important;
           -webkit-tap-highlight-color: transparent !important;
           -webkit-focus-ring-color: transparent !important;
+          -webkit-appearance: none !important;
           box-shadow: none !important;
+          border: inherit !important;
         }
         .user-settings-modal button {
           -webkit-tap-highlight-color: transparent !important;
           -webkit-focus-ring-color: transparent !important;
+          -webkit-appearance: none !important;
+          outline: none !important;
+        }
+        .user-settings-modal button * {
+          outline: none !important;
+          -webkit-tap-highlight-color: transparent !important;
         }
       `;
       document.head.appendChild(style);
