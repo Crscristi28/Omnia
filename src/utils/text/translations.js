@@ -4,6 +4,7 @@
 export const uiTexts = {
   cs: {
     newChat: "Nový chat",
+    menu: "Menu",
     save: "Uložit", 
     cancel: "Zrušit",
     copy: "Zkopírovat",
@@ -94,6 +95,7 @@ export const uiTexts = {
   },
   en: {
     newChat: "New chat",
+    menu: "Menu",
     save: "Save",
     cancel: "Cancel", 
     copy: "Copy",
@@ -184,6 +186,7 @@ export const uiTexts = {
   },
   ro: {
     newChat: "Chat nou",
+    menu: "Meniu",
     save: "Salvează",
     cancel: "Anulează",
     copy: "Copiază",

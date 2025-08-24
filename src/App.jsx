@@ -2409,8 +2409,9 @@ const virtuosoComponents = React.useMemo(() => ({
         chatHistory={chatHistories}
         onSelectChat={handleSelectChat}
         currentChatId={currentChatId}
-        onChatDeleted={() => {
-          // Historie se aktualizuje lazy při příštím otevření sidebaru
+        onChatDeleted={(deletedChatId) => {
+          // Remove deleted chat from current metadata without reloading all
+          setChatHistories(prev => prev.filter(chat => chat.id !== deletedChatId));
         }}
         user={user}
         onSignOut={handleSignOut}

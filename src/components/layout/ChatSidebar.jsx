@@ -23,6 +23,7 @@ const ChatSidebar = ({
   onResetPassword = () => {} // Reset password handler
 }) => {
   const isMobile = window.innerWidth <= 768;
+  const t = getTranslation(uiLanguage);
   
   // Long press state
   const [longPressTimer, setLongPressTimer] = useState(null);
@@ -143,7 +144,7 @@ const ChatSidebar = ({
         onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open
       }
       
-      onChatDeleted(); // Refresh the chat history
+      onChatDeleted(chatId); // Refresh the chat history
       // Note: Sidebar stays open, no automatic chat selection
     }
     // Whether confirmed or cancelled, sidebar stays open
@@ -212,7 +213,7 @@ const ChatSidebar = ({
               margin: 0,
               letterSpacing: '0.02em'
             }}>
-              Omnia Chat
+{t.menu}
             </h2>
             
             {/* ❌ CLOSE BUTTON */}
