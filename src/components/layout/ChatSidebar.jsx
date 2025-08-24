@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2, Settings } from 'lucide-react';
-import { getTranslation } from '../../utils/text';
+import { getTranslation } from '../../utils/text/translations';
 import chatDB from '../../services/storage/chatDB';
 import UserSettingsModal from '../modals/UserSettingsModal';
 
@@ -213,7 +213,7 @@ const ChatSidebar = ({
               margin: 0,
               letterSpacing: '0.02em'
             }}>
-{t.menu}
+              Menu
             </h2>
             
             {/* ❌ CLOSE BUTTON */}
