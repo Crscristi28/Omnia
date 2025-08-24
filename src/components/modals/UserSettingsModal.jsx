@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
+import ResetPasswordModal from '../auth/ResetPasswordModal';
 
 const UserSettingsModal = ({ 
   isOpen, 
@@ -14,6 +15,7 @@ const UserSettingsModal = ({
 }) => {
   const t = getTranslation(uiLanguage);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   
   // Language options
   const languageOptions = [
@@ -320,8 +322,7 @@ const UserSettingsModal = ({
             {/* Reset Password Card */}
             <button
               onClick={() => {
-                onResetPassword();
-                onClose();
+                setShowResetPasswordModal(true);
               }}
               style={{
                 width: '100%',
@@ -436,7 +437,7 @@ const UserSettingsModal = ({
 
           {/* FIXED FOOTER - Log Out Button */}
           <div style={{
-            padding: '1rem 2rem 2rem',
+            padding: '1rem 2rem 6rem', // Increased bottom padding for mobile safe area
             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
             <button
@@ -483,6 +484,16 @@ const UserSettingsModal = ({
           </div>
         </div>
       </div>
+      
+      {/* Reset Password Modal - Higher z-index for stacking */}
+      {showResetPasswordModal && (
+        <ResetPasswordModal
+          isOpen={showResetPasswordModal}
+          onClose={() => setShowResetPasswordModal(false)}
+          uiLanguage={uiLanguage}
+          user={user}
+        />
+      )}
     </>
   );
 };
