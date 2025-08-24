@@ -122,7 +122,7 @@ const ChatSidebar = ({
       onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open
     }
     
-    onChatDeleted(); // Refresh the chat history
+    onChatDeleted(chatId); // Refresh the chat history
     closeDeleteModal();
   };
 
