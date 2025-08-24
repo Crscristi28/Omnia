@@ -173,7 +173,7 @@ class ChatSyncService {
       console.log(`📤 [SYNC-UUID] Uploading ${newMessages.length} new messages (${messages.length - newMessages.length} already exist)`);
 
       // Upload only new messages with UUID schema and UPSERT
-      const batchSize = 100;
+      const batchSize = 20;
       let uploadedCount = 0;
 
       for (let i = 0; i < newMessages.length; i += batchSize) {
@@ -472,19 +472,8 @@ class ChatSyncService {
       return;
     }
 
-    // Sync cooldown - only sync once per minute
-    const lastSyncTime = localStorage.getItem('lastSyncTime');
-    const now = Date.now();
-    if (lastSyncTime && (now - parseInt(lastSyncTime)) < 60000) {
-      console.log('⏰ [SYNC-UUID] Sync skipped - cooldown active (less than 1 minute since last sync)');
-      return;
-    }
-
     console.log('🚀 [SYNC-UUID] Starting background sync...');
     await this.fullSync();
-    
-    // Update last sync time
-    localStorage.setItem('lastSyncTime', now.toString());
   }
 
   // 🗑️ Delete chat from Supabase (called when user deletes chat)
