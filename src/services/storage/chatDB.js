@@ -190,7 +190,7 @@ const chatDB = {
 
       // Get existing messages to avoid duplicates (append-only, no data loss)
       const existingMessages = await db.messages.where('chatId').equals(chatId).toArray();
-      const existingTimestamps = new Set(existingMessages.map(msg => msg.timestamp));
+      const existingUUIDs = new Set(existingMessages.map(msg => msg.uuid));
       console.log(`📋 [CHAT-DB-V2] Found ${existingMessages.length} existing messages for chat: ${chatId}`);
 
       // Save only NEW messages (append-only to prevent data loss)
@@ -198,14 +198,15 @@ const chatDB = {
       let newMessageCount = 0;
       for (const message of messages) {
         const timestamp = message.timestamp || Date.now();
+        const uuid = message.uuid || crypto.randomUUID();
         
-        // Skip if message already exists (prevent duplicates)
-        if (existingTimestamps.has(timestamp)) {
+        // Skip if message already exists (prevent duplicates by UUID)
+        if (existingUUIDs.has(uuid)) {
           continue;
         }
         
         const messageRecord = {
-          uuid: message.uuid || crypto.randomUUID(), // UUID as primary key
+          uuid: uuid, // UUID as primary key
           chatId: chatId,
           timestamp: timestamp,
           sender: message.sender,
@@ -216,7 +217,7 @@ const chatDB = {
         };
         // Use put() instead of add() for upsert behavior with UUID
         await db.messages.put(messageRecord);
-        messageIds.push(messageRecord.uuid);
+        messageIds.push(uuid);
         newMessageCount++;
       }
       
