@@ -46,6 +46,14 @@ const UserSettingsModal = ({
         .user-settings-modal button * {
           outline: none !important;
           -webkit-tap-highlight-color: transparent !important;
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
+        }
+        .user-settings-modal button span,
+        .user-settings-modal button div {
+          pointer-events: none !important;
         }
       `;
       document.head.appendChild(style);
