@@ -1,5 +1,5 @@
 // 🔧 UserSettingsModal.jsx - Fullscreen Settings Modal inspired by Claude app
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
@@ -16,6 +16,36 @@ const UserSettingsModal = ({
   const t = getTranslation(uiLanguage);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+
+  // Add CSS to remove iOS focus styles
+  useEffect(() => {
+    if (isOpen) {
+      const style = document.createElement('style');
+      style.id = 'user-settings-focus-fix';
+      style.textContent = `
+        .user-settings-modal button:focus,
+        .user-settings-modal button:active,
+        .user-settings-modal button:focus-visible {
+          outline: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+          -webkit-focus-ring-color: transparent !important;
+          box-shadow: none !important;
+        }
+        .user-settings-modal button {
+          -webkit-tap-highlight-color: transparent !important;
+          -webkit-focus-ring-color: transparent !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        const existingStyle = document.getElementById('user-settings-focus-fix');
+        if (existingStyle) {
+          existingStyle.remove();
+        }
+      };
+    }
+  }, [isOpen]);
   
   // Language options
   const languageOptions = [
@@ -62,6 +92,7 @@ const UserSettingsModal = ({
       >
         {/* MODAL CONTENT */}
         <div 
+          className="user-settings-modal"
           style={{
             width: '100%',
             maxWidth: '500px',
@@ -98,9 +129,9 @@ const UserSettingsModal = ({
                 color: 'rgba(255, 255, 255, 0.7)',
                 cursor: 'pointer',
                 outline: 'none',
-                WebkitTapHighlightColor: 'transparent',
-                WebkitFocusRingColor: 'transparent',
-                boxShadow: 'none',
+                WebkitTapHighlightColor: 'transparent !important',
+                WebkitFocusRingColor: 'transparent !important',
+                boxShadow: 'none !important',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 padding: '0.25rem',
@@ -180,9 +211,9 @@ const UserSettingsModal = ({
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 outline: 'none',
-                WebkitTapHighlightColor: 'transparent',
-                WebkitFocusRingColor: 'transparent',
-                boxShadow: 'none',
+                WebkitTapHighlightColor: 'transparent !important',
+                WebkitFocusRingColor: 'transparent !important',
+                boxShadow: 'none !important',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 display: 'flex',
@@ -355,9 +386,9 @@ const UserSettingsModal = ({
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 outline: 'none',
-                WebkitTapHighlightColor: 'transparent',
-                WebkitFocusRingColor: 'transparent',
-                boxShadow: 'none',
+                WebkitTapHighlightColor: 'transparent !important',
+                WebkitFocusRingColor: 'transparent !important',
+                boxShadow: 'none !important',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 display: 'flex',
@@ -409,9 +440,9 @@ const UserSettingsModal = ({
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 outline: 'none',
-                WebkitTapHighlightColor: 'transparent',
-                WebkitFocusRingColor: 'transparent',
-                boxShadow: 'none',
+                WebkitTapHighlightColor: 'transparent !important',
+                WebkitFocusRingColor: 'transparent !important',
+                boxShadow: 'none !important',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 display: 'flex',
