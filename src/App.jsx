@@ -205,19 +205,33 @@ function App() {
         }
         
         // Listen to auth changes
+        // Track if we're already signed in to avoid PWA wake sync loops
+        let isAlreadySignedIn = false;
+        
         subscription = authService.onAuthStateChange(async (event, session) => {
           console.log('🔄 Auth event:', event);
           console.log('🔄 Session user:', session?.user?.email || 'No user in session');
           setUser(session?.user || null);
           
-          // 🔄 Start background sync when user signs in
+          // 🔄 Start background sync ONLY for real logins, not PWA wake events
           if (session?.user && event === 'SIGNED_IN') {
-            console.log('🚀 [SYNC] User signed in, starting background sync...');
+            if (isAlreadySignedIn) {
+              // PWA wake with existing session - skip unnecessary sync
+              console.log('✅ [SYNC] PWA wake with existing session, skipping unnecessary sync');
+              return;
+            }
+            
+            // Real login - do full sync with ghost cleanup
+            console.log('🚀 [SYNC] Real user login, starting background sync...');
+            isAlreadySignedIn = true;
             try {
               await chatSyncService.backgroundSync();
             } catch (error) {
               console.error('❌ [SYNC] Background sync failed:', error);
             }
+          } else if (event === 'SIGNED_OUT') {
+            // Reset flag on logout
+            isAlreadySignedIn = false;
           }
         });
       } catch (error) {
