@@ -266,10 +266,24 @@ class ChatSyncService {
       // Instead of N queries (one per chat), use 1 query for all messages
       console.log('⚡ [SYNC-UUID] Using batch query for all messages...');
       
-      const { data: allRemoteMessages, error: allMessagesError } = await supabase
+      // Get last download timestamp for incremental sync
+      const lastDownloadTime = localStorage.getItem('lastGlobalDownloadSync');
+      
+      // Build query with optional timestamp filter
+      let messagesQuery = supabase
         .from('messages')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', userId);
+      
+      // Add incremental filter if we have a last sync time
+      if (lastDownloadTime) {
+        messagesQuery = messagesQuery.gt('timestamp', lastDownloadTime);
+        console.log(`⚡ [SYNC-UUID] Incremental download: messages after ${lastDownloadTime}`);
+      } else {
+        console.log('⚡ [SYNC-UUID] Full download: no previous sync timestamp');
+      }
+      
+      const { data: allRemoteMessages, error: allMessagesError } = await messagesQuery
         .order('timestamp', { ascending: true });
 
       if (allMessagesError) {
@@ -313,6 +327,17 @@ class ChatSyncService {
       // Update last sync timestamp
       this.lastSyncTimestamp = Date.now().toString();
       localStorage.setItem('lastSyncTimestamp', this.lastSyncTimestamp);
+      
+      // Save last download timestamp for incremental sync
+      if (allRemoteMessages && allRemoteMessages.length > 0) {
+        // Find the latest timestamp from downloaded messages
+        const latestTimestamp = allRemoteMessages.reduce((max, msg) => {
+          return msg.timestamp > max ? msg.timestamp : max;
+        }, allRemoteMessages[0].timestamp);
+        
+        localStorage.setItem('lastGlobalDownloadSync', latestTimestamp);
+        console.log(`⏰ [SYNC-UUID] Saved download sync timestamp: ${latestTimestamp}`);
+      }
 
       console.log(`✅ [SYNC-UUID] Successfully downloaded ${remoteChats.length} chats and cleaned ${orphanedChats.length} orphaned chats`);
       return true;
@@ -344,6 +369,10 @@ class ChatSyncService {
         attachments: msg.attachments,
         image: msg.image
       }));
+      
+      // Sort messages by timestamp to ensure correct order
+      localMessages.sort((a, b) => a.timestamp - b.timestamp);
+      console.log(`📋 [SYNC-UUID] Sorted ${localMessages.length} messages chronologically`);
 
       // Use the same chat ID from Supabase (no conversion needed)
       const localChatId = remoteChat.id;
