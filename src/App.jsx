@@ -559,6 +559,18 @@ function App() {
       return allMessages;
     }
     
+    // 🆕 CRITICAL SAVE: First conversation protection (user + bot)
+    if (allMessages.length === 2) {
+      console.log('💾 [CRITICAL-SAVE] First conversation, saving immediately');
+      try {
+        await smartIncrementalSave(chatId, allMessages);
+        // Immediate sync for critical first messages
+        await chatSyncService.autoSyncMessage(chatId);
+      } catch (error) {
+        console.error('❌ [CRITICAL-SAVE] First message save failed:', error);
+      }
+      return allMessages;
+    }
     
     // 💾 AUTO-SAVE - každých 10 zpráv (bez cleanup!)
     if (allMessages.length % 10 === 0 && allMessages.length > 0) {
