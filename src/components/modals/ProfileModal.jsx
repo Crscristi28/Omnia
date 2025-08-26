@@ -326,9 +326,9 @@ const ProfileModal = ({
                 color: 'rgba(255, 255, 255, 0.6)',
                 fontSize: '0.8rem'
               }}>
-                {uiLanguage === 'cs' ? 'Např. "Cristian", "profesore", "daddy" 😄' :
-                 uiLanguage === 'en' ? 'e.g. "Cristian", "professor", "daddy" 😄' :
-                 'ex. "Cristian", "profesor", "daddy" 😄'}
+                {uiLanguage === 'cs' ? 'Např. "professor", "daddy", "John", "Tom" 😄' :
+                 uiLanguage === 'en' ? 'e.g. "professor", "daddy", "John", "Tom" 😄' :
+                 'ex. "professor", "daddy", "John", "Tom" 😄'}
               </p>
             </div>
               </>
