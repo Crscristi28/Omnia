@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
+import ProfileModal from './ProfileModal';
 
 const UserSettingsModal = ({ 
   isOpen, 
@@ -16,6 +17,7 @@ const UserSettingsModal = ({
   const t = getTranslation(uiLanguage);
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Add CSS to remove iOS focus styles
   useEffect(() => {
@@ -217,8 +219,7 @@ const UserSettingsModal = ({
             {/* Profile Card */}
             <button
               onClick={() => {
-                // TODO: Implement Profile modal/page
-                console.log('Profile - TODO');
+                setShowProfileModal(true);
               }}
               style={{
                 width: '100%',
@@ -577,6 +578,18 @@ const UserSettingsModal = ({
           onClose={() => setShowResetPasswordModal(false)}
           uiLanguage={uiLanguage}
           user={user}
+        />
+      )}
+
+      {showProfileModal && (
+        <ProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          uiLanguage={uiLanguage}
+          user={user}
+          onSave={async (profileData) => {
+            console.log('👤 [PROFILE] Profile saved successfully:', profileData);
+          }}
         />
       )}
     </>

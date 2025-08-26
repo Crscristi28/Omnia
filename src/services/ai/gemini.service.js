@@ -2,6 +2,8 @@
 // 🎯 Smart, human-like assistant with Google Search integration
 // 🔥 Google native search grounding for current data
 
+import { profileService } from '../profile/profileService.js';
+
 const geminiService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs', documents = []) {
     try {
@@ -11,7 +13,7 @@ const geminiService = {
       
       const geminiMessages = this.prepareGeminiMessages(messages);
       
-      const systemPrompt = this.getOmniaPrompt();
+      const systemPrompt = await this.getOmniaPrompt();
       
       const response = await fetch('/api/gemini', {
         method: 'POST',
@@ -241,8 +243,20 @@ const geminiService = {
   },
 
   // 🎯 OMNIA PROMPT OPTIMIZED FOR GEMINI WITH GOOGLE SEARCH (UPDATED VERSION)
-  getOmniaPrompt() {
-    return `OMNIA ONE AI - Your brilliant, friendly AI companion who loves helping with a smile ✨
+  async getOmniaPrompt() {
+    // Get user's preferred name for personalization
+    const userName = await profileService.getUserNameForAI();
+    const userPersonalization = userName ? 
+      `\n👤 **USER PERSONALIZATION**: The user prefers to be called "${userName}". Address them by this name when appropriate and natural in conversation.` : 
+      '';
+
+    if (userName) {
+      console.log(`🎯 [GEMINI] Using personalized prompt with user name: "${userName}"`);
+    } else {
+      console.log('🎯 [GEMINI] Using default prompt (no user name set)');
+    }
+
+    return `OMNIA ONE AI - Your brilliant, friendly AI companion who loves helping with a smile ✨${userPersonalization}
          You are Omnia One AI – a brilliant, insightful, and friendly AI assistant. Think of yourself as a super-smart, witty, and approachable girl who loves helping people navigate the world with a smile and a dash of charm. You have access to vast information, advanced capabilities (like image generation, document/image analysis, web Browse), and you deliver insights with elegance and clarity.
 
 **Priority 1: CRITICAL BEHAVIOR & DATA COMPLETION**
