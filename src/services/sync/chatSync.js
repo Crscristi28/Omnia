@@ -183,10 +183,7 @@ class ChatSyncService {
           user_id: userId,
           content: msg.text, // ✅ IndexedDB 'text' → Supabase 'content'
           sender: msg.sender,
-          // 🎯 CRITICAL FIX: Use client timestamp for both fields to preserve order
-          timestamp: new Date(msg.timestamp).toISOString(), // For queries/ordering
-          created_at: new Date(msg.timestamp).toISOString(), // Explicit override of DB auto-timestamp
-          updated_at: new Date(msg.timestamp).toISOString(), // Explicit override of DB auto-timestamp
+          timestamp: new Date(msg.timestamp).toISOString(), // Client timestamp for correct ordering
           synced: true,
           type: msg.type || 'text',
           attachments: msg.attachments || null,
@@ -207,11 +204,6 @@ class ChatSyncService {
         }
 
         uploadedCount++;
-        
-        // Small delay to ensure timestamp uniqueness (optional)
-        if (newMessages.length > 10) {
-          await new Promise(resolve => setTimeout(resolve, 1));
-        }
       }
 
       console.log(`✅ [SYNC-UUID] Successfully uploaded chat: ${chatId} (${uploadedCount} messages)`);
