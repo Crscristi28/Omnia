@@ -379,8 +379,14 @@ class ChatSyncService {
         image: msg.image
       }));
       
-      // Sort messages by timestamp to ensure correct order
-      localMessages.sort((a, b) => a.timestamp - b.timestamp);
+      // Sort messages by timestamp to ensure correct order (with secondary sort for safety)
+      localMessages.sort((a, b) => {
+        if (a.timestamp === b.timestamp) {
+          // user před bot při stejném timestamp (extra ochrana proti starým datům)
+          return a.sender === 'user' ? -1 : 1;
+        }
+        return a.timestamp - b.timestamp;
+      });
       console.log(`📋 [SYNC-UUID] Sorted ${localMessages.length} messages chronologically`);
 
       // Use the same chat ID from Supabase (no conversion needed)
