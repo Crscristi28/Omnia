@@ -192,13 +192,13 @@ function App() {
         console.log('👤 Current user:', currentUser?.email || 'Not logged in');
         setUser(currentUser);
         
-        // 🔄 Start background sync for existing user
+        // ⚡ Start incremental sync for existing user (no full sync, no corruption)
         if (currentUser) {
-          console.log('🚀 [SYNC] Existing user found, starting background sync...');
+          console.log('⚡ [SYNC] Existing user found, starting incremental background sync...');
           // Clear cooldown to ensure immediate sync on app load
           chatSyncService.clearSyncCooldown();
           try {
-            await chatSyncService.backgroundSync();
+            await chatSyncService.backgroundSync(); // Now calls incrementalSync() internally
           } catch (error) {
             console.error('❌ [SYNC] Background sync failed:', error);
           }
@@ -221,13 +221,13 @@ function App() {
               return;
             }
             
-            // Real login - do full sync with ghost cleanup
-            console.log('🚀 [SYNC] Real user login, starting background sync...');
+            // Real login - do full sync with ghost cleanup (only time we need full sync)
+            console.log('🚀 [SYNC] Real user login, starting full sync with ghost cleanup...');
             isAlreadySignedIn = true;
             try {
-              await chatSyncService.backgroundSync();
+              await chatSyncService.fullSync(); // Only genuine first login needs full sync
             } catch (error) {
-              console.error('❌ [SYNC] Background sync failed:', error);
+              console.error('❌ [SYNC] Full sync failed:', error);
             }
           } else if (event === 'SIGNED_OUT') {
             // Reset flag on logout
@@ -363,10 +363,10 @@ function App() {
     // Clear sync cooldown for immediate sync
     chatSyncService.clearSyncCooldown();
     
-    // Start immediate sync for the new user
-    console.log('🚀 [SYNC] Starting immediate sync for new login...');
+    // Start immediate full sync for the new user (first time setup)
+    console.log('🚀 [SYNC] Starting immediate full sync for new user signup...');
     try {
-      await chatSyncService.backgroundSync();
+      await chatSyncService.fullSync(); // New user needs full sync setup
     } catch (error) {
       console.error('❌ [SYNC] Initial sync failed:', error);
     }

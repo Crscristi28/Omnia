@@ -12,10 +12,10 @@ class ChatSyncService {
     this.lastSyncTimestamp = localStorage.getItem('lastSyncTimestamp') || '0';
     this.syncInProgress = false;
     
-    // Listen to network changes
+    // Listen to network changes - incremental sync only (no full sync corruption)
     window.addEventListener('online', () => {
       this.isOnline = true;
-      this.backgroundSync();
+      this.backgroundSync(); // Now calls incrementalSync() - no batch corruption
     });
     
     window.addEventListener('offline', () => {
@@ -172,39 +172,46 @@ class ChatSyncService {
 
       console.log(`📤 [SYNC-UUID] Uploading ${newMessages.length} new messages (${messages.length - newMessages.length} already exist)`);
 
-      // Upload only new messages with UUID schema and UPSERT
-      const batchSize = 20;
+      // 🔧 FIXED: Upload messages INDIVIDUALLY to preserve exact timestamp ordering
+      // No batch processing = no timestamp corruption
       let uploadedCount = 0;
 
-      for (let i = 0; i < newMessages.length; i += batchSize) {
-        const batch = newMessages.slice(i, i + batchSize);
-        const messagesToUpload = batch.map(msg => ({
+      for (const msg of newMessages) {
+        const messageToUpload = {
           id: msg.uuid, // Use UUID from IndexedDB (stable ID)
           chat_id: chatId, // Use original chat ID
           user_id: userId,
           content: msg.text, // ✅ IndexedDB 'text' → Supabase 'content'
           sender: msg.sender,
-          timestamp: new Date(msg.timestamp).toISOString(),
+          // 🎯 CRITICAL FIX: Use client timestamp for both fields to preserve order
+          timestamp: new Date(msg.timestamp).toISOString(), // For queries/ordering
+          created_at: new Date(msg.timestamp).toISOString(), // Explicit override of DB auto-timestamp
+          updated_at: new Date(msg.timestamp).toISOString(), // Explicit override of DB auto-timestamp
           synced: true,
           type: msg.type || 'text',
           attachments: msg.attachments || null,
           image: msg.image || null
-        }));
+        };
 
-        // Use UPSERT for duplicate protection
-        const { error: messagesError } = await supabase
+        // Upload individually - no batch corruption
+        const { error: messageError } = await supabase
           .from('messages')
-          .upsert(messagesToUpload, { 
+          .upsert([messageToUpload], { 
             onConflict: 'id',
             ignoreDuplicates: false 
           });
 
-        if (messagesError) {
-          console.error(`❌ [SYNC-UUID] Error uploading messages batch ${i / batchSize + 1}:`, messagesError);
+        if (messageError) {
+          console.error(`❌ [SYNC-UUID] Error uploading individual message ${msg.uuid}:`, messageError);
           return false;
         }
 
-        uploadedCount += batch.length;
+        uploadedCount++;
+        
+        // Small delay to ensure timestamp uniqueness (optional)
+        if (newMessages.length > 10) {
+          await new Promise(resolve => setTimeout(resolve, 1));
+        }
       }
 
       console.log(`✅ [SYNC-UUID] Successfully uploaded chat: ${chatId} (${uploadedCount} messages)`);
@@ -501,8 +508,51 @@ class ChatSyncService {
       return;
     }
 
-    console.log('🚀 [SYNC-UUID] Starting background sync...');
-    await this.fullSync();
+    console.log('⚡ [SYNC-UUID] Starting incremental background sync...');
+    await this.incrementalSync();
+  }
+
+  // ⚡ True incremental sync - only new/dirty data, no batch corruption
+  async incrementalSync() {
+    if (this.syncInProgress) {
+      console.log('⏳ [SYNC-UUID] Incremental sync already in progress, skipping');
+      return;
+    }
+
+    this.syncInProgress = true;
+    const startTime = performance.now();
+
+    try {
+      console.log('⚡ [SYNC-UUID] Starting incremental sync (no full sync, no batch corruption)...');
+
+      // Step 1: Process sync queue for individual dirty chats (no batch processing)
+      const syncQueue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+      if (syncQueue.length > 0) {
+        console.log(`📤 [SYNC-UUID] Processing ${syncQueue.length} queued chats individually...`);
+        
+        for (const chatId of syncQueue) {
+          try {
+            await this.autoSyncMessage(chatId); // Individual upload, not batch
+          } catch (error) {
+            console.error(`❌ [SYNC-UUID] Error syncing queued chat ${chatId}:`, error);
+          }
+        }
+        
+        // Clear processed queue
+        localStorage.removeItem('syncQueue');
+      }
+
+      // Step 2: Download only new messages since last sync (incremental)
+      await this.downloadChats();
+
+      const duration = Math.round(performance.now() - startTime);
+      console.log(`✅ [SYNC-UUID] Incremental sync completed in ${duration}ms (no full sync, no corruption)`);
+
+    } catch (error) {
+      console.error('❌ [SYNC-UUID] Error during incremental sync:', error);
+    } finally {
+      this.syncInProgress = false;
+    }
   }
 
   // 🗑️ Delete chat from Supabase (called when user deletes chat)
