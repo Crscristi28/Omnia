@@ -975,11 +975,21 @@ function App() {
       } else {
       }
       
+      const userTimestamp = Date.now();
       const userMessage = { 
   id: generateMessageId(),
   sender: 'user', 
-  text: userMessageText 
+  text: userMessageText,
+  timestamp: userTimestamp
 };
+      
+      // 🔍 [TIMESTAMP-DEBUG] Log user message timestamp
+      console.log('🔍 [TIMESTAMP-DEBUG] User message:', {
+        sender: 'user',
+        timestamp: userTimestamp,
+        timestampDate: new Date(userTimestamp).toISOString(),
+        hasTimestamp: true
+      });
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
@@ -1060,6 +1070,7 @@ function App() {
       if (model === 'claude') {
         let finalText = '';
         let sources = [];
+        const botTimestamp = Date.now() + 1; // +1ms to ensure bot comes after user
         
         const result = await claudeService.sendMessage(
           messagesWithUser,
@@ -1077,6 +1088,15 @@ function App() {
         responseText = finalText;
         sourcesToSave = sources;
         
+        // 🔍 [TIMESTAMP-DEBUG] Log Claude final response
+        console.log('🔍 [TIMESTAMP-DEBUG] Bot Claude final:', {
+          sender: 'bot',
+          timestamp: botTimestamp,
+          timestampDate: new Date(botTimestamp).toISOString(),
+          hasTimestamp: true,
+          sourcesCount: sources.length
+        });
+        
         // 🆕 STREAMING: Use streaming effect for final text
         const stopFn = streamMessageWithEffect(
           finalText,
@@ -1093,7 +1113,8 @@ function App() {
           sender: 'bot', 
           text: finalText,
           sources: sources,
-          isStreaming: false
+          isStreaming: false,
+          timestamp: botTimestamp
         };
         
         const finalMessages = [...messagesWithUser, finalMessage];
@@ -1245,6 +1266,7 @@ function App() {
         
         // 🆕 STREAMING: Enable markdown-aware streaming for Gemini
         let geminiSources = [];
+        const botTimestamp = Date.now() + 1; // +1ms to ensure bot comes after user
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
@@ -1254,14 +1276,28 @@ function App() {
               geminiSources = sources;
             }
             
+            const botMessage = { 
+              sender: 'bot', 
+              text: text, 
+              isStreaming: isStreaming,
+              sources: isStreaming ? [] : geminiSources,
+              timestamp: botTimestamp
+            };
+            
+            // 🔍 [TIMESTAMP-DEBUG] Log bot streaming update (only on final)
+            if (!isStreaming) {
+              console.log('🔍 [TIMESTAMP-DEBUG] Bot Gemini final:', {
+                sender: 'bot',
+                timestamp: botTimestamp,
+                timestampDate: new Date(botTimestamp).toISOString(),
+                hasTimestamp: true,
+                sourcesCount: geminiSources.length
+              });
+            }
+            
             setMessages([
               ...messagesWithUser,
-              { 
-                sender: 'bot', 
-                text: text, 
-                isStreaming: isStreaming,
-                sources: isStreaming ? [] : geminiSources
-              }
+              botMessage
             ]);
           },
           () => {
@@ -1284,7 +1320,8 @@ function App() {
           sender: 'bot', 
           text: responseText,
           sources: sources,
-          isStreaming: false
+          isStreaming: false,
+          timestamp: botTimestamp // Use same timestamp as streaming
         }];
         
         // 🔄 Check auto-save after AI response
@@ -1655,11 +1692,22 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const attachments = await Promise.all(attachmentsPromises);
   
   // Add user message to chat immediately (with persistent attachment data)
+  const userTimestamp = Date.now();
   const userMessage = {
     sender: 'user',
     text: text.trim(), // Keep empty if no text - no default message
-    attachments: attachments // Use new persistent base64 format
+    attachments: attachments, // Use new persistent base64 format
+    timestamp: userTimestamp
   };
+  
+  // 🔍 [TIMESTAMP-DEBUG] Log user message with documents timestamp
+  console.log('🔍 [TIMESTAMP-DEBUG] User message with documents:', {
+    sender: 'user',
+    timestamp: userTimestamp,
+    timestampDate: new Date(userTimestamp).toISOString(),
+    hasTimestamp: true,
+    attachmentsCount: attachments.length
+  });
   // Add message and get current state
   let currentMessagesWithUser;
   setMessages(prev => {
@@ -1932,6 +1980,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // Send to Gemini with FILTERED documents only - WITH STREAMING
       let geminiSourcesForDocs = [];
+      const botTimestampDocs = Date.now() + 1; // +1ms to ensure bot comes after user
       
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
@@ -1941,14 +1990,28 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             geminiSourcesForDocs = sources;
           }
           
+          const botMessageDocs = { 
+            sender: 'bot', 
+            text: text, 
+            isStreaming: isStreaming,
+            sources: isStreaming ? [] : geminiSourcesForDocs,
+            timestamp: botTimestampDocs
+          };
+          
+          // 🔍 [TIMESTAMP-DEBUG] Log bot docs update (only on final)
+          if (!isStreaming) {
+            console.log('🔍 [TIMESTAMP-DEBUG] Bot Gemini docs final:', {
+              sender: 'bot',
+              timestamp: botTimestampDocs,
+              timestampDate: new Date(botTimestampDocs).toISOString(),
+              hasTimestamp: true,
+              sourcesCount: geminiSourcesForDocs.length
+            });
+          }
+          
           setMessages([
             ...messagesForAI,
-            { 
-              sender: 'bot', 
-              text: text, 
-              isStreaming: isStreaming,
-              sources: isStreaming ? [] : geminiSourcesForDocs
-            }
+            botMessageDocs
           ]);
         },
         (searchMsg) => {
