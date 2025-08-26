@@ -200,6 +200,15 @@ const chatDB = {
         const timestamp = message.timestamp || Date.now();
         const uuid = message.uuid || crypto.randomUUID();
         
+        // 🔍 [TIMESTAMP-DEBUG] Log IndexedDB bulk save  
+        console.log('🔍 [TIMESTAMP-DEBUG] IndexedDB bulk save:', {
+          sender: message.sender,
+          timestamp: timestamp,
+          timestampDate: new Date(timestamp).toISOString(),
+          hasOriginalTimestamp: !!message.timestamp,
+          fallbackUsed: !message.timestamp
+        });
+        
         // Skip if message already exists (prevent duplicates by UUID)
         if (existingUUIDs.has(uuid)) {
           continue;
@@ -286,10 +295,21 @@ const chatDB = {
       console.log(`💾 [CHAT-DB-V2] Saving message: ${message.sender}, ChatId: ${chatId}`);
       
       // Prepare message for storage
+      const finalTimestamp = message.timestamp || Date.now();
+      
+      // 🔍 [TIMESTAMP-DEBUG] Log IndexedDB individual save
+      console.log('🔍 [TIMESTAMP-DEBUG] IndexedDB individual save:', {
+        sender: message.sender,
+        timestamp: finalTimestamp,
+        timestampDate: new Date(finalTimestamp).toISOString(),
+        hasOriginalTimestamp: !!message.timestamp,
+        fallbackUsed: !message.timestamp
+      });
+      
       const messageRecord = {
         uuid: message.uuid || crypto.randomUUID(), // UUID as primary key
         chatId: chatId,
-        timestamp: message.timestamp || Date.now(),
+        timestamp: finalTimestamp,
         sender: message.sender,
         text: message.text,
         type: message.type || 'text',
