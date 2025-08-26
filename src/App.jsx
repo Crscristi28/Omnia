@@ -206,7 +206,7 @@ function App() {
         
         // Listen to auth changes
         // Track if we're already signed in to avoid PWA wake sync loops
-        let isAlreadySignedIn = false;
+        let isAlreadySignedIn = !!currentUser; // Set to true if user already logged in
         
         subscription = authService.onAuthStateChange(async (event, session) => {
           console.log('🔄 Auth event:', event);
