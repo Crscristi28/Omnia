@@ -197,7 +197,17 @@ const chatDB = {
       const messageIds = [];
       let newMessageCount = 0;
       for (const message of messages) {
-        const timestamp = message.timestamp || Date.now();
+        // 🚨 STRICT: No fallback - if timestamp missing, it's a bug!
+        if (!message.timestamp) {
+          console.error('❌ [CHAT-DB-V2] MISSING TIMESTAMP in bulk save:', {
+            message,
+            sender: message.sender,
+            text: message.text?.substring(0, 50),
+            callStack: new Error().stack
+          });
+          throw new Error(`Missing timestamp for message: ${message.sender || 'unknown'}`);
+        }
+        const timestamp = message.timestamp;
         const uuid = message.uuid || crypto.randomUUID();
         
         // 🔍 [TIMESTAMP-DEBUG] Log IndexedDB bulk save  
@@ -295,7 +305,17 @@ const chatDB = {
       console.log(`💾 [CHAT-DB-V2] Saving message: ${message.sender}, ChatId: ${chatId}`);
       
       // Prepare message for storage
-      const finalTimestamp = message.timestamp || Date.now();
+      // 🚨 STRICT: No fallback - if timestamp missing, it's a bug!
+      if (!message.timestamp) {
+        console.error('❌ [CHAT-DB-V2] MISSING TIMESTAMP in individual save:', {
+          message,
+          sender: message.sender,
+          text: message.text?.substring(0, 50),
+          callStack: new Error().stack
+        });
+        throw new Error(`Missing timestamp for message: ${message.sender || 'unknown'}`);
+      }
+      const finalTimestamp = message.timestamp;
       
       // 🔍 [TIMESTAMP-DEBUG] Log IndexedDB individual save
       console.log('🔍 [TIMESTAMP-DEBUG] IndexedDB individual save:', {
