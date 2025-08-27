@@ -210,12 +210,6 @@ const detectLanguage = (text) => {
   const maxScore = Math.max(...Object.values(scores));
   const detectedLang = Object.keys(scores).find(key => scores[key] === maxScore);
   
-  console.log('🌍 Language detection:', { 
-    text: lowerText.substring(0, 40) + '...', 
-    scores, 
-    detected: detectedLang,
-    maxScore
-  });
   
   // Enhanced decision logic with better confidence thresholds
   if (maxScore >= 5) {
@@ -230,7 +224,6 @@ const detectLanguage = (text) => {
   }
   
   // For ties or low confidence, default to Czech
-  console.log('🌍 Language detection: defaulting to Czech (ties or low confidence)');
   return 'cs';
 };
 
