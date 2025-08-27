@@ -1266,7 +1266,7 @@ function App() {
         
         // 🆕 STREAMING: Enable markdown-aware streaming for Gemini
         let geminiSources = [];
-        const botTimestamp = Date.now() + 1; // +1ms to ensure bot comes after user
+        const botTimestamp = Date.now() + 100; // +100ms to ensure bot comes after user
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
@@ -1980,7 +1980,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // Send to Gemini with FILTERED documents only - WITH STREAMING
       let geminiSourcesForDocs = [];
-      const botTimestampDocs = Date.now() + 1; // +1ms to ensure bot comes after user
+      const botTimestampDocs = Date.now() + 100; // +100ms to ensure bot comes after user
       
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
