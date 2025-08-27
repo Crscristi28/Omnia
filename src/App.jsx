@@ -2038,6 +2038,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         id: generateMessageId(),
         sender: 'bot',
         text: cleanedText,
+        timestamp: botTimestampDocs,
         sources: result.sources || [],
         isStreaming: false
       }];
