@@ -1028,6 +1028,7 @@ function App() {
               sender: 'bot',
               text: `${t('imageGenerated')} "${finalTextInput}"`,
               image: result.images[0], // Restore working structure for display
+              timestamp: Date.now() + 100,
               isStreaming: false
             };
             
