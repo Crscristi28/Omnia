@@ -110,6 +110,9 @@ function App() {
   const [resetPasswordEmail, setResetPasswordEmail] = useState('');
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
+  
+  // 🔄 Sync dirty tracking - for 30s incremental sync
+  const [syncDirtyChats, setSyncDirtyChats] = useState(new Set());
 
   // 🎬 SPLASH SCREEN STATE - PWA startup animation
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -389,6 +392,7 @@ function App() {
     // 💾 SMART POJISTKA: Save only NEW messages to prevent duplicates
     if (currentChatId && messages.length > 0) {
       await smartIncrementalSave(currentChatId, messages);
+      setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
     }
     handleNewChat();
     const newKeepSidebarId = chatDB.generateChatId();
@@ -419,6 +423,9 @@ function App() {
       // ✅ SAVE POINT #2: Save current chat before switching
       if (currentChatId && messages.length > 0) {
         const wasSaved = await smartIncrementalSave(currentChatId, messages);
+        if (wasSaved) {
+          setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
+        }
         if (wasSaved) {
           crashMonitor.trackIndexedDB('save', currentChatId, true);
         }
@@ -517,7 +524,9 @@ function App() {
       // Primary save trigger for PWA (minimize, app switch)
       if (document.hidden && currentChatId && messages.length > 0) {
         
-        smartIncrementalSave(currentChatId, messages).catch(error => {
+        smartIncrementalSave(currentChatId, messages).then(() => {
+          setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
+        }).catch(error => {
           console.error('❌ Failed smart save on visibility change:', error);
         });
         
@@ -529,7 +538,9 @@ function App() {
       // Emergency backup for PWA force close - also uses smart save
       if (currentChatId && messages.length > 0) {
         
-        smartIncrementalSave(currentChatId, messages).catch(error => {
+        smartIncrementalSave(currentChatId, messages).then(() => {
+          setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
+        }).catch(error => {
           console.error('❌ Failed emergency smart save on close:', error);
         });
         
@@ -550,6 +561,37 @@ function App() {
 
   // 🎨 BREATHING ANIMATION - Pure CSS animation (performance optimized)
   // Note: Removed JavaScript animation loop to improve performance by ~95%
+  
+  // 🔄 30-SECOND INCREMENTAL SYNC TIMER
+  useEffect(() => {
+    const syncInterval = setInterval(async () => {
+      if (syncDirtyChats.size > 0 && navigator.onLine) {
+        console.log(`⏰ [SYNC-TIMER] Processing ${syncDirtyChats.size} dirty chats for sync`);
+        
+        // Process each dirty chat
+        for (const chatId of syncDirtyChats) {
+          try {
+            console.log(`📤 [SYNC-TIMER] Syncing chat: ${chatId}`);
+            await chatSyncService.autoSyncMessage(chatId);
+            
+            // Remove from dirty set after successful sync
+            setSyncDirtyChats(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(chatId);
+              return newSet;
+            });
+            
+            console.log(`✅ [SYNC-TIMER] Successfully synced chat: ${chatId}`);
+          } catch (error) {
+            console.error(`❌ [SYNC-TIMER] Failed to sync chat ${chatId}:`, error);
+            // Keep in dirty set to retry next interval
+          }
+        }
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(syncInterval);
+  }, [syncDirtyChats]);
 
 
   // 🔄 AUTO-SAVE HELPER - volá se po přidání AI response
@@ -564,6 +606,7 @@ function App() {
       console.log('💾 [CRITICAL-SAVE] First conversation, saving immediately');
       try {
         await smartIncrementalSave(chatId, allMessages);
+        setSyncDirtyChats(prev => new Set(prev).add(chatId));
         // Immediate sync for critical first messages
         await chatSyncService.autoSyncMessage(chatId);
       } catch (error) {
@@ -576,6 +619,7 @@ function App() {
     if (allMessages.length > 0) {
       try {
         await smartIncrementalSave(chatId, allMessages);
+        setSyncDirtyChats(prev => new Set(prev).add(chatId));
       } catch (error) {
         console.error(`❌ [AUTO-SAVE] FAILED:`, error);
       }
@@ -821,6 +865,9 @@ function App() {
       // ✅ SMART POJISTKA: Save only NEW messages to prevent duplicates
       if (currentChatId && messages.length > 0) {
         const wasSaved = await smartIncrementalSave(currentChatId, messages);
+        if (wasSaved) {
+          setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
+        }
         if (wasSaved) {
           crashMonitor.trackIndexedDB('save', currentChatId, true);
         }

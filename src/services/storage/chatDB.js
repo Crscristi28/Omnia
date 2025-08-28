@@ -276,15 +276,16 @@ const chatDB = {
       console.log(`⚡ [CHAT-DB-V2] Duration: ${duration}ms, Memory delta: ${memDelta}MB`);
       console.log(`🎯 [CHAT-DB-V2] APPEND-ONLY: ${newMessageCount} new messages added, ${totalMessageCount} total messages`);
 
-      // 🔄 SYNC HOOK - Auto-sync to Supabase after successful bulk save (skip if called from download)
-      if (!skipSync) {
-        try {
-          const { chatSyncService } = await import('../sync/chatSync.js');
-          await chatSyncService.autoSyncMessage(chatId);
-        } catch (error) {
-          console.error('❌ [SYNC] Auto-sync failed:', error.message);
-        }
-      }
+      // 🔄 SYNC HOOK - Disabled, using 30s timer sync instead
+      // Auto-sync now handled by 30-second timer in App.jsx for better performance
+      // if (!skipSync) {
+      //   try {
+      //     const { chatSyncService } = await import('../sync/chatSync.js');
+      //     await chatSyncService.autoSyncMessage(chatId);
+      //   } catch (error) {
+      //     console.error('❌ [SYNC] Auto-sync failed:', error.message);
+      //   }
+      // }
 
       return { chatId, messageIds, messageCount: totalMessageCount };
 
@@ -364,13 +365,14 @@ const chatDB = {
       const memAfter = performance.memory?.usedJSHeapSize || 0;
       const memDelta = Math.round((memAfter - memBefore) / 1024 / 1024);
       
-      // 🔄 SYNC HOOK - Auto-sync to Supabase after successful save
-      try {
-        const { chatSyncService } = await import('../sync/chatSync.js');
-        await chatSyncService.autoSyncMessage(chatId);
-      } catch (error) {
-        console.error('❌ [SYNC] Auto-sync failed:', error.message);
-      }
+      // 🔄 SYNC HOOK - Disabled, using 30s timer sync instead
+      // Auto-sync now handled by 30-second timer in App.jsx for better performance
+      // try {
+      //   const { chatSyncService } = await import('../sync/chatSync.js');
+      //   await chatSyncService.autoSyncMessage(chatId);
+      // } catch (error) {
+      //   console.error('❌ [SYNC] Auto-sync failed:', error.message);
+      // }
       
       return messageId;
       
