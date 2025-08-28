@@ -195,15 +195,27 @@ function App() {
         console.log('👤 Current user:', currentUser?.email || 'Not logged in');
         setUser(currentUser);
         
-        // ⚡ Start incremental sync for existing user (no full sync, no corruption)
+        // ⚡ Smart sync: Full sync if DB is empty, incremental if has data
         if (currentUser) {
-          console.log('⚡ [SYNC] Existing user found, starting incremental background sync...');
-          // Clear cooldown to ensure immediate sync on app load
-          chatSyncService.clearSyncCooldown();
-          try {
-            await chatSyncService.backgroundSync(); // Now calls incrementalSync() internally
-          } catch (error) {
-            console.error('❌ [SYNC] Background sync failed:', error);
+          // Check if IndexedDB is empty (after sign out or fresh install)
+          const localChats = await chatDB.getAllChats();
+          
+          if (localChats.length === 0) {
+            console.log('📥 [SYNC] Empty IndexedDB detected, starting FULL sync...');
+            chatSyncService.clearSyncCooldown();
+            try {
+              await chatSyncService.fullSync();
+            } catch (error) {
+              console.error('❌ [SYNC] Full sync failed:', error);
+            }
+          } else {
+            console.log('⚡ [SYNC] Local chats found, starting incremental sync...');
+            chatSyncService.clearSyncCooldown();
+            try {
+              await chatSyncService.backgroundSync(); // Now calls incrementalSync() internally
+            } catch (error) {
+              console.error('❌ [SYNC] Background sync failed:', error);
+            }
           }
         }
         
