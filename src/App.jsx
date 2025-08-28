@@ -606,9 +606,14 @@ function App() {
       console.log('💾 [CRITICAL-SAVE] First conversation, saving immediately');
       try {
         await smartIncrementalSave(chatId, allMessages);
-        setSyncDirtyChats(prev => new Set(prev).add(chatId));
         // Immediate sync for critical first messages
         await chatSyncService.autoSyncMessage(chatId);
+        // Remove from dirty set since we just synced (prevent duplicate sync)
+        setSyncDirtyChats(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(chatId);
+          return newSet;
+        });
       } catch (error) {
         console.error('❌ [CRITICAL-SAVE] First message save failed:', error);
       }
