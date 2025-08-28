@@ -29,6 +29,12 @@ export const welcomeTexts = {
     afternoon: "Guten Tag!",
     evening: "Guten Abend!",
     subtitle: "Wie kann ich Ihnen heute helfen?"
+  },
+  ru: { 
+    morning: "Доброе утро!",
+    afternoon: "Добрый день!",
+    evening: "Добрый вечер!",
+    subtitle: "Как я могу помочь вам сегодня?"
   }
 };
 

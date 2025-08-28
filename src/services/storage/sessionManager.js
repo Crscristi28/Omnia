@@ -26,7 +26,7 @@ const sessionManager = {
       const langCode = systemLang.toLowerCase().split('-')[0];
       
       // Map system language to supported languages
-      const supportedLanguages = ['cs', 'en', 'ro', 'de'];
+      const supportedLanguages = ['cs', 'en', 'ro', 'de', 'ru'];
       if (supportedLanguages.includes(langCode)) {
         return langCode;
       }
