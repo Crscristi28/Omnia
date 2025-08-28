@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SimpleVoiceRecorder } from '../voice';
+import { getTranslation } from '../../utils/text/translations';
 
 const VoiceScreen = ({ 
   isOpen,
@@ -19,6 +20,7 @@ const VoiceScreen = ({
   const [isOpening, setIsOpening] = useState(false);
   
   const isMobile = window.innerWidth <= 768;
+  const t = getTranslation(uiLanguage);
 
   // 🎆 Opening animation trigger
   useEffect(() => {

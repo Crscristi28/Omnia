@@ -2,6 +2,7 @@
 // ✅ NOVÉ: Cancel button, Audio level meter, Recording timer, Haptic feedback
 
 import React, { useState, useRef, useEffect } from 'react';
+import { getTranslation } from '../../utils/text/translations';
 
 const SimpleVoiceRecorder = ({ 
   onTranscript, 
@@ -16,6 +17,7 @@ const SimpleVoiceRecorder = ({
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
   
+  const t = getTranslation(uiLanguage);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
