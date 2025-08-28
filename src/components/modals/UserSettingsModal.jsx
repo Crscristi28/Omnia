@@ -75,7 +75,8 @@ const UserSettingsModal = ({
     const langMap = {
       'cs': { flag: '🇨🇿', label: 'Čeština' },
       'en': { flag: '🇺🇸', label: 'English' },
-      'ro': { flag: '🇷🇴', label: 'Română' }
+      'ro': { flag: '🇷🇴', label: 'Română' },
+      'de': { flag: '🇩🇪', label: 'Deutsch' }
     };
     return langMap[uiLanguage] || langMap['cs'];
   };

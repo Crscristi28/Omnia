@@ -10,11 +10,12 @@ const LanguageModal = ({
   setUILanguage, 
   t 
 }) => {
-  // Language options - only existing 3 languages
+  // Language options - CS, EN, RO + German
   const languageOptions = [
     { code: 'cs', flag: '🇨🇿', label: 'Čeština', nativeName: 'Čeština' },
     { code: 'en', flag: '🇺🇸', label: 'English', nativeName: 'English' },
-    { code: 'ro', flag: '🇷🇴', label: 'Română', nativeName: 'Română' }
+    { code: 'ro', flag: '🇷🇴', label: 'Română', nativeName: 'Română' },
+    { code: 'de', flag: '🇩🇪', label: 'Deutsch', nativeName: 'Deutsch' }
   ];
 
   // Add CSS to remove iOS focus styles (copy from UserSettingsModal)

@@ -23,6 +23,12 @@ export const welcomeTexts = {
     afternoon: "Bună ziua!",
     evening: "Bună seara!",
     subtitle: "Cu ce vă pot ajuta astăzi?"
+  },
+  de: { 
+    morning: "Guten Morgen!",
+    afternoon: "Guten Tag!",
+    evening: "Guten Abend!",
+    subtitle: "Wie kann ich Ihnen heute helfen?"
   }
 };
 
