@@ -91,7 +91,11 @@ export const uiTexts = {
     sending: "Odesílá...",
     passwordsMismatch: "Hesla se neshodují",
     passwordTooShort: "Heslo musí mít alespoň 6 znaků",
-    somethingWentWrong: "Něco se pokazilo. Zkuste to prosím znovu."
+    somethingWentWrong: "Něco se pokazilo. Zkuste to prosím znovu.",
+    profile: "Profil",
+    billing: "Fakturace",
+    signOut: "Odhlásit se",
+    soon: "Brzy"
   },
   en: {
     newChat: "New chat",
@@ -182,7 +186,11 @@ export const uiTexts = {
     sending: "Sending...",
     passwordsMismatch: "Passwords don't match",
     passwordTooShort: "Password must be at least 6 characters",
-    somethingWentWrong: "Something went wrong. Please try again."
+    somethingWentWrong: "Something went wrong. Please try again.",
+    profile: "Profile",
+    billing: "Billing",
+    signOut: "Sign Out",
+    soon: "Soon"
   },
   ro: {
     newChat: "Chat nou",
@@ -273,7 +281,11 @@ export const uiTexts = {
     sending: "Se trimite...",
     passwordsMismatch: "Parolele nu se potrivesc",
     passwordTooShort: "Parola trebuie să aibă cel puțin 6 caractere",
-    somethingWentWrong: "Ceva nu a mers bine. Te rugăm să încerci din nou."
+    somethingWentWrong: "Ceva nu a mers bine. Te rugăm să încerci din nou.",
+    profile: "Profil",
+    billing: "Facturare",
+    signOut: "Deconectare",
+    soon: "Curând"
   },
   de: {
     newChat: "Neuer Chat",
@@ -364,7 +376,11 @@ export const uiTexts = {
     sending: "Sende...",
     passwordsMismatch: "Passwörter stimmen nicht überein",
     passwordTooShort: "Passwort muss mindestens 6 Zeichen haben",
-    somethingWentWrong: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    somethingWentWrong: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+    profile: "Profil",
+    billing: "Abrechnung",
+    signOut: "Abmelden",
+    soon: "Bald"
   }
 };
 
