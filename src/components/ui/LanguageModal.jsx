@@ -16,7 +16,8 @@ const LanguageModal = ({
     { code: 'en', flag: '🇺🇸', label: 'English', nativeName: 'English' },
     { code: 'ro', flag: '🇷🇴', label: 'Română', nativeName: 'Română' },
     { code: 'de', flag: '🇩🇪', label: 'Deutsch', nativeName: 'Deutsch' },
-    { code: 'ru', flag: '🇷🇺', label: 'Русский', nativeName: 'Русский' }
+    { code: 'ru', flag: '🇷🇺', label: 'Русский', nativeName: 'Русский' },
+    { code: 'pl', flag: '🇵🇱', label: 'Polski', nativeName: 'Polski' }
   ];
 
   // Add CSS to remove iOS focus styles (copy from UserSettingsModal)
