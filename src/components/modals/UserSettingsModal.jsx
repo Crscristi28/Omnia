@@ -4,6 +4,7 @@ import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut } from '
 import { getTranslation } from '../../utils/text/translations';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
 import ProfileModal from './ProfileModal';
+import LanguageModal from '../ui/LanguageModal';
 
 const UserSettingsModal = ({ 
   isOpen, 
@@ -15,7 +16,7 @@ const UserSettingsModal = ({
   onResetPassword
 }) => {
   const t = getTranslation(uiLanguage);
-  const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
@@ -69,16 +70,14 @@ const UserSettingsModal = ({
     }
   }, [isOpen]);
   
-  // Language options
-  const languageOptions = [
-    { code: 'cs', flag: '🇨🇿', label: 'Čeština' },
-    { code: 'en', flag: '🇺🇸', label: 'English' },
-    { code: 'ro', flag: '🇷🇴', label: 'Română' }
-  ];
-
-  const handleLanguageChange = (langCode) => {
-    setUILanguage(langCode);
-    setIsLanguageExpanded(false);
+  // Get current language display
+  const getCurrentLanguageDisplay = () => {
+    const langMap = {
+      'cs': { flag: '🇨🇿', label: 'Čeština' },
+      'en': { flag: '🇺🇸', label: 'English' },
+      'ro': { flag: '🇷🇴', label: 'Română' }
+    };
+    return langMap[uiLanguage] || langMap['cs'];
   };
 
   const getDisplayEmail = (email) => {
@@ -270,126 +269,67 @@ const UserSettingsModal = ({
             </button>
 
             {/* Interface Language Card */}
-            <div>
-              <button
-                onClick={() => setIsLanguageExpanded(!isLanguageExpanded)}
-                style={{
-                  width: '100%',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  padding: '0.75rem',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  WebkitTapHighlightColor: 'transparent',
-                  WebkitFocusRingColor: 'transparent',
-                  boxShadow: 'none',
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
+            <button
+              onClick={() => setShowLanguageModal(true)}
+              style={{
+                width: '100%',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '0.75rem',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease',
+                cursor: 'pointer',
+                outline: 'none',
+                WebkitTapHighlightColor: 'transparent !important',
+                WebkitFocusRingColor: 'transparent !important',
+                boxShadow: 'none !important',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                color: '#ffffff',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+              }}
+            >
+              <Globe size={18} style={{ opacity: 0.7 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ marginBottom: '2px' }}>
+                  {t('interfaceLanguage')}
+                </div>
+                <div style={{ 
+                  fontSize: '0.8rem', 
+                  color: 'rgba(255, 255, 255, 0.7)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.75rem',
-                  color: '#ffffff',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  textAlign: 'left'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                }}
-              >
-                <Globe size={18} style={{ opacity: 0.7 }} />
-                <span style={{ flex: 1 }}>
-                  {uiLanguage === 'cs' ? 'Jazyk rozhraní' : 
-                   uiLanguage === 'en' ? 'Interface Language' : 
-                   'Limba interfeței'}
-                </span>
-                <ChevronDown 
-                  size={16} 
-                  style={{
-                    transform: isLanguageExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
-                    opacity: 0.6
-                  }}
-                />
-              </button>
-
-              {/* Language Options */}
-              {isLanguageExpanded && (
-                <div style={{
-                  marginTop: '0.5rem',
-                  marginLeft: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.25rem',
-                  animation: 'fadeIn 0.2s ease'
+                  gap: '0.5rem'
                 }}>
-                  {languageOptions.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      style={{
-                        width: '100%',
-                        padding: '0.6rem 0.75rem',
-                        background: uiLanguage === lang.code 
-                          ? 'rgba(255, 255, 255, 0.12)' 
-                          : 'rgba(255, 255, 255, 0.02)',
-                        border: 'none',
-                        borderRadius: '8px',
-                        color: '#ffffff',
-                        fontSize: '0.85rem',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        outline: 'none',
-                        WebkitTapHighlightColor: 'transparent',
-                        WebkitFocusRingColor: 'transparent',
-                        boxShadow: 'none',
-                        userSelect: 'none',
-                        WebkitUserSelect: 'none',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.6rem'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (uiLanguage !== lang.code) {
-                          e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (uiLanguage !== lang.code) {
-                          e.target.style.background = 'rgba(255, 255, 255, 0.02)';
-                        }
-                      }}
-                    >
-                      <span style={{ 
-                        fontSize: '0.7rem',
-                        fontWeight: '600',
-                        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        minWidth: '24px',
-                        textAlign: 'center'
-                      }}>
-                        {lang.flag}
-                      </span>
-                      <span style={{ flex: 1 }}>{lang.label}</span>
-                      {uiLanguage === lang.code && (
-                        <Check size={14} strokeWidth={2} style={{ opacity: 0.7 }} />
-                      )}
-                    </button>
-                  ))}
+                  <span style={{ fontSize: '0.85rem' }}>
+                    {getCurrentLanguageDisplay().flag}
+                  </span>
+                  {getCurrentLanguageDisplay().label}
                 </div>
-              )}
-            </div>
+              </div>
+              <ChevronDown 
+                size={16} 
+                style={{
+                  opacity: 0.6,
+                  transform: 'rotate(-90deg)' // Make it point right like →
+                }}
+              />
+            </button>
 
             {/* Reset Password Card */}
             <button
@@ -590,6 +530,17 @@ const UserSettingsModal = ({
           onSave={async (profileData) => {
             console.log('👤 [PROFILE] Profile saved successfully:', profileData);
           }}
+        />
+      )}
+
+      {/* Language Modal - Higher z-index for stacking */}
+      {showLanguageModal && (
+        <LanguageModal
+          isOpen={showLanguageModal}
+          onClose={() => setShowLanguageModal(false)}
+          uiLanguage={uiLanguage}
+          setUILanguage={setUILanguage}
+          t={t}
         />
       )}
     </>
