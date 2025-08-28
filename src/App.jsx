@@ -572,8 +572,8 @@ function App() {
       return allMessages;
     }
     
-    // 💾 AUTO-SAVE - každých 10 zpráv (bez cleanup!)
-    if (allMessages.length % 10 === 0 && allMessages.length > 0) {
+    // 💾 AUTO-SAVE - každá zpráva pro maximální bezpečnost
+    if (allMessages.length > 0) {
       try {
         await smartIncrementalSave(chatId, allMessages);
       } catch (error) {
