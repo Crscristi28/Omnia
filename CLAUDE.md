@@ -52,11 +52,17 @@
 - ✅ **NOVÝ: Direct upload systém do GCS (až 100MB soubory!)**
 - ✅ **NOVÝ: Automatické rozhodování upload metody (<3MB=Vercel, ≥3MB=GCS)**
 - ✅ **NOVÝ: Dual URL format support (gs:// + https://)**
+- ✅ **NOVÝ: Plný multilingual support (6 jazyků: CS, EN, RO, DE, RU, PL)**
+- ✅ **NOVÝ: Language selection modal v user settings**
+- ✅ **NOVÝ: Kompletní překlady (107+ UI keys pro každý jazyk)**
+- ✅ **NOVÝ: Smart IndexedDB sync detection (empty DB → full sync)**
+- ✅ **NOVÝ: Force full download pro reliable data recovery**
 
 ### Známé quirks (neopravovat pokud není kritické):
 - TTS na mobilu potřebuje 0ms delay (iOS gesture chain)
 - DOM warnings z Virtuoso (ignorovat)
 - Voice chat občas nefunguje na iOS PWA
+- Language fallback na rumunštinu pokud chybí klíč (fixed - všechny jazyky mají kompletní překlady)
 
 ## 🔧 DEVELOPMENT
 
@@ -70,12 +76,30 @@ npm run proxy    # Proxy server (port 3001)
 - Automatický deploy na Vercel z `main` branch
 - Environment variables jsou na Vercel
 
+## 🌍 MULTILINGUAL SYSTÉM
+
+### Podporované jazyky:
+- 🇨🇿 **Čeština (cs)** - Výchozí jazyk
+- 🇺🇸 **English (en)** - Anglický jazyk  
+- 🇷🇴 **Română (ro)** - Rumunský jazyk
+- 🇩🇪 **Deutsch (de)** - Německý jazyk
+- 🇷🇺 **Русский (ru)** - Ruský jazyk
+- 🇵🇱 **Polski (pl)** - Polský jazyk
+
+### Architektura překladů:
+- **Translation keys:** 107+ klíčů pro každý jazyk
+- **Fallback chain:** cs → en → ro (pokud chybí překlad)
+- **Komponenty:** `/src/utils/text/translations.js`
+- **UI Modal:** `/src/components/ui/LanguageModal.jsx`
+- **Integration:** Všude použití `getTranslation(uiLanguage)`
+
 ## ⚠️ DŮLEŽITÉ POZNÁMKY
 
 1. **NEPOUŽÍVAT PAGINATION** - Virtuoso zvládá 1000+ zpráv bez problémů
 2. **Voice chat VŽDY přepíná na Gemini** (cost optimization)
 3. **V RAM je VŽDY jen 1 aktivní chat** (ostatní v IndexedDB)
 4. **Lazy loading** - metadata chatů se načítají bez zpráv
+5. **Sync logic:** Empty IndexedDB → force full download, jinak incremental
 
 ## 🛑 PŘED VELKÝMI ZMĚNAMI
 
