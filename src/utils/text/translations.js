@@ -49,7 +49,7 @@ export const uiTexts = {
     generateImage: "Vytvořit obrázek",
     plusMenu: "Plus menu (již brzy)",
     chatPlaceholder: "Chatujte s Omnia...",
-    imageGenerated: "🎨 Vygenerovaný obrázek pro:",
+    imageGenerated: "🎨 Vygenerovaný obrázek:",
     
     // Auth Modal texts
     welcomeToOmnia: "Vítejte v Omnii",
@@ -140,7 +140,7 @@ export const uiTexts = {
     generateImage: "Generate Image",
     plusMenu: "Plus Menu (Coming Soon)",
     chatPlaceholder: "Chat with Omnia...",
-    imageGenerated: "🎨 Generated image for:",
+    imageGenerated: "🎨 Generated image:",
     
     // Auth Modal texts
     welcomeToOmnia: "Welcome to Omnia",
@@ -231,7 +231,7 @@ export const uiTexts = {
     generateImage: "Generează imagine",
     plusMenu: "Meniu plus (în curând)",
     chatPlaceholder: "Conversează cu Omnia...",
-    imageGenerated: "🎨 Imagine generată pentru:",
+    imageGenerated: "🎨 Imagine generată:",
     
     // Auth Modal texts
     welcomeToOmnia: "Bine ai venit în Omnia",
@@ -322,7 +322,7 @@ export const uiTexts = {
     generateImage: "Bild generieren",
     plusMenu: "Plus-Menü (Demnächst)",
     chatPlaceholder: "Mit Omnia chatten...",
-    imageGenerated: "🎨 Bild generiert für:",
+    imageGenerated: "🎨 Generiertes Bild:",
     
     // Auth Modal texts
     welcomeToOmnia: "Willkommen bei Omnia",
