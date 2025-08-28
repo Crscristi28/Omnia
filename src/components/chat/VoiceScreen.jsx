@@ -213,8 +213,7 @@ const VoiceScreen = ({
               animation: 'spin 1s linear infinite'
             }}></div>
             <span>
-              {uiLanguage === 'cs' ? 'Omnia přemýšlí...' : 
-               uiLanguage === 'en' ? 'Omnia thinking...' : 'Omnia gândește...'}
+              {t('omniaThinking')}
             </span>
           </div>
         )}
@@ -228,14 +227,7 @@ const VoiceScreen = ({
             textAlign: 'center'
           }}
         >
-          {isListening ? 
-            (uiLanguage === 'cs' ? 'Klepněte na mikrofon pro ukončení' : 
-             uiLanguage === 'en' ? 'Tap microphone to stop' : 
-             'Apasă microfonul pentru a opri') :
-            (uiLanguage === 'cs' ? 'Mluvte s Omnia' : 
-             uiLanguage === 'en' ? 'Talk with Omnia' : 
-             'Vorbește cu Omnia')
-          }
+          {isListening ? t('tapMicrophoneToStop') : t('talkWithOmnia')}
         </div>
       </div>
 

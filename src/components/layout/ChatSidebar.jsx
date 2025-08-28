@@ -128,11 +128,7 @@ const ChatSidebar = ({
 
   const handleDeleteChat = async (chatId, chatTitle) => {
     // Keep old confirm for long press (backward compatibility)
-    const confirmText = uiLanguage === 'cs' ? 
-      `Opravdu chcete smazat chat "${chatTitle}"?` :
-      uiLanguage === 'en' ? 
-      `Really delete chat "${chatTitle}"?` :
-      `Ștergi conversația "${chatTitle}"?`;
+    const confirmText = t('deleteConfirmShort').replace('{title}', chatTitle);
       
     if (confirm(confirmText)) {
       // If deleting the current chat, start new chat but keep sidebar open
@@ -323,9 +319,7 @@ const ChatSidebar = ({
                       fontStyle: 'italic',
                       textAlign: 'center'
                     }}>
-                      {uiLanguage === 'cs' ? 'Žádné konverzace' : 
-                       uiLanguage === 'en' ? 'No conversations' : 
-                       'Nicio conversație'}
+                      {t('noConversations')}
                     </div>
                   ) : (
                     chatHistory.map((chat, index) => (
@@ -427,9 +421,7 @@ const ChatSidebar = ({
                             e.target.style.color = 'rgba(255, 255, 255, 0.4)';
                             e.target.style.opacity = isMobile ? '1' : '0';
                           }}
-                          title={uiLanguage === 'cs' ? 'Smazat chat' : 
-                                 uiLanguage === 'en' ? 'Delete chat' : 
-                                 'Șterge chat'}
+                          title={t('deleteChat')}
                         >
                           <Trash2 size={14} strokeWidth={2} />
                         </button>
@@ -511,9 +503,7 @@ const ChatSidebar = ({
                     color: '#ffffff',
                     marginBottom: '0.125rem'
                   }}>
-                    {uiLanguage === 'cs' ? 'Přihlášen jako' : 
-                     uiLanguage === 'en' ? 'Signed in as' : 
-                     'Autentificat ca'}
+                    {t('signedInAs')}
                   </div>
                   <div style={{
                     fontSize: '0.75rem',
@@ -588,20 +578,14 @@ const ChatSidebar = ({
                   color: '#ffffff',
                   marginBottom: '0.5rem'
                 }}>
-                  {uiLanguage === 'cs' ? 'Smazat chat' : 
-                   uiLanguage === 'en' ? 'Delete chat' : 
-                   'Șterge chat'}
+                  {t('deleteChat')}
                 </div>
                 <div style={{
                   fontSize: '0.9rem',
                   color: 'rgba(255, 255, 255, 0.7)',
                   lineHeight: '1.4'
                 }}>
-                  {uiLanguage === 'cs' ? 
-                    `Opravdu chcete smazat chat "${deleteModal.chatTitle}"? Tato akce nelze vrátit zpět.` :
-                   uiLanguage === 'en' ? 
-                    `Are you sure you want to delete "${deleteModal.chatTitle}"? This action cannot be undone.` :
-                    `Sigur doriți să ștergeți "${deleteModal.chatTitle}"? Această acțiune nu poate fi anulată.`}
+                  {t('deleteConfirmation').replace('{title}', deleteModal.chatTitle)}
                 </div>
               </div>
               
@@ -635,9 +619,7 @@ const ChatSidebar = ({
                     e.target.style.color = 'rgba(255, 255, 255, 0.8)';
                   }}
                 >
-                  {uiLanguage === 'cs' ? 'Zrušit' : 
-                   uiLanguage === 'en' ? 'Cancel' : 
-                   'Anulează'}
+                  {t('cancel')}
                 </button>
                 
                 {/* DELETE BUTTON */}
@@ -665,9 +647,7 @@ const ChatSidebar = ({
                     e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
                   }}
                 >
-                  {uiLanguage === 'cs' ? 'Smazat' : 
-                   uiLanguage === 'en' ? 'Delete' : 
-                   'Șterge'}
+                  {t('delete')}
                 </button>
               </div>
             </div>

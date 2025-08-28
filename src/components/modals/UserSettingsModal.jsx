@@ -256,9 +256,7 @@ const UserSettingsModal = ({
             >
               <User size={18} style={{ opacity: 0.7 }} />
               <span style={{ flex: 1 }}>
-                {uiLanguage === 'cs' ? 'Profil' : 
-                 uiLanguage === 'en' ? 'Profile' : 
-                 'Profil'}
+                {t('profile')}
               </span>
               <ChevronDown 
                 size={16} 
@@ -372,9 +370,7 @@ const UserSettingsModal = ({
             >
               <Shield size={18} style={{ opacity: 0.7 }} />
               <span style={{ flex: 1 }}>
-                {uiLanguage === 'cs' ? 'Změnit heslo' : 
-                 uiLanguage === 'en' ? 'Reset password' : 
-                 'Resetează parola'}
+                {t('resetPassword')}
               </span>
               <ChevronDown 
                 size={16} 
@@ -428,9 +424,7 @@ const UserSettingsModal = ({
             >
               <DollarSign size={18} style={{ opacity: 0.7 }} />
               <span style={{ flex: 1 }}>
-                {uiLanguage === 'cs' ? 'Fakturace' : 
-                 uiLanguage === 'en' ? 'Billing' : 
-                 'Facturare'}
+                {t('billing')}
               </span>
               <div style={{
                 display: 'flex',
@@ -442,9 +436,7 @@ const UserSettingsModal = ({
                   opacity: 0.5,
                   fontWeight: 'normal'
                 }}>
-                  {uiLanguage === 'cs' ? 'Brzy' : 
-                   uiLanguage === 'en' ? 'Soon' : 
-                   'Curând'}
+                  {t('soon')}
                 </span>
                 <ChevronDown 
                   size={16} 
@@ -503,9 +495,7 @@ const UserSettingsModal = ({
             >
               <LogOut size={18} strokeWidth={2} />
               <span>
-                {uiLanguage === 'cs' ? 'Odhlásit se' : 
-                 uiLanguage === 'en' ? 'Sign out' : 
-                 'Deconectare'}
+                {t('signOut')}
               </span>
             </button>
           </div>

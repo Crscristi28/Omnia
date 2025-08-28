@@ -95,7 +95,16 @@ export const uiTexts = {
     profile: "Profil",
     billing: "Fakturace",
     signOut: "Odhlásit se",
-    soon: "Brzy"
+    soon: "Brzy",
+    signedInAs: "Přihlášen jako",
+    deleteConfirmation: "Opravdu chcete smazat chat '{title}'? Tato akce nelze vrátit zpět.",
+    noConversations: "Žádné konverzace",
+    deleteChat: "Smazat chat",
+    delete: "Smazat",
+    deleteConfirmShort: "Opravdu chcete smazat chat '{title}'?",
+    omniaThinking: "Omnia přemýšlí...",
+    tapMicrophoneToStop: "Klepněte na mikrofon pro ukončení",
+    talkWithOmnia: "Mluvte s Omnia"
   },
   en: {
     newChat: "New chat",
@@ -190,7 +199,16 @@ export const uiTexts = {
     profile: "Profile",
     billing: "Billing",
     signOut: "Sign Out",
-    soon: "Soon"
+    soon: "Soon",
+    signedInAs: "Signed in as",
+    deleteConfirmation: "Are you sure you want to delete '{title}'? This action cannot be undone.",
+    noConversations: "No conversations",
+    deleteChat: "Delete chat",
+    delete: "Delete",
+    deleteConfirmShort: "Really delete chat '{title}'?",
+    omniaThinking: "Omnia thinking...",
+    tapMicrophoneToStop: "Tap microphone to stop",
+    talkWithOmnia: "Talk with Omnia"
   },
   ro: {
     newChat: "Chat nou",
@@ -285,7 +303,16 @@ export const uiTexts = {
     profile: "Profil",
     billing: "Facturare",
     signOut: "Deconectare",
-    soon: "Curând"
+    soon: "Curând",
+    signedInAs: "Autentificat ca",
+    deleteConfirmation: "Sigur doriți să ștergeți '{title}'? Această acțiune nu poate fi anulată.",
+    noConversations: "Nicio conversație",
+    deleteChat: "Șterge chat",
+    delete: "Șterge",
+    deleteConfirmShort: "Ștergi conversația '{title}'?",
+    omniaThinking: "Omnia gândește...",
+    tapMicrophoneToStop: "Atingeți microfonul pentru a opri",
+    talkWithOmnia: "Vorbește cu Omnia"
   },
   de: {
     newChat: "Neuer Chat",
@@ -380,7 +407,16 @@ export const uiTexts = {
     profile: "Profil",
     billing: "Abrechnung",
     signOut: "Abmelden",
-    soon: "Bald"
+    soon: "Bald",
+    signedInAs: "Authentifiziert als",
+    deleteConfirmation: "Möchten Sie '{title}' wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    noConversations: "Keine Gespräche",
+    deleteChat: "Chat löschen",
+    delete: "Löschen",
+    deleteConfirmShort: "Chat '{title}' wirklich löschen?",
+    omniaThinking: "Omnia denkt nach...",
+    tapMicrophoneToStop: "Mikrofon antippen zum Stoppen",
+    talkWithOmnia: "Sprechen Sie mit Omnia"
   }
 };
 
