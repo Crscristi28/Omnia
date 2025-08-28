@@ -605,9 +605,7 @@ const SimpleVoiceRecorder = ({
             e.target.style.transform = 'scale(1)';
           }}
         >
-          {uiLanguage === 'cs' ? 'Zrušit' : 
-           uiLanguage === 'en' ? 'Cancel' : 
-           'Anulează'}
+          {t('cancel')}
         </button>
       )}
 

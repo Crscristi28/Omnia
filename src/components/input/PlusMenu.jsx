@@ -67,9 +67,7 @@ const PlusMenu = ({
           color: '#ffffff',
           fontWeight: '600'
         }}>
-          🚀 {uiLanguage === 'cs' ? 'Multimodální funkce' : 
-               uiLanguage === 'en' ? 'Multimodal features' : 
-               'Funcții multimodale'}
+          🚀 {t('multimodalFeatures')}
         </div>
 
         {/* Menu Items */}
@@ -122,9 +120,7 @@ const PlusMenu = ({
           fontSize: '0.75rem',
           color: 'rgba(255, 255, 255, 0.6)'
         }}>
-          {uiLanguage === 'cs' ? 'Funkce budou brzy dostupné' : 
-           uiLanguage === 'en' ? 'Features coming soon' : 
-           'Funcțiile vor fi disponibile în curând'}
+          {t('featuresComingSoon')}
         </div>
       </div>
     </>

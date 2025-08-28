@@ -104,7 +104,17 @@ export const uiTexts = {
     deleteConfirmShort: "Opravdu chcete smazat chat '{title}'?",
     omniaThinking: "Omnia přemýšlí...",
     tapMicrophoneToStop: "Klepněte na mikrofon pro ukončení",
-    talkWithOmnia: "Mluvte s Omnia"
+    talkWithOmnia: "Mluvte s Omnia",
+    multimodalFeatures: "Multimodální funkce",
+    featuresComingSoon: "Funkce budou brzy dostupné",
+    aiCanMakeErrors: "AI může dělat chyby, proveďte vlastní výzkum",
+    loadingProfile: "Načítá se profil...",
+    fullName: "Plné jméno",
+    howYouWantToBeDisplayed: "Jak chcete být zobrazován",
+    aiGreeting: "Oslovení pro AI",
+    howAiShouldAddressYou: "Jak vás má oslovovat AI",
+    exampleNicknames: "Např. \"professor\", \"daddy\", \"John\", \"Tom\" 😄",
+    saving: "Ukládá se..."
   },
   en: {
     newChat: "New chat",
@@ -208,7 +218,17 @@ export const uiTexts = {
     deleteConfirmShort: "Really delete chat '{title}'?",
     omniaThinking: "Omnia thinking...",
     tapMicrophoneToStop: "Tap microphone to stop",
-    talkWithOmnia: "Talk with Omnia"
+    talkWithOmnia: "Talk with Omnia",
+    multimodalFeatures: "Multimodal Features",
+    featuresComingSoon: "Features coming soon",
+    aiCanMakeErrors: "AI can make errors, do your own research",
+    loadingProfile: "Loading profile...",
+    fullName: "Full name",
+    howYouWantToBeDisplayed: "How you want to be displayed",
+    aiGreeting: "AI Greeting",
+    howAiShouldAddressYou: "How AI should address you",
+    exampleNicknames: "E.g. \"professor\", \"daddy\", \"John\", \"Tom\" 😄",
+    saving: "Saving..."
   },
   ro: {
     newChat: "Chat nou",
@@ -312,7 +332,17 @@ export const uiTexts = {
     deleteConfirmShort: "Ștergi conversația '{title}'?",
     omniaThinking: "Omnia gândește...",
     tapMicrophoneToStop: "Atingeți microfonul pentru a opri",
-    talkWithOmnia: "Vorbește cu Omnia"
+    talkWithOmnia: "Vorbește cu Omnia",
+    multimodalFeatures: "Funcții multimodale",
+    featuresComingSoon: "Funcții disponibile în curând",
+    aiCanMakeErrors: "IA poate face erori, faceți propria cercetare",
+    loadingProfile: "Se încarcă profilul...",
+    fullName: "Nume complet",
+    howYouWantToBeDisplayed: "Cum vreți să fiți afișat",
+    aiGreeting: "Salut pentru IA",
+    howAiShouldAddressYou: "Cum să vă adreseze IA",
+    exampleNicknames: "De ex. \"professor\", \"daddy\", \"John\", \"Tom\" 😄",
+    saving: "Se salvează..."
   },
   de: {
     newChat: "Neuer Chat",
@@ -416,7 +446,17 @@ export const uiTexts = {
     deleteConfirmShort: "Chat '{title}' wirklich löschen?",
     omniaThinking: "Omnia denkt nach...",
     tapMicrophoneToStop: "Mikrofon antippen zum Stoppen",
-    talkWithOmnia: "Sprechen Sie mit Omnia"
+    talkWithOmnia: "Sprechen Sie mit Omnia",
+    multimodalFeatures: "Multimodale Funktionen",
+    featuresComingSoon: "Funktionen werden bald verfügbar sein",
+    aiCanMakeErrors: "KI kann Fehler machen, machen Sie Ihre eigene Recherche",
+    loadingProfile: "Profil wird geladen...",
+    fullName: "Vollständiger Name",
+    howYouWantToBeDisplayed: "Wie Sie angezeigt werden möchten",
+    aiGreeting: "KI-Begrüßung",
+    howAiShouldAddressYou: "Wie die KI Sie ansprechen soll",
+    exampleNicknames: "Z.B. \"Professor\", \"daddy\", \"John\", \"Tom\" 😄",
+    saving: "Speichern..."
   }
 };
 

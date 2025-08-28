@@ -167,9 +167,7 @@ const ProfileModal = ({
                 fontSize: '1.1rem',
                 fontWeight: '600'
               }}>
-                {uiLanguage === 'cs' ? 'Profil' : 
-                 uiLanguage === 'en' ? 'Profile' : 
-                 'Profil'}
+                {t('profile')}
               </h2>
             </div>
 
@@ -228,9 +226,7 @@ const ProfileModal = ({
                   fontSize: '0.9rem',
                   margin: 0
                 }}>
-                  {uiLanguage === 'cs' ? 'Načítá se profil...' :
-                   uiLanguage === 'en' ? 'Loading profile...' :
-                   'Se încarcă profilul...'}
+                  {t('loadingProfile')}
                 </p>
               </div>
             ) : (
@@ -244,18 +240,14 @@ const ProfileModal = ({
                 fontWeight: '500',
                 marginBottom: '0.5rem'
               }}>
-                {uiLanguage === 'cs' ? 'Plné jméno' :
-                 uiLanguage === 'en' ? 'Full Name' :
-                 'Nume complet'}
+                {t('fullName')}
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={
-                  uiLanguage === 'cs' ? 'Jak chcete být zobrazován' :
-                  uiLanguage === 'en' ? 'As you want to be displayed' :
-                  'Cum doriți să fiți afișat'
+                  t('howYouWantToBeDisplayed')
                 }
                 style={{
                   width: '100%',
@@ -288,18 +280,14 @@ const ProfileModal = ({
                 fontWeight: '500',
                 marginBottom: '0.5rem'
               }}>
-                {uiLanguage === 'cs' ? 'Oslovení pro AI' :
-                 uiLanguage === 'en' ? 'Call me' :
-                 'Să mă numească'}
+                {t('aiGreeting')}
               </label>
               <input
                 type="text"
                 value={callMeName}
                 onChange={(e) => setCallMeName(e.target.value)}
                 placeholder={
-                  uiLanguage === 'cs' ? 'Jak vás má oslovovat AI' :
-                  uiLanguage === 'en' ? 'How AI should address you' :
-                  'Cum să vă adreseze AI-ul'
+                  t('howAiShouldAddressYou')
                 }
                 style={{
                   width: '100%',
@@ -326,9 +314,7 @@ const ProfileModal = ({
                 color: 'rgba(255, 255, 255, 0.6)',
                 fontSize: '0.8rem'
               }}>
-                {uiLanguage === 'cs' ? 'Např. "professor", "daddy", "John", "Tom" 😄' :
-                 uiLanguage === 'en' ? 'e.g. "professor", "daddy", "John", "Tom" 😄' :
-                 'ex. "professor", "daddy", "John", "Tom" 😄'}
+                {t('exampleNicknames')}
               </p>
             </div>
               </>
@@ -371,9 +357,7 @@ const ProfileModal = ({
                 }
               }}
             >
-              {uiLanguage === 'cs' ? 'Zrušit' :
-               uiLanguage === 'en' ? 'Cancel' :
-               'Anulează'}
+              {t('cancel')}
             </button>
 
             <button
@@ -419,16 +403,12 @@ const ProfileModal = ({
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }} />
-                  {uiLanguage === 'cs' ? 'Ukládá se...' :
-                   uiLanguage === 'en' ? 'Saving...' :
-                   'Se salvează...'}
+                  {t('saving')}
                 </>
               ) : (
                 <>
                   <Check size={14} />
-                  {uiLanguage === 'cs' ? 'Uložit' :
-                   uiLanguage === 'en' ? 'Save' :
-                   'Salvează'}
+                  {t('save')}
                 </>
               )}
             </button>

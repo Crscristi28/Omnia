@@ -82,9 +82,7 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUploa
           gap: '8px',
         }}>
           <Sparkles style={{ width: '16px', height: '16px', color: '#60A5FA' }} strokeWidth={2} />
-          {uiLanguage === 'cs' ? 'Multimodální funkce' : 
-           uiLanguage === 'en' ? 'Multimodal features' : 
-           'Funcții multimodale'}
+          {t('multimodalFeatures')}
         </div>
 
         {/* Menu items */}
@@ -395,9 +393,7 @@ const InputBar = ({
           letterSpacing: '0.02em',
           textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
         }}>
-          {uiLanguage === 'cs' ? 'AI může dělat chyby, proveďte vlastní výzkum' :
-           uiLanguage === 'ro' ? 'AI poate face greșeli, faceți propria cercetare' :
-           'AI can make mistakes, make your own research'}
+          {t('aiCanMakeErrors')}
         </div>
       </div>
       
