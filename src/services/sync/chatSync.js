@@ -231,7 +231,7 @@ class ChatSyncService {
   }
 
   // 📥 Download chats from Supabase to IndexedDB with UUID schema
-  async downloadChats() {
+  async downloadChats(forceFullDownload = false) {
     if (!isSupabaseReady()) {
       console.warn('⚠️ [SYNC-UUID] Supabase not configured - download disabled');
       throw new Error('Supabase configuration missing');
@@ -283,12 +283,12 @@ class ChatSyncService {
         .select('*')
         .eq('user_id', userId);
       
-      // Add incremental filter if we have a last sync time
-      if (lastDownloadTime) {
+      // Add incremental filter if we have a last sync time AND not forcing full download
+      if (lastDownloadTime && !forceFullDownload) {
         messagesQuery = messagesQuery.gt('timestamp', lastDownloadTime);
         console.log(`⚡ [SYNC-UUID] Incremental download: messages after ${lastDownloadTime}`);
       } else {
-        console.log('⚡ [SYNC-UUID] Full download: no previous sync timestamp');
+        console.log(`⚡ [SYNC-UUID] Full download: ${forceFullDownload ? 'forced' : 'no previous sync timestamp'}`);
       }
       
       const { data: allRemoteMessages, error: allMessagesError } = await messagesQuery
@@ -433,8 +433,8 @@ class ChatSyncService {
 
       console.log(`✅ [SYNC-UUID] Uploaded ${uploadedCount}/${localChats.length} chats`);
 
-      // Step 3: Download all remote chats from Supabase
-      await this.downloadChats();
+      // Step 3: Download all remote chats from Supabase (force full download)
+      await this.downloadChats(true);
 
       const duration = Math.round(performance.now() - startTime);
       console.log(`🎯 [SYNC-UUID] Full sync completed in ${duration}ms`);
