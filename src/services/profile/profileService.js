@@ -5,6 +5,10 @@ import { authService } from '../auth/supabaseAuth.js';
 class ProfileService {
   constructor() {
     console.log('👤 [PROFILE] ProfileService initialized');
+    
+    // Profile cache for performance optimization
+    this.profileCache = null;
+    this.cacheUserId = null;
   }
 
   // 🔐 Get current user ID for auth-scoped operations
@@ -106,6 +110,14 @@ class ProfileService {
 
       console.log('✅ [PROFILE] Profile saved successfully:', profile);
       
+      // Update cache with new profile data
+      this.profileCache = {
+        full_name: profile.full_name || null,
+        name: profile.name || null
+      };
+      this.cacheUserId = userId;
+      console.log('🔄 [PROFILE] Cache updated after save');
+      
       return {
         full_name: profile.full_name || null,
         name: profile.name || null
@@ -117,10 +129,27 @@ class ProfileService {
     }
   }
 
+  // 🚀 Private method to get cached profile data
+  async _getCachedProfile() {
+    const currentUserId = await this.getCurrentUserId();
+    
+    // Return cached profile if available for current user
+    if (this.profileCache && this.cacheUserId === currentUserId) {
+      console.log('💨 [PROFILE] Using cached profile data');
+      return this.profileCache;
+    }
+    
+    // Load from database and cache
+    console.log('📥 [PROFILE] Loading and caching profile data');
+    this.profileCache = await this.loadProfile();
+    this.cacheUserId = currentUserId;
+    return this.profileCache;
+  }
+
   // 🎯 Get user name for AI personalization
   async getUserNameForAI() {
     try {
-      const profile = await this.loadProfile();
+      const profile = await this._getCachedProfile();
       return profile.name || null;
     } catch (error) {
       console.error('❌ [PROFILE] Error getting name for AI:', error);
@@ -131,7 +160,7 @@ class ProfileService {
   // 📋 Get full name for UI display  
   async getFullNameForUI() {
     try {
-      const profile = await this.loadProfile();
+      const profile = await this._getCachedProfile();
       return profile.full_name || null;
     } catch (error) {
       console.error('❌ [PROFILE] Error getting full name for UI:', error);
