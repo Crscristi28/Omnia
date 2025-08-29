@@ -2449,7 +2449,7 @@ const virtuosoComponents = React.useMemo(() => ({
               ref={virtuosoRef}
               style={virtuosoInlineStyle}
               overscan={1200}
-              atBottomThreshold={100}
+              atBottomThreshold={500}
               components={virtuosoComponents}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
