@@ -137,6 +137,9 @@ function App() {
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   
+  // 🎯 DYNAMIC FOOTER - Changes based on chat state
+  const [virtuosoFooterHeight, setVirtuosoFooterHeight] = useState(140);
+  
   
   // ❌ REMOVED: All scroll limit logic - keeping only spacer
   
@@ -1060,7 +1063,13 @@ function App() {
       // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (fixed large spacer)
       const newUserMessageIndex = messagesWithUser.length - 1; // Index nové user zprávy
       
-      scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
+      // Set large footer for scroll-to-top effect
+      setVirtuosoFooterHeight(475);
+      
+      // Small delay to let footer update before scrolling
+      setTimeout(() => {
+        scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
+      }, 50);
 
       // ❌ REMOVED: Old auto-save from handleSend - moved to AI response locations
 
@@ -1428,6 +1437,11 @@ function App() {
       setStreaming(false);
       setIsSearching(false);
       
+      // Reset footer to normal size after AI completes
+      setTimeout(() => {
+        setVirtuosoFooterHeight(140);
+      }, 800); // Wait for animations to complete
+      
       // ✅ SINGLE SAVE POINT - Only save when conversation is complete
       if (currentChatId && responseText && !fromVoice) {
         try {
@@ -1783,7 +1797,13 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // 🔼 SCROLL TO THIS USER MESSAGE immediately after adding it (with documents, fixed large spacer)
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
-  scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
+  // Set large footer for scroll-to-top effect
+  setVirtuosoFooterHeight(475);
+  
+  // Small delay to let footer update before scrolling
+  setTimeout(() => {
+    scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
+  }, 50);
 
   // ❌ REMOVED: DOC-AUTO-SAVE - using unified auto-save system instead (every 10 messages)
   
@@ -2156,7 +2176,6 @@ const {
   welcomeTitleStyle,
   welcomeSubtitleStyle,
   chatMessagesWrapperStyle,
-  virtuosoFooterStyle,
   virtuosoInlineStyle
 } = styles;
 
@@ -2164,11 +2183,11 @@ const {
 
 // 🎯 VIRTUOSO COMPONENTS - Footer + main paddingBottom kombinace
 const virtuosoComponents = React.useMemo(() => ({
-  Footer: () => <div style={virtuosoFooterStyle} />,
+  Footer: () => <div style={{ height: `${virtuosoFooterHeight}px` }} />,
   List: React.forwardRef((props, ref) => (
     <div {...props} ref={ref} style={{...props.style}} />
   ))
-}), [virtuosoFooterStyle]);
+}), [virtuosoFooterHeight]);
 
 
 // 🎨 JSX RENDER
