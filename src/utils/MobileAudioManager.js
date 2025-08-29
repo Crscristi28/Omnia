@@ -21,7 +21,6 @@ class MobileAudioManager {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       this.audioContext = new AudioContext();
-      console.log('📱 AudioContext initialized:', this.audioContext.state);
     } catch (e) {
       console.warn('⚠️ Could not create AudioContext early:', e);
     }
@@ -37,16 +36,13 @@ class MobileAudioManager {
       }
       
       if (this.audioContext.state === 'suspended') {
-        console.log('🔄 AudioContext suspended, attempting resume...');
         try {
           await this.audioContext.resume();
-          console.log('✅ AudioContext resume successful, new state:', this.audioContext.state);
         } catch (resumeError) {
           console.error('❌ AudioContext resume failed:', resumeError);
           throw resumeError;
         }
       } else {
-        console.log('ℹ️ AudioContext already in state:', this.audioContext.state);
       }
       
       const oscillator = this.audioContext.createOscillator();
@@ -65,14 +61,12 @@ class MobileAudioManager {
           silentAudio.volume = 0; // Nastavit hlasitost na nulu
           await silentAudio.play();
           this.silentAudioPlayed = true;
-          console.log('🎵 iOS Silent Mode hack: Silent audio played successfully');
         } catch (e) {
           console.warn('⚠️ iOS Silent Mode hack failed:', e);
         }
       }
       
       this.isUnlocked = true;
-      console.log('🔓 Mobile audio unlocked!');
       this.processQueue();
       return true;
     } catch (error) {
@@ -87,7 +81,6 @@ class MobileAudioManager {
   }
   
   async queueAudio(audioBlob) {
-    console.log('🎵 Adding audio to queue. Queue length:', this.audioQueue.length);
     this.audioQueue.push(audioBlob);
     
     if (!this.isPlaying) {
@@ -99,15 +92,12 @@ class MobileAudioManager {
     if (this.audioQueue.length === 0 || this.isPlaying) return;
     
     this.isPlaying = true;
-    console.log('🎵 Starting audio queue processing...');
     
     while (this.audioQueue.length > 0) {
       const audioBlob = this.audioQueue.shift();
-      console.log('🎵 Playing audio. Remaining in queue:', this.audioQueue.length);
       
       try {
         await this.playAudio(audioBlob);
-        console.log('✅ Audio finished, continuing to next...');
         await new Promise(resolve => setTimeout(resolve, 0));
       } catch (error) {
         console.error('❌ Error playing queued audio:', error);
@@ -115,7 +105,6 @@ class MobileAudioManager {
     }
     
     this.isPlaying = false;
-    console.log('🏁 Audio queue processing complete');
   }
   
   async playAudio(audioBlob) {
@@ -130,7 +119,6 @@ class MobileAudioManager {
     }
     
     try {
-      console.log('🎵 Playing audio via Web Audio API...');
       
       // Dekódovat audio blob pomocí Web Audio API
       const arrayBuffer = await audioBlob.arrayBuffer();
@@ -141,7 +129,6 @@ class MobileAudioManager {
       source.buffer = audioBuffer;
       source.connect(this.audioContext.destination);
       
-      console.log('▶️ Web Audio API source started');
       
       // Spustit přehrávání
       source.start(0);
@@ -149,7 +136,6 @@ class MobileAudioManager {
       // Vrátit Promise která se resolvne až audio skončí
       return new Promise((resolve, reject) => {
         source.onended = () => {
-          console.log('🎵 Web Audio API source ended');
           resolve();
         };
         
@@ -176,7 +162,6 @@ class MobileAudioManager {
       this.currentAudio = null;
     }
     
-    console.log('🛑 Audio stopped and queue cleared');
   }
 }
 

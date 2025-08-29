@@ -174,9 +174,6 @@ function App() {
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
     
     console.log('🔍 Setting up PWA event listeners...');
-    console.log('📱 Mobile device:', isMobile);
-    console.log('📱 PWA mode:', isPWA);
-    console.log('📱 User agent:', navigator.userAgent);
     
     // Service Worker is now handled automatically
   }, []);
@@ -1047,13 +1044,6 @@ function App() {
   timestamp: userTimestamp
 };
       
-      // 🔍 [TIMESTAMP-DEBUG] Log user message timestamp
-      console.log('🔍 [TIMESTAMP-DEBUG] User message:', {
-        sender: 'user',
-        timestamp: userTimestamp,
-        timestampDate: new Date(userTimestamp).toISOString(),
-        hasTimestamp: true
-      });
       let messagesWithUser = [...currentMessages, userMessage];
       setMessages(messagesWithUser);
 
@@ -1068,7 +1058,6 @@ function App() {
 
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
-        console.log('🎨 Image generation mode - calling Imagen API');
         
         try {
           const response = await fetch('/api/imagen', {
@@ -1153,14 +1142,6 @@ function App() {
         responseText = finalText;
         sourcesToSave = sources;
         
-        // 🔍 [TIMESTAMP-DEBUG] Log Claude final response
-        console.log('🔍 [TIMESTAMP-DEBUG] Bot Claude final:', {
-          sender: 'bot',
-          timestamp: botTimestamp,
-          timestampDate: new Date(botTimestamp).toISOString(),
-          hasTimestamp: true,
-          sourcesCount: sources.length
-        });
         
         // 🆕 STREAMING: Use streaming effect for final text
         const stopFn = streamMessageWithEffect(
@@ -1349,16 +1330,6 @@ function App() {
               timestamp: botTimestamp
             };
             
-            // 🔍 [TIMESTAMP-DEBUG] Log bot streaming update (only on final)
-            if (!isStreaming) {
-              console.log('🔍 [TIMESTAMP-DEBUG] Bot Gemini final:', {
-                sender: 'bot',
-                timestamp: botTimestamp,
-                timestampDate: new Date(botTimestamp).toISOString(),
-                hasTimestamp: true,
-                sourcesCount: geminiSources.length
-              });
-            }
             
             setMessages([
               ...messagesWithUser,
@@ -1600,7 +1571,6 @@ const handleDocumentUpload = async (event) => {
     
     if (useDirectUpload) {
       // 🚀 DIRECT UPLOAD TO GCS - bypasses Vercel limits
-      console.log('🚀 [DIRECT-UPLOAD] Starting direct upload to GCS...');
       
       // Progress callback for user feedback
       const onProgress = (progress) => {
@@ -1610,7 +1580,6 @@ const handleDocumentUpload = async (event) => {
       
       // Upload directly to GCS
       const uploadResult = await uploadDirectToGCS(file, onProgress);
-      console.log('✅ [DIRECT-UPLOAD] File uploaded to GCS');
       
       // Process document from GCS
       console.log('🔄 [DIRECT-UPLOAD] Processing document...');
@@ -1765,14 +1734,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     timestamp: userTimestamp
   };
   
-  // 🔍 [TIMESTAMP-DEBUG] Log user message with documents timestamp
-  console.log('🔍 [TIMESTAMP-DEBUG] User message with documents:', {
-    sender: 'user',
-    timestamp: userTimestamp,
-    timestampDate: new Date(userTimestamp).toISOString(),
-    hasTimestamp: true,
-    attachmentsCount: attachments.length
-  });
   // Add message and get current state
   let currentMessagesWithUser;
   setMessages(prev => {
@@ -1834,10 +1795,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         
         if (useDirectUpload) {
           // 🚀 DIRECT UPLOAD TO GCS for drag & drop
-          console.log('🚀 [DRAG-DROP-DIRECT] Starting direct upload to GCS...');
           
           const uploadResult = await uploadDirectToGCS(doc.file);
-          console.log('✅ [DRAG-DROP-DIRECT] File uploaded to GCS');
           
           result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
           
@@ -2063,16 +2022,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             timestamp: botTimestampDocs
           };
           
-          // 🔍 [TIMESTAMP-DEBUG] Log bot docs update (only on final)
-          if (!isStreaming) {
-            console.log('🔍 [TIMESTAMP-DEBUG] Bot Gemini docs final:', {
-              sender: 'bot',
-              timestamp: botTimestampDocs,
-              timestampDate: new Date(botTimestampDocs).toISOString(),
-              hasTimestamp: true,
-              sourcesCount: geminiSourcesForDocs.length
-            });
-          }
           
           setMessages([
             ...messagesForAI,
@@ -2172,12 +2121,6 @@ const virtuosoComponents = React.useMemo(() => ({
 
 
 // 🎨 JSX RENDER
-  // Debug logs
-  console.log('🎨 Render state:', 
-    'showSplashScreen:', showSplashScreen,
-    'user:', user?.email || null,
-    'authLoading:', authLoading
-  );
   
   return (
     <>

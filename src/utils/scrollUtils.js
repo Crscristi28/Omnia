@@ -38,10 +38,8 @@ export const scrollToLatestMessage = (virtuosoRef, messages) => {
 
 // 🔼 SCROLL TO BOTTOM - For scroll button (default bottom behavior)
 export const scrollToBottom = (virtuosoRef) => {
-  console.log('🚀 scrollToBottom called - scrolling to bottom');
   
   if (virtuosoRef.current) {
-    console.log('✅ virtuosoRef available, calling scrollToIndex LAST');
     virtuosoRef.current.scrollToIndex({ 
       index: 'LAST',
       behavior: 'smooth'

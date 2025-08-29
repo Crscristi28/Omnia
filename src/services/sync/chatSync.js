@@ -190,14 +190,6 @@ class ChatSyncService {
           image: msg.image || null
         };
 
-        // 🔍 [TIMESTAMP-DEBUG] Log message before Supabase upload
-        console.log('🔍 [TIMESTAMP-DEBUG] Uploading to Supabase:', {
-          sender: msg.sender,
-          uuid: msg.uuid,
-          timestamp: msg.timestamp,
-          timestampDate: new Date(msg.timestamp).toISOString(),
-          hasTimestamp: !!msg.timestamp
-        });
 
         // Upload individually - no batch corruption
         const { error: messageError } = await supabase

@@ -93,7 +93,6 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUploa
               key={item.key}
               onClick={() => {
                 if (item.key === 'generate' && onImageGenerate) {
-                  console.log('🎨 Activating image generation mode');
                   onImageGenerate();
                   onClose();
                 } else if (item.key === 'document' && onDocumentUpload) {
@@ -207,12 +206,6 @@ const InputBar = ({
         const keyboardOpen = heightDifference > 100;
         setIsKeyboardOpen(keyboardOpen);
         
-        console.log('📱 Keyboard detection:', {
-          initialHeight: initialViewportHeight,
-          currentHeight,
-          difference: heightDifference,
-          keyboardOpen
-        });
       }, 50); // Short debounce
     };
 
@@ -228,7 +221,6 @@ const InputBar = ({
     const handleInputFocus = () => {
       setTimeout(() => {
         setIsKeyboardOpen(true);
-        console.log('📱 Keyboard opened via input focus fallback');
       }, 200); // Shorter delay
     };
     
@@ -239,7 +231,6 @@ const InputBar = ({
         const heightDifference = initialViewportHeight - currentHeight;
         if (heightDifference < 100) {
           setIsKeyboardOpen(false);
-          console.log('📱 Keyboard closed via input blur fallback');
         }
       }, 100);
     };
@@ -299,7 +290,6 @@ const InputBar = ({
   };
 
   const handleImageGenerate = () => {
-    console.log('🎨 Image generation from InputBar - toggling mode');
     if (onImageGenerate) {
       onImageGenerate();
     }

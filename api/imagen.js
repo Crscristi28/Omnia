@@ -27,7 +27,6 @@ export default async function handler(req, res) {
     // Parse JSON credentials - same as gemini.js
     const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     
-    console.log('🎨 Generating image with Imagen 4.0:', prompt.substring(0, 50) + '...');
 
     // Prepare the request body according to Imagen API docs
     const requestBody = {
@@ -60,7 +59,6 @@ export default async function handler(req, res) {
     const authClient = await auth.getClient();
     const accessToken = await authClient.getAccessToken();
 
-    console.log('🔑 Got access token, calling Imagen API...');
 
     // Call Imagen API
     const response = await fetch(apiUrl, {
@@ -82,7 +80,6 @@ export default async function handler(req, res) {
     }
 
     const result = await response.json();
-    console.log('✅ Imagen API response received');
 
     // Process the response
     if (!result.predictions || result.predictions.length === 0) {
@@ -97,7 +94,6 @@ export default async function handler(req, res) {
       enhancedPrompt: prediction.prompt || prompt // Some models return enhanced prompt
     }));
 
-    console.log(`🎨 Successfully generated ${images.length} image(s)`);
 
     // Return success response
     return res.status(200).json({
