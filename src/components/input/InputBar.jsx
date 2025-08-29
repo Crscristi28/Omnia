@@ -591,7 +591,14 @@ const InputBar = ({
             )}
             
             {/* TEXTAREA NAHOŘE */}
+            <style>{`
+              .omnia-chat-input::placeholder {
+                color: rgba(255, 255, 255, 0.6);
+                opacity: 1;
+              }
+            `}</style>
             <textarea
+              className="omnia-chat-input"
               ref={textareaRef}
               value={localInput}
               onChange={(e) => setLocalInput(e.target.value)}
