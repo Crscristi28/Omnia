@@ -226,7 +226,17 @@ function App() {
         subscription = authService.onAuthStateChange(async (event, session) => {
           console.log('🔄 Auth event:', event);
           console.log('🔄 Session user:', session?.user?.email || 'No user in session');
-          setUser(session?.user || null);
+          
+          // 🔐 SECURITY: Only set user if email is confirmed
+          if (session?.user && session.user.email_confirmed_at) {
+            setUser(session.user);
+            console.log('✅ User authenticated with confirmed email');
+          } else if (session?.user && !session.user.email_confirmed_at) {
+            setUser(null);
+            console.log('⚠️ User email not confirmed yet');
+          } else {
+            setUser(null);
+          }
           
           // 🔄 Start background sync ONLY for real logins, not PWA wake events
           if (session?.user && event === 'SIGNED_IN') {
