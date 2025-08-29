@@ -1,7 +1,7 @@
 // 🔐 Auth Modal Component - Login/Signup with Glassmorphism design
 import React, { useState } from 'react';
 import authService from '../../services/auth/supabaseAuth';
-import { getTranslation, detectLanguage } from '../../utils/text/translations';
+import { getTranslation } from '../../utils/text/translations';
 
 const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
   const t = getTranslation(uiLanguage);
@@ -32,9 +32,8 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
           onSuccess(result.user);
         }
       } else {
-        // Signup flow - detect language and send it to Supabase
-        const deviceLanguage = detectLanguage();
-        result = await authService.signUpWithEmail(email, password, deviceLanguage);
+        // Signup flow
+        result = await authService.signUpWithEmail(email, password);
         
         if (result.error) {
           setError(result.error);

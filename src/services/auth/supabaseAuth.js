@@ -23,21 +23,16 @@ class SupabaseAuthService {
   }
 
   // Sign up with email and password
-  async signUpWithEmail(email, password, preferredLanguage = 'en') {
+  async signUpWithEmail(email, password) {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            preferred_language: preferredLanguage
-          }
-        }
       });
       
       if (error) throw error;
       
-      console.log('✅ User signed up:', data.user?.email, 'Language:', preferredLanguage);
+      console.log('✅ User signed up:', data.user?.email);
       return { user: data.user, error: null };
     } catch (error) {
       console.error('❌ Sign up error:', error.message);
