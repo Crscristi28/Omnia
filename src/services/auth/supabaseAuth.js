@@ -2,7 +2,6 @@
 // Simple email auth implementation
 
 import { supabase } from '../supabase/client.js';
-import sessionManager from '../storage/sessionManager.js';
 
 class SupabaseAuthService {
   // Sign in with email and password
@@ -29,11 +28,6 @@ class SupabaseAuthService {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            preferred_language: sessionManager.getUILanguage()
-          }
-        }
       });
       
       if (error) throw error;
@@ -69,17 +63,6 @@ class SupabaseAuthService {
     } catch (error) {
       console.error('❌ Get user error:', error.message);
       return null;
-    }
-  }
-
-  // Check if user email is confirmed
-  async isUserEmailConfirmed() {
-    try {
-      const user = await this.getCurrentUser();
-      return user && user.email_confirmed_at !== null;
-    } catch (error) {
-      console.error('❌ Email confirmation check error:', error.message);
-      return false;
     }
   }
 
