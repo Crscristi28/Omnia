@@ -168,12 +168,24 @@ const InputBar = ({
   previewImage,
   setPreviewImage
 }) => {
+  // LOCAL STATE FOR INPUT - Performance optimization
+  const [localInput, setLocalInput] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+  
+  // Synchronize with parent input prop (for STT/Voice compatibility)
+  React.useEffect(() => {
+    // Only sync if parent input is different and not empty
+    // This handles STT/Voice setting the input from App.jsx
+    if (input && input !== localInput) {
+      console.log('📝 [InputBar] Syncing input from parent:', input);
+      setLocalInput(input);
+    }
+  }, [input]);
 
   // iOS keyboard detection with multiple fallback methods
   React.useEffect(() => {
@@ -264,17 +276,19 @@ const InputBar = ({
     if (pendingDocuments.length > 0) {
       // Send with documents (regardless of whether there's text or not)
       if (onSendWithDocuments) {
-        onSendWithDocuments(input, pendingDocuments);
+        onSendWithDocuments(localInput, pendingDocuments);
         setPendingDocuments([]); // Clear chips after sending
+        setLocalInput(''); // Clear local input
       }
-    } else if (input.trim() && onSend) {
-      // Regular text-only send
-      onSend();
+    } else if (localInput.trim() && onSend) {
+      // Regular text-only send - pass the text up
+      onSend(localInput);
+      setLocalInput(''); // Clear local input after sending
     }
   };
 
   const handleKeyDown = (e) => {
-    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && (input.trim() || pendingDocuments.length > 0)) {
+    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && (localInput.trim() || pendingDocuments.length > 0)) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -589,8 +603,8 @@ const InputBar = ({
             {/* TEXTAREA NAHOŘE */}
             <textarea
               ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={localInput}
+              onChange={(e) => setLocalInput(e.target.value)}
               onClick={(e) => {
                 // iOS PWA fix - ensure focus on click
                 if (isMobile && window.navigator.standalone) {
@@ -730,7 +744,7 @@ const InputBar = ({
                 
                 {/* 5. DYNAMIC BUTTON */}
                 <button
-                  onClick={(input.trim() || pendingDocuments.length > 0) ? handleSendMessage : onVoiceScreen}
+                  onClick={(localInput.trim() || pendingDocuments.length > 0) ? handleSendMessage : onVoiceScreen}
                   disabled={isLoading}
                   style={{
                     background: 'none',
@@ -739,9 +753,9 @@ const InputBar = ({
                     cursor: isLoading ? 'not-allowed' : 'pointer',
                     opacity: isLoading ? 0.5 : 1,
                   }}
-                  title={(input.trim() || pendingDocuments.length > 0) ? 'Send Message' : 'Voice Chat'}
+                  title={(localInput.trim() || pendingDocuments.length > 0) ? 'Send Message' : 'Voice Chat'}
                 >
-                  {(input.trim() || pendingDocuments.length > 0) ? 
+                  {(localInput.trim() || pendingDocuments.length > 0) ? 
                     <Send size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} /> : 
                     <AudioWaveform size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                   }

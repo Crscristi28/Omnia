@@ -2539,7 +2539,7 @@ const virtuosoComponents = React.useMemo(() => ({
       <InputBar
         input={input}
         setInput={setInput}
-        onSend={() => handleSend()}
+        onSend={(text) => handleSend(text)}
         onSTT={toggleSTT}
         onVoiceScreen={handleVoiceScreenOpen}
         onImageGenerate={() => setIsImageMode(prev => !prev)}
