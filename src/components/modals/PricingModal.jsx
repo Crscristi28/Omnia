@@ -100,44 +100,44 @@ const PricingModal = ({
         {/* MODAL CONTENT */}
         <div 
           style={{
-            width: '100vw',
+            width: '100%',
+            maxWidth: '900px',
             height: '100vh',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.92))',
+            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: 'none',
-            boxShadow: 'none',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             flexDirection: 'column',
-            position: 'relative',
-            animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            overflow: 'hidden'
+            animation: 'slideUp 0.3s ease-out',
+            position: 'relative'
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* HEADER */}
+          {/* HEADER - Fixed Top */}
           <div style={{
-            padding: '2rem 3rem 1.5rem',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            padding: '2rem 2rem 1rem',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'relative',
-            flexShrink: 0
+            position: 'relative'
           }}>
-            <div>
+            <div style={{
+              textAlign: 'center',
+              width: '100%'
+            }}>
               <h1 style={{
                 color: 'white',
-                fontSize: '2.5rem',
-                fontWeight: '700',
-                margin: '0 0 0.5rem 0',
-                letterSpacing: '-0.025em'
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                margin: '0 0 1rem 0'
               }}>
                 Choose Your Plan
               </h1>
               <p style={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: '1.25rem',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '0.9rem',
                 margin: 0,
                 fontWeight: '400'
               }}>
@@ -149,13 +149,16 @@ const PricingModal = ({
             <button
               onClick={onClose}
               style={{
+                position: 'absolute',
+                top: '2rem',
+                right: '2rem',
                 background: 'transparent',
                 border: 'none',
                 color: 'rgba(255, 255, 255, 0.7)',
                 cursor: 'pointer',
                 outline: 'none',
-                padding: '0.5rem',
-                borderRadius: '8px',
+                padding: '0.25rem',
+                borderRadius: '6px',
                 fontSize: '1.25rem',
                 lineHeight: 1,
                 transition: 'all 0.2s ease',
@@ -172,96 +175,48 @@ const PricingModal = ({
                 e.target.style.color = 'rgba(255, 255, 255, 0.7)';
               }}
             >
-              <X size={24} />
+              <X size={20} />
             </button>
           </div>
 
-          {/* SCROLLABLE PRICING CARDS */}
-          <div 
-            className="pricing-cards-container"
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              padding: '2rem'
-            }}>
-            <div 
-              className="pricing-grid"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-                gap: '2rem',
-                alignItems: 'stretch',
-                maxWidth: '1400px',
-                margin: '0 auto'
-              }}>
+          {/* SCROLLABLE CONTENT */}
+          <div style={{
+            flex: 1,
+            padding: '1.5rem 2rem',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem'
+          }}>
             {plans.map((plan, index) => (
               <div
                 key={plan.id}
                 style={{
-                  background: plan.gradient,
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  borderRadius: '16px',
-                  border: `2px solid ${plan.borderColor}`,
-                  padding: '2rem',
-                  position: 'relative',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  border: currentPlan === plan.id 
+                    ? '2px solid rgba(59, 130, 246, 0.8)' 
+                    : '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '1.5rem',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
                   cursor: 'default',
-                  boxShadow: currentPlan === plan.id 
-                    ? '0 20px 40px rgba(59, 130, 246, 0.3)' 
-                    : '0 10px 30px rgba(0, 0, 0, 0.2)',
-                  transform: currentPlan === plan.id ? 'scale(1.05)' : 'scale(1)',
-                  zIndex: currentPlan === plan.id ? 10 : 1
-                }}
-                onMouseEnter={(e) => {
-                  if (currentPlan !== plan.id) {
-                    e.target.style.transform = 'scale(1.02) translateY(-4px)';
-                    e.target.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.25)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (currentPlan !== plan.id) {
-                    e.target.style.transform = 'scale(1) translateY(0)';
-                    e.target.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
-                  }
+                  position: 'relative'
                 }}
               >
-                {/* POPULAR BADGE */}
-                {plan.popular && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '-1px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                    color: 'white',
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '0 0 12px 12px',
-                    fontSize: '0.75rem',
-                    fontWeight: '700',
-                    letterSpacing: '0.05em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)'
-                  }}>
-                    <Star size={12} fill="currentColor" />
-                    MOST POPULAR
-                  </div>
-                )}
-
                 {/* SAVE BADGE */}
                 {plan.badge && (
                   <div style={{
                     position: 'absolute',
-                    top: '1rem',
+                    top: '-8px',
                     right: '1rem',
                     background: 'linear-gradient(135deg, #10B981, #059669)',
                     color: 'white',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '20px',
-                    fontSize: '0.75rem',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '12px',
+                    fontSize: '0.7rem',
                     fontWeight: '700',
                     letterSpacing: '0.05em',
                     boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
@@ -269,57 +224,73 @@ const PricingModal = ({
                     {plan.badge}
                   </div>
                 )}
+                
+                {/* MOST POPULAR BADGE */}
+                {plan.popular && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '1rem',
+                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                    color: 'white',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '12px',
+                    fontSize: '0.7rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)'
+                  }}>
+                    <Star size={10} fill="currentColor" />
+                    POPULAR
+                  </div>
+                )}
 
-                {/* PLAN NAME */}
+                {/* PLAN HEADER */}
                 <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                   marginBottom: '1rem'
                 }}>
-                  <h3 style={{
-                    color: 'white',
-                    fontSize: '1.5rem',
-                    fontWeight: '700',
-                    margin: '0 0 0.5rem 0'
-                  }}>
-                    {plan.name}
-                  </h3>
+                  <div>
+                    <h3 style={{
+                      color: 'white',
+                      fontSize: '1.1rem',
+                      fontWeight: '700',
+                      margin: '0 0 0.25rem 0'
+                    }}>
+                      {plan.name}
+                    </h3>
+                    <p style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '0.85rem',
+                      margin: 0
+                    }}>
+                      {plan.period}
+                    </p>
+                  </div>
                   
                   {/* PRICE */}
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    gap: '0.5rem',
-                    marginBottom: '0.25rem'
+                    textAlign: 'right'
                   }}>
-                    <span style={{
+                    <div style={{
                       color: 'white',
-                      fontSize: '3rem',
-                      fontWeight: '800',
+                      fontSize: '1.5rem',
+                      fontWeight: '700',
                       lineHeight: '1'
                     }}>
-                      {plan.price}
-                    </span>
-                    <span style={{
-                      color: 'white',
-                      fontSize: '1.25rem',
-                      fontWeight: '600'
-                    }}>
-                      {plan.currency}
-                    </span>
+                      {plan.price} {plan.currency}
+                    </div>
                   </div>
-                  
-                  <p style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    fontSize: '1rem',
-                    margin: 0,
-                    fontWeight: '500'
-                  }}>
-                    {plan.period}
-                  </p>
                 </div>
 
                 {/* FEATURES */}
                 <div style={{
-                  marginBottom: '2rem'
+                  marginBottom: '1.5rem'
                 }}>
                   {plan.features.map((feature, featureIndex) => (
                     <div
@@ -327,15 +298,15 @@ const PricingModal = ({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.75rem',
-                        marginBottom: '0.75rem',
+                        gap: '0.5rem',
+                        marginBottom: '0.5rem',
                         color: 'rgba(255, 255, 255, 0.9)',
-                        fontSize: '0.95rem',
+                        fontSize: '0.85rem',
                         fontWeight: '500'
                       }}
                     >
                       <Check 
-                        size={18} 
+                        size={14} 
                         style={{ 
                           color: '#10B981',
                           flexShrink: 0
@@ -356,32 +327,26 @@ const PricingModal = ({
                       ? 'rgba(255, 255, 255, 0.1)' 
                       : 'rgba(255, 255, 255, 0.95)',
                     border: 'none',
-                    borderRadius: '12px',
-                    padding: '1rem',
+                    borderRadius: '8px',
+                    padding: '0.75rem',
                     color: plan.buttonDisabled ? 'rgba(255, 255, 255, 0.6)' : '#1F2937',
                     cursor: plan.buttonDisabled ? 'default' : 'pointer',
                     outline: 'none',
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    letterSpacing: '0.025em',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
                     transition: 'all 0.2s ease',
-                    boxShadow: plan.buttonDisabled 
-                      ? 'none' 
-                      : '0 4px 12px rgba(0, 0, 0, 0.15)',
                     opacity: plan.buttonDisabled ? 0.7 : 1
                   }}
                   onMouseEnter={(e) => {
                     if (!plan.buttonDisabled) {
                       e.target.style.background = 'rgba(255, 255, 255, 1)';
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.25)';
+                      e.target.style.transform = 'translateY(-1px)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!plan.buttonDisabled) {
                       e.target.style.background = 'rgba(255, 255, 255, 0.95)';
                       e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                     }
                   }}
                 >
@@ -389,19 +354,17 @@ const PricingModal = ({
                 </button>
               </div>
             ))}
-            </div>
           </div>
 
           {/* FOOTER */}
           <div style={{
-            padding: '1.5rem 3rem 2rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            textAlign: 'center',
-            flexShrink: 0
+            padding: '1rem 2rem 6rem', // Extra bottom padding for mobile safe area
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            textAlign: 'center'
           }}>
             <p style={{
               color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '1rem',
+              fontSize: '0.9rem',
               margin: 0,
               fontWeight: '400'
             }}>
@@ -425,16 +388,6 @@ const PricingModal = ({
           to { 
             opacity: 1; 
             transform: translateY(0) scale(1); 
-          }
-        }
-        
-        @media (max-width: 768px) {
-          .pricing-cards-container {
-            padding: 1rem !important;
-          }
-          .pricing-grid {
-            grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
           }
         }
       `}</style>
