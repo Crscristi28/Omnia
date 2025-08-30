@@ -100,15 +100,13 @@ const PricingModal = ({
         {/* MODAL CONTENT */}
         <div 
           style={{
-            width: '100%',
-            maxWidth: '1200px',
-            height: '90vh',
+            width: '100vw',
+            height: '100vh',
             background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.92))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+            border: 'none',
+            boxShadow: 'none',
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
@@ -119,7 +117,7 @@ const PricingModal = ({
         >
           {/* HEADER */}
           <div style={{
-            padding: '1.5rem 2rem 1rem',
+            padding: '2rem 3rem 1.5rem',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
@@ -130,16 +128,16 @@ const PricingModal = ({
             <div>
               <h1 style={{
                 color: 'white',
-                fontSize: '1.75rem',
+                fontSize: '2.5rem',
                 fontWeight: '700',
-                margin: '0 0 0.25rem 0',
+                margin: '0 0 0.5rem 0',
                 letterSpacing: '-0.025em'
               }}>
                 Choose Your Plan
               </h1>
               <p style={{
                 color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: '1rem',
+                fontSize: '1.25rem',
                 margin: 0,
                 fontWeight: '400'
               }}>
@@ -178,20 +176,21 @@ const PricingModal = ({
             </button>
           </div>
 
-          {/* SCROLLABLE PRICING CARDS */}
+          {/* PRICING CARDS */}
           <div style={{
             flex: 1,
-            padding: '1.5rem 2rem',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
+            padding: '2rem',
             display: 'flex',
-            flexDirection: 'column'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.5rem',
-              alignItems: 'stretch'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+              gap: '2rem',
+              alignItems: 'stretch',
+              width: '100%',
+              maxWidth: '1400px'
             }}>
             {plans.map((plan, index) => (
               <div
@@ -392,14 +391,14 @@ const PricingModal = ({
 
           {/* FOOTER */}
           <div style={{
-            padding: '1rem 2rem 1.5rem',
+            padding: '1.5rem 3rem 2rem',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             textAlign: 'center',
             flexShrink: 0
           }}>
             <p style={{
               color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '0.9rem',
+              fontSize: '1rem',
               margin: 0,
               fontWeight: '400'
             }}>
