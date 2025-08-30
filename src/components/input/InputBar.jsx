@@ -209,7 +209,7 @@ const InputBar = ({
       extraDots = '•';
     }
     
-    return `Listening${baseDots}${extraDots}`;
+    return `${t('listening')}${baseDots}${extraDots}`;
   };
   
   // Synchronize with parent input prop (for STT/Voice compatibility)

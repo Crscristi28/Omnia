@@ -796,14 +796,12 @@ function App() {
         setAudioLevel(0);
         
         if (recordingDuration < 1000) {
-          showNotification('Nahrávka příliš krátká - mluvte déle', 'error');
           return;
         }
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         
         if (audioBlob.size < 1000) {
-          showNotification('Žádný zvuk nezaznamenán', 'error');
           return;
         }
         
@@ -837,8 +835,6 @@ function App() {
 
   const processSTTAudio = async (audioBlob) => {
     try {
-      showNotification('Převádím řeč na text...', 'info');
-      
       const arrayBuffer = await audioBlob.arrayBuffer();
       
       // 🔧 Try ElevenLabs STT first (primary)
@@ -856,7 +852,6 @@ function App() {
       // 🔧 If ElevenLabs fails, try Google STT as fallback
       if (!response.ok) {
         console.warn('⚠️ ElevenLabs STT failed, trying Google STT fallback...');
-        showNotification('Zkouším Google STT...', 'info');
         
         response = await fetch('/api/google-stt', {
           method: 'POST',
