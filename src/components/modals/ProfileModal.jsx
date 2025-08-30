@@ -131,8 +131,10 @@ const ProfileModal = ({
         <div 
           className="profile-modal"
           style={{
-            width: '100vw',
-            height: '100vh',
+            width: '100%',
+            maxWidth: '400px',
+            maxHeight: '80vh',
+            margin: '2rem',
             background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',

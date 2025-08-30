@@ -180,10 +180,10 @@ const PricingModal = ({
           {/* SCROLLABLE CONTENT */}
           <div style={{
             flex: 1,
-            padding: '1.5rem 2rem',
+            padding: '2rem',
             overflowY: 'auto',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center'
           }}>
             <div 
