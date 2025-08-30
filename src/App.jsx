@@ -872,7 +872,7 @@ function App() {
       if (data.success && data.text && data.text.trim()) {
         const transcribedText = data.text.trim();
         setInput(transcribedText);
-        showNotification(`Text převeden pomocí ${usedService}! Zkontrolujte a odešlete.`, 'success');
+        // Silent - no notification after STT
       } else {
         throw new Error('Nepodařilo se rozpoznat řeč');
       }

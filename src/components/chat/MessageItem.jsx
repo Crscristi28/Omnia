@@ -47,9 +47,6 @@ const MessageItem = ({
     userAttachmentWrapperStyle
   } = styles;
 
-  // 🔄 DEBUG: Track MessageItem renders
-  console.log(`🔄 [MessageItem] Render - index: ${index}, sender: ${msg?.sender}, text: ${msg?.text?.substring(0, 30) || 'loading'}`);
-
   return (
     <div 
       key={msg.id || `fallback_${index}`} 
@@ -332,10 +329,6 @@ export default React.memo(MessageItem, (prevProps, nextProps) => {
     prevProps.msg.id === nextProps.msg.id
   );
   
-  // Log when we skip renders (for debugging)
-  if (shouldSkipRender) {
-    console.log(`⏭️ [MessageItem] SKIPPED re-render - index: ${prevProps.index}`);
-  }
   
   return shouldSkipRender;
 });
