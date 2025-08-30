@@ -187,12 +187,12 @@ const PricingModal = ({
             justifyContent: 'center'
           }}>
             <div 
+              className="pricing-cards-grid"
               style={{
                 display: 'grid',
-                gridTemplateColumns: window.innerWidth >= 768 ? 'repeat(3, 1fr)' : '1fr',
-                gap: window.innerWidth >= 768 ? '2rem' : '1rem',
+                gridTemplateColumns: '1fr',
+                gap: '1rem',
                 width: '100%',
-                maxWidth: window.innerWidth >= 768 ? '1200px' : 'none',
                 alignItems: 'stretch'
               }}
             >
@@ -397,6 +397,23 @@ const PricingModal = ({
           to { 
             opacity: 1; 
             transform: translateY(0) scale(1); 
+          }
+        }
+        
+        /* Responsive grid layout */
+        @media (min-width: 768px) {
+          .pricing-cards-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 2rem !important;
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+          }
+        }
+        
+        @media (max-width: 767px) {
+          .pricing-cards-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
           }
         }
       `}</style>
