@@ -84,6 +84,7 @@ function App() {
   const [previewImage, setPreviewImage] = useState(null); // For fullscreen photo preview
   const [documentViewer, setDocumentViewer] = useState({ isOpen: false, document: null }); // For document viewer
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
   
   
   // 🆕 MODEL SWITCH STATE FOR VOICE (UNCHANGED)
@@ -751,6 +752,28 @@ function App() {
         }
       });
 
+      // Audio level monitoring for reactive dots
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyzer = audioContext.createAnalyser();
+      analyzer.fftSize = 256;
+      source.connect(analyzer);
+      
+      const dataArray = new Uint8Array(analyzer.frequencyBinCount);
+      
+      const updateAudioLevel = () => {
+        if (!isRecordingSTT) return;
+        
+        analyzer.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+        const normalizedLevel = Math.min(average / 50, 1);
+        setAudioLevel(normalizedLevel);
+        
+        requestAnimationFrame(updateAudioLevel);
+      };
+      
+      updateAudioLevel();
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
@@ -768,7 +791,9 @@ function App() {
       mediaRecorder.onstop = async () => {
         const recordingDuration = Date.now() - startTime;
         stream.getTracks().forEach(track => track.stop());
+        audioContext.close();
         setIsRecordingSTT(false);
+        setAudioLevel(0);
         
         if (recordingDuration < 1000) {
           showNotification('Nahrávka příliš krátká - mluvte déle', 'error');
@@ -796,6 +821,7 @@ function App() {
     } catch (error) {
       console.error('❌ STT Recording setup error:', error);
       setIsRecordingSTT(false);
+      setAudioLevel(0);
       showNotification('Nepodařilo se získat přístup k mikrofonu', 'error');
     }
   };
@@ -2495,6 +2521,7 @@ const virtuosoComponents = React.useMemo(() => ({
         uiLanguage={uiLanguage}
         previewImage={previewImage}
         setPreviewImage={setPreviewImage}
+        audioLevel={audioLevel}
       />
 
       {/* 📋 CHAT SIDEBAR - NEW! */}

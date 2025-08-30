@@ -165,7 +165,8 @@ const InputBar = ({
   isImageMode = false,
   uiLanguage = 'cs',
   previewImage,
-  setPreviewImage
+  setPreviewImage,
+  audioLevel = 0
 }) => {
   // LOCAL STATE FOR INPUT - Performance optimization
   const [localInput, setLocalInput] = useState('');
@@ -175,6 +176,19 @@ const InputBar = ({
   const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+  
+  // Audio-reactive listening placeholder
+  const getListeningPlaceholder = () => {
+    if (audioLevel === 0) {
+      return 'Listening...';
+    } else if (audioLevel < 0.3) {
+      return 'Listening•';
+    } else if (audioLevel < 0.6) {
+      return 'Listening••';
+    } else {
+      return 'Listening•••';
+    }
+  };
   
   // Synchronize with parent input prop (for STT/Voice compatibility)
   React.useEffect(() => {
@@ -609,7 +623,7 @@ const InputBar = ({
                 }
               }}
               onKeyDown={handleKeyDown}
-              placeholder={isLoading ? t('omniaPreparingResponse') : t('chatPlaceholder')}
+              placeholder={isRecording ? getListeningPlaceholder() : (isLoading ? t('omniaPreparingResponse') : t('chatPlaceholder'))}
               disabled={isLoading}
               rows={1}
               style={{

@@ -7,6 +7,7 @@ import { getTranslation } from '../../utils/text/translations';
 const SimpleVoiceRecorder = ({ 
   onTranscript, 
   onListeningChange,
+  onAudioLevel,
   disabled, 
   isAudioPlaying,
   uiLanguage = 'cs'
@@ -56,6 +57,11 @@ const SimpleVoiceRecorder = ({
         
         setAudioLevel(normalizedLevel);
         
+        // Send audio level to parent component
+        if (onAudioLevel) {
+          onAudioLevel(normalizedLevel);
+        }
+        
         animationFrameRef.current = requestAnimationFrame(checkAudioLevel);
       };
       
@@ -77,6 +83,11 @@ const SimpleVoiceRecorder = ({
     }
     
     setAudioLevel(0);
+    
+    // Reset audio level in parent component
+    if (onAudioLevel) {
+      onAudioLevel(0);
+    }
   };
 
   // 📱 HAPTIC FEEDBACK
