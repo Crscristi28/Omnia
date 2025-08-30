@@ -283,13 +283,30 @@ class ChatSyncService {
         console.log(`⚡ [SYNC-UUID] Full download: ${forceFullDownload ? 'forced' : 'no previous sync timestamp'}`);
       }
       
-      const { data: allRemoteMessages, error: allMessagesError } = await messagesQuery
-        .order('timestamp', { ascending: true })
-        .order('sender', { ascending: false }); // user před bot při stejném timestamp
-
-      if (allMessagesError) {
-        console.error('❌ [SYNC-UUID] Error fetching all messages:', allMessagesError);
-        return false;
+      // Paginated query to avoid timeout with large datasets
+      let allRemoteMessages = [];
+      let from = 0;
+      const limit = 100;
+      
+      while (true) {
+        const { data: batch, error: batchError } = await messagesQuery
+          .range(from, from + limit - 1)
+          .order('timestamp', { ascending: true })
+          .order('sender', { ascending: false }); // user před bot při stejném timestamp
+        
+        if (batchError) {
+          console.error('❌ [SYNC-UUID] Error fetching messages batch:', batchError);
+          return false;
+        }
+        
+        if (!batch || batch.length === 0) {
+          break; // No more messages
+        }
+        
+        allRemoteMessages = [...allRemoteMessages, ...batch];
+        from += limit;
+        
+        console.log(`📥 [SYNC-UUID] Downloaded ${allRemoteMessages.length} messages...`);
       }
 
       // Group messages by chat_id locally (much faster than N database queries)
