@@ -47,6 +47,9 @@ const MessageItem = ({
     userAttachmentWrapperStyle
   } = styles;
 
+  // 🔄 DEBUG: Track MessageItem renders
+  console.log(`🔄 [MessageItem] Render - index: ${index}, sender: ${msg?.sender}, text: ${msg?.text?.substring(0, 30) || 'loading'}`);
+
   return (
     <div 
       key={msg.id || `fallback_${index}`} 
@@ -309,4 +312,30 @@ const MessageItem = ({
   );
 };
 
-export default MessageItem;
+// 🚀 PERFORMANCE: React.memo with custom comparison to prevent unnecessary re-renders
+export default React.memo(MessageItem, (prevProps, nextProps) => {
+  // Return true to SKIP re-render (props are equal)
+  // Return false to ALLOW re-render (props changed)
+  
+  // Always re-render if index changed (shouldn't happen in practice)
+  if (prevProps.index !== nextProps.index) return false;
+  
+  // Handle null/undefined messages
+  if (!prevProps.msg || !nextProps.msg) return false;
+  
+  // Check if critical message properties changed
+  const shouldSkipRender = (
+    prevProps.msg.text === nextProps.msg.text &&
+    prevProps.msg.isStreaming === nextProps.msg.isStreaming &&
+    prevProps.msg.isLoading === nextProps.msg.isLoading &&
+    prevProps.msg.sender === nextProps.msg.sender &&
+    prevProps.msg.id === nextProps.msg.id
+  );
+  
+  // Log when we skip renders (for debugging)
+  if (shouldSkipRender) {
+    console.log(`⏭️ [MessageItem] SKIPPED re-render - index: ${prevProps.index}`);
+  }
+  
+  return shouldSkipRender;
+});
