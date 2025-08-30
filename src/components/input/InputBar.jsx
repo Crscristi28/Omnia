@@ -629,7 +629,7 @@ const InputBar = ({
             {/* TEXTAREA NAHOŘE */}
             <style>{`
               .omnia-chat-input::placeholder {
-                color: rgba(255, 255, 255, 0.6);
+                color: ${isRecording ? '#ff4444' : 'rgba(255, 255, 255, 0.6)'};
                 opacity: 1;
               }
             `}</style>
