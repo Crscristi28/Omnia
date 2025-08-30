@@ -5,6 +5,7 @@ import { getTranslation } from '../../utils/text/translations';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
 import ProfileModal from './ProfileModal';
 import LanguageModal from '../ui/LanguageModal';
+import PricingModal from './PricingModal';
 
 const UserSettingsModal = ({ 
   isOpen, 
@@ -19,6 +20,7 @@ const UserSettingsModal = ({
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Add CSS to remove iOS focus styles
   useEffect(() => {
@@ -386,8 +388,7 @@ const UserSettingsModal = ({
             {/* Billing Card */}
             <button
               onClick={() => {
-                // TODO: Implement billing
-                console.log('Billing - TODO');
+                setShowPricingModal(true);
               }}
               style={{
                 width: '100%',
@@ -534,6 +535,15 @@ const UserSettingsModal = ({
           uiLanguage={uiLanguage}
           setUILanguage={setUILanguage}
           t={t}
+        />
+      )}
+
+      {/* Pricing Modal - Highest z-index for stacking */}
+      {showPricingModal && (
+        <PricingModal
+          isOpen={showPricingModal}
+          onClose={() => setShowPricingModal(false)}
+          currentPlan="free" // TODO: Get from user subscription status
         />
       )}
     </>
