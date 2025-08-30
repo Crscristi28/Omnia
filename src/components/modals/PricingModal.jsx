@@ -183,9 +183,19 @@ const PricingModal = ({
             padding: '1.5rem 2rem',
             overflowY: 'auto',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '0.75rem'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
+            <div 
+              style={{
+                display: 'grid',
+                gridTemplateColumns: window.innerWidth >= 768 ? 'repeat(3, 1fr)' : '1fr',
+                gap: window.innerWidth >= 768 ? '2rem' : '1rem',
+                width: '100%',
+                maxWidth: window.innerWidth >= 768 ? '1200px' : 'none',
+                alignItems: 'stretch'
+              }}
+            >
             {plans.map((plan, index) => (
               <div
                 key={plan.id}
@@ -352,6 +362,7 @@ const PricingModal = ({
                 </button>
               </div>
             ))}
+            </div>
           </div>
 
           {/* FOOTER */}
