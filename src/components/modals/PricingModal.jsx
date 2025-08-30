@@ -102,7 +102,7 @@ const PricingModal = ({
           style={{
             width: '100%',
             maxWidth: '1200px',
-            maxHeight: '90vh',
+            height: '90vh',
             background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.92))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -119,26 +119,27 @@ const PricingModal = ({
         >
           {/* HEADER */}
           <div style={{
-            padding: '2rem 2rem 1rem',
+            padding: '1.5rem 2rem 1rem',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            position: 'relative'
+            position: 'relative',
+            flexShrink: 0
           }}>
             <div>
               <h1 style={{
                 color: 'white',
-                fontSize: '2rem',
+                fontSize: '1.75rem',
                 fontWeight: '700',
-                margin: '0 0 0.5rem 0',
+                margin: '0 0 0.25rem 0',
                 letterSpacing: '-0.025em'
               }}>
                 Choose Your Plan
               </h1>
               <p style={{
                 color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: '1.1rem',
+                fontSize: '1rem',
                 margin: 0,
                 fontWeight: '400'
               }}>
@@ -177,14 +178,21 @@ const PricingModal = ({
             </button>
           </div>
 
-          {/* PRICING CARDS */}
+          {/* SCROLLABLE PRICING CARDS */}
           <div style={{
-            padding: '2rem',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '1.5rem',
-            alignItems: 'stretch'
+            flex: 1,
+            padding: '1.5rem 2rem',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '1.5rem',
+              alignItems: 'stretch'
+            }}>
             {plans.map((plan, index) => (
               <div
                 key={plan.id}
@@ -379,13 +387,15 @@ const PricingModal = ({
                 </button>
               </div>
             ))}
+            </div>
           </div>
 
           {/* FOOTER */}
           <div style={{
-            padding: '1rem 2rem 2rem',
+            padding: '1rem 2rem 1.5rem',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            textAlign: 'center'
+            textAlign: 'center',
+            flexShrink: 0
           }}>
             <p style={{
               color: 'rgba(255, 255, 255, 0.6)',
