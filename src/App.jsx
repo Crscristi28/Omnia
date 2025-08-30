@@ -1351,11 +1351,19 @@ function App() {
               timestamp: botTimestamp
             };
             
-            
-            setMessages([
-              ...messagesWithUser,
-              botMessage
-            ]);
+            setMessages(prev => {
+              const lastIndex = prev.length - 1;
+              // Check if last message is a streaming bot message
+              if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
+                // Update existing streaming message
+                const updated = [...prev];
+                updated[lastIndex] = botMessage;
+                return updated;
+              } else {
+                // Add new bot message (first chunk)
+                return [...prev, botMessage];
+              }
+            });
           },
           () => {
             setIsSearching(true);
