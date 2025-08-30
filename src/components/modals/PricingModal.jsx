@@ -83,15 +83,14 @@ const PricingModal = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           zIndex: 10001,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '1rem',
-          animation: 'fadeIn 0.3s ease'
+          animation: 'fadeIn 0.2s ease'
         }}
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
