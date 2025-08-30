@@ -719,7 +719,11 @@ const InputBar = ({
               }}>
                 {/* 4. MIKROFON BUTTON */}
                 <button
-                  onClick={onSTT}
+                  // Mobile: hold-to-talk
+                  onTouchStart={isMobile && !isLoading && !isAudioPlaying ? onSTT : undefined}
+                  onTouchEnd={isMobile && isRecording ? onSTT : undefined}
+                  // Desktop: click-to-toggle  
+                  onClick={!isMobile ? onSTT : undefined}
                   disabled={isLoading || isAudioPlaying}
                   style={{
                     background: 'none',
@@ -728,7 +732,7 @@ const InputBar = ({
                     cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
                     opacity: isLoading || isAudioPlaying ? 0.5 : 1,
                   }}
-                  title={isRecording ? 'Stop Recording' : 'Voice Input'}
+                  title={isRecording ? 'Stop Recording' : (isMobile ? 'Hold to speak' : 'Voice Input')}
                 >
                   <Mic 
                     size={iconSize} 
