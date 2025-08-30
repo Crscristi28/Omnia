@@ -177,17 +177,39 @@ const InputBar = ({
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
   
-  // Audio-reactive listening placeholder
-  const getListeningPlaceholder = () => {
-    if (audioLevel === 0) {
-      return 'Listening...';
-    } else if (audioLevel < 0.3) {
-      return 'Listening•';
-    } else if (audioLevel < 0.6) {
-      return 'Listening••';
+  // Audio-reactive listening placeholder with infinite animation
+  const [dotCount, setDotCount] = useState(0);
+  
+  // Animate dots when recording
+  React.useEffect(() => {
+    let interval;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setDotCount(prev => (prev + 1) % 4); // 0, 1, 2, 3, then repeat
+      }, 500); // Change every 500ms
     } else {
-      return 'Listening•••';
+      setDotCount(0);
     }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRecording]);
+  
+  const getListeningPlaceholder = () => {
+    const baseDots = '.'.repeat(dotCount);
+    
+    // Audio-reactive: add extra dots based on volume
+    let extraDots = '';
+    if (audioLevel > 0.6) {
+      extraDots = '•••';
+    } else if (audioLevel > 0.3) {
+      extraDots = '••';
+    } else if (audioLevel > 0.1) {
+      extraDots = '•';
+    }
+    
+    return `Listening${baseDots}${extraDots}`;
   };
   
   // Synchronize with parent input prop (for STT/Voice compatibility)
