@@ -99,8 +99,7 @@ const PricingModal = ({
         {/* MODAL CONTENT */}
         <div 
           style={{
-            width: '100%',
-            maxWidth: '500px',
+            width: '100vw',
             height: '100vh',
             background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
