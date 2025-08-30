@@ -176,22 +176,25 @@ const PricingModal = ({
             </button>
           </div>
 
-          {/* PRICING CARDS */}
-          <div style={{
-            flex: 1,
-            padding: '2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-              gap: '2rem',
-              alignItems: 'stretch',
-              width: '100%',
-              maxWidth: '1400px'
+          {/* SCROLLABLE PRICING CARDS */}
+          <div 
+            className="pricing-cards-container"
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              padding: '2rem'
             }}>
+            <div 
+              className="pricing-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                gap: '2rem',
+                alignItems: 'stretch',
+                maxWidth: '1400px',
+                margin: '0 auto'
+              }}>
             {plans.map((plan, index) => (
               <div
                 key={plan.id}
@@ -426,8 +429,12 @@ const PricingModal = ({
         }
         
         @media (max-width: 768px) {
+          .pricing-cards-container {
+            padding: 1rem !important;
+          }
           .pricing-grid {
             grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
           }
         }
       `}</style>
