@@ -1774,7 +1774,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const base64Data = await convertFileToBase64(doc.file);
       
       return {
-        name: doc.name,
+        name: uploadResult.fileName, // Use the generated filename from storage
         size: doc.file.size, // Use actual file.size in bytes, not formatted string
         type: doc.file.type,
         base64: base64Data, // Keep for immediate display

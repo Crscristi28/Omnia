@@ -177,6 +177,31 @@ class ChatSyncService {
       let uploadedCount = 0;
 
       for (const msg of newMessages) {
+        // Transform attachments to store only URLs, not base64
+        let attachmentsForDB = null;
+        if (msg.attachments && Array.isArray(msg.attachments)) {
+          attachmentsForDB = msg.attachments.map(att => ({
+            name: att.name,
+            size: att.size,
+            type: att.type,
+            storageUrl: att.storageUrl, // Use Storage URL instead of base64
+            storagePath: att.storagePath
+            // ❌ REMOVED: base64 field - not stored in database
+          }));
+        }
+        
+        // Transform image to store only URL, not base64  
+        let imageForDB = null;
+        if (msg.image) {
+          if (typeof msg.image === 'string') {
+            // If image is already a URL (old format), keep it
+            imageForDB = msg.image;
+          } else if (msg.image.storageUrl) {
+            // New format - use Storage URL
+            imageForDB = msg.image.storageUrl;
+          }
+        }
+        
         const messageToUpload = {
           id: msg.uuid, // Use UUID from IndexedDB (stable ID)
           chat_id: chatId, // Use original chat ID
@@ -186,8 +211,8 @@ class ChatSyncService {
           timestamp: new Date(msg.timestamp).toISOString(), // Client timestamp for correct ordering
           synced: true,
           type: msg.type || 'text',
-          attachments: msg.attachments || null,
-          image: msg.image || null
+          attachments: attachmentsForDB,
+          image: imageForDB
         };
 
 

@@ -14,7 +14,14 @@ export async function uploadToSupabaseStorage(file, bucket = 'attachments') {
     // Generate unique filename with timestamp
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(7);
-    const extension = file.name ? file.name.split('.').pop() : 'bin';
+    
+    // Extract just the filename from potentially full path (fixes screenshot issue)
+    const originalName = file.name || 'unknown';
+    const nameOnly = originalName.includes('/') 
+      ? originalName.split('/').pop() 
+      : originalName;
+    const extension = nameOnly.split('.').pop() || 'bin';
+    
     const fileName = `${timestamp}-${random}.${extension}`;
     
     console.log(`📤 [STORAGE] Uploading to Supabase Storage: ${fileName} to bucket: ${bucket}`);
