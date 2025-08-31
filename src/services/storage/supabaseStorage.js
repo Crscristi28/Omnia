@@ -1,7 +1,7 @@
 // 📦 Supabase Storage Service
 // Handles file uploads to Supabase Storage instead of storing base64 in database
 
-import { supabase } from '../supabase/supabaseClient.js';
+import { supabase } from '../supabase/client.js';
 
 /**
  * Upload file to Supabase Storage
