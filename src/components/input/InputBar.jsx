@@ -222,82 +222,18 @@ const InputBar = ({
     }
   }, [input]);
 
-  // iOS keyboard detection with multiple fallback methods
-  React.useEffect(() => {
-    if (!isMobile) return;
-    
-    const initialViewportHeight = window.visualViewport?.height || window.innerHeight;
-    let debounceTimer = null;
-    
-    const handleKeyboardDetection = () => {
-      // Clear any existing timer
-      if (debounceTimer) clearTimeout(debounceTimer);
-      
-      // Debounce to avoid rapid changes
-      debounceTimer = setTimeout(() => {
-        const currentHeight = window.visualViewport?.height || window.innerHeight;
-        const heightDifference = initialViewportHeight - currentHeight;
-        
-        // More aggressive detection - if height difference > 100px, keyboard is probably open
-        const keyboardOpen = heightDifference > 100;
-        setIsKeyboardOpen(keyboardOpen);
-        
-      }, 50); // Short debounce
-    };
-
-    // Method 1: Visual Viewport API (primary)
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleKeyboardDetection);
+  // Simple keyboard detection - no performance-impacting resize listeners
+  const handleTextareaFocus = () => {
+    if (isMobile) {
+      setIsKeyboardOpen(true);
     }
-    
-    // Method 2: Window resize fallback
-    window.addEventListener('resize', handleKeyboardDetection);
-    
-    // Method 3: Input focus/blur detection as additional fallback
-    const handleInputFocus = () => {
-      setTimeout(() => {
-        setIsKeyboardOpen(true);
-      }, 200); // Shorter delay
-    };
-    
-    const handleInputBlur = () => {
-      setTimeout(() => {
-        // Only close if viewport detection also suggests closed
-        const currentHeight = window.visualViewport?.height || window.innerHeight;
-        const heightDifference = initialViewportHeight - currentHeight;
-        if (heightDifference < 100) {
-          setIsKeyboardOpen(false);
-        }
-      }, 100);
-    };
-    
-    // Create named event handlers for proper cleanup
-    const focusInHandler = (e) => {
-      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
-        handleInputFocus();
-      }
-    };
-    
-    const focusOutHandler = (e) => {
-      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
-        handleInputBlur();
-      }
-    };
-    
-    // Add focus/blur listeners using event delegation
-    document.addEventListener('focusin', focusInHandler);
-    document.addEventListener('focusout', focusOutHandler);
+  };
 
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleKeyboardDetection);
-      }
-      window.removeEventListener('resize', handleKeyboardDetection);
-      document.removeEventListener('focusin', focusInHandler);
-      document.removeEventListener('focusout', focusOutHandler);
-    };
-  }, [isMobile]);
+  const handleTextareaBlur = () => {
+    if (isMobile) {
+      setIsKeyboardOpen(false);
+    }
+  };
 
   const handleSendMessage = () => {
     if (pendingDocuments.length > 0) {
@@ -644,6 +580,8 @@ const InputBar = ({
                   e.target.focus();
                 }
               }}
+              onFocus={handleTextareaFocus}
+              onBlur={handleTextareaBlur}
               onKeyDown={handleKeyDown}
               placeholder={isRecording ? getListeningPlaceholder() : (isLoading ? t('omniaPreparingResponse') : t('chatPlaceholder'))}
               disabled={isLoading}
