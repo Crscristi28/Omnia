@@ -474,16 +474,7 @@ function App() {
           hasMore: chatData.hasMore
         });
         
-        // 🎯 SCROLL FIX: Ensure chat opens at bottom (default behavior)
-        setTimeout(() => {
-          if (virtuosoRef.current) {
-            virtuosoRef.current.scrollToIndex({ 
-              index: 'LAST',
-              behavior: 'smooth',
-            });
-          } else {
-          }
-        }, 100);
+        // ✅ REMOVED: setTimeout scroll - was causing race condition with other scroll logic
       } else if (chatData && chatData.messages.length === 0) {
         // 🧹 MEMORY CLEAR: Empty chat - ensure RAM is clean
         setMessages([]);
