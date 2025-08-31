@@ -281,18 +281,13 @@ export default async function handler(req, res) {
             }
           }
         } else {
-          // Plain text → word-by-word streaming
-          const words = textChunk.split(/(\s+)/); // Keep whitespace
-          for (const word of words) {
-            if (word.trim()) {
-              res.write(JSON.stringify({ 
-                requestId,
-                type: 'text', 
-                content: word + ' ' // Add space after each word
-              }) + '\n');
-              await new Promise(resolve => setTimeout(resolve, 5)); // 5ms delay between words
-            }
-          }
+          // Plain text → chunk streaming (same speed as markdown)
+          res.write(JSON.stringify({ 
+            requestId,
+            type: 'text', 
+            content: textChunk
+          }) + '\n');
+          // No delay - consistent speed with markdown chunks
         }
       }
     }
