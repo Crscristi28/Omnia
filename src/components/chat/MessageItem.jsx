@@ -104,11 +104,11 @@ const MessageItem = ({
                       style={userAttachmentWrapperStyle}
                     >
                       <img 
-                        src={attachment.base64}
+                        src={attachment.storageUrl || attachment.base64}
                         alt={attachment.name}
                         onClick={() => {
                           onPreviewImage({
-                            url: attachment.base64,
+                            url: attachment.storageUrl || attachment.base64,
                             name: attachment.name
                           });
                         }}
@@ -138,14 +138,14 @@ const MessageItem = ({
                     // Route to appropriate viewer based on file type
                     if (viewerType === 'image') {
                       onPreviewImage({
-                        url: attachment.base64,
+                        url: attachment.storageUrl || attachment.base64,
                         name: attachment.name
                       });
                     } else {
                       onDocumentView({
                         isOpen: true,
                         document: {
-                          url: attachment.base64,
+                          url: attachment.storageUrl || attachment.base64,
                           name: attachment.name,
                           mimeType: attachment.type,
                           base64: attachment.base64
@@ -253,10 +253,10 @@ const MessageItem = ({
               maxWidth: '100%'
             }}>
               <img 
-                src={`data:${msg.image.mimeType};base64,${msg.image.base64}`}
+                src={msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image)}
                 alt={`Generated image for: ${msg.text}`}
                 onClick={() => {
-                  const imageUrl = `data:${msg.image.mimeType};base64,${msg.image.base64}`;
+                  const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image);
                   onPreviewImage({
                     url: imageUrl,
                     name: `Generated: ${msg.text.slice(0, 30)}...`
