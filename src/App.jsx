@@ -29,6 +29,7 @@ import { generateMessageId } from './utils/messageUtils.js'; // 📝 Message uti
 import { welcomeTexts, getTimeBasedGreeting } from './constants/welcomeTexts.js'; // 🌍 Welcome texts
 import { createNotificationSystem } from './utils/notificationUtils.js'; // 🔔 Notifications
 import { convertFileToBase64 } from './utils/fileUtils.js'; // 📁 File utilities
+import { uploadToSupabaseStorage, uploadBase64ToSupabaseStorage } from './services/storage/supabaseStorage.js'; // 📦 Supabase Storage
 import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 Error messages
 import { uploadDirectToGCS, processGCSDocument, shouldUseDirectUpload, formatFileSize } from './services/directUpload.js'; // 🗂️ Direct upload to GCS
 import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './utils/scrollUtils.js'; // 📜 Scroll utilities
@@ -1098,10 +1099,42 @@ function App() {
           
           if (result.success && result.images && result.images.length > 0) {
             const t = getTranslation(detectedLang);
+            
+            // Upload generated image to Supabase Storage
+            let imageData = result.images[0];
+            let storageUrl = null;
+            let storagePath = null;
+            
+            try {
+              // Convert base64 to data URI if needed
+              const base64String = imageData.base64.startsWith('data:') 
+                ? imageData.base64 
+                : `data:${imageData.mimeType};base64,${imageData.base64}`;
+              
+              // Upload to Supabase Storage
+              const uploadResult = await uploadBase64ToSupabaseStorage(
+                base64String,
+                `generated-${Date.now()}.png`,
+                'generated-images'
+              );
+              
+              storageUrl = uploadResult.publicUrl;
+              storagePath = uploadResult.path;
+              
+              console.log('✅ Generated image uploaded to Supabase Storage:', storageUrl);
+            } catch (uploadError) {
+              console.error('Failed to upload generated image to Storage:', uploadError);
+              // Continue with base64 if upload fails
+            }
+            
             const imageMessage = {
               sender: 'bot',
               text: `${t('imageGenerated')} "${finalTextInput}"`,
-              image: result.images[0], // Restore working structure for display
+              image: {
+                ...imageData,
+                storageUrl, // Add storage URL
+                storagePath // Add storage path
+              },
               timestamp: Date.now() + 100,
               isStreaming: false
             };
@@ -1731,24 +1764,47 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;
   
-  // Convert File objects to base64 for persistent storage
+  // Upload files to Supabase Storage instead of storing base64 in database
   const attachmentsPromises = safeDocuments.map(async (doc) => {
     try {
+      // Upload file to Supabase Storage
+      const uploadResult = await uploadToSupabaseStorage(doc.file, 'attachments');
+      
+      // For display, we still need base64 temporarily (will fetch from storage later)
       const base64Data = await convertFileToBase64(doc.file);
+      
       return {
         name: doc.name,
         size: doc.file.size, // Use actual file.size in bytes, not formatted string
         type: doc.file.type,
-        base64: base64Data // Store as base64 string, not File object
+        base64: base64Data, // Keep for immediate display
+        storageUrl: uploadResult.publicUrl, // Store URL for database
+        storagePath: uploadResult.path // Store path for future operations
       };
     } catch (error) {
-      console.error('Failed to convert file to base64:', error);
-      return {
-        name: doc.name,
-        size: doc.file.size || 0, // Use actual file.size, fallback to 0
-        type: doc.file.type,
-        base64: null // Fallback for failed conversion
-      };
+      console.error('Failed to upload to Supabase Storage:', error);
+      // Fallback to base64 if storage upload fails
+      try {
+        const base64Data = await convertFileToBase64(doc.file);
+        return {
+          name: doc.name,
+          size: doc.file.size || 0,
+          type: doc.file.type,
+          base64: base64Data, // Fallback to base64
+          storageUrl: null,
+          storagePath: null
+        };
+      } catch (base64Error) {
+        console.error('Failed to convert to base64:', base64Error);
+        return {
+          name: doc.name,
+          size: doc.file.size || 0,
+          type: doc.file.type,
+          base64: null,
+          storageUrl: null,
+          storagePath: null
+        };
+      }
     }
   });
   
