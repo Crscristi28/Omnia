@@ -229,9 +229,21 @@ const InputBar = ({
     }
   };
 
-  const handleTextareaBlur = () => {
+  const handleTextareaBlur = (e) => {
     if (isMobile) {
-      setIsKeyboardOpen(false);
+      // Don't close keyboard if clicking on send button
+      // Check if the blur is moving to a button within InputBar
+      setTimeout(() => {
+        const activeElement = document.activeElement;
+        const isClickingButton = activeElement && (
+          activeElement.tagName === 'BUTTON' ||
+          activeElement.closest('.input-bar-container')
+        );
+        
+        if (!isClickingButton) {
+          setIsKeyboardOpen(false);
+        }
+      }, 100); // Small delay to check where focus went
     }
   };
 
@@ -374,7 +386,7 @@ const InputBar = ({
       </div>
       
       {/* HLAVNÍ KONTEJNER */}
-      <div style={{
+      <div className="input-bar-container" style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
