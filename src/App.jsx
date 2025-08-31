@@ -2475,6 +2475,7 @@ const virtuosoComponents = React.useMemo(() => ({
               overscan={1200}
               atBottomThreshold={500}
               components={virtuosoComponents}
+              initialTopMostItemIndex={messages.length > 0 ? messages.length - 1 : undefined}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
