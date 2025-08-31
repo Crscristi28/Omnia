@@ -184,7 +184,7 @@ const MessageItem = ({
                   {isImage ? (
                     /* Image thumbnail */
                     <img 
-                      src={attachment.base64}
+                      src={attachment.storageUrl || attachment.base64}
                       alt={attachment.name}
                       style={{
                         width: '100%',
