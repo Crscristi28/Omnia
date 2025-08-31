@@ -197,8 +197,12 @@ class ChatSyncService {
             // If image is already a URL (old format), keep it
             imageForDB = msg.image;
           } else if (msg.image.storageUrl) {
-            // New format - use Storage URL
+            // New format - use Storage URL only (not the whole object)
             imageForDB = msg.image.storageUrl;
+          } else if (msg.image.base64 && !msg.image.storageUrl) {
+            // Fallback: if no Storage URL but has base64, skip storing (old data)
+            console.warn(`⚠️ [SYNC] Image without Storage URL found, skipping: ${msg.uuid}`);
+            imageForDB = null;
           }
         }
         

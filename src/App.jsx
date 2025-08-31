@@ -1131,9 +1131,14 @@ function App() {
               sender: 'bot',
               text: `${t('imageGenerated')} "${finalTextInput}"`,
               image: {
-                ...imageData,
-                storageUrl, // Add storage URL
-                storagePath // Add storage path
+                // Keep only essential metadata and Storage URLs for database
+                mimeType: imageData.mimeType,
+                width: imageData.width,
+                height: imageData.height,
+                storageUrl, // Storage URL for database and display
+                storagePath, // Storage path for operations
+                // Keep base64 temporarily for immediate display
+                base64: storageUrl ? undefined : imageData.base64
               },
               timestamp: Date.now() + 100,
               isStreaming: false
