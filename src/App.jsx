@@ -1449,6 +1449,11 @@ function App() {
                     }
                     return prev;
                   });
+                  
+                  // Reset buffer after last word
+                  if (index === words.length - 1) {
+                    chunkBuffer = '';
+                  }
                 }, index * 50); // 50ms delay for visibility
               });
             }
