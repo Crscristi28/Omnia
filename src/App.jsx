@@ -2089,25 +2089,37 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
-        (text, isStreaming, sources = []) => {
-          // Real-time streaming updates for documents too
+        (chunk, isStreaming, sources = []) => {
+          // Real-time streaming updates with incremental chunks (same as normal text)
           if (sources.length > 0) {
             geminiSourcesForDocs = sources;
           }
           
-          const botMessageDocs = { 
-            sender: 'bot', 
-            text: text, 
-            isStreaming: isStreaming,
-            sources: isStreaming ? [] : geminiSourcesForDocs,
-            timestamp: botTimestampDocs
-          };
-          
-          
-          setMessages([
-            ...messagesForAI,
-            botMessageDocs
-          ]);
+          setMessages(prev => {
+            const lastIndex = prev.length - 1;
+            // Check if last message is a streaming bot message
+            if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
+              // Update existing streaming message by appending new chunk
+              const updated = [...prev];
+              updated[lastIndex] = {
+                ...updated[lastIndex],
+                text: updated[lastIndex].text + chunk,
+                isStreaming: isStreaming,
+                sources: isStreaming ? [] : geminiSourcesForDocs
+              };
+              return updated;
+            } else {
+              // Add new bot message (first chunk)
+              const botMessageDocs = {
+                sender: 'bot',
+                text: chunk,
+                isStreaming: isStreaming,
+                sources: isStreaming ? [] : geminiSourcesForDocs,
+                timestamp: botTimestampDocs
+              };
+              return [...prev, botMessageDocs];
+            }
+          });
         },
         (searchMsg) => {
           setIsSearching(true);
