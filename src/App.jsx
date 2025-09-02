@@ -1377,8 +1377,8 @@ function App() {
               geminiSources = sources;
             }
             
-            // Add chunk to buffer
-            chunkBuffer += chunk;
+            // Use latest chunk (backend sends cumulative chunks, not incremental)
+            chunkBuffer = chunk;
             
             if (isStreaming) {
               // Still streaming - show loading indicator only
