@@ -30,14 +30,6 @@ const preprocessStreamingText = (text) => {
 };
 
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
-  // 🔍 DEBUG: Track what content we're receiving and when
-  console.log('🔍 MessageRenderer render:', {
-    content: content?.substring(0, 100) + (content?.length > 100 ? '...' : ''),
-    contentLength: content?.length,
-    isStreaming: isStreaming,
-    timestamp: Date.now()
-  });
-  
   // TEMPORARILY DISABLED: Transition causes scroll jumping with Virtuoso
   // const [isTransitioning, setIsTransitioning] = React.useState(false);
   // const prevStreamingRef = React.useRef(isStreaming);
