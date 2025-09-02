@@ -1381,7 +1381,10 @@ function App() {
             chunkBuffer = chunk;
             
             if (!isStreaming) {
-              // Streaming complete - process buffer and start word-by-word display
+              // Streaming complete - hide loading indicator immediately
+              setIsSearching(false);
+              
+              // Process buffer and start word-by-word display
               console.log('🎯 Buffer complete, starting word-by-word:', chunkBuffer.length, 'chars');
               
               // Start word-by-word display with the complete markdown text
