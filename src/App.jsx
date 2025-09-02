@@ -1387,18 +1387,7 @@ function App() {
               // Start word-by-word display with the complete markdown text
               const words = chunkBuffer.split(' ');
               
-              // Create initial empty message for word-by-word display
-              const initialMessage = {
-                sender: 'bot',
-                text: '',
-                isStreaming: false,
-                sources: geminiSources,
-                timestamp: botTimestamp
-              };
-              
-              setMessages(prev => [...prev, initialMessage]);
-              
-              // Queue word-by-word display with proper text building
+              // Start word-by-word display without empty message
               words.forEach((word, index) => {
                 setTimeout(() => {
                   // Build text from word array slice instead of shared variable
@@ -1406,15 +1395,29 @@ function App() {
                   
                   setMessages(prev => {
                     const lastIndex = prev.length - 1;
-                    if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                      const updated = [...prev];
-                      updated[lastIndex] = {
-                        ...updated[lastIndex],
-                        text: currentText
+                    
+                    if (index === 0) {
+                      // First word - create new bot message
+                      const newMessage = {
+                        sender: 'bot',
+                        text: currentText,
+                        isStreaming: false,
+                        sources: geminiSources,
+                        timestamp: botTimestamp
                       };
-                      return updated;
+                      return [...prev, newMessage];
+                    } else {
+                      // Subsequent words - update existing message
+                      if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                        const updated = [...prev];
+                        updated[lastIndex] = {
+                          ...updated[lastIndex],
+                          text: currentText
+                        };
+                        return updated;
+                      }
+                      return prev;
                     }
-                    return prev;
                   });
                   
                   // Reset buffer after last word
