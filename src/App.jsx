@@ -1367,42 +1367,79 @@ function App() {
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreaming, sources = []) => {
-            // Real-time streaming updates with word-by-word delay (5ms)
+            // Real-time streaming updates with frontend word queue
             if (sources.length > 0) {
               geminiSources = sources;
             }
             
-            // Split chunk into words for smoother streaming
-            const words = chunk.split(' ');
-            
-            words.forEach((word, index) => {
-              setTimeout(() => {
-                setMessages(prev => {
-                  const lastIndex = prev.length - 1;
-                  // Check if last message is a streaming bot message
-                  if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
-                    // Update existing streaming message by appending new word
-                    const updated = [...prev];
-                    updated[lastIndex] = {
-                      ...updated[lastIndex],
-                      text: updated[lastIndex].text + word + (index < words.length - 1 ? ' ' : ''),
-                      isStreaming: isStreaming,
-                      sources: isStreaming ? [] : geminiSources
-                    };
-                    return updated;
-                  } else {
-                    // Add new bot message (first word)
-                    const botMessage = {
-                      sender: 'bot',
-                      text: word + (index < words.length - 1 ? ' ' : ''),
-                      isStreaming: isStreaming,
-                      sources: isStreaming ? [] : geminiSources,
-                      timestamp: botTimestamp
-                    };
-                    return [...prev, botMessage];
-                  }
+            setMessages(prev => {
+              const lastIndex = prev.length - 1;
+              // Check if last message is a streaming bot message
+              if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
+                // Update existing streaming message - queue words for smooth display
+                const updated = [...prev];
+                const currentText = updated[lastIndex].text;
+                
+                // Split incoming chunk into words and queue them
+                const words = chunk.split(' ');
+                let tempText = currentText;
+                
+                words.forEach((word, index) => {
+                  setTimeout(() => {
+                    setMessages(prevMessages => {
+                      const latestIndex = prevMessages.length - 1;
+                      if (latestIndex >= 0 && prevMessages[latestIndex]?.sender === 'bot') {
+                        const updatedMessages = [...prevMessages];
+                        updatedMessages[latestIndex] = {
+                          ...updatedMessages[latestIndex],
+                          text: tempText + word + (index < words.length - 1 ? ' ' : ''),
+                          isStreaming: isStreaming,
+                          sources: isStreaming ? [] : geminiSources
+                        };
+                        tempText += word + (index < words.length - 1 ? ' ' : '');
+                        return updatedMessages;
+                      }
+                      return prevMessages;
+                    });
+                  }, index * 5); // 5ms delay between words
                 });
-              }, index * 5); // 5ms delay between words
+                
+                return updated;
+              } else {
+                // Add new bot message and start word queue
+                const words = chunk.split(' ');
+                let tempText = '';
+                
+                // Create initial message with first word
+                const botMessage = {
+                  sender: 'bot',
+                  text: '',
+                  isStreaming: isStreaming,
+                  sources: isStreaming ? [] : geminiSources,
+                  timestamp: botTimestamp
+                };
+                
+                // Queue all words
+                words.forEach((word, index) => {
+                  setTimeout(() => {
+                    setMessages(prevMessages => {
+                      const latestIndex = prevMessages.length - 1;
+                      if (latestIndex >= 0 && prevMessages[latestIndex]?.sender === 'bot') {
+                        const updatedMessages = [...prevMessages];
+                        updatedMessages[latestIndex] = {
+                          ...updatedMessages[latestIndex],
+                          text: tempText + word + (index < words.length - 1 ? ' ' : ''),
+                        };
+                        tempText += word + (index < words.length - 1 ? ' ' : '');
+                        return updatedMessages;
+                      }
+                      return prevMessages;
+                    });
+                  }, index * 5);
+                });
+                
+                return [...prev, botMessage];
+              }
             });
           },
           () => {
@@ -2101,42 +2138,79 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
         (chunk, isStreaming, sources = []) => {
-          // Real-time streaming updates with word-by-word delay (5ms)
+          // Real-time streaming updates with frontend word queue (documents)
           if (sources.length > 0) {
             geminiSourcesForDocs = sources;
           }
           
-          // Split chunk into words for smoother streaming
-          const words = chunk.split(' ');
-          
-          words.forEach((word, index) => {
-            setTimeout(() => {
-              setMessages(prev => {
-                const lastIndex = prev.length - 1;
-                // Check if last message is a streaming bot message
-                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
-                  // Update existing streaming message by appending new word
-                  const updated = [...prev];
-                  updated[lastIndex] = {
-                    ...updated[lastIndex],
-                    text: updated[lastIndex].text + word + (index < words.length - 1 ? ' ' : ''),
-                    isStreaming: isStreaming,
-                    sources: isStreaming ? [] : geminiSourcesForDocs
-                  };
-                  return updated;
-                } else {
-                  // Add new bot message (first word)
-                  const botMessageDocs = {
-                    sender: 'bot',
-                    text: word + (index < words.length - 1 ? ' ' : ''),
-                    isStreaming: isStreaming,
-                    sources: isStreaming ? [] : geminiSourcesForDocs,
-                    timestamp: botTimestampDocs
-                  };
-                  return [...prev, botMessageDocs];
-                }
+          setMessages(prev => {
+            const lastIndex = prev.length - 1;
+            // Check if last message is a streaming bot message
+            if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
+              // Update existing streaming message - queue words for smooth display
+              const updated = [...prev];
+              const currentText = updated[lastIndex].text;
+              
+              // Split incoming chunk into words and queue them
+              const words = chunk.split(' ');
+              let tempText = currentText;
+              
+              words.forEach((word, index) => {
+                setTimeout(() => {
+                  setMessages(prevMessages => {
+                    const latestIndex = prevMessages.length - 1;
+                    if (latestIndex >= 0 && prevMessages[latestIndex]?.sender === 'bot') {
+                      const updatedMessages = [...prevMessages];
+                      updatedMessages[latestIndex] = {
+                        ...updatedMessages[latestIndex],
+                        text: tempText + word + (index < words.length - 1 ? ' ' : ''),
+                        isStreaming: isStreaming,
+                        sources: isStreaming ? [] : geminiSourcesForDocs
+                      };
+                      tempText += word + (index < words.length - 1 ? ' ' : '');
+                      return updatedMessages;
+                    }
+                    return prevMessages;
+                  });
+                }, index * 5); // 5ms delay between words
               });
-            }, index * 5); // 5ms delay between words
+              
+              return updated;
+            } else {
+              // Add new bot message and start word queue
+              const words = chunk.split(' ');
+              let tempText = '';
+              
+              // Create initial message
+              const botMessageDocs = {
+                sender: 'bot',
+                text: '',
+                isStreaming: isStreaming,
+                sources: isStreaming ? [] : geminiSourcesForDocs,
+                timestamp: botTimestampDocs
+              };
+              
+              // Queue all words
+              words.forEach((word, index) => {
+                setTimeout(() => {
+                  setMessages(prevMessages => {
+                    const latestIndex = prevMessages.length - 1;
+                    if (latestIndex >= 0 && prevMessages[latestIndex]?.sender === 'bot') {
+                      const updatedMessages = [...prevMessages];
+                      updatedMessages[latestIndex] = {
+                        ...updatedMessages[latestIndex],
+                        text: tempText + word + (index < words.length - 1 ? ' ' : ''),
+                      };
+                      tempText += word + (index < words.length - 1 ? ' ' : '');
+                      return updatedMessages;
+                    }
+                    return prevMessages;
+                  });
+                }, index * 5);
+              });
+              
+              return [...prev, botMessageDocs];
+            }
           });
         },
         (searchMsg) => {
