@@ -1381,8 +1381,10 @@ function App() {
             chunkBuffer = chunk;
             
             if (!isStreaming) {
-              // Streaming complete - hide loading indicator immediately
+              // Streaming complete - hide ALL loading indicators immediately
               setIsSearching(false);
+              setLoading(false);
+              setStreaming(false);
               
               // Process buffer and start word-by-word display
               console.log('🎯 Buffer complete, starting word-by-word:', chunkBuffer.length, 'chars');
