@@ -9,6 +9,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 import { Virtuoso } from 'react-virtuoso';
+import MDEditor from '@uiw/react-md-editor';
+import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
+import rehypeKatex from 'rehype-katex';
 
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, grokService, geminiService } from './services/ai';
@@ -1360,87 +1364,93 @@ function App() {
           name: doc.name 
         }));
         
-        // 🆕 STREAMING: Enable markdown-aware streaming for Gemini
+        // 🆕 STREAMING: Enable buffer + batch markdown processing
         let geminiSources = [];
+        let chunkBuffer = ''; // Buffer for collecting all chunks
         const botTimestamp = Date.now() + 100; // +100ms to ensure bot comes after user
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreaming, sources = []) => {
-            // Real-time streaming updates with frontend word queue
+            // Buffer system: collect chunks until streaming complete
             if (sources.length > 0) {
               geminiSources = sources;
             }
             
-            setMessages(prev => {
-              const lastIndex = prev.length - 1;
-              // Check if last message is a streaming bot message
-              if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
-                // Update existing streaming message - queue words for smooth display
-                const updated = [...prev];
-                const currentText = updated[lastIndex].text;
-                
-                // Split incoming chunk into words and queue them
-                const words = chunk.split(' ');
-                let tempText = currentText;
-                
-                words.forEach((word, index) => {
-                  setTimeout(() => {
-                    setMessages(prevMessages => {
-                      const latestIndex = prevMessages.length - 1;
-                      if (latestIndex >= 0 && prevMessages[latestIndex]?.sender === 'bot') {
-                        const updatedMessages = [...prevMessages];
-                        updatedMessages[latestIndex] = {
-                          ...updatedMessages[latestIndex],
-                          text: tempText + word + (index < words.length - 1 ? ' ' : ''),
-                          isStreaming: isStreaming,
-                          sources: isStreaming ? [] : geminiSources
-                        };
-                        tempText += word + (index < words.length - 1 ? ' ' : '');
-                        return updatedMessages;
-                      }
-                      return prevMessages;
-                    });
-                  }, index * 5); // 5ms delay between words
-                });
-                
-                return updated;
-              } else {
-                // Add new bot message and start word queue
-                const words = chunk.split(' ');
-                let tempText = '';
-                
-                // Create initial message with first word
-                const botMessage = {
-                  sender: 'bot',
-                  text: '',
-                  isStreaming: isStreaming,
-                  sources: isStreaming ? [] : geminiSources,
-                  timestamp: botTimestamp
-                };
-                
-                // Queue all words
-                words.forEach((word, index) => {
-                  setTimeout(() => {
-                    setMessages(prevMessages => {
-                      const latestIndex = prevMessages.length - 1;
-                      if (latestIndex >= 0 && prevMessages[latestIndex]?.sender === 'bot') {
-                        const updatedMessages = [...prevMessages];
-                        updatedMessages[latestIndex] = {
-                          ...updatedMessages[latestIndex],
-                          text: tempText + word + (index < words.length - 1 ? ' ' : ''),
-                        };
-                        tempText += word + (index < words.length - 1 ? ' ' : '');
-                        return updatedMessages;
-                      }
-                      return prevMessages;
-                    });
-                  }, index * 5);
-                });
-                
-                return [...prev, botMessage];
-              }
-            });
+            // Add chunk to buffer
+            chunkBuffer += chunk;
+            
+            if (isStreaming) {
+              // Still streaming - show loading indicator only
+              setMessages(prev => {
+                const lastIndex = prev.length - 1;
+                // Check if bot message already exists
+                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
+                  // Keep existing loading message unchanged
+                  return prev;
+                } else {
+                  // Create initial loading message
+                  const loadingMessage = {
+                    sender: 'bot',
+                    text: '', // Empty during streaming
+                    isStreaming: true,
+                    sources: [],
+                    timestamp: botTimestamp
+                  };
+                  return [...prev, loadingMessage];
+                }
+              });
+            } else {
+              // Streaming complete - process buffer and start word-by-word display
+              console.log('🎯 Buffer complete, starting word-by-word:', chunkBuffer.length, 'chars');
+              
+              // Start word-by-word display with the complete markdown text
+              const words = chunkBuffer.split(' ');
+              let displayText = '';
+              
+              // Initialize empty message
+              setMessages(prev => {
+                const lastIndex = prev.length - 1;
+                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                  const updated = [...prev];
+                  updated[lastIndex] = {
+                    ...updated[lastIndex],
+                    text: '',
+                    isStreaming: false,
+                    sources: geminiSources
+                  };
+                  return updated;
+                } else {
+                  const finalMessage = {
+                    sender: 'bot',
+                    text: '',
+                    isStreaming: false,
+                    sources: geminiSources,
+                    timestamp: botTimestamp
+                  };
+                  return [...prev, finalMessage];
+                }
+              });
+              
+              // Queue word-by-word display
+              words.forEach((word, index) => {
+                setTimeout(() => {
+                  displayText += word + (index < words.length - 1 ? ' ' : '');
+                  setMessages(prev => {
+                    const lastIndex = prev.length - 1;
+                    if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                      const updated = [...prev];
+                      updated[lastIndex] = {
+                        ...updated[lastIndex],
+                        text: displayText
+                      };
+                      return updated;
+                    }
+                    return prev;
+                  });
+                }, index * 50); // 50ms delay for visibility
+              });
+            }
           },
           () => {
             setIsSearching(true);
