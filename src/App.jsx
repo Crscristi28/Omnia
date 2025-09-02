@@ -1380,56 +1380,23 @@ function App() {
             // Use latest chunk (backend sends cumulative chunks, not incremental)
             chunkBuffer = chunk;
             
-            if (isStreaming) {
-              // Still streaming - show loading indicator only
-              setMessages(prev => {
-                const lastIndex = prev.length - 1;
-                // Check if bot message already exists
-                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot' && prev[lastIndex]?.isStreaming) {
-                  // Keep existing loading message unchanged
-                  return prev;
-                } else {
-                  // Create initial loading message
-                  const loadingMessage = {
-                    sender: 'bot',
-                    text: '', // Empty during streaming
-                    isStreaming: true,
-                    sources: [],
-                    timestamp: botTimestamp
-                  };
-                  return [...prev, loadingMessage];
-                }
-              });
-            } else {
+            if (!isStreaming) {
               // Streaming complete - process buffer and start word-by-word display
               console.log('🎯 Buffer complete, starting word-by-word:', chunkBuffer.length, 'chars');
               
               // Start word-by-word display with the complete markdown text
               const words = chunkBuffer.split(' ');
               
-              // Initialize empty message
-              setMessages(prev => {
-                const lastIndex = prev.length - 1;
-                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                  const updated = [...prev];
-                  updated[lastIndex] = {
-                    ...updated[lastIndex],
-                    text: '',
-                    isStreaming: false,
-                    sources: geminiSources
-                  };
-                  return updated;
-                } else {
-                  const finalMessage = {
-                    sender: 'bot',
-                    text: '',
-                    isStreaming: false,
-                    sources: geminiSources,
-                    timestamp: botTimestamp
-                  };
-                  return [...prev, finalMessage];
-                }
-              });
+              // Create initial empty message for word-by-word display
+              const initialMessage = {
+                sender: 'bot',
+                text: '',
+                isStreaming: false,
+                sources: geminiSources,
+                timestamp: botTimestamp
+              };
+              
+              setMessages(prev => [...prev, initialMessage]);
               
               // Queue word-by-word display with proper text building
               words.forEach((word, index) => {
