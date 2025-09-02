@@ -1,0 +1,150 @@
+# 🚀 STREAMING IMPLEMENTATION - OMNIA PROJECT
+## Date: 2025-09-02
+
+## ✅ CO JSME DNES IMPLEMENTOVALI
+
+### 1. **BUFFER + BATCH MARKDOWN SYSTÉM**
+- **Místo:** `src/App.jsx` (řádky ~1370 a ~2130)
+- **Princip:** 
+  - Backend posílá cumulative chunks (ne incremental)
+  - Frontend bufferuje všechny chunks dokud `isStreaming=false`
+  - Po dokončení spustí word-by-word display
+- **Kód:**
+  ```javascript
+  let chunkBuffer = '';
+  chunkBuffer = chunk; // Cumulative, ne +=
+  
+  if (!isStreaming) {
+    // Hide loading indicators
+    setLoading(false);
+    setStreaming(false);
+    setIsSearching(false);
+    // Start word-by-word
+  }
+  ```
+
+### 2. **WORD-BY-WORD DISPLAY**
+- **Delay:** 10ms mezi slovy
+- **První slovo vytvoří zprávu, ostatní update**
+- **Array slice approach** místo shared variable (fix duplikací)
+- **Kód:**
+  ```javascript
+  const currentText = words.slice(0, index + 1).join(' ');
+  ```
+
+### 3. **LOADING INDICATOR FIX**
+- **Problém:** "Thinking..." indikátor čekal 3 sekundy
+- **Řešení:** `setLoading(false)` a `setStreaming(false)` okamžitě při `!isStreaming`
+- **Místo:** Řádky 1385-1387 a 2143-2145
+
+### 4. **DOCUMENT STREAMING**
+- **Implementována stejná logika jako normal streaming**
+- **Odstranění redundantního `finalMessages` vytvoření**
+- **Buffer: `chunkBufferDocs`**
+
+## 🐛 VYŘEŠENÉ PROBLÉMY
+
+1. ✅ **Duplikace textu (3x opakování)**
+   - Příčina: Closure variable konflikt v setTimeout
+   - Řešení: Array slice approach
+
+2. ✅ **Buffer akumulace mezi zprávami**
+   - Příčina: Buffer se neresetoval
+   - Řešení: Reset po posledním slovu
+
+3. ✅ **Cumulative vs Incremental chunks**
+   - Backend posílá cumulative (celý text)
+   - Změna z `+=` na `=`
+
+4. ✅ **Loading indikátor běžel během psaní**
+   - `loading` a `streaming` states se nevypínaly
+   - Přidáno okamžité vypnutí
+
+5. ✅ **Prázdná zpráva s mezerou**
+   - Odstranění vytvoření prázdné zprávy během streaming
+
+## ⚠️ CO ZBÝVÁ VYŘEŠIT (Omnia feedback)
+
+### 1. **FLASH CELÉHO TEXTU (race condition)**
+**Problém:** Na zlomek vteřiny se zobrazí celý text před word-by-word
+**Kde:** Mezi vytvořením zprávy a prvním setTimeout (0ms delay)
+**Omnia doporučuje:**
+```javascript
+// Vytvořit zprávu s prázdným textem
+const initialBotMessage = {
+  text: '', // NE první slovo!
+  isStreaming: false
+};
+// Okamžitě spustit word-by-word
+startWordByWordEffect(messageId, chunkBuffer);
+```
+
+### 2. **THINKING INDIKÁTOR ARCHITEKTURA**
+**Současný stav:** Součást zpráv v Virtuoso
+**Omnia doporučuje:** Oddělit od zpráv
+- Renderovat mimo Virtuoso
+- Samostatný UI element
+- Žádná mezera v seznamu zpráv
+
+### 3. **INITIAL DELAY PRO PRVNÍ SLOVO**
+**Současný:** `index * 10` = 0ms pro první slovo
+**Doporučení:** 
+```javascript
+(index === 0 ? 20 : index * 10) // První slovo po 20ms
+```
+
+## 📊 PERFORMANCE IMPROVEMENTS
+
+**Před:**
+- Chunk-by-chunk → mnoho re-renders
+- Markdown parsing při každém chunk
+- Visual glitchy během streaming
+
+**Po:**
+- Buffer phase: 0 re-renders
+- 1x markdown processing
+- Word-by-word: jen text updates
+- Stabilní layout, žádné shifts
+
+## 🎯 PROFESIONÁLNÍ FEATURES K IMPLEMENTACI
+
+1. **requestAnimationFrame místo setTimeout**
+   - Lepší synchronizace s browser render cycle
+   - Plynulejší animace
+
+2. **Adaptivní delay based on text length**
+   - Kratší delay pro krátké zprávy
+   - Delší pro dlouhé texty
+
+3. **Pause/Resume streaming**
+   - Uživatel může pozastavit streaming
+   - Užitečné pro dlouhé odpovědi
+
+4. **Streaming progress indicator**
+   - Vizuální indikace kolik textu zbývá
+   - Progressbar nebo procenta
+
+## 📝 NOTES
+
+- Timestamps zůstaly konzistentní pro sync
+- Sources správně předávány
+- IndexedDB save nečeká loading indicator
+- Markdown rendering automatický přes MessageRenderer
+
+## 🔧 FILES MODIFIED
+
+1. `src/App.jsx` - hlavní streaming logika
+2. `src/components/MessageRenderer.jsx` - odstranění debug logů
+3. `src/utils/markdownChunking.js` - backup markdown chunking pro budoucnost
+4. `api/gemini.js` - vyčištění od markdown chunking
+
+## 💡 LESSONS LEARNED
+
+1. **Backend cumulative chunks** - vždy testovat jaký formát backend posílá
+2. **React batching** - může způsobit flash efekty
+3. **Closure variables v setTimeout** - používat pure functions
+4. **Loading states** - musí být synchronizované se streaming completion
+5. **Prázdné zprávy** - i prázdný element má výšku v DOM
+
+---
+*"The devil is in the details" - ale detaily dělají profesionální aplikaci!*
