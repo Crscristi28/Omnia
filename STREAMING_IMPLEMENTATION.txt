@@ -63,12 +63,17 @@
 5. ✅ **Prázdná zpráva s mezerou**
    - Odstranění vytvoření prázdné zprávy během streaming
 
+6. ✅ **Flash celého textu (service layer fix)**
+   - Příčina: `geminiService.js` posílal akumulovaný text místo chunks
+   - Řešení: Změna `onStreamUpdate(fullText, true)` → `onStreamUpdate(data.content, true)`
+   - Místo: `src/services/ai/gemini.service.js:68`
+
 ## ⚠️ CO ZBÝVÁ VYŘEŠIT (Omnia feedback)
 
-### 1. **FLASH CELÉHO TEXTU (race condition)**
-**Problém:** Na zlomek vteřiny se zobrazí celý text před word-by-word
+### 1. **FLASH CELÉHO TEXTU (možná stále přítomen?)**
+**Status:** OPRAVENO v geminiService.js, ale může se stále projevovat kvůli race condition
 **Kde:** Mezi vytvořením zprávy a prvním setTimeout (0ms delay)
-**Omnia doporučuje:**
+**Omnia doporučovala:**
 ```javascript
 // Vytvořit zprávu s prázdným textem
 const initialBotMessage = {
@@ -137,6 +142,7 @@ startWordByWordEffect(messageId, chunkBuffer);
 2. `src/components/MessageRenderer.jsx` - odstranění debug logů
 3. `src/utils/markdownChunking.js` - backup markdown chunking pro budoucnost
 4. `api/gemini.js` - vyčištění od markdown chunking
+5. `src/services/ai/gemini.service.js` - fix flash efektu (chunks místo fullText)
 
 ## 💡 LESSONS LEARNED
 
@@ -145,6 +151,13 @@ startWordByWordEffect(messageId, chunkBuffer);
 3. **Closure variables v setTimeout** - používat pure functions
 4. **Loading states** - musí být synchronizované se streaming completion
 5. **Prázdné zprávy** - i prázdný element má výšku v DOM
+6. **Service layer chunking** - problém může být i ve service vrstvě, ne jen frontendu
+
+## 📈 AKTUÁLNÍ IMPLEMENTACE STATUS
+
+**KOMPLETNÍ:** ✅ Buffer systém, ✅ Word-by-word, ✅ Loading states, ✅ Service chunks
+**OTESTOVAT:** ❓ Flash efekt (po service layer fix)  
+**MOŽNÉ VYLEPŠENÍ:** Thinking indicator architektura, první slovo delay
 
 ---
 *"The devil is in the details" - ale detaily dělají profesionální aplikaci!*
