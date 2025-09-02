@@ -1406,7 +1406,6 @@ function App() {
               
               // Start word-by-word display with the complete markdown text
               const words = chunkBuffer.split(' ');
-              let displayText = '';
               
               // Initialize empty message
               setMessages(prev => {
@@ -1432,17 +1431,19 @@ function App() {
                 }
               });
               
-              // Queue word-by-word display
+              // Queue word-by-word display with proper text building
               words.forEach((word, index) => {
                 setTimeout(() => {
-                  displayText += word + (index < words.length - 1 ? ' ' : '');
+                  // Build text from word array slice instead of shared variable
+                  const currentText = words.slice(0, index + 1).join(' ');
+                  
                   setMessages(prev => {
                     const lastIndex = prev.length - 1;
                     if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
                       const updated = [...prev];
                       updated[lastIndex] = {
                         ...updated[lastIndex],
-                        text: displayText
+                        text: currentText
                       };
                       return updated;
                     }
