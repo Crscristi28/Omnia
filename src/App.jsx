@@ -1424,7 +1424,7 @@ function App() {
                   if (index === words.length - 1) {
                     chunkBuffer = '';
                   }
-                }, index * 50); // 50ms delay for visibility
+                }, index * 10); // 10ms delay for faster display
               });
             }
           },
