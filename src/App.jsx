@@ -2210,19 +2210,22 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Use Gemini response directly without post-processing
       const cleanedText = result.text;
       
-      // Add final message - same as regular Gemini chat (no streaming effect)
-      const finalMessages = [...messagesWithUser, {
-        id: generateMessageId(),
-        sender: 'bot',
-        text: cleanedText,
-        timestamp: botTimestampDocs,
-        sources: result.sources || [],
-        isStreaming: false
-      }];
+      // ❌ REMOVED: Final message creation - streaming callback already handles this
+      // const finalMessages = [...messagesWithUser, {
+      //   id: generateMessageId(),
+      //   sender: 'bot',
+      //   text: cleanedText,
+      //   timestamp: botTimestampDocs,
+      //   sources: result.sources || [],
+      //   isStreaming: false
+      // }];
+      
+      // Get current messages (including the one created by streaming callback)
+      const currentMessages = messages;
       
       // Check auto-save after AI response
-      const cleanedMessages = await checkAutoSave(finalMessages, currentChatId);
-      setMessages(cleanedMessages);
+      const cleanedMessages = await checkAutoSave(currentMessages, currentChatId);
+      // Don't setMessages here - streaming callback already handled it
       
       // ❌ REMOVED: Scroll limit activation
     }
