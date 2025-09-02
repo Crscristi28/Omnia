@@ -75,16 +75,12 @@ const geminiService = {
                   }
                 }
                 else if (data.type === 'completed') {
-                  if (data.fullText) {
-                    fullText = data.fullText;
-                  }
-                  
                   if (data.webSearchUsed) {
                     sourcesExtracted = this.extractGoogleSources(data);
                   }
                   
                   if (onStreamUpdate) {
-                    onStreamUpdate(fullText, false, sourcesExtracted);
+                    onStreamUpdate('', false, sourcesExtracted); // Prázdný text, jen signál a sources
                   }
                 }
                 else if (data.error) {

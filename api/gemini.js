@@ -145,7 +145,6 @@ export default async function handler(req, res) {
     res.write(JSON.stringify({
       requestId,
       type: 'completed',
-      fullText: fullText,
       sources: sources,
       webSearchUsed: sources.length > 0
     }) + '\n');

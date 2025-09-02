@@ -1377,8 +1377,8 @@ function App() {
               geminiSources = sources;
             }
             
-            // Use latest chunk (backend sends cumulative chunks, not incremental)
-            chunkBuffer = chunk;
+            // Accumulate incremental chunks from gemini.service.js
+            chunkBuffer += chunk;
             
             if (!isStreaming) {
               // Streaming complete - hide ALL loading indicators immediately
@@ -2135,8 +2135,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             geminiSourcesForDocs = sources;
           }
           
-          // Use latest chunk (backend sends cumulative chunks, not incremental)
-          chunkBufferDocs = chunk;
+          // Accumulate incremental chunks from gemini.service.js
+          chunkBufferDocs += chunk;
           
           if (!isStreaming) {
             // Streaming complete - hide ALL loading indicators immediately
