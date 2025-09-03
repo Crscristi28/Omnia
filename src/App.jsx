@@ -1799,15 +1799,28 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;
   
-  // Create attachments with File objects for instant display
-  const attachments = safeDocuments.map(doc => ({
-    name: doc.name,
-    size: doc.file.size,
-    type: doc.file.type,
-    file: doc.file, // Keep File object for instant display
-    base64: null, // Will be converted for AI later
-    storageUrl: null, // Will be added after background upload
-    storagePath: null
+  // Create attachments WITHOUT File objects (for IndexedDB persistence)
+  const attachments = await Promise.all(safeDocuments.map(async (doc) => {
+    // Create preview URL immediately for instant display
+    const previewUrl = URL.createObjectURL(doc.file);
+    
+    // Start base64 conversion for persistence (non-blocking)
+    const base64Promise = convertFileToBase64(doc.file).catch(error => {
+      console.error(`Base64 conversion failed for ${doc.name}:`, error);
+      return null;
+    });
+    
+    return {
+      name: doc.name,
+      size: doc.file.size,
+      type: doc.file.type,
+      previewUrl: previewUrl, // For instant local display
+      base64Promise: base64Promise, // Will resolve to base64 string
+      storageUrl: null, // Will be added after background upload
+      storagePath: null,
+      // file: REMOVED - no File objects for IndexedDB compatibility
+      _tempFile: doc.file // Temporary reference for upload, will be removed
+    };
   }));
   
   // Add user message to chat immediately (with persistent attachment data)
@@ -1833,9 +1846,9 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
 
   // 🚀 BACKGROUND UPLOAD - Upload files without blocking UI
   attachments.forEach((attachment, index) => {
-    if (attachment.file) {
+    if (attachment._tempFile) {
       // Upload to Supabase Storage in background
-      uploadToSupabaseStorage(attachment.file, 'attachments')
+      uploadToSupabaseStorage(attachment._tempFile, 'attachments')
         .then(uploadResult => {
           // Update message with storage URL when upload completes
           setMessages(prev => prev.map(msg => 
@@ -1869,26 +1882,21 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Process documents for AI (base64 conversion happens in background)
     // We'll wait a bit for base64 to be ready, but not for storage upload
     
-    // Wait briefly for base64 conversion (but not storage upload)
+    // Wait for base64 conversions that were started during attachment creation
     const base64WaitPromises = attachments.map((att, index) => {
-      if (att.file) {
-        return convertFileToBase64(att.file)
-          .then(base64Data => {
-            // Update attachment with base64 for AI
-            setMessages(prev => prev.map(msg => 
-              msg.timestamp === userTimestamp ? {
-                ...msg,
-                attachments: msg.attachments.map((a, i) => 
-                  i === index ? {...a, base64: base64Data} : a
-                )
-              } : msg
-            ));
-            return base64Data;
-          })
-          .catch(error => {
-            console.error(`Base64 conversion failed for ${att.name}:`, error);
-            return null;
-          });
+      if (att.base64Promise) {
+        return att.base64Promise.then(base64Data => {
+          // Update attachment with base64 for persistence
+          setMessages(prev => prev.map(msg => 
+            msg.timestamp === userTimestamp ? {
+              ...msg,
+              attachments: msg.attachments.map((a, i) => 
+                i === index ? {...a, base64: base64Data} : a
+              )
+            } : msg
+          ));
+          return base64Data;
+        });
       }
       return Promise.resolve(null);
     });

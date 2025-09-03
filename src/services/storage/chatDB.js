@@ -216,6 +216,16 @@ const chatDB = {
           continue;
         }
         
+        // Clean attachments for IndexedDB persistence (remove File objects)
+        const cleanAttachments = message.attachments ? message.attachments.map(att => {
+          const cleaned = { ...att };
+          // Remove File objects and temporary references that can't be serialized
+          delete cleaned.file;
+          delete cleaned._tempFile;
+          delete cleaned.base64Promise;
+          return cleaned;
+        }) : null;
+        
         const messageRecord = {
           uuid: uuid, // UUID as primary key
           chatId: chatId,
@@ -223,7 +233,7 @@ const chatDB = {
           sender: message.sender,
           text: message.text,
           type: message.type || 'text',
-          attachments: message.attachments || null,
+          attachments: cleanAttachments,
           image: message.image || null  // Fix: Save Imagen images too
         };
         // Use put() instead of add() for upsert behavior with UUID
@@ -311,6 +321,16 @@ const chatDB = {
       const finalTimestamp = message.timestamp;
       
       
+      // Clean attachments for IndexedDB persistence (remove File objects)
+      const cleanAttachments = message.attachments ? message.attachments.map(att => {
+        const cleaned = { ...att };
+        // Remove File objects and temporary references that can't be serialized
+        delete cleaned.file;
+        delete cleaned._tempFile;
+        delete cleaned.base64Promise;
+        return cleaned;
+      }) : null;
+      
       const messageRecord = {
         uuid: message.uuid || crypto.randomUUID(), // UUID as primary key
         chatId: chatId,
@@ -318,7 +338,7 @@ const chatDB = {
         sender: message.sender,
         text: message.text,
         type: message.type || 'text',
-        attachments: message.attachments || null
+        attachments: cleanAttachments
       };
       
       // Save message to messages table using put for upsert
