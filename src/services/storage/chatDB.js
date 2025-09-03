@@ -223,6 +223,8 @@ const chatDB = {
           delete cleaned.file;
           delete cleaned._tempFile;
           delete cleaned.base64Promise;
+          // Remove blob URLs - they don't persist across sessions
+          delete cleaned.previewUrl;
           return cleaned;
         }) : null;
         
@@ -328,6 +330,8 @@ const chatDB = {
         delete cleaned.file;
         delete cleaned._tempFile;
         delete cleaned.base64Promise;
+        // Remove blob URLs - they don't persist across sessions
+        delete cleaned.previewUrl;
         return cleaned;
       }) : null;
       
