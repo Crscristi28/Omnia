@@ -1995,76 +1995,52 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           }
           
         } else if (isImageFile) {
-          // 🖼️ IMAGES - UPLOAD FOR VISUAL ANALYSIS (GEMINI NEEDS TO SEE CONTENT)  
-          console.log(`🖼️ [IMAGE] Processing image for visual analysis: ${doc.file.name}`);
+          // 🖼️ IMAGES - DIRECT GCS UPLOAD FOR GEMINI VISUAL ANALYSIS ONLY
+          console.log(`🖼️ [IMAGE] Direct GCS upload for visual analysis: ${doc.file.name}`);
           
-          // Images need Gemini File API for visual analysis (to see what's in the image)
-          // Use same upload path as documents since Gemini needs to analyze content
-          
-          // Decide upload method based on file size
-          const useDirectUpload = shouldUseDirectUpload(doc.file);
-          console.log(`🎯 Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
-          
-          let result;
-          
-          if (useDirectUpload) {
-            // 🚀 DIRECT UPLOAD TO GCS for large images
+          try {
+            // Images: Direct upload to GCS for Gemini (bypass document processing entirely)
+            console.log(`🚀 Uploading ${doc.file.name} directly to GCS for Gemini analysis`);
+            
+            // Upload directly to GCS (no /api/process-document needed for images)
             const uploadResult = await uploadDirectToGCS(doc.file);
-            result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
             
-            // Add GCS metadata to result
-            result.gcsUri = uploadResult.gcsUri;
-            result.publicUrl = uploadResult.publicUrl;
+            console.log('🖼️ Image uploaded to GCS - sending to Gemini for visual analysis');
             
-          } else {
-            // 🔄 TRADITIONAL UPLOAD for smaller images
-            const formData = new FormData();
-            formData.append('file', doc.file);
-            
-            const response = await fetch('/api/process-document', {
+            // Upload to Gemini for visual analysis using GCS URI
+            const geminiResponse = await fetch('/api/upload-to-gemini', {
               method: 'POST',
-              body: formData
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                pdfUrl: uploadResult.gcsUri, // Use GCS URI directly
+                originalName: uploadResult.originalName
+              })
             });
             
-            if (!response.ok) {
-              throw new Error('Image processing failed');
+            if (!geminiResponse.ok) {
+              throw new Error('Failed to process image for visual analysis');
             }
             
-            result = await response.json();
+            const geminiResult = await geminiResponse.json();
+            
+            // Create document with Gemini URI for visual analysis (simplified structure for images)
+            newDoc = {
+              id: Date.now() + Math.random(),
+              name: uploadResult.originalName,
+              gcsUri: uploadResult.gcsUri,
+              publicUrl: uploadResult.publicUrl,
+              geminiFileUri: geminiResult.fileUri,
+              uploadMethod: 'direct-gcs-image',
+              processingMethod: 'image-visual-analysis-only',
+              uploadedAt: new Date()
+            };
+            
+            console.log(`✅ [IMAGE] Direct GCS→Gemini completed: ${doc.file.name}`);
+            
+          } catch (error) {
+            console.error(`❌ Failed to process image via direct GCS:`, error);
+            throw new Error(`Failed to process image: ${doc.file.name}`);
           }
-          
-          console.log('🖼️ Image - uploading to Gemini for visual analysis');
-          
-          // Upload to Gemini for visual analysis
-          const geminiResponse = await fetch('/api/upload-to-gemini', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              pdfUrl: result.originalPdfUrl || result.gcsUri,
-              originalName: result.originalName
-            })
-          });
-          
-          if (!geminiResponse.ok) {
-            throw new Error('Failed to process image for visual analysis');
-          }
-          
-          const geminiResult = await geminiResponse.json();
-          
-          // Create document with Gemini URI for visual analysis  
-          newDoc = {
-            id: Date.now() + Math.random(),
-            name: result.originalName,
-            documentUrl: result.documentUrl,
-            originalPdfUrl: result.originalPdfUrl || result.gcsUri,
-            geminiFileUri: geminiResult.fileUri,
-            fileName: result.fileName,
-            pageCount: result.pageCount,
-            preview: result.preview,
-            uploadMethod: useDirectUpload ? 'direct-gcs' : 'traditional',
-            processingMethod: 'image-visual-analysis',
-            uploadedAt: new Date()
-          };
           
         } else {
           // Binary files (PDF, Word documents) need backend processing
