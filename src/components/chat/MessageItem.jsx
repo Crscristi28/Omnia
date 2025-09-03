@@ -104,11 +104,16 @@ const MessageItem = ({
                       style={userAttachmentWrapperStyle}
                     >
                       <img 
-                        src={attachment.storageUrl || attachment.base64}
+                        src={attachment.file 
+                          ? URL.createObjectURL(attachment.file)
+                          : (attachment.storageUrl || attachment.base64)
+                        }
                         alt={attachment.name}
                         onClick={() => {
                           onPreviewImage({
-                            url: attachment.storageUrl || attachment.base64,
+                            url: attachment.file 
+                              ? URL.createObjectURL(attachment.file)
+                              : (attachment.storageUrl || attachment.base64),
                             name: attachment.name
                           });
                         }}
@@ -138,14 +143,18 @@ const MessageItem = ({
                     // Route to appropriate viewer based on file type
                     if (viewerType === 'image') {
                       onPreviewImage({
-                        url: attachment.storageUrl || attachment.base64,
+                        url: attachment.file 
+                          ? URL.createObjectURL(attachment.file)
+                          : (attachment.storageUrl || attachment.base64),
                         name: attachment.name
                       });
                     } else {
                       onDocumentView({
                         isOpen: true,
                         document: {
-                          url: attachment.storageUrl || attachment.base64,
+                          url: attachment.file 
+                            ? URL.createObjectURL(attachment.file)
+                            : (attachment.storageUrl || attachment.base64),
                           name: attachment.name,
                           mimeType: attachment.type,
                           base64: attachment.base64
@@ -184,7 +193,10 @@ const MessageItem = ({
                   {isImage ? (
                     /* Image thumbnail */
                     <img 
-                      src={attachment.storageUrl || attachment.base64}
+                      src={attachment.file 
+                        ? URL.createObjectURL(attachment.file)
+                        : (attachment.storageUrl || attachment.base64)
+                      }
                       alt={attachment.name}
                       style={{
                         width: '100%',
