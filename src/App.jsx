@@ -1868,11 +1868,20 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                   ...att,
                   storageUrl: uploadResult.publicUrl,
                   storagePath: uploadResult.path,
-                  name: uploadResult.fileName // Use the generated filename from storage
+                  name: uploadResult.fileName, // Use the generated filename from storage
+                  previewUrl: null, // 🎯 Remove blob URL - use storageUrl now
+                  _tempFile: undefined // Clean temporary file reference
                 } : att
               )
             } : msg
           ));
+          
+          // 🧹 Cleanup blob URL from memory after switching to storageUrl
+          if (attachment.previewUrl) {
+            URL.revokeObjectURL(attachment.previewUrl);
+            console.log(`🧹 Cleaned up blob URL for ${attachment.name}`);
+          }
+          
           console.log(`✅ Background upload completed for ${attachment.name}`);
         })
         .catch(error => {
