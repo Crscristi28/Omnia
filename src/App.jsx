@@ -1874,6 +1874,12 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             } : msg
           ));
           console.log(`✅ Background upload completed for ${attachment.name}`);
+          
+          // 🧹 Cleanup blob URL after successful upload (prevent memory leak)
+          if (attachment.previewUrl) {
+            URL.revokeObjectURL(attachment.previewUrl);
+            console.log(`🧹 Cleaned up blob URL for ${attachment.name}`);
+          }
         })
         .catch(error => {
           console.error(`❌ Background upload failed for ${attachment.name}:`, error);
@@ -2416,6 +2422,18 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
       // Update state with saved messages to ensure bot messages are persisted
       setMessages(cleanedMessages);
+      
+      // 🧹 Cleanup blob URLs after save (we have base64 in IndexedDB now)
+      cleanedMessages.forEach(msg => {
+        if (msg.attachments && Array.isArray(msg.attachments)) {
+          msg.attachments.forEach(att => {
+            if (att.previewUrl) {
+              URL.revokeObjectURL(att.previewUrl);
+              console.log(`🧹 Cleaned up blob URL after save for ${att.name}`);
+            }
+          });
+        }
+      });
       
       // ❌ REMOVED: Scroll limit activation
     }
