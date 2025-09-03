@@ -2411,20 +2411,17 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Use Gemini response directly without post-processing
       const cleanedText = result.text;
       
-      // ❌ REMOVED: Final message creation - streaming callback already handles this
-      // const finalMessages = [...messagesWithUser, {
-      //   id: generateMessageId(),
-      //   sender: 'bot',
-      //   text: cleanedText,
-      //   timestamp: botTimestampDocs,
-      //   sources: result.sources || [],
-      //   isStreaming: false
-      // }];
+      // Create final messages with bot response (same as normal handleSend)
+      const currentMessages = [...messagesWithUser, {
+        id: generateMessageId(),
+        sender: 'bot',
+        text: cleanedText,
+        timestamp: botTimestampDocs,
+        sources: result.sources || [],
+        isStreaming: false
+      }];
       
-      // Get current messages (including the one created by streaming callback)
-      const currentMessages = messages;
-      
-      // Check auto-save after AI response
+      // Check auto-save after AI response (saves both user and bot messages)
       const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
       // Update state with saved messages to ensure bot messages are persisted
       setMessages(cleanedMessages);
