@@ -1995,38 +1995,76 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           }
           
         } else if (isImageFile) {
-          // 🖼️ IMAGES - ONLY BASE64 CONVERSION (NO BACKEND PROCESSING)
-          console.log(`🖼️ [LOCAL] Processing image file locally: ${doc.file.name}`);
+          // 🖼️ IMAGES - UPLOAD FOR VISUAL ANALYSIS (GEMINI NEEDS TO SEE CONTENT)  
+          console.log(`🖼️ [IMAGE] Processing image for visual analysis: ${doc.file.name}`);
           
-          try {
-            // Images only need base64 conversion for AI (already done above)
-            // They don't need backend processing like PDFs/Word docs
-            const base64Data = base64Results[i];
+          // Images need Gemini File API for visual analysis (to see what's in the image)
+          // Use same upload path as documents since Gemini needs to analyze content
+          
+          // Decide upload method based on file size
+          const useDirectUpload = shouldUseDirectUpload(doc.file);
+          console.log(`🎯 Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
+          
+          let result;
+          
+          if (useDirectUpload) {
+            // 🚀 DIRECT UPLOAD TO GCS for large images
+            const uploadResult = await uploadDirectToGCS(doc.file);
+            result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
             
-            if (!base64Data) {
-              throw new Error(`Base64 conversion failed for ${doc.file.name}`);
+            // Add GCS metadata to result
+            result.gcsUri = uploadResult.gcsUri;
+            result.publicUrl = uploadResult.publicUrl;
+            
+          } else {
+            // 🔄 TRADITIONAL UPLOAD for smaller images
+            const formData = new FormData();
+            formData.append('file', doc.file);
+            
+            const response = await fetch('/api/process-document', {
+              method: 'POST',
+              body: formData
+            });
+            
+            if (!response.ok) {
+              throw new Error('Image processing failed');
             }
             
-            // Create document with base64 data only - no backend processing needed
-            newDoc = {
-              id: Date.now() + Math.random(),
-              name: doc.file.name,
-              base64: base64Data, // Direct base64 for AI
-              processingMethod: 'local-image-base64',
-              metadata: {
-                size: doc.file.size,
-                type: doc.file.type,
-                lastModified: doc.file.lastModified
-              },
-              uploadedAt: new Date()
-            };
-            
-            console.log(`✅ [LOCAL] Image processed instantly via base64: ${doc.file.name} (${Math.round(base64Data.length/1024)}KB base64)`);
-            
-          } catch (error) {
-            console.error(`❌ Failed to process image file:`, error);
-            throw new Error(`Failed to process image: ${doc.file.name}`);
+            result = await response.json();
           }
+          
+          console.log('🖼️ Image - uploading to Gemini for visual analysis');
+          
+          // Upload to Gemini for visual analysis
+          const geminiResponse = await fetch('/api/upload-to-gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              pdfUrl: result.originalPdfUrl || result.gcsUri,
+              originalName: result.originalName
+            })
+          });
+          
+          if (!geminiResponse.ok) {
+            throw new Error('Failed to process image for visual analysis');
+          }
+          
+          const geminiResult = await geminiResponse.json();
+          
+          // Create document with Gemini URI for visual analysis  
+          newDoc = {
+            id: Date.now() + Math.random(),
+            name: result.originalName,
+            documentUrl: result.documentUrl,
+            originalPdfUrl: result.originalPdfUrl || result.gcsUri,
+            geminiFileUri: geminiResult.fileUri,
+            fileName: result.fileName,
+            pageCount: result.pageCount,
+            preview: result.preview,
+            uploadMethod: useDirectUpload ? 'direct-gcs' : 'traditional',
+            processingMethod: 'image-visual-analysis',
+            uploadedAt: new Date()
+          };
           
         } else {
           // Binary files (PDF, Word documents) need backend processing
