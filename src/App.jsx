@@ -1931,56 +1931,91 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
         }
         
-        // Decide upload method based on file size and type
-        const useDirectUpload = shouldUseDirectUpload(doc.file);
-        console.log(`🎯 [DRAG-DROP] Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
+        // Check if it's a text file we can read locally
+        const textFileTypes = [
+          'text/plain',
+          'text/markdown', 
+          'text/csv',
+          'text/html',
+          'text/css',
+          'text/javascript',
+          'text/jsx',
+          'text/typescript',
+          'application/json',
+          'application/javascript',
+          'application/xml',
+          'text/xml'
+        ];
         
-        let result;
-        
-        if (useDirectUpload) {
-          // 🚀 DIRECT UPLOAD TO GCS for drag & drop
-          
-          const uploadResult = await uploadDirectToGCS(doc.file);
-          
-          result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
-          
-          // Add GCS metadata to result
-          result.gcsUri = uploadResult.gcsUri;
-          result.publicUrl = uploadResult.publicUrl;
-          
-        } else {
-          // 🔄 TRADITIONAL UPLOAD for smaller files
-          const formData = new FormData();
-          formData.append('file', doc.file);
-          
-          const response = await fetch('/api/process-document', {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (!response.ok) {
-            throw new Error('Document processing failed');
-          }
-          
-          result = await response.json();
-        }
+        const isTextFile = textFileTypes.includes(doc.file.type) || 
+                          doc.file.name.match(/\.(txt|md|json|csv|html|css|js|jsx|ts|tsx|xml|yml|yaml|log|conf|cfg|ini)$/i);
         
         let newDoc;
         
-        // Check if this was processed as plain text (no Gemini upload needed)
-        if (result.processingMethod === 'direct-text-extraction') {
-          console.log('📝 Plain text file processed - skipping Gemini upload');
+        if (isTextFile) {
+          // 🚀 READ TEXT FILES LOCALLY - INSTANT!
+          console.log(`📝 [LOCAL] Reading text file locally: ${doc.file.name}`);
           
-          // Create document without Gemini URI for text files
-          newDoc = {
-            id: Date.now() + Math.random(),
-            name: result.originalName,
-            extractedText: result.extractedText, // Direct text content
-            processingMethod: result.processingMethod,
-            metadata: result.metadata,
-            uploadedAt: new Date()
-          };
+          try {
+            const textContent = await doc.file.text(); // INSTANT READ!
+            
+            // Create document with extracted text
+            newDoc = {
+              id: Date.now() + Math.random(),
+              name: doc.file.name,
+              extractedText: textContent, // Direct text content
+              processingMethod: 'local-text-read',
+              metadata: {
+                size: doc.file.size,
+                type: doc.file.type,
+                lastModified: doc.file.lastModified
+              },
+              uploadedAt: new Date()
+            };
+            
+            console.log(`✅ [LOCAL] Text file read instantly: ${doc.file.name} (${textContent.length} chars)`);
+            
+          } catch (error) {
+            console.error(`❌ Failed to read text file locally:`, error);
+            throw new Error(`Failed to read text file: ${doc.file.name}`);
+          }
+          
         } else {
+          // Binary files (PDF, Word, images) need backend processing
+          console.log(`📄 [BACKEND] Processing binary file: ${doc.file.name}`);
+          
+          // Decide upload method based on file size
+          const useDirectUpload = shouldUseDirectUpload(doc.file);
+          console.log(`🎯 Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
+          
+          let result;
+          
+          if (useDirectUpload) {
+            // 🚀 DIRECT UPLOAD TO GCS for large files
+            const uploadResult = await uploadDirectToGCS(doc.file);
+            result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
+            
+            // Add GCS metadata to result
+            result.gcsUri = uploadResult.gcsUri;
+            result.publicUrl = uploadResult.publicUrl;
+            
+          } else {
+            // 🔄 TRADITIONAL UPLOAD for smaller files
+            const formData = new FormData();
+            formData.append('file', doc.file);
+            
+            const response = await fetch('/api/process-document', {
+              method: 'POST',
+              body: formData
+            });
+            
+            if (!response.ok) {
+              throw new Error('Document processing failed');
+            }
+            
+            result = await response.json();
+          }
+          
           console.log('📄 Non-text file - uploading to Gemini');
           
           // Upload to Gemini for non-text files
