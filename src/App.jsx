@@ -1868,7 +1868,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   try {
     // Process documents for AI (base64 conversion happens in background)
     // We'll wait a bit for base64 to be ready, but not for storage upload
-    const processedDocuments = [];
     
     // Wait briefly for base64 conversion (but not storage upload)
     const base64WaitPromises = attachments.map((att, index) => {
