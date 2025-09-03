@@ -1799,6 +1799,15 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;
   
+  // 🎯 ENSURE CHAT ID EXISTS - same logic as normal handleSend
+  let activeChatId = getSafeChatId();
+  
+  if (!activeChatId) {
+    activeChatId = chatDB.generateChatId();
+    updateCurrentChatId(activeChatId);
+    console.log('🆕 [DOC-SEND] Created new chat for documents:', activeChatId);
+  }
+  
   // Create attachments WITHOUT File objects (for IndexedDB persistence)
   const attachments = await Promise.all(safeDocuments.map(async (doc) => {
     // Create preview URL immediately for instant display
@@ -1843,6 +1852,18 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const newUserMessageIndex = currentMessagesWithUser.length - 1; // Index nové user zprávy
   
   scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
+
+  // 🔄 Check auto-save after user message with documents (same logic as normal messages)
+  try {
+    const messagesAfterSave = await checkAutoSave(currentMessagesWithUser, activeChatId);
+    // Update messages state if checkAutoSave modified them
+    if (messagesAfterSave !== currentMessagesWithUser) {
+      setMessages(messagesAfterSave);
+      currentMessagesWithUser = messagesAfterSave;
+    }
+  } catch (error) {
+    console.error('❌ [DOC-SAVE] Failed to save message with documents:', error);
+  }
 
   // 🚀 BACKGROUND UPLOAD - Upload files without blocking UI
   attachments.forEach((attachment, index) => {
@@ -2404,8 +2425,9 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const currentMessages = messages;
       
       // Check auto-save after AI response
-      const cleanedMessages = await checkAutoSave(currentMessages, currentChatId);
-      // Don't setMessages here - streaming callback already handled it
+      const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
+      // Update state with saved messages to ensure bot messages are persisted
+      setMessages(cleanedMessages);
       
       // ❌ REMOVED: Scroll limit activation
     }
