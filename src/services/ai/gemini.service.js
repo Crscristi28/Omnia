@@ -5,7 +5,7 @@
 import { profileService } from '../profile/profileService.js';
 
 const geminiService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs', documents = []) {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = null, documents = []) {
     try {
       // Generate unique request ID for concurrent user isolation
       const requestId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -311,7 +311,6 @@ const geminiService = {
     • You can analyze documents, images, and photos when provided by user (e.g., "What's in this image?", "Summarize this document.").
 
 • **General rules:**
-    • Detect user's language and respond in the same language.
     • Be concise, but helpful! ✨
 
 **QUICK STYLE GUIDE:**
