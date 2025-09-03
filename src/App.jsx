@@ -2399,8 +2399,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Use Gemini response directly without post-processing
       const cleanedText = result.text;
       
-      // Create final messages with bot response (same as normal handleSend)
-      const currentMessages = [...messagesWithUser, {
+      // Get all current messages from state (includes user message with updated base64)
+      const currentMessagesFromState = messagesRef.current;
+      
+      // Add bot response to current messages
+      const currentMessages = [...currentMessagesFromState, {
         id: generateMessageId(),
         sender: 'bot',
         text: cleanedText,
@@ -2409,7 +2412,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         isStreaming: false
       }];
       
-      // Check auto-save after AI response (saves both user and bot messages)
+      // Check auto-save after AI response (saves both user and bot messages with base64)
       const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
       // Update state with saved messages to ensure bot messages are persisted
       setMessages(cleanedMessages);
