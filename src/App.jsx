@@ -1950,6 +1950,20 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         const isTextFile = textFileTypes.includes(doc.file.type) || 
                           doc.file.name.match(/\.(txt|md|json|csv|html|css|js|jsx|ts|tsx|xml|yml|yaml|log|conf|cfg|ini)$/i);
         
+        // Check if it's an image file (only needs base64 conversion, no backend processing)
+        const imageFileTypes = [
+          'image/png',
+          'image/jpeg', 
+          'image/jpg',
+          'image/bmp',
+          'image/tiff',
+          'image/gif',
+          'image/webp'
+        ];
+        
+        const isImageFile = imageFileTypes.includes(doc.file.type) || 
+                           doc.file.name.match(/\.(png|jpg|jpeg|bmp|tiff|tif|gif|webp)$/i);
+        
         let newDoc;
         
         if (isTextFile) {
@@ -1980,9 +1994,43 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             throw new Error(`Failed to read text file: ${doc.file.name}`);
           }
           
+        } else if (isImageFile) {
+          // 🖼️ IMAGES - ONLY BASE64 CONVERSION (NO BACKEND PROCESSING)
+          console.log(`🖼️ [LOCAL] Processing image file locally: ${doc.file.name}`);
+          
+          try {
+            // Images only need base64 conversion for AI (already done above)
+            // They don't need backend processing like PDFs/Word docs
+            const base64Data = base64Results[i];
+            
+            if (!base64Data) {
+              throw new Error(`Base64 conversion failed for ${doc.file.name}`);
+            }
+            
+            // Create document with base64 data only - no backend processing needed
+            newDoc = {
+              id: Date.now() + Math.random(),
+              name: doc.file.name,
+              base64: base64Data, // Direct base64 for AI
+              processingMethod: 'local-image-base64',
+              metadata: {
+                size: doc.file.size,
+                type: doc.file.type,
+                lastModified: doc.file.lastModified
+              },
+              uploadedAt: new Date()
+            };
+            
+            console.log(`✅ [LOCAL] Image processed instantly via base64: ${doc.file.name} (${Math.round(base64Data.length/1024)}KB base64)`);
+            
+          } catch (error) {
+            console.error(`❌ Failed to process image file:`, error);
+            throw new Error(`Failed to process image: ${doc.file.name}`);
+          }
+          
         } else {
-          // Binary files (PDF, Word, images) need backend processing
-          console.log(`📄 [BACKEND] Processing binary file: ${doc.file.name}`);
+          // Binary files (PDF, Word documents) need backend processing
+          console.log(`📄 [BACKEND] Processing document file: ${doc.file.name}`);
           
           // Decide upload method based on file size
           const useDirectUpload = shouldUseDirectUpload(doc.file);
