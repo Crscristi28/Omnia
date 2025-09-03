@@ -2421,10 +2421,10 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       //   isStreaming: false
       // }];
       
-      // Get current messages (including the one created by streaming callback)
-      const currentMessages = messages;
+      // Get current messages from ref (includes bot message created by streaming callback)
+      const currentMessages = messagesRef.current;
       
-      // Check auto-save after AI response
+      // Check auto-save after AI response (CRITICAL: saves bot message to IndexedDB)
       const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
       // Update state with saved messages to ensure bot messages are persisted
       setMessages(cleanedMessages);
