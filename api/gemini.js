@@ -60,11 +60,11 @@ export default async function handler(req, res) {
       const enhancedText = enhanceForSearch(originalText);
       lastMessage.parts[0].text = enhancedText;
 
-      // Add all Vertex AI files if provided
+      // Add all documents (both files and text content)
       if (documents && documents.length > 0) {
         documents.forEach(doc => {
           if (doc.geminiFileUri) {
-            // Detect MIME type from file name
+            // Gemini files (images, PDFs)
             const mimeType = getMimeTypeFromName(doc.name);
             
             lastMessage.parts.unshift({
@@ -74,6 +74,12 @@ export default async function handler(req, res) {
               }
             });
             console.log('Added Vertex AI file to request:', doc.geminiFileUri, 'MIME:', mimeType);
+          } else if (doc.extractedText) {
+            // Text files with direct content
+            lastMessage.parts.unshift({
+              text: `📄 Content of ${doc.name}:\n\n${doc.extractedText}`
+            });
+            console.log('Added text file content to request:', doc.name, `(${doc.extractedText.length} chars)`);
           }
         });
       }

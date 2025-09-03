@@ -2153,15 +2153,33 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       const allDocuments = [...currentDocuments, ...processedDocuments];
       
       // Combine existing and new documents BEFORE sending to AI
+      // Include both Gemini files (images/documents) AND text files (with extractedText)
       const newActiveDocuments = processedDocuments
-        .filter(doc => doc.geminiFileUri) // Only documents with Gemini URI (non-text files)
-        .map(doc => ({
-          uri: doc.geminiFileUri,
-          name: doc.name,
-          uploadTimestamp: Date.now(),
-          lastAccessedTimestamp: Date.now(),
-          lastAccessedMessageIndex: messagesWithUser.length
-        }));
+        .map(doc => {
+          if (doc.geminiFileUri) {
+            // Images and documents with Gemini URI
+            return {
+              uri: doc.geminiFileUri,
+              name: doc.name,
+              uploadTimestamp: Date.now(),
+              lastAccessedTimestamp: Date.now(),
+              lastAccessedMessageIndex: messagesWithUser.length,
+              type: 'gemini-file'
+            };
+          } else if (doc.extractedText) {
+            // Text files with direct content
+            return {
+              name: doc.name,
+              extractedText: doc.extractedText,
+              uploadTimestamp: Date.now(),
+              lastAccessedTimestamp: Date.now(),
+              lastAccessedMessageIndex: messagesWithUser.length,
+              type: 'text-content'
+            };
+          }
+          return null;
+        })
+        .filter(doc => doc !== null);
       
       const allActiveDocuments = [...activeDocumentContexts, ...newActiveDocuments];
       
@@ -2342,7 +2360,15 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           setTimeout(() => setIsSearching(false), 3000);
         },
         detectedLang,
-        filteredActiveDocs.map(doc => ({ geminiFileUri: doc.uri, name: doc.name }))
+        filteredActiveDocs.map(doc => {
+          if (doc.type === 'gemini-file') {
+            return { geminiFileUri: doc.uri, name: doc.name };
+          } else if (doc.type === 'text-content') {
+            return { name: doc.name, extractedText: doc.extractedText };
+          }
+          // Fallback for existing documents (without type)
+          return { geminiFileUri: doc.uri, name: doc.name };
+        })
       );
       
       // Update uploadedDocuments state AFTER successful AI response
