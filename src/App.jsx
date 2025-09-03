@@ -1853,18 +1853,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   
   scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
 
-  // 🔄 Check auto-save after user message with documents (same logic as normal messages)
-  try {
-    const messagesAfterSave = await checkAutoSave(currentMessagesWithUser, activeChatId);
-    // Update messages state if checkAutoSave modified them
-    if (messagesAfterSave !== currentMessagesWithUser) {
-      setMessages(messagesAfterSave);
-      currentMessagesWithUser = messagesAfterSave;
-    }
-  } catch (error) {
-    console.error('❌ [DOC-SAVE] Failed to save message with documents:', error);
-  }
-
   // 🚀 BACKGROUND UPLOAD - Upload files without blocking UI
   attachments.forEach((attachment, index) => {
     if (attachment._tempFile) {
