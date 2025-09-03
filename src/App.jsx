@@ -1897,222 +1897,248 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Wait for base64 conversions (quick operation)
     const base64Results = await Promise.all(base64WaitPromises);
     
-    // Now process documents for AI with base64 data
-    for (let i = 0; i < safeDocuments.length; i++) {
-      const doc = safeDocuments[i];
-      if (doc.file) {
-        // Validate file format before processing
-        const supportedTypes = [
-          'application/pdf',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'application/msword',
-          'text/plain',
-          'image/png',
-          'image/jpeg',
-          'image/jpg',
-          'image/bmp',
-          'image/tiff',
-          'image/gif',
-          'text/markdown',
-          'application/json',
-          'application/javascript',
-          'text/javascript',
-          'text/jsx',
-          'text/typescript',
-          'text/css',
-          'text/html'
-        ];
+    // 🚀 CATEGORIZE FILES FOR OPTIMIZED PROCESSING
+    const supportedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/bmp',
+      'image/tiff',
+      'image/gif',
+      'text/markdown',
+      'application/json',
+      'application/javascript',
+      'text/javascript',
+      'text/jsx',
+      'text/typescript',
+      'text/css',
+      'text/html'
+    ];
+    
+    const textFileTypes = [
+      'text/plain',
+      'text/markdown', 
+      'text/csv',
+      'text/html',
+      'text/css',
+      'text/javascript',
+      'text/jsx',
+      'text/typescript',
+      'application/json',
+      'application/javascript',
+      'application/xml',
+      'text/xml'
+    ];
+    
+    const imageFileTypes = [
+      'image/png',
+      'image/jpeg', 
+      'image/jpg',
+      'image/bmp',
+      'image/tiff',
+      'image/gif',
+      'image/webp'
+    ];
+    
+    // Categorize files for different processing approaches
+    const textFiles = [];
+    const imageFiles = [];
+    const documentFiles = [];
+    
+    safeDocuments.forEach((doc, index) => {
+      if (!doc.file) return;
+      
+      // Validate file format
+      const isSupported = supportedTypes.includes(doc.file.type) || 
+                          isFileExtensionSupported(doc.file.name);
+      
+      if (!isSupported) {
+        throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
+      }
+      
+      // Categorize based on file type
+      const isTextFile = textFileTypes.includes(doc.file.type) || 
+                        doc.file.name.match(/\.(txt|md|json|csv|html|css|js|jsx|ts|tsx|xml|yml|yaml|log|conf|cfg|ini)$/i);
+      
+      const isImageFile = imageFileTypes.includes(doc.file.type) || 
+                         doc.file.name.match(/\.(png|jpg|jpeg|bmp|tiff|tif|gif|webp)$/i);
+      
+      if (isTextFile) {
+        textFiles.push({ doc, index });
+      } else if (isImageFile) {
+        imageFiles.push({ doc, index });
+      } else {
+        documentFiles.push({ doc, index });
+      }
+    });
+    
+    console.log(`📂 File categorization: ${textFiles.length} text, ${imageFiles.length} images, ${documentFiles.length} documents`);
+    
+    // Process files by category for optimal performance
+    const processedDocuments = [];
+    
+    // 1️⃣ PROCESS TEXT FILES FIRST (instant, sequential)
+    for (const { doc, index } of textFiles) {
+      console.log(`📝 [LOCAL] Reading text file locally: ${doc.file.name}`);
+      
+      try {
+        const textContent = await doc.file.text(); // INSTANT READ!
         
-        // Check MIME type or fallback to file extension for better compatibility
-        const isSupported = supportedTypes.includes(doc.file.type) || 
-                            isFileExtensionSupported(doc.file.name);
+        const newDoc = {
+          id: Date.now() + Math.random(),
+          name: doc.file.name,
+          extractedText: textContent, // Direct text content
+          processingMethod: 'local-text-read',
+          metadata: {
+            size: doc.file.size,
+            type: doc.file.type,
+            lastModified: doc.file.lastModified
+          },
+          uploadedAt: new Date()
+        };
         
-        if (!isSupported) {
-          throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
-        }
+        processedDocuments.push(newDoc);
+        console.log(`✅ [LOCAL] Text file read instantly: ${doc.file.name} (${textContent.length} chars)`);
         
-        // Check if it's a text file we can read locally
-        const textFileTypes = [
-          'text/plain',
-          'text/markdown', 
-          'text/csv',
-          'text/html',
-          'text/css',
-          'text/javascript',
-          'text/jsx',
-          'text/typescript',
-          'application/json',
-          'application/javascript',
-          'application/xml',
-          'text/xml'
-        ];
+      } catch (error) {
+        console.error(`❌ Failed to read text file locally:`, error);
+        throw new Error(`Failed to read text file: ${doc.file.name}`);
+      }
+    }
+    
+    // 2️⃣ PROCESS IMAGES IN PARALLEL (fastest approach)
+    if (imageFiles.length > 0) {
+      console.log(`🖼️ [PARALLEL] Processing ${imageFiles.length} images simultaneously`);
+      
+      const imagePromises = imageFiles.map(async ({ doc, index }) => {
+        console.log(`🖼️ [IMAGE] Direct GCS upload for visual analysis: ${doc.file.name}`);
         
-        const isTextFile = textFileTypes.includes(doc.file.type) || 
-                          doc.file.name.match(/\.(txt|md|json|csv|html|css|js|jsx|ts|tsx|xml|yml|yaml|log|conf|cfg|ini)$/i);
-        
-        // Check if it's an image file (only needs base64 conversion, no backend processing)
-        const imageFileTypes = [
-          'image/png',
-          'image/jpeg', 
-          'image/jpg',
-          'image/bmp',
-          'image/tiff',
-          'image/gif',
-          'image/webp'
-        ];
-        
-        const isImageFile = imageFileTypes.includes(doc.file.type) || 
-                           doc.file.name.match(/\.(png|jpg|jpeg|bmp|tiff|tif|gif|webp)$/i);
-        
-        let newDoc;
-        
-        if (isTextFile) {
-          // 🚀 READ TEXT FILES LOCALLY - INSTANT!
-          console.log(`📝 [LOCAL] Reading text file locally: ${doc.file.name}`);
+        try {
+          // Upload directly to GCS (no /api/process-document needed for images)
+          console.log(`🚀 Uploading ${doc.file.name} directly to GCS for Gemini analysis`);
+          const uploadResult = await uploadDirectToGCS(doc.file);
           
-          try {
-            const textContent = await doc.file.text(); // INSTANT READ!
-            
-            // Create document with extracted text
-            newDoc = {
-              id: Date.now() + Math.random(),
-              name: doc.file.name,
-              extractedText: textContent, // Direct text content
-              processingMethod: 'local-text-read',
-              metadata: {
-                size: doc.file.size,
-                type: doc.file.type,
-                lastModified: doc.file.lastModified
-              },
-              uploadedAt: new Date()
-            };
-            
-            console.log(`✅ [LOCAL] Text file read instantly: ${doc.file.name} (${textContent.length} chars)`);
-            
-          } catch (error) {
-            console.error(`❌ Failed to read text file locally:`, error);
-            throw new Error(`Failed to read text file: ${doc.file.name}`);
-          }
+          console.log(`🖼️ Image uploaded to GCS - sending to Gemini for visual analysis: ${doc.file.name}`);
           
-        } else if (isImageFile) {
-          // 🖼️ IMAGES - DIRECT GCS UPLOAD FOR GEMINI VISUAL ANALYSIS ONLY
-          console.log(`🖼️ [IMAGE] Direct GCS upload for visual analysis: ${doc.file.name}`);
-          
-          try {
-            // Images: Direct upload to GCS for Gemini (bypass document processing entirely)
-            console.log(`🚀 Uploading ${doc.file.name} directly to GCS for Gemini analysis`);
-            
-            // Upload directly to GCS (no /api/process-document needed for images)
-            const uploadResult = await uploadDirectToGCS(doc.file);
-            
-            console.log('🖼️ Image uploaded to GCS - sending to Gemini for visual analysis');
-            
-            // Upload to Gemini for visual analysis using GCS URI
-            const geminiResponse = await fetch('/api/upload-to-gemini', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                pdfUrl: uploadResult.gcsUri, // Use GCS URI directly
-                originalName: uploadResult.originalName
-              })
-            });
-            
-            if (!geminiResponse.ok) {
-              throw new Error('Failed to process image for visual analysis');
-            }
-            
-            const geminiResult = await geminiResponse.json();
-            
-            // Create document with Gemini URI for visual analysis (simplified structure for images)
-            newDoc = {
-              id: Date.now() + Math.random(),
-              name: uploadResult.originalName,
-              gcsUri: uploadResult.gcsUri,
-              publicUrl: uploadResult.publicUrl,
-              geminiFileUri: geminiResult.fileUri,
-              uploadMethod: 'direct-gcs-image',
-              processingMethod: 'image-visual-analysis-only',
-              uploadedAt: new Date()
-            };
-            
-            console.log(`✅ [IMAGE] Direct GCS→Gemini completed: ${doc.file.name}`);
-            
-          } catch (error) {
-            console.error(`❌ Failed to process image via direct GCS:`, error);
-            throw new Error(`Failed to process image: ${doc.file.name}`);
-          }
-          
-        } else {
-          // Binary files (PDF, Word documents) need backend processing
-          console.log(`📄 [BACKEND] Processing document file: ${doc.file.name}`);
-          
-          // Decide upload method based on file size
-          const useDirectUpload = shouldUseDirectUpload(doc.file);
-          console.log(`🎯 Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
-          
-          let result;
-          
-          if (useDirectUpload) {
-            // 🚀 DIRECT UPLOAD TO GCS for large files
-            const uploadResult = await uploadDirectToGCS(doc.file);
-            result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
-            
-            // Add GCS metadata to result
-            result.gcsUri = uploadResult.gcsUri;
-            result.publicUrl = uploadResult.publicUrl;
-            
-          } else {
-            // 🔄 TRADITIONAL UPLOAD for smaller files
-            const formData = new FormData();
-            formData.append('file', doc.file);
-            
-            const response = await fetch('/api/process-document', {
-              method: 'POST',
-              body: formData
-            });
-            
-            if (!response.ok) {
-              throw new Error('Document processing failed');
-            }
-            
-            result = await response.json();
-          }
-          
-          console.log('📄 Non-text file - uploading to Gemini');
-          
-          // Upload to Gemini for non-text files
+          // Upload to Gemini for visual analysis using GCS URI
           const geminiResponse = await fetch('/api/upload-to-gemini', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              pdfUrl: result.originalPdfUrl || result.gcsUri,
-              originalName: result.originalName
+              pdfUrl: uploadResult.gcsUri, // Use GCS URI directly
+              originalName: uploadResult.originalName
             })
           });
           
           if (!geminiResponse.ok) {
-            throw new Error('Failed to process document');
+            throw new Error('Failed to process image for visual analysis');
           }
           
           const geminiResult = await geminiResponse.json();
           
-          // Create document with Gemini URI for non-text files
-          newDoc = {
+          // Create document with Gemini URI for visual analysis
+          const newDoc = {
             id: Date.now() + Math.random(),
-            name: result.originalName,
-            documentUrl: result.documentUrl,
-            originalPdfUrl: result.originalPdfUrl || result.gcsUri,
+            name: uploadResult.originalName,
+            gcsUri: uploadResult.gcsUri,
+            publicUrl: uploadResult.publicUrl,
             geminiFileUri: geminiResult.fileUri,
-            fileName: result.fileName,
-            pageCount: result.pageCount,
-            preview: result.preview,
-            uploadMethod: useDirectUpload ? 'direct-gcs' : 'traditional',
+            uploadMethod: 'direct-gcs-image',
+            processingMethod: 'image-visual-analysis-parallel',
             uploadedAt: new Date()
           };
+          
+          console.log(`✅ [PARALLEL] Image completed: ${doc.file.name}`);
+          return newDoc;
+          
+        } catch (error) {
+          console.error(`❌ Failed to process image via parallel GCS:`, error);
+          throw new Error(`Failed to process image: ${doc.file.name}`);
+        }
+      });
+      
+      // Wait for all images to complete in parallel
+      const imageResults = await Promise.all(imagePromises);
+      processedDocuments.push(...imageResults);
+      
+      console.log(`✅ [PARALLEL] All ${imageFiles.length} images completed simultaneously`);
+    }
+    
+    // 3️⃣ PROCESS DOCUMENTS SEQUENTIALLY (rate limits)  
+    for (const { doc, index } of documentFiles) {
+      console.log(`📄 [SEQUENTIAL] Processing document file: ${doc.file.name}`);
+      
+      // Decide upload method based on file size
+      const useDirectUpload = shouldUseDirectUpload(doc.file);
+      console.log(`🎯 Processing ${doc.file.name} via ${useDirectUpload ? 'DIRECT' : 'TRADITIONAL'} upload`);
+      
+      let result;
+      
+      if (useDirectUpload) {
+        // 🚀 DIRECT UPLOAD TO GCS for large files
+        const uploadResult = await uploadDirectToGCS(doc.file);
+        result = await processGCSDocument(uploadResult.gcsUri, uploadResult.originalName);
+        
+        // Add GCS metadata to result
+        result.gcsUri = uploadResult.gcsUri;
+        result.publicUrl = uploadResult.publicUrl;
+        
+      } else {
+        // 🔄 TRADITIONAL UPLOAD for smaller files
+        const formData = new FormData();
+        formData.append('file', doc.file);
+        
+        const response = await fetch('/api/process-document', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Document processing failed');
         }
         
-        processedDocuments.push(newDoc);
+        result = await response.json();
       }
+      
+      console.log('📄 Document - uploading to Gemini');
+      
+      // Upload to Gemini for document files
+      const geminiResponse = await fetch('/api/upload-to-gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pdfUrl: result.originalPdfUrl || result.gcsUri,
+          originalName: result.originalName
+        })
+      });
+      
+      if (!geminiResponse.ok) {
+        throw new Error('Failed to process document');
+      }
+      
+      const geminiResult = await geminiResponse.json();
+      
+      // Create document with Gemini URI for document files
+      const newDoc = {
+        id: Date.now() + Math.random(),
+        name: result.originalName,
+        documentUrl: result.documentUrl,
+        originalPdfUrl: result.originalPdfUrl || result.gcsUri,
+        geminiFileUri: geminiResult.fileUri,
+        fileName: result.fileName,
+        pageCount: result.pageCount,
+        preview: result.preview,
+        uploadMethod: useDirectUpload ? 'direct-gcs' : 'traditional',
+        processingMethod: 'document-sequential',
+        uploadedAt: new Date()
+      };
+      
+      processedDocuments.push(newDoc);
+      console.log(`✅ [SEQUENTIAL] Document completed: ${doc.file.name}`);
     }
     
     // Now send to AI with text and the processed documents
