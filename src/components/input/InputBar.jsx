@@ -177,6 +177,23 @@ const InputBar = ({
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
   
+  // Auto-resize textarea
+  const autoResize = (textarea) => {
+    if (!textarea) return;
+    
+    // Reset height to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    
+    // Calculate new height based on content
+    const minHeight = isMobile ? 80 : 100;
+    const maxHeight = 200;
+    const scrollHeight = textarea.scrollHeight;
+    
+    // Set height to content height, clamped between min and max
+    const newHeight = Math.max(minHeight, Math.min(maxHeight, scrollHeight));
+    textarea.style.height = newHeight + 'px';
+  };
+  
   // Audio-reactive listening placeholder with infinite animation
   const [dotCount, setDotCount] = useState(0);
   
@@ -219,8 +236,21 @@ const InputBar = ({
     if (input && input !== localInput) {
       console.log('📝 [InputBar] Syncing input from parent:', input);
       setLocalInput(input);
+      // Auto-resize after setting new input
+      setTimeout(() => {
+        if (textareaRef.current) {
+          autoResize(textareaRef.current);
+        }
+      }, 0);
     }
   }, [input]);
+
+  // Auto-resize on mount and when localInput changes externally
+  React.useEffect(() => {
+    if (textareaRef.current && localInput) {
+      autoResize(textareaRef.current);
+    }
+  }, [localInput]);
 
   // Simple keyboard detection - no performance-impacting resize listeners
   const handleTextareaFocus = () => {
@@ -585,7 +615,10 @@ const InputBar = ({
               className="omnia-chat-input"
               ref={textareaRef}
               value={localInput}
-              onChange={(e) => setLocalInput(e.target.value)}
+              onChange={(e) => {
+                setLocalInput(e.target.value);
+                autoResize(e.target);
+              }}
               onClick={(e) => {
                 // iOS PWA fix - ensure focus on click
                 if (isMobile && window.navigator.standalone) {
@@ -600,8 +633,8 @@ const InputBar = ({
               rows={1}
               style={{
                 width: '100%',
-                minHeight: isMobile ? '50px' : '60px',
-                maxHeight: '120px',
+                minHeight: isMobile ? '80px' : '100px',
+                maxHeight: '200px',
                 border: 'none',
                 outline: 'none',
                 background: 'transparent',
