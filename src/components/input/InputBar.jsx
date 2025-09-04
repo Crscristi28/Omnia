@@ -181,12 +181,17 @@ const InputBar = ({
   const autoResize = (textarea) => {
     if (!textarea) return;
     
-    // Reset height to get the correct scrollHeight
-    textarea.style.height = 'auto';
-    
-    // Calculate new height based on content
     const minHeight = isMobile ? 50 : 60;
     const maxHeight = 200;
+    
+    // If empty, reset to minHeight immediately
+    if (!textarea.value.trim()) {
+      textarea.style.height = minHeight + 'px';
+      return;
+    }
+    
+    // Reset height to get the correct scrollHeight
+    textarea.style.height = 'auto';
     const scrollHeight = textarea.scrollHeight;
     
     // Set height to content height, clamped between min and max
@@ -284,11 +289,23 @@ const InputBar = ({
         onSendWithDocuments(localInput, pendingDocuments);
         setPendingDocuments([]); // Clear chips after sending
         setLocalInput(''); // Clear local input
+        // Reset textarea size after sending
+        setTimeout(() => {
+          if (textareaRef.current) {
+            autoResize(textareaRef.current);
+          }
+        }, 0);
       }
     } else if (localInput.trim() && onSend) {
       // Regular text-only send - pass the text up
       onSend(localInput);
       setLocalInput(''); // Clear local input after sending
+      // Reset textarea size after sending
+      setTimeout(() => {
+        if (textareaRef.current) {
+          autoResize(textareaRef.current);
+        }
+      }, 0);
     }
   };
 
