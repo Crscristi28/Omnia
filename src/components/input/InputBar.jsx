@@ -610,8 +610,8 @@ const InputBar = ({
                 fontFamily: 'inherit',
                 resize: 'none',
                 lineHeight: '1.5',
-                padding: '0.5rem',
-                marginBottom: '0.5rem',
+                padding: '0.4rem',
+                marginBottom: '0.3rem',
               }}
             />
             
