@@ -601,7 +601,7 @@ const InputBar = ({
               style={{
                 width: '100%',
                 minHeight: isMobile ? '40px' : '48px',
-                maxHeight: '120px',
+                maxHeight: '200px',
                 border: 'none',
                 outline: 'none',
                 background: 'transparent',
