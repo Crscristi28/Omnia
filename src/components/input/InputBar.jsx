@@ -185,7 +185,7 @@ const InputBar = ({
     textarea.style.height = 'auto';
     
     // Calculate new height based on content
-    const minHeight = isMobile ? 80 : 100;
+    const minHeight = isMobile ? 50 : 60;
     const maxHeight = 200;
     const scrollHeight = textarea.scrollHeight;
     
@@ -633,7 +633,7 @@ const InputBar = ({
               rows={1}
               style={{
                 width: '100%',
-                minHeight: isMobile ? '80px' : '100px',
+                minHeight: isMobile ? '50px' : '60px',
                 maxHeight: '200px',
                 border: 'none',
                 outline: 'none',
