@@ -414,7 +414,7 @@ const InputBar = ({
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
-            padding: isMobile ? '0.6rem' : '1rem',
+            padding: isMobile ? '1rem' : '1.5rem',
           }}>
             
             {/* DOCUMENT PREVIEW CARDS */}
@@ -600,8 +600,8 @@ const InputBar = ({
               rows={1}
               style={{
                 width: '100%',
-                minHeight: isMobile ? '40px' : '48px',
-                maxHeight: '200px',
+                minHeight: isMobile ? '50px' : '60px',
+                maxHeight: '120px',
                 border: 'none',
                 outline: 'none',
                 background: 'transparent',
