@@ -119,13 +119,11 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         /* List styling - CONSISTENT and STABLE formatting */
         .markdown-container .w-md-editor-text ul,
         .markdown-container .w-md-editor-text ol {
-          margin: 0.75rem 0;
-          padding-left: 1.5rem;
+          padding: 0.75rem 0 0.75rem 1.5rem;
           list-style-position: inside;
         }
         .markdown-container .w-md-editor-text li {
-          margin-bottom: 0.5rem;
-          padding-left: 0.25rem;
+          padding: 0 0.25rem 0.5rem 0.25rem;
           line-height: 1.6;
         }
         .markdown-container .w-md-editor-text ul li {
@@ -155,20 +153,19 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         .markdown-container .w-md-editor-text ol ol,
         .markdown-container .w-md-editor-text ul ol,
         .markdown-container .w-md-editor-text ol ul {
-          margin: 0.5rem 0;
-          padding-left: 1.25rem;
+          padding: 0.5rem 0 0.5rem 1.25rem;
         }
         
         /* Paragraph styling - STABLE formatting */
         .markdown-container .w-md-editor-text p {
           line-height: 1.5;
-          margin: 0.5rem 0;
+          padding: 0.5rem 0;
         }
         .markdown-container .w-md-editor-text p:first-child {
-          margin-top: 0;
+          padding-top: 0;
         }
         .markdown-container .w-md-editor-text p:last-child {
-          margin-bottom: 0;
+          padding-bottom: 0;
         }
         
         /* Container stability - prevent layout shifts */
@@ -181,11 +178,11 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         /* List and paragraph spacing coordination */
         .markdown-container .w-md-editor-text p + ul,
         .markdown-container .w-md-editor-text p + ol {
-          margin-top: 0.25rem;
+          padding-top: 0.25rem;
         }
         .markdown-container .w-md-editor-text ul + p,
         .markdown-container .w-md-editor-text ol + p {
-          margin-top: 0.5rem;
+          padding-top: 0.5rem;
         }
         
         /* Code block styling */
