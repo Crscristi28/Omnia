@@ -36,13 +36,17 @@ export const scrollToLatestMessage = (virtuosoRef, messages) => {
   }
 };
 
-// 🔼 SCROLL TO BOTTOM - For scroll button (default bottom behavior)
-export const scrollToBottom = (virtuosoRef) => {
+// 🔼 SCROLL TO BOTTOM - For scroll button (use concrete index instead of 'LAST')
+export const scrollToBottom = (virtuosoRef, messages = []) => {
   
   if (virtuosoRef.current) {
+    const lastIndex = messages.length > 0 ? messages.length - 1 : 0;
+    console.log(`🔼 [SCROLL-BOTTOM] Scrolling to concrete index: ${lastIndex}`);
+    
     virtuosoRef.current.scrollToIndex({ 
-      index: 'LAST',
-      behavior: 'smooth'
+      index: lastIndex, // ✅ Concrete number instead of 'LAST'
+      behavior: 'smooth',
+      align: 'end' // Ensure last message is fully visible
     });
   } else {
     console.log('❌ virtuosoRef.current is null in scrollToBottom');
