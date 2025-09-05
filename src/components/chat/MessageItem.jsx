@@ -37,15 +37,19 @@ const MessageItem = ({
       
       if (height > 0) {
         const fingerprint = createMessageFingerprint(msg);
-        console.log('📏 [RESIZE] Measuring message:', {
-          fingerprint,
-          height: Math.round(height),
-          textPreview: msg.text?.slice(0, 50) + '...',
-          sender: msg.sender
-        });
         
-        // Store height in cache
-        heightCache.set(fingerprint, height);
+        // ✅ CHECK FIRST: Only cache if not already cached
+        if (!heightCache.get(fingerprint)) {
+          console.log('📏 [RESIZE] Measuring NEW message:', {
+            fingerprint,
+            height: Math.round(height),
+            textPreview: msg.text?.slice(0, 50) + '...',
+            sender: msg.sender
+          });
+          
+          // Store height in cache - only for new messages
+          heightCache.set(fingerprint, height);
+        }
       }
     });
     
