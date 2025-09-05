@@ -661,6 +661,12 @@ function App() {
   // 📝 Chat saving moved to strategic moments (user send, stream end, chat switch, etc.)
   // 🚀 This eliminates localStorage blocking during AI streaming
 
+  // 📏 MEMOIZED HEIGHT MEASUREMENT CALLBACK - Fix for DOM element error in itemSize
+  const onHeightMeasured = useCallback((messageId, height) => {
+    batchSaveHeight(messageId, height, currentChatId, isMobile ? 'mobile' : 'desktop');
+    cachedHeightsRef.current.set(messageId, height);
+  }, [currentChatId, isMobile]);
+
   // 🎵 TTS GENERATION - USING SAME LOGIC AS VOICEBUTTON (UNCHANGED)
   const generateAudioForSentence = async (sentence, language) => {
     try {
@@ -2848,12 +2854,9 @@ const virtuosoComponents = React.useMemo(() => ({
                 onAudioStateChange: setIsAudioPlaying,
                 // 📏 Height cache props
                 chatId: currentChatId,
-                onHeightMeasured: (messageId, height) => {
-                  batchSaveHeight(messageId, height, currentChatId, isMobile ? 'mobile' : 'desktop');
-                  cachedHeightsRef.current.set(messageId, height);
-                }
+                onHeightMeasured // ✅ Use memoized callback instead of inline function
               });
-            }, [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, isMobile])} // Close itemContent function
+            }, [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, onHeightMeasured])} // Close itemContent function
             followOutput={false}
             // ❌ REMOVED atBottomStateChange - was causing DOM element conflicts with itemSize
           />
