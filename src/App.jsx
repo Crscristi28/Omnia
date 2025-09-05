@@ -2801,15 +2801,22 @@ const virtuosoComponents = React.useMemo(() => ({
             itemSize={useCallback((index) => {
               const filteredMessages = messages.filter(m => !m.isHidden);
               const msg = filteredMessages[index];
-              if (!msg) return 0;
+              
+              if (!msg) {
+                console.warn(`⚠️ [ITEMSIZE] No message at index ${index}, total filtered: ${filteredMessages.length}`);
+                return 100; // Safe fallback instead of 0
+              }
 
               const cachedHeight = cachedHeightsRef.current.get(msg.id);
-              if (cachedHeight) {
+              if (cachedHeight && cachedHeight > 0) {
+                console.log(`📏 [ITEMSIZE] Using cached height for ${msg.id}: ${cachedHeight}px`);
                 return cachedHeight;
               }
 
               // Odhadovaná výška - důležité pro položky, které ještě nebyly změřeny
-              return msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96); 
+              const estimatedHeight = msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96);
+              console.log(`📊 [ITEMSIZE] Estimated height for ${msg.id}: ${estimatedHeight}px`);
+              return estimatedHeight; 
             }, [messages])}
             
             // ✅ itemContent - jednoduché renderování (ResizeObserver je v MessageItem)

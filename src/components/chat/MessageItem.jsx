@@ -51,17 +51,28 @@ const MessageItem = React.forwardRef(({
 
   // 📏 HEIGHT MEASUREMENT - ResizeObserver pro height caching
   useLayoutEffect(() => {
-    if (!ref?.current || !msg.id || !chatId || !onHeightMeasured) return;
+    if (!ref?.current || !msg.id || !chatId || !onHeightMeasured) {
+      console.warn('⚠️ [MESSAGEITEM] ResizeObserver setup failed:', { 
+        hasRef: !!ref?.current, 
+        msgId: msg.id, 
+        chatId, 
+        hasCallback: !!onHeightMeasured 
+      });
+      return;
+    }
 
     const observer = new ResizeObserver(([entry]) => {
       const newHeight = entry.contentRect.height;
+      console.log(`📏 [RESIZE-OBSERVER] Measured ${msg.id}: ${newHeight}px`);
       onHeightMeasured(msg.id, newHeight);
     });
 
     observer.observe(ref.current);
+    console.log(`👀 [RESIZE-OBSERVER] Started observing ${msg.id}`);
 
     return () => {
       observer.disconnect();
+      console.log(`🛑 [RESIZE-OBSERVER] Stopped observing ${msg.id}`);
     };
   }, [msg.id, chatId, onHeightMeasured, ref]);
 
