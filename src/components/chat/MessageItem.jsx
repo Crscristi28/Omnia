@@ -1,7 +1,7 @@
 // 🎨 MessageItem.jsx - Individual message rendering component
 // ✅ Extracted from App.jsx to reduce file size and improve maintainability
 
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 
 // Import components that are used in message rendering
 import MessageRenderer from '../MessageRenderer';
@@ -21,7 +21,9 @@ const MessageItem = React.forwardRef(({
   onPreviewImage, 
   onDocumentView, 
   onSourcesClick, 
-  onAudioStateChange 
+  onAudioStateChange,
+  chatId,
+  onHeightMeasured
 }, ref) => {
   // Extract styles from ChatStyles.js
   const { 
@@ -46,6 +48,22 @@ const MessageItem = React.forwardRef(({
     userAttachmentsContainerStyle,
     userAttachmentWrapperStyle
   } = styles;
+
+  // 📏 HEIGHT MEASUREMENT - ResizeObserver pro height caching
+  useLayoutEffect(() => {
+    if (!ref?.current || !msg.id || !chatId || !onHeightMeasured) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const newHeight = entry.contentRect.height;
+      onHeightMeasured(msg.id, newHeight);
+    });
+
+    observer.observe(ref.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [msg.id, chatId, onHeightMeasured, ref]);
 
   return (
     <div 

@@ -5,7 +5,7 @@
 // 🎯 UNCHANGED: Všechny původní importy a funkčnost
 // 🆕 STREAMING: Added streamingUtils import
 
-import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 import { Virtuoso } from 'react-virtuoso';
@@ -2812,43 +2812,23 @@ const virtuosoComponents = React.useMemo(() => ({
               return msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96); 
             }, [messages])}
             
-            // ✅ itemContent - měření výšky s ResizeObserver
-            itemContent={useCallback((index, msg) => {
-              const itemRef = useRef(null);
-
-              useLayoutEffect(() => {
-                if (!itemRef.current || !msg.id || !currentChatId) return;
-
-                const observer = new ResizeObserver(([entry]) => {
-                  const newHeight = entry.contentRect.height;
-                  const existingCachedHeight = cachedHeightsRef.current.get(msg.id);
-
-                  // Uložit výšku, pokud není v cache nebo se změnila
-                  if (!existingCachedHeight || existingCachedHeight !== newHeight) {
-                    batchSaveHeight(msg.id, newHeight, currentChatId, isMobile ? 'mobile' : 'desktop');
-                    cachedHeightsRef.current.set(msg.id, newHeight); // Aktualizuj cache v paměti
-                  }
-                });
-
-                observer.observe(itemRef.current);
-
-                return () => {
-                  observer.disconnect();
-                };
-              }, [msg.id, currentChatId]);
-
-              return (
-                <MessageItem
-                  ref={itemRef}
-                  msg={msg}
-                  index={index}
-                  onPreviewImage={setPreviewImage}
-                  onDocumentView={setDocumentViewer}
-                  onSourcesClick={handleSourcesClick}
-                  onAudioStateChange={setIsAudioPlaying}
-                />
-              );
-            }, [messages, setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, isMobile])} // Close itemContent function
+            // ✅ itemContent - jednoduché renderování (ResizeObserver je v MessageItem)
+            itemContent={useCallback((index, msg) => (
+              <MessageItem
+                msg={msg}
+                index={index}
+                onPreviewImage={setPreviewImage}
+                onDocumentView={setDocumentViewer}
+                onSourcesClick={handleSourcesClick}
+                onAudioStateChange={setIsAudioPlaying}
+                // 📏 Height cache props
+                chatId={currentChatId}
+                onHeightMeasured={(messageId, height) => {
+                  batchSaveHeight(messageId, height, currentChatId, isMobile ? 'mobile' : 'desktop');
+                  cachedHeightsRef.current.set(messageId, height);
+                }}
+              />
+            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, isMobile])} // Close itemContent function
             followOutput={false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
