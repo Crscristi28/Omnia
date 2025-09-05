@@ -2811,55 +2811,8 @@ const virtuosoComponents = React.useMemo(() => ({
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             
-            // ✅ itemSize prop - SYNCHRONIZED with data prop filtering
-            itemSize={useCallback((index) => {
-              // 🛡️ TYPE SAFETY: Ensure we have a number
-              const numIndex = typeof index === 'number' ? index : parseInt(index, 10);
-              
-              if (isNaN(numIndex) || numIndex < 0) {
-                console.warn(`⚠️ [ITEMSIZE] Invalid index: ${index}`);
-                return 100; // Safe fallback
-              }
-
-              // 🎯 USE SAME LOGIC AS DATA PROP - synchronized filtering
-              const filtered = messages.filter(msg => !msg.isHidden);
-              
-              // Handle loading indicator (same as data prop)
-              let allItems = filtered;
-              if (loading || streaming) {
-                allItems = [...filtered, {
-                  id: 'loading-indicator',
-                  sender: 'bot',
-                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
-                  isLoading: true,
-                  isStreaming: streaming
-                }];
-              }
-
-              const msg = allItems[numIndex];
-              
-              if (!msg || !msg.id) {
-                // console.warn(`⚠️ [ITEMSIZE] No message at index ${numIndex}, total items: ${allItems.length}`);
-                return 100; // Safe fallback instead of 0
-              }
-
-              // 📏 Loading indicator has fixed height
-              if (msg.isLoading) {
-                return 96; // Fixed height for loading indicator
-              }
-
-              // 📏 CHECK CACHE FIRST
-              const cachedHeight = cachedHeightsRef.current.get(msg.id);
-              if (cachedHeight && cachedHeight > 0) {
-                // console.log(`📏 [ITEMSIZE] Using cached height for ${msg.id}: ${cachedHeight}px`);
-                return cachedHeight;
-              }
-
-              // 📊 ESTIMATE for items not yet measured
-              const estimatedHeight = msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96);
-              // console.log(`📊 [ITEMSIZE] Estimated height for ${msg.id}: ${estimatedHeight}px`);
-              return estimatedHeight; 
-            }, [messages, loading, streaming, isSearching, t])}
+            // ❌ TEMPORARY: Disable itemSize to test if it causes DOM element error
+            // itemSize={100}
             
             // ✅ itemContent - jednoduché renderování s ref (ResizeObserver je v MessageItem)
             itemContent={useCallback((index, msg) => {
