@@ -5,7 +5,7 @@
 // 🎯 UNCHANGED: Všechny původní importy a funkčnost
 // 🆕 STREAMING: Added streamingUtils import
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
 import { Virtuoso } from 'react-virtuoso';
@@ -38,6 +38,7 @@ import { getUploadErrorMessages } from './constants/errorMessages.js'; // 🚨 E
 import { uploadDirectToGCS, processGCSDocument, shouldUseDirectUpload, formatFileSize } from './services/directUpload.js'; // 🗂️ Direct upload to GCS
 import { scrollToUserMessageAt, scrollToLatestMessage, scrollToBottom } from './utils/scrollUtils.js'; // 📜 Scroll utilities
 import { convertMessagesForOpenAI } from './utils/messageConverters.js'; // 🔄 Message format converters
+import { batchSaveHeight } from './utils/batchHeightManager.js'; // 📏 Height cache manager
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, OfflineIndicator, SplashScreen } from './components/ui';
@@ -116,6 +117,9 @@ function App() {
   const [resetPasswordEmail, setResetPasswordEmail] = useState('');
   const currentChatIdRef = useRef(null); // 🔧 useRef backup to prevent race condition
   const [chatHistories, setChatHistories] = useState([]);
+  
+  // 📏 HEIGHT CACHE - pro Virtuoso persistenci
+  const cachedHeightsRef = useRef(new Map()); // Mapa pro cachované výšky
   
   // 🔄 Sync dirty tracking - for 30s incremental sync
   const [syncDirtyChats, setSyncDirtyChats] = useState(new Set());
@@ -468,6 +472,10 @@ function App() {
         
         // 🔄 Load new chat into clean memory
         setMessages(chatData.messages);
+        
+        // 📏 Load cached heights for this chat
+        await loadCachedHeights(chatId);
+        
         updateCurrentChatId(chatId);
         // V2: No offset tracking needed - using timestamp-based pagination
         crashMonitor.trackIndexedDB('load', chatId, true);
@@ -888,6 +896,20 @@ function App() {
       startSTTRecording();
     }
   };
+
+  // 📏 HEIGHT CACHE FUNCTIONS
+  const loadCachedHeights = useCallback(async (chatId) => {
+    try {
+      const heights = await chatDB.getMessageHeightsForChat(chatId);
+      const newMap = new Map();
+      heights.forEach(h => newMap.set(h.messageId, h.height));
+      cachedHeightsRef.current = newMap;
+      console.log(`📏 [VIRTUOSO-CACHE] Loaded ${newMap.size} cached heights for chat ${chatId}`);
+    } catch (error) {
+      console.error('❌ [VIRTUOSO-CACHE] Failed to load cached heights:', error);
+      cachedHeightsRef.current = new Map(); // Reset if error
+    }
+  }, []);
 
   // 🔧 UTILITY FUNCTIONS (UNCHANGED)
   const handleNewChat = async () => {
@@ -2774,16 +2796,59 @@ const virtuosoComponents = React.useMemo(() => ({
               }
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
-            itemContent={useCallback((index, msg) => (
-              <MessageItem
-                msg={msg}
-                index={index}
-                onPreviewImage={setPreviewImage}
-                onDocumentView={setDocumentViewer}
-                onSourcesClick={handleSourcesClick}
-                onAudioStateChange={setIsAudioPlaying}
-              />
-            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
+            
+            // ✅ itemSize prop - klíčová pro Virtuoso cache
+            itemSize={useCallback((index) => {
+              const filteredMessages = messages.filter(m => !m.isHidden);
+              const msg = filteredMessages[index];
+              if (!msg) return 0;
+
+              const cachedHeight = cachedHeightsRef.current.get(msg.id);
+              if (cachedHeight) {
+                return cachedHeight;
+              }
+
+              // Odhadovaná výška - důležité pro položky, které ještě nebyly změřeny
+              return msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96); 
+            }, [messages])}
+            
+            // ✅ itemContent - měření výšky s ResizeObserver
+            itemContent={useCallback((index, msg) => {
+              const itemRef = useRef(null);
+
+              useLayoutEffect(() => {
+                if (!itemRef.current || !msg.id || !currentChatId) return;
+
+                const observer = new ResizeObserver(([entry]) => {
+                  const newHeight = entry.contentRect.height;
+                  const existingCachedHeight = cachedHeightsRef.current.get(msg.id);
+
+                  // Uložit výšku, pokud není v cache nebo se změnila
+                  if (!existingCachedHeight || existingCachedHeight !== newHeight) {
+                    batchSaveHeight(msg.id, newHeight, currentChatId, isMobile ? 'mobile' : 'desktop');
+                    cachedHeightsRef.current.set(msg.id, newHeight); // Aktualizuj cache v paměti
+                  }
+                });
+
+                observer.observe(itemRef.current);
+
+                return () => {
+                  observer.disconnect();
+                };
+              }, [msg.id, currentChatId]);
+
+              return (
+                <MessageItem
+                  ref={itemRef}
+                  msg={msg}
+                  index={index}
+                  onPreviewImage={setPreviewImage}
+                  onDocumentView={setDocumentViewer}
+                  onSourcesClick={handleSourcesClick}
+                  onAudioStateChange={setIsAudioPlaying}
+                />
+              );
+            }, [messages, setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, isMobile])} // Close itemContent function
             followOutput={false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);

@@ -15,14 +15,14 @@ import { getViewerType } from '../../utils/fileTypeUtils';
 // Import styles
 import * as styles from '../../styles/ChatStyles.js';
 
-const MessageItem = ({ 
+const MessageItem = React.forwardRef(({ 
   msg, 
   index, 
   onPreviewImage, 
   onDocumentView, 
   onSourcesClick, 
   onAudioStateChange 
-}) => {
+}, ref) => {
   // Extract styles from ChatStyles.js
   const { 
     userMessageContainerStyle, 
@@ -49,6 +49,7 @@ const MessageItem = ({
 
   return (
     <div 
+      ref={ref}
       key={msg.id || `fallback_${index}`} 
       data-sender={msg.sender}
       style={msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle}
@@ -307,6 +308,9 @@ const MessageItem = ({
       )}
     </div>
   );
-};
+});
+
+// Set displayName for better debugging
+MessageItem.displayName = 'MessageItem';
 
 export default MessageItem;

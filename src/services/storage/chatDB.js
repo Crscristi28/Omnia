@@ -39,6 +39,16 @@ class ChatDatabase extends Dexie {
     }).upgrade(tx => {
       // Empty migration - all data cleared before deployment
     });
+    
+    // V5 Schema (HEIGHT CACHE - perzistentní výšky pro Virtuoso)
+    this.version(5).stores({
+      chats: 'id, title, createdAt, updatedAt, messageCount',
+      messages: 'uuid, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp], [chatId+uuid]',
+      messageHeights: '[chatId+messageId], chatId, messageId, height, deviceType, measuredAt'
+    }).upgrade(tx => {
+      // Add messageHeights store for height caching
+      console.log('📏 [DB-V5] Added messageHeights store for Virtuoso height cache');
+    });
   }
 }
 
@@ -584,10 +594,11 @@ const chatDB = {
     try {
       console.log('🧹 [CHAT-DB] Clearing all IndexedDB data for logout...');
       
-      // Clear both tables in a transaction
-      await db.transaction('rw', db.chats, db.messages, async () => {
+      // Clear all tables in a transaction (including messageHeights)
+      await db.transaction('rw', db.chats, db.messages, db.messageHeights, async () => {
         await db.chats.clear();
         await db.messages.clear();
+        await db.messageHeights.clear();
       });
       
       // Also clear any localStorage items related to sync timestamps
@@ -604,6 +615,72 @@ const chatDB = {
       return true;
     } catch (error) {
       console.error('❌ [CHAT-DB] Error clearing IndexedDB:', error);
+      return false;
+    }
+  },
+
+  // 📏 HEIGHT CACHE METHODS - pro Virtuoso persistenci
+  
+  // 💾 Save batch of message heights (dávkové ukládání)
+  async saveMessageHeightsBatch(heights) {
+    try {
+      if (!heights || heights.length === 0) {
+        return true;
+      }
+
+      await db.transaction('rw', db.messageHeights, async () => {
+        for (const heightData of heights) {
+          // Use put() to upsert (update existing or insert new)
+          await db.messageHeights.put(heightData);
+        }
+      });
+
+      console.log(`📏 [HEIGHT-CACHE] Batch saved ${heights.length} heights to IndexedDB`);
+      return true;
+    } catch (error) {
+      console.error('❌ [HEIGHT-CACHE] Error saving height batch:', error);
+      return false;
+    }
+  },
+
+  // 📖 Get message heights for specific chat
+  async getMessageHeightsForChat(chatId) {
+    try {
+      if (!chatId) {
+        console.warn('⚠️ [HEIGHT-CACHE] No chatId provided for height lookup');
+        return [];
+      }
+
+      const heights = await db.messageHeights
+        .where('chatId')
+        .equals(chatId)
+        .toArray();
+
+      console.log(`📏 [HEIGHT-CACHE] Loaded ${heights.length} cached heights for chat ${chatId}`);
+      return heights;
+    } catch (error) {
+      console.error('❌ [HEIGHT-CACHE] Error getting message heights:', error);
+      return [];
+    }
+  },
+
+  // 🧹 Clear height cache for specific chat
+  async clearMessageHeights(chatId) {
+    try {
+      if (!chatId) {
+        console.warn('⚠️ [HEIGHT-CACHE] No chatId provided for height clearing');
+        return false;
+      }
+
+      const deletedCount = await db.messageHeights
+        .where('chatId')
+        .equals(chatId)
+        .delete();
+
+      console.log(`🧹 [HEIGHT-CACHE] Cleared ${deletedCount} cached heights for chat ${chatId}`);
+      return true;
+    } catch (error) {
+      console.error('❌ [HEIGHT-CACHE] Error clearing message heights:', error);
       return false;
     }
   }
