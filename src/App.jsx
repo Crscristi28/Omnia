@@ -2850,12 +2850,13 @@ const virtuosoComponents = React.useMemo(() => ({
               <MessageItem
                 msg={msg}
                 index={index}
+                chatId={currentChatId}
                 onPreviewImage={setPreviewImage}
                 onDocumentView={setDocumentViewer}
                 onSourcesClick={handleSourcesClick}
                 onAudioStateChange={setIsAudioPlaying}
               />
-            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
+            ), [currentChatId, setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
             }, [setShowScrollToBottom])}

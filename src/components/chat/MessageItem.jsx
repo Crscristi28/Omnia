@@ -21,6 +21,7 @@ import heightCache, { createMessageFingerprint } from '../../services/heightCach
 const MessageItem = ({ 
   msg, 
   index, 
+  chatId,
   onPreviewImage, 
   onDocumentView, 
   onSourcesClick, 
@@ -36,7 +37,7 @@ const MessageItem = ({
       const height = entry.contentRect.height;
       
       if (height > 0) {
-        const fingerprint = createMessageFingerprint(msg);
+        const fingerprint = createMessageFingerprint(msg, chatId);
         
         // ✅ CHECK FIRST: Only cache if not already cached
         if (!heightCache.get(fingerprint)) {

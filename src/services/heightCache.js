@@ -13,9 +13,13 @@ function simpleHash(str) {
   return Math.abs(hash).toString(36);
 }
 
-// Create message fingerprint based on content that affects height
-function createMessageFingerprint(msg) {
-  if (!msg) return 'empty';
+// Create message fingerprint based on content that affects height + chatId
+function createMessageFingerprint(msg, chatId) {
+  if (!msg) return chatId ? `${chatId}_empty` : 'empty';
+  if (!chatId) {
+    console.warn('⚠️ [HEIGHT-CACHE] Missing chatId for fingerprint creation');
+    chatId = 'unknown_chat';
+  }
   
   const factors = {
     textLength: msg.text?.length || 0,
@@ -29,8 +33,9 @@ function createMessageFingerprint(msg) {
     isStreaming: msg.isStreaming || false
   };
   
-  const fingerprint = `msg_${simpleHash(JSON.stringify(factors))}`;
-  console.log('🔍 [HEIGHT-CACHE] Created fingerprint:', fingerprint, 'for message:', {
+  const fingerprint = `${chatId}_msg_${simpleHash(JSON.stringify(factors))}`;
+  console.log('🔍 [HEIGHT-CACHE] Created chat-aware fingerprint:', fingerprint, 'for message:', {
+    chatId,
     textPreview: msg.text?.slice(0, 50) + '...',
     sender: msg.sender,
     hasAttachments: !!msg.attachments?.length
@@ -238,7 +243,50 @@ class HeightCache {
     }
   }
   
-  // Clear cache (both memory and IndexedDB)
+  // Clear specific chat cache (both memory and IndexedDB)
+  async clearChatCache(chatId) {
+    if (!chatId) {
+      console.warn('⚠️ [HEIGHT-CACHE] No chatId provided for clearChatCache');
+      return;
+    }
+    
+    const chatPrefix = `${chatId}_`;
+    let deletedCount = 0;
+    
+    // Clear from memory cache
+    for (const [key] of this.cache) {
+      if (key.startsWith(chatPrefix)) {
+        this.cache.delete(key);
+        deletedCount++;
+      }
+    }
+    
+    // Clear from IndexedDB
+    if (this.db) {
+      try {
+        const transaction = this.db.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const request = store.getAll();
+        
+        request.onsuccess = () => {
+          const entries = request.result;
+          const toDelete = entries.filter(entry => entry.fingerprint.startsWith(chatPrefix));
+          
+          toDelete.forEach(entry => {
+            store.delete(entry.fingerprint);
+          });
+          
+          console.log(`🗑️ [HEIGHT-CACHE] Cleared ${deletedCount} memory + ${toDelete.length} IndexedDB entries for chat: ${chatId}`);
+        };
+      } catch (error) {
+        console.warn('⚠️ [HEIGHT-CACHE] Chat cleanup failed:', error);
+      }
+    }
+    
+    console.log(`🗑️ [HEIGHT-CACHE] Chat cache cleared: ${chatId} (${deletedCount} entries)`);
+  }
+
+  // Clear all cache (both memory and IndexedDB)
   async clear() {
     this.cache.clear();
     
@@ -247,7 +295,7 @@ class HeightCache {
         const transaction = this.db.transaction([this.storeName], 'readwrite');
         const store = transaction.objectStore(this.storeName);
         store.clear();
-        console.log('🗑️ [HEIGHT-CACHE] Cache cleared (memory + IndexedDB)');
+        console.log('🗑️ [HEIGHT-CACHE] All cache cleared (memory + IndexedDB)');
       } catch (error) {
         console.warn('⚠️ [HEIGHT-CACHE] IndexedDB clear failed:', error);
       }
