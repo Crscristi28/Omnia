@@ -1,7 +1,7 @@
 // 🎨 MessageItem.jsx - Individual message rendering component
 // ✅ Extracted from App.jsx to reduce file size and improve maintainability
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 // Import components that are used in message rendering
 import MessageRenderer from '../MessageRenderer';
@@ -15,6 +15,9 @@ import { getViewerType } from '../../utils/fileTypeUtils';
 // Import styles
 import * as styles from '../../styles/ChatStyles.js';
 
+// Import height cache for step 3
+import heightCache, { createMessageFingerprint } from '../../services/heightCache.js';
+
 const MessageItem = ({ 
   msg, 
   index, 
@@ -23,6 +26,36 @@ const MessageItem = ({
   onSourcesClick, 
   onAudioStateChange 
 }) => {
+  // 📏 HEIGHT CACHE - Step 3: ResizeObserver for measuring message heights
+  const messageRef = useRef(null);
+  
+  useEffect(() => {
+    if (!messageRef.current || !msg) return;
+    
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.contentRect.height;
+      
+      if (height > 0) {
+        const fingerprint = createMessageFingerprint(msg);
+        console.log('📏 [RESIZE] Measuring message:', {
+          fingerprint,
+          height: Math.round(height),
+          textPreview: msg.text?.slice(0, 50) + '...',
+          sender: msg.sender
+        });
+        
+        // Store height in cache
+        heightCache.set(fingerprint, height);
+      }
+    });
+    
+    observer.observe(messageRef.current);
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, [msg]); // Re-observe when message content changes
+
   // Extract styles from ChatStyles.js
   const { 
     userMessageContainerStyle, 
@@ -49,6 +82,7 @@ const MessageItem = ({
 
   return (
     <div 
+      ref={messageRef}
       key={msg.id || `fallback_${index}`} 
       data-sender={msg.sender}
       style={msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle}
