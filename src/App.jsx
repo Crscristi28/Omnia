@@ -2819,41 +2819,11 @@ const virtuosoComponents = React.useMemo(() => ({
               atBottomThreshold={100}
               followOutput="smooth"
               components={virtuosoComponents}
-              // 📏 HEIGHT CACHE - Fixed: Remove closure dependency issues
+              // 🔧 EMERGENCY FIX: Remove problematic itemSize prop
+              // Let Virtuoso measure heights naturally + use ResizeObserver cache
               computeItemKey={useCallback((index, msg) => {
                 return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
               }, [])}
-              itemSize={useCallback((index) => {
-                // 🔧 CRITICAL FIX: Rebuild data inline to avoid stale closure
-                const filtered = messages.filter(msg => !msg.isHidden);
-                const currentData = loading || streaming 
-                  ? [...filtered, {
-                      id: 'loading-indicator',
-                      sender: 'bot',
-                      text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
-                      isLoading: true,
-                      isStreaming: streaming
-                    }]
-                  : filtered;
-                
-                const msg = currentData[index];
-                if (!msg) {
-                  console.log('⚠️ [HEIGHT] Invalid index:', index, 'data length:', currentData.length, 'filtered:', filtered.length);
-                  return 100;
-                }
-                
-                const fingerprint = createMessageFingerprint(msg);
-                const cachedHeight = heightCache.get(fingerprint);
-                
-                if (cachedHeight) {
-                  console.log('⚡ [CACHE-HIT] Index', index, 'height:', cachedHeight, 'msg:', msg.text?.slice(0, 30));
-                  return Math.round(cachedHeight);
-                }
-                
-                const estimated = estimateMessageHeight(msg);
-                console.log('⏳ [CACHE-MISS] Index', index, 'estimated:', estimated, 'msg:', msg.text?.slice(0, 30));
-                return Math.round(estimated);
-              }, [messages, loading, streaming, isSearching, uiLanguage, estimateMessageHeight])}
               data={React.useMemo(() => {
                 const filtered = messages.filter(msg => !msg.isHidden);
                 if (loading || streaming) {
