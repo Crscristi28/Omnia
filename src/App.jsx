@@ -19,6 +19,7 @@ import { claudeService, openaiService, grokService, geminiService } from './serv
 import { elevenLabsService } from './services/voice';
 import authService from './services/auth/supabaseAuth'; // 🔐 Auth service
 import { chatSyncService } from './services/sync/chatSync.js'; // 🔄 Chat sync service
+import heightCache from './services/heightCache.js'; // 📏 Height cache (STEP 1: testing only)
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
@@ -306,6 +307,12 @@ function App() {
     if (savedUILanguage && uiTexts[savedUILanguage]) {
       setUILanguage(savedUILanguage);
     }
+
+    // 📏 HEIGHT CACHE TEST - Step 1: Basic functionality test
+    console.log('🧪 [HEIGHT-CACHE] Running initialization test...');
+    const testResult = heightCache.test();
+    console.log('🧪 [HEIGHT-CACHE] Test result:', testResult ? 'PASSED' : 'FAILED');
+    heightCache.getStats();
   }, []);
 
   // 🆕 SIMPLE SCROLL - NO AUTO-SCROLL! User controls everything
