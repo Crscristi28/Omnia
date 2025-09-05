@@ -1436,7 +1436,7 @@ function App() {
                   if (index === words.length - 1) {
                     chunkBuffer = '';
                   }
-                }, index * 10); // 10ms delay for faster display
+                }, index * 25); // 25ms delay for better readability
               });
             }
           },
@@ -2384,7 +2384,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                 if (index === words.length - 1) {
                   chunkBufferDocs = '';
                 }
-              }, index * 10); // 10ms delay same as normal streaming
+              }, index * 25); // 25ms delay for better readability
             });
           }
         },
@@ -2817,7 +2817,7 @@ const virtuosoComponents = React.useMemo(() => ({
               style={virtuosoInlineStyle}
               overscan={200}
               atBottomThreshold={100}
-              followOutput={messages.some(msg => msg.isStreaming) ? false : "smooth"}
+              followOutput="smooth"
               components={virtuosoComponents}
               // 🚀 SMART HEIGHT OPTIMIZATION: Use cache-driven defaults + range monitoring
               defaultItemHeight={heightCache.getDefaultItemHeight()}
