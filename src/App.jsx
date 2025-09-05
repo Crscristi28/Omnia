@@ -2812,9 +2812,49 @@ const virtuosoComponents = React.useMemo(() => ({
 
           {/* 💬 CHAT MESSAGES - WRAPPER */}
           <div style={chatMessagesWrapperStyle}>
-            {(() => {
-              // 🔧 FIX: Prepare stable data ONCE to prevent itemSize inconsistencies
-              const virtuosoData = React.useMemo(() => {
+            <Virtuoso
+              ref={virtuosoRef}
+              style={virtuosoInlineStyle}
+              overscan={200}
+              atBottomThreshold={100}
+              followOutput="smooth"
+              components={virtuosoComponents}
+              // 📏 HEIGHT CACHE - Fixed: Remove closure dependency issues
+              computeItemKey={useCallback((index, msg) => {
+                return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
+              }, [])}
+              itemSize={useCallback((index) => {
+                // 🔧 CRITICAL FIX: Rebuild data inline to avoid stale closure
+                const filtered = messages.filter(msg => !msg.isHidden);
+                const currentData = loading || streaming 
+                  ? [...filtered, {
+                      id: 'loading-indicator',
+                      sender: 'bot',
+                      text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
+                      isLoading: true,
+                      isStreaming: streaming
+                    }]
+                  : filtered;
+                
+                const msg = currentData[index];
+                if (!msg) {
+                  console.log('⚠️ [HEIGHT] Invalid index:', index, 'data length:', currentData.length, 'filtered:', filtered.length);
+                  return 100;
+                }
+                
+                const fingerprint = createMessageFingerprint(msg);
+                const cachedHeight = heightCache.get(fingerprint);
+                
+                if (cachedHeight) {
+                  console.log('⚡ [CACHE-HIT] Index', index, 'height:', cachedHeight, 'msg:', msg.text?.slice(0, 30));
+                  return Math.round(cachedHeight);
+                }
+                
+                const estimated = estimateMessageHeight(msg);
+                console.log('⏳ [CACHE-MISS] Index', index, 'estimated:', estimated, 'msg:', msg.text?.slice(0, 30));
+                return Math.round(estimated);
+              }, [messages, loading, streaming, isSearching, uiLanguage, estimateMessageHeight])}
+              data={React.useMemo(() => {
                 const filtered = messages.filter(msg => !msg.isHidden);
                 if (loading || streaming) {
                   return [...filtered, {
@@ -2826,40 +2866,7 @@ const virtuosoComponents = React.useMemo(() => ({
                   }];
                 }
                 return filtered;
-              }, [messages, loading, streaming, isSearching, uiLanguage]);
-
-              return (
-                <Virtuoso
-                  ref={virtuosoRef}
-                  style={virtuosoInlineStyle}
-                  overscan={200}
-                  atBottomThreshold={100}
-                  followOutput="smooth"
-                  components={virtuosoComponents}
-                  // 📏 HEIGHT CACHE - Fixed: Stable itemSize with consistent data reference
-                  computeItemKey={useCallback((index, msg) => {
-                    return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
-                  }, [])}
-                  itemSize={useCallback((index) => {
-                    const msg = virtuosoData[index];
-                    if (!msg) {
-                      console.log('⚠️ [HEIGHT] No message at index:', index, 'data length:', virtuosoData.length);
-                      return 100;
-                    }
-                    
-                    const fingerprint = createMessageFingerprint(msg);
-                    const cachedHeight = heightCache.get(fingerprint);
-                    
-                    if (cachedHeight) {
-                      console.log('⚡ [CACHE-HIT] Index', index, 'height:', cachedHeight, 'fingerprint:', fingerprint);
-                      return Math.round(cachedHeight); // Round to prevent sub-pixel jumps
-                    }
-                    
-                    const estimated = estimateMessageHeight(msg);
-                    console.log('⏳ [CACHE-MISS] Index', index, 'estimated:', estimated, 'fingerprint:', fingerprint);
-                    return Math.round(estimated); // Round to prevent sub-pixel jumps
-                  }, [virtuosoData, estimateMessageHeight])}
-                  data={virtuosoData}
+              }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={useCallback((index, msg) => (
               <MessageItem
                 msg={msg}
@@ -2874,8 +2881,6 @@ const virtuosoComponents = React.useMemo(() => ({
               setShowScrollToBottom(!atBottom);
             }, [setShowScrollToBottom])}
           />
-              );
-            })()}
           </div>
           {/* End of Virtuoso wrapper with padding */}
           
