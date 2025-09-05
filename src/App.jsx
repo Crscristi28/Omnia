@@ -1145,6 +1145,7 @@ function App() {
             }
             
             const imageMessage = {
+              id: generateMessageId(),
               sender: 'bot',
               text: `${t('imageGenerated')} "${finalTextInput}"`,
               image: {
@@ -1176,6 +1177,7 @@ function App() {
           console.error('💥 Image generation error:', imageError);
           
           const errorMessage = {
+            id: generateMessageId(),
             sender: 'bot',
             text: `❌ Nepodařilo se vygenerovat obrázek: ${imageError.message}`,
             isStreaming: false
@@ -1426,6 +1428,7 @@ function App() {
                     if (index === 0) {
                       // First word - create new bot message
                       const newMessage = {
+                        id: generateMessageId(),
                         sender: 'bot',
                         text: currentText,
                         isStreaming: false,
@@ -1472,6 +1475,7 @@ function App() {
         
         // Messages already updated via streaming, just check auto-save
         const currentMessages = [...messagesWithUser, { 
+          id: generateMessageId(),
           sender: 'bot', 
           text: responseText,
           sources: sources,
@@ -2374,6 +2378,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                   if (index === 0) {
                     // First word - create new bot message
                     const newMessage = {
+                      id: generateMessageId(),
                       sender: 'bot',
                       text: currentText,
                       isStreaming: false,
