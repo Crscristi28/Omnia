@@ -76,12 +76,24 @@ const MessageItem = React.forwardRef(({
     };
   }, [msg.id, chatId, onHeightMeasured, ref]);
 
+  // 🐛 DEBUG: Log message rendering
+  console.log(`🎨 [MESSAGEITEM] Rendering message ${msg.id}:`, {
+    sender: msg.sender,
+    hasText: !!msg.text,
+    textLength: msg.text?.length || 0,
+    isLoading: msg.isLoading,
+    hasImage: !!msg.image
+  });
+
   return (
     <div 
       ref={ref}
       key={msg.id || `fallback_${index}`} 
       data-sender={msg.sender}
-      style={msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle}
+      style={{
+        ...(msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle),
+        minHeight: '50px' // ✅ EMERGENCY FIX - prevent zero height
+      }}
     >
       {/* Special rendering for loading indicator */}
       {msg.isLoading ? (
