@@ -141,7 +141,7 @@ function App() {
   // 🎨 BREATHING ANIMATION - Removed for performance (now using CSS only)
   
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  // ❌ REMOVED: showScrollToBottom state - button now always shows when messages exist
   
   
   // ❌ REMOVED: All scroll limit logic - keeping only spacer
@@ -2785,9 +2785,7 @@ const virtuosoComponents = React.useMemo(() => ({
               />
             ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={false}
-            atBottomStateChange={useCallback((atBottom) => {
-              setShowScrollToBottom(!atBottom);
-            }, [setShowScrollToBottom])}
+            // ❌ REMOVED atBottomStateChange - was causing DOM element conflicts with itemSize
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
@@ -2796,10 +2794,10 @@ const virtuosoComponents = React.useMemo(() => ({
         </div>
       </main>
 
-      {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay */}
-      {showScrollToBottom && (
+      {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay (always show if messages exist) */}
+      {messages.length > 0 && (
         <button
-          onClick={() => scrollToBottom(virtuosoRef)}
+          onClick={() => scrollToBottom(virtuosoRef, messages.filter(m => !m.isHidden))}
           style={{
             position: 'fixed',
             bottom: isMobile ? '110px' : '120px', // Above input bar
@@ -2819,7 +2817,7 @@ const virtuosoComponents = React.useMemo(() => ({
             justifyContent: 'center',
             zIndex: 11, // Above input bar (10) and gradient (9)
             transition: 'all 0.3s ease',
-            animation: showScrollToBottom ? 'fadeIn 0.3s ease' : 'none',
+            animation: 'fadeIn 0.3s ease', // Always animate since button always shows
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(96, 165, 250, 0.2)';

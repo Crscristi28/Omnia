@@ -36,21 +36,25 @@ export const scrollToLatestMessage = (virtuosoRef, messages) => {
   }
 };
 
-// 🔼 SCROLL TO BOTTOM - For scroll button (default bottom behavior)
-export const scrollToBottom = (virtuosoRef) => {
+// 🔼 SCROLL TO BOTTOM - For scroll button (use concrete index instead of 'LAST')
+export const scrollToBottom = (virtuosoRef, messages = []) => {
   
   if (virtuosoRef.current) {
+    const lastIndex = messages.length > 0 ? messages.length - 1 : 0;
+    console.log(`🔼 [SCROLL-BOTTOM] Scrolling to concrete index: ${lastIndex}`);
+    
     virtuosoRef.current.scrollToIndex({ 
-      index: 'LAST',
-      behavior: 'smooth'
+      index: lastIndex, // ✅ Concrete number instead of 'LAST'
+      behavior: 'smooth',
+      align: 'end' // Ensure last message is fully visible
     });
   } else {
     console.log('❌ virtuosoRef.current is null in scrollToBottom');
   }
 };
 
-// 🎯 SMART SCROLL TO BOTTOM - With error handling and fallbacks
-export const smartScrollToBottom = (virtuosoRef, options = {}) => {
+// 🎯 SMART SCROLL TO BOTTOM - With error handling and fallbacks (FIXED to use concrete indexes)
+export const smartScrollToBottom = (virtuosoRef, messages = [], options = {}) => {
   const { 
     behavior = 'smooth',
     timeout = 100 
@@ -58,8 +62,9 @@ export const smartScrollToBottom = (virtuosoRef, options = {}) => {
 
   try {
     if (virtuosoRef?.current) {
+      const lastIndex = messages.length > 0 ? messages.length - 1 : 0;
       virtuosoRef.current.scrollToIndex({
-        index: 'LAST',
+        index: lastIndex, // ✅ Concrete number instead of 'LAST'
         behavior
       });
       console.log('✅ Smart scroll to bottom successful');
@@ -67,8 +72,9 @@ export const smartScrollToBottom = (virtuosoRef, options = {}) => {
       // Retry after timeout
       setTimeout(() => {
         if (virtuosoRef?.current) {
+          const lastIndex = messages.length > 0 ? messages.length - 1 : 0;
           virtuosoRef.current.scrollToIndex({
-            index: 'LAST',
+            index: lastIndex, // ✅ Concrete number instead of 'LAST'
             behavior: 'auto' // Use auto behavior for retry
           });
           console.log('✅ Smart scroll retry successful');
