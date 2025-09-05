@@ -19,7 +19,7 @@ import { claudeService, openaiService, grokService, geminiService } from './serv
 import { elevenLabsService } from './services/voice';
 import authService from './services/auth/supabaseAuth'; // 🔐 Auth service
 import { chatSyncService } from './services/sync/chatSync.js'; // 🔄 Chat sync service
-import heightCache from './services/heightCache.js'; // 📏 Height cache (STEP 1: testing only)
+import heightCache, { createMessageFingerprint } from './services/heightCache.js'; // 📏 Height cache
 
 // 🔧 IMPORT UTILS (MODULAR + STREAMING)
 import { uiTexts, getTranslation, detectLanguage, sanitizeText } from './utils/text';
@@ -2483,6 +2483,43 @@ const {
 
 
 
+// 📏 HEIGHT ESTIMATION - Step 4: Smart height estimation for cache misses
+const estimateMessageHeight = useCallback((msg) => {
+  if (!msg) return 100;
+  
+  // Base heights by message type
+  let baseHeight = msg.sender === 'user' ? 80 : 120; // User vs bot base
+  
+  // Add height for text content
+  const textLength = msg.text?.length || 0;
+  const textLines = Math.ceil(textLength / 80); // ~80 chars per line
+  baseHeight += textLines * 24; // ~24px per line
+  
+  // Add height for attachments
+  if (msg.attachments && msg.attachments.length > 0) {
+    baseHeight += 100; // Attachment container
+  }
+  
+  // Add height for images
+  if (msg.image) {
+    baseHeight += 200; // Generated image height
+  }
+  
+  // Loading indicator
+  if (msg.isLoading) {
+    baseHeight = 80;
+  }
+  
+  console.log('📐 [HEIGHT-EST] Estimated height:', baseHeight, 'for message:', {
+    textLength,
+    hasAttachments: !!msg.attachments?.length,
+    hasImage: !!msg.image,
+    sender: msg.sender
+  });
+  
+  return Math.max(baseHeight, 60); // Min 60px
+}, []);
+
 // 🎯 VIRTUOSO COMPONENTS - Footer + main paddingBottom kombinace
 const virtuosoComponents = React.useMemo(() => ({
   Footer: () => <div style={virtuosoFooterStyle} />,
@@ -2760,27 +2797,50 @@ const virtuosoComponents = React.useMemo(() => ({
 
           {/* 💬 CHAT MESSAGES - WRAPPER */}
           <div style={chatMessagesWrapperStyle}>
-            <Virtuoso
-              ref={virtuosoRef}
-              style={virtuosoInlineStyle}
-              overscan={1200}
-              atBottomThreshold={500}
-              components={virtuosoComponents}
-              // ❌ REMOVED: All scroll limit logic
-            data={React.useMemo(() => {
-              const filtered = messages.filter(msg => !msg.isHidden);
-              
-              if (loading || streaming) {
-                return [...filtered, {
-                  id: 'loading-indicator',
-                  sender: 'bot',
-                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
-                  isLoading: true,
-                  isStreaming: streaming
-                }];
-              }
-              return filtered;
-            }, [messages, loading, streaming, isSearching, uiLanguage])}
+            {React.useMemo(() => {
+              // 📏 HEIGHT CACHE - Step 4: Prepare data once for both props
+              const virtuosoData = (() => {
+                const filtered = messages.filter(msg => !msg.isHidden);
+                if (loading || streaming) {
+                  return [...filtered, {
+                    id: 'loading-indicator',
+                    sender: 'bot',
+                    text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
+                    isLoading: true,
+                    isStreaming: streaming
+                  }];
+                }
+                return filtered;
+              })();
+
+              return (
+                <Virtuoso
+                  ref={virtuosoRef}
+                  style={virtuosoInlineStyle}
+                  overscan={400}
+                  atBottomThreshold={500}
+                  components={virtuosoComponents}
+                  // 📏 HEIGHT CACHE - Step 4: Performance optimization props
+                  computeItemKey={useCallback((index, msg) => {
+                    return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
+                  }, [])}
+                  itemSize={useCallback((index) => {
+                    const msg = virtuosoData[index];
+                    if (!msg) return 100;
+                    
+                    const fingerprint = createMessageFingerprint(msg);
+                    const cachedHeight = heightCache.get(fingerprint);
+                    
+                    if (cachedHeight) {
+                      console.log('⚡ [CACHE-HIT] Using cached height:', cachedHeight, 'for:', fingerprint);
+                      return cachedHeight;
+                    }
+                    
+                    const estimated = estimateMessageHeight(msg);
+                    console.log('⏳ [CACHE-MISS] Using estimated height:', estimated, 'for:', fingerprint);
+                    return estimated;
+                  }, [virtuosoData, estimateMessageHeight])}
+                  data={virtuosoData}
             itemContent={useCallback((index, msg) => (
               <MessageItem
                 msg={msg}
@@ -2796,6 +2856,8 @@ const virtuosoComponents = React.useMemo(() => ({
               setShowScrollToBottom(!atBottom);
             }, [setShowScrollToBottom])}
           />
+              );
+            }, [messages, loading, streaming, isSearching, uiLanguage, estimateMessageHeight])}
           </div>
           {/* End of Virtuoso wrapper with padding */}
           
