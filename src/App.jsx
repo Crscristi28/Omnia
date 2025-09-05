@@ -2811,7 +2811,7 @@ const virtuosoComponents = React.useMemo(() => ({
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             
-            // ✅ itemSize prop - FIXED version with proper type checking
+            // ✅ itemSize prop - SYNCHRONIZED with data prop filtering
             itemSize={useCallback((index) => {
               // 🛡️ TYPE SAFETY: Ensure we have a number
               const numIndex = typeof index === 'number' ? index : parseInt(index, 10);
@@ -2821,12 +2821,31 @@ const virtuosoComponents = React.useMemo(() => ({
                 return 100; // Safe fallback
               }
 
-              const filteredMessages = messages.filter(m => !m.isHidden);
-              const msg = filteredMessages[numIndex];
+              // 🎯 USE SAME LOGIC AS DATA PROP - synchronized filtering
+              const filtered = messages.filter(msg => !msg.isHidden);
+              
+              // Handle loading indicator (same as data prop)
+              let allItems = filtered;
+              if (loading || streaming) {
+                allItems = [...filtered, {
+                  id: 'loading-indicator',
+                  sender: 'bot',
+                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
+                  isLoading: true,
+                  isStreaming: streaming
+                }];
+              }
+
+              const msg = allItems[numIndex];
               
               if (!msg || !msg.id) {
-                // console.warn(`⚠️ [ITEMSIZE] No message at index ${numIndex}, total filtered: ${filteredMessages.length}`);
+                // console.warn(`⚠️ [ITEMSIZE] No message at index ${numIndex}, total items: ${allItems.length}`);
                 return 100; // Safe fallback instead of 0
+              }
+
+              // 📏 Loading indicator has fixed height
+              if (msg.isLoading) {
+                return 96; // Fixed height for loading indicator
               }
 
               // 📏 CHECK CACHE FIRST
@@ -2840,7 +2859,7 @@ const virtuosoComponents = React.useMemo(() => ({
               const estimatedHeight = msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96);
               // console.log(`📊 [ITEMSIZE] Estimated height for ${msg.id}: ${estimatedHeight}px`);
               return estimatedHeight; 
-            }, [messages])}
+            }, [messages, loading, streaming, isSearching, t])}
             
             // ✅ itemContent - jednoduché renderování s ref (ResizeObserver je v MessageItem)
             itemContent={useCallback((index, msg) => {

@@ -1,0 +1,23 @@
+
+> omnia-web@0.0.0 dev
+> concurrently "npm run proxy" "vite"
+
+[0] 
+[0] > omnia-web@0.0.0 proxy
+[0] > node src/proxy-server.js
+[0] 
+[0] 🚀 Proxy server running on http://localhost:3001
+[0] 📝 Available endpoints:
+[0]   - POST /claude2
+[0]   - POST /openai
+[0]   - POST /elevenlabs-tts
+[0]   - POST /elevenlabs-stt
+[0]   - POST /google-tts
+[0]   - POST /claude-web-search
+[0] npm run proxy exited with code 0
+[1] Port 5173 is in use, trying another one...
+[1] 
+[1]   VITE v6.3.5  ready in 475 ms
+[1] 
+[1]   ➜  Local:   http://localhost:5174/
+[1]   ➜  Network: use --host to expose
