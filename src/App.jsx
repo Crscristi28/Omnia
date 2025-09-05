@@ -1,4 +1,4 @@
-// 🚀 OMNIA - APP.JSX PART 1/3 - IMPORTS + STATE + EFFECTS (REDESIGNED)
+// 🚀 OMNIA - APP.JSX PART 1/3 - IMPORTS + STATE + EFFECTS (CLEAN VERSION)
 // ✅ ADDED: ChatSidebar + NewChatButton imports
 // ✅ ADDED: welcomeTexts for multilingual welcome
 // ✅ SIMPLIFIED: Removed complex scroll system
