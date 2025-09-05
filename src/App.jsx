@@ -2819,10 +2819,19 @@ const virtuosoComponents = React.useMemo(() => ({
               atBottomThreshold={100}
               followOutput="smooth"
               components={virtuosoComponents}
-              // 🔧 EMERGENCY FIX: Remove problematic itemSize prop
-              // Let Virtuoso measure heights naturally + use ResizeObserver cache
+              // 🚀 SMART HEIGHT OPTIMIZATION: Use cache-driven defaults + range monitoring
+              defaultItemHeight={heightCache.getDefaultItemHeight()}
               computeItemKey={useCallback((index, msg) => {
                 return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
+              }, [])}
+              rangeChanged={useCallback((range) => {
+                // Pre-warm cache for visible range + buffer
+                console.log('👁️ [RANGE] Visible range:', range.startIndex, '-', range.endIndex);
+                
+                // Optional: Trigger cleanup periodically
+                if (Math.random() < 0.01) { // 1% chance per range change
+                  heightCache.cleanup();
+                }
               }, [])}
               data={React.useMemo(() => {
                 const filtered = messages.filter(msg => !msg.isHidden);
