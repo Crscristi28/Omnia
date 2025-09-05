@@ -358,7 +358,7 @@ export const virtuosoStyle = {
 };
 
 export const virtuosoFooterStyle = {
-  height: '475px' // Jen scroll efekt, main kontejner má paddingBottom pro InputBar
+  height: '300px' // Sníženo z 475px - test followOutput behavior
 };
 
 export const virtuosoInlineStyle = {
