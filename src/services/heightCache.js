@@ -166,7 +166,7 @@ class HeightCache {
       sender: 'user'
     };
     
-    const fingerprint = createMessageFingerprint(testMsg);
+    const fingerprint = createMessageFingerprint(testMsg, 'test-chat');
     
     // Test cache miss
     const miss = this.get(fingerprint);

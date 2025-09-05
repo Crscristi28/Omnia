@@ -2822,7 +2822,7 @@ const virtuosoComponents = React.useMemo(() => ({
               // 🚀 SMART HEIGHT OPTIMIZATION: Use cache-driven defaults + range monitoring
               defaultItemHeight={heightCache.getDefaultItemHeight()}
               computeItemKey={useCallback((index, msg) => {
-                return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
+                return msg.id || `msg_${index}_${createMessageFingerprint(msg, currentChatId || 'main-chat')}`;
               }, [])}
               rangeChanged={useCallback((range) => {
                 // Pre-warm cache for visible range + buffer
