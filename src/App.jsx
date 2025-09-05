@@ -470,8 +470,12 @@ function App() {
         console.log('🧹 [MEMORY] Clearing RAM before loading new chat');
         setMessages([]); // Clear old messages from memory first
         
-        // 🔄 Load new chat into clean memory
-        setMessages(chatData.messages);
+        // 🔄 Load new chat into clean memory + ENSURE ALL MESSAGES HAVE IDs
+        const messagesWithIds = chatData.messages.map(msg => ({
+          ...msg,
+          id: msg.id || generateMessageId() // ✅ FALLBACK ID generation
+        }));
+        setMessages(messagesWithIds);
         
         // 📏 Load cached heights for this chat
         await loadCachedHeights(chatId);
@@ -2824,23 +2828,24 @@ const virtuosoComponents = React.useMemo(() => ({
               return estimatedHeight; 
             }, [messages])}
             
-            // ✅ itemContent - jednoduché renderování (ResizeObserver je v MessageItem)
-            itemContent={useCallback((index, msg) => (
-              <MessageItem
-                msg={msg}
-                index={index}
-                onPreviewImage={setPreviewImage}
-                onDocumentView={setDocumentViewer}
-                onSourcesClick={handleSourcesClick}
-                onAudioStateChange={setIsAudioPlaying}
+            // ✅ itemContent - jednoduché renderování s ref (ResizeObserver je v MessageItem)
+            itemContent={useCallback((index, msg) => {
+              return React.createElement(MessageItem, {
+                ref: React.createRef(), // ✅ Explicit ref creation
+                msg,
+                index,
+                onPreviewImage: setPreviewImage,
+                onDocumentView: setDocumentViewer,
+                onSourcesClick: handleSourcesClick,
+                onAudioStateChange: setIsAudioPlaying,
                 // 📏 Height cache props
-                chatId={currentChatId}
-                onHeightMeasured={(messageId, height) => {
+                chatId: currentChatId,
+                onHeightMeasured: (messageId, height) => {
                   batchSaveHeight(messageId, height, currentChatId, isMobile ? 'mobile' : 'desktop');
                   cachedHeightsRef.current.set(messageId, height);
-                }}
-              />
-            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, isMobile])} // Close itemContent function
+                }
+              });
+            }, [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying, currentChatId, isMobile])} // Close itemContent function
             followOutput={false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
