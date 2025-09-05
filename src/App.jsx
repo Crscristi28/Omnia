@@ -2806,27 +2806,9 @@ const virtuosoComponents = React.useMemo(() => ({
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             
-            // ✅ itemSize prop - klíčová pro Virtuoso cache
-            itemSize={useCallback((index) => {
-              const filteredMessages = messages.filter(m => !m.isHidden);
-              const msg = filteredMessages[index];
-              
-              if (!msg) {
-                console.warn(`⚠️ [ITEMSIZE] No message at index ${index}, total filtered: ${filteredMessages.length}`);
-                return 100; // Safe fallback instead of 0
-              }
-
-              const cachedHeight = cachedHeightsRef.current.get(msg.id);
-              if (cachedHeight && cachedHeight > 0) {
-                console.log(`📏 [ITEMSIZE] Using cached height for ${msg.id}: ${cachedHeight}px`);
-                return cachedHeight;
-              }
-
-              // Odhadovaná výška - důležité pro položky, které ještě nebyly změřeny
-              const estimatedHeight = msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96);
-              console.log(`📊 [ITEMSIZE] Estimated height for ${msg.id}: ${estimatedHeight}px`);
-              return estimatedHeight; 
-            }, [messages])}
+            // ✅ DISABLED itemSize - may be causing DOM element issues
+            // itemSize will be handled by dynamic measurement only
+            // itemSize={...}
             
             // ✅ itemContent - jednoduché renderování s ref (ResizeObserver je v MessageItem)
             itemContent={useCallback((index, msg) => {
