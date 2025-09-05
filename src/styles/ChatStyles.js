@@ -358,7 +358,7 @@ export const virtuosoStyle = {
 };
 
 export const virtuosoFooterStyle = {
-  height: '300px' // Sníženo z 475px - test followOutput behavior
+  height: '325px' // Upraveno na 325px pro optimální spacing
 };
 
 export const virtuosoInlineStyle = {

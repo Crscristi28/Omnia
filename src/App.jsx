@@ -2817,7 +2817,7 @@ const virtuosoComponents = React.useMemo(() => ({
               style={virtuosoInlineStyle}
               overscan={200}
               atBottomThreshold={100}
-              followOutput="smooth"
+              followOutput={messages.some(msg => msg.isStreaming) ? false : "smooth"}
               components={virtuosoComponents}
               // 🚀 SMART HEIGHT OPTIMIZATION: Use cache-driven defaults + range monitoring
               defaultItemHeight={heightCache.getDefaultItemHeight()}
