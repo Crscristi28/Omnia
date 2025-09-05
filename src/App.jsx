@@ -2850,7 +2850,7 @@ const virtuosoComponents = React.useMemo(() => ({
               <MessageItem
                 msg={msg}
                 index={index}
-                chatId={currentChatId}
+                chatId={currentChatId || 'main-chat'}
                 onPreviewImage={setPreviewImage}
                 onDocumentView={setDocumentViewer}
                 onSourcesClick={handleSourcesClick}
