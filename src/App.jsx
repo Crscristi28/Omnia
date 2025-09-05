@@ -2797,9 +2797,45 @@ const virtuosoComponents = React.useMemo(() => ({
 
           {/* 💬 CHAT MESSAGES - WRAPPER */}
           <div style={chatMessagesWrapperStyle}>
-            {React.useMemo(() => {
-              // 📏 HEIGHT CACHE - Step 4: Prepare data once for both props
-              const virtuosoData = (() => {
+            <Virtuoso
+              ref={virtuosoRef}
+              style={virtuosoInlineStyle}
+              overscan={400}
+              atBottomThreshold={500}
+              components={virtuosoComponents}
+              // 📏 HEIGHT CACHE - Step 4: Performance optimization props
+              computeItemKey={useCallback((index, msg) => {
+                return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
+              }, [])}
+              itemSize={useCallback((index) => {
+                // Get data inline - avoid hook issues
+                const filtered = messages.filter(msg => !msg.isHidden);
+                const dataArray = loading || streaming 
+                  ? [...filtered, {
+                      id: 'loading-indicator',
+                      sender: 'bot',
+                      text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
+                      isLoading: true,
+                      isStreaming: streaming
+                    }]
+                  : filtered;
+                
+                const msg = dataArray[index];
+                if (!msg) return 100;
+                
+                const fingerprint = createMessageFingerprint(msg);
+                const cachedHeight = heightCache.get(fingerprint);
+                
+                if (cachedHeight) {
+                  console.log('⚡ [CACHE-HIT] Using cached height:', cachedHeight, 'for:', fingerprint);
+                  return cachedHeight;
+                }
+                
+                const estimated = estimateMessageHeight(msg);
+                console.log('⏳ [CACHE-MISS] Using estimated height:', estimated, 'for:', fingerprint);
+                return estimated;
+              }, [messages, loading, streaming, isSearching, uiLanguage, estimateMessageHeight])}
+              data={React.useMemo(() => {
                 const filtered = messages.filter(msg => !msg.isHidden);
                 if (loading || streaming) {
                   return [...filtered, {
@@ -2811,36 +2847,7 @@ const virtuosoComponents = React.useMemo(() => ({
                   }];
                 }
                 return filtered;
-              })();
-
-              return (
-                <Virtuoso
-                  ref={virtuosoRef}
-                  style={virtuosoInlineStyle}
-                  overscan={400}
-                  atBottomThreshold={500}
-                  components={virtuosoComponents}
-                  // 📏 HEIGHT CACHE - Step 4: Performance optimization props
-                  computeItemKey={useCallback((index, msg) => {
-                    return msg.id || `msg_${index}_${createMessageFingerprint(msg)}`;
-                  }, [])}
-                  itemSize={useCallback((index) => {
-                    const msg = virtuosoData[index];
-                    if (!msg) return 100;
-                    
-                    const fingerprint = createMessageFingerprint(msg);
-                    const cachedHeight = heightCache.get(fingerprint);
-                    
-                    if (cachedHeight) {
-                      console.log('⚡ [CACHE-HIT] Using cached height:', cachedHeight, 'for:', fingerprint);
-                      return cachedHeight;
-                    }
-                    
-                    const estimated = estimateMessageHeight(msg);
-                    console.log('⏳ [CACHE-MISS] Using estimated height:', estimated, 'for:', fingerprint);
-                    return estimated;
-                  }, [virtuosoData, estimateMessageHeight])}
-                  data={virtuosoData}
+              }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={useCallback((index, msg) => (
               <MessageItem
                 msg={msg}
@@ -2856,8 +2863,6 @@ const virtuosoComponents = React.useMemo(() => ({
               setShowScrollToBottom(!atBottom);
             }, [setShowScrollToBottom])}
           />
-              );
-            }, [messages, loading, streaming, isSearching, uiLanguage, estimateMessageHeight])}
           </div>
           {/* End of Virtuoso wrapper with padding */}
           
