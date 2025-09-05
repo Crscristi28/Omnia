@@ -2806,9 +2806,36 @@ const virtuosoComponents = React.useMemo(() => ({
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             
-            // ✅ DISABLED itemSize - may be causing DOM element issues
-            // itemSize will be handled by dynamic measurement only
-            // itemSize={...}
+            // ✅ itemSize prop - FIXED version with proper type checking
+            itemSize={useCallback((index) => {
+              // 🛡️ TYPE SAFETY: Ensure we have a number
+              const numIndex = typeof index === 'number' ? index : parseInt(index, 10);
+              
+              if (isNaN(numIndex) || numIndex < 0) {
+                console.warn(`⚠️ [ITEMSIZE] Invalid index: ${index}`);
+                return 100; // Safe fallback
+              }
+
+              const filteredMessages = messages.filter(m => !m.isHidden);
+              const msg = filteredMessages[numIndex];
+              
+              if (!msg || !msg.id) {
+                // console.warn(`⚠️ [ITEMSIZE] No message at index ${numIndex}, total filtered: ${filteredMessages.length}`);
+                return 100; // Safe fallback instead of 0
+              }
+
+              // 📏 CHECK CACHE FIRST
+              const cachedHeight = cachedHeightsRef.current.get(msg.id);
+              if (cachedHeight && cachedHeight > 0) {
+                // console.log(`📏 [ITEMSIZE] Using cached height for ${msg.id}: ${cachedHeight}px`);
+                return cachedHeight;
+              }
+
+              // 📊 ESTIMATE for items not yet measured
+              const estimatedHeight = msg.image ? 250 : (msg.text?.length > 100 ? 150 : 96);
+              // console.log(`📊 [ITEMSIZE] Estimated height for ${msg.id}: ${estimatedHeight}px`);
+              return estimatedHeight; 
+            }, [messages])}
             
             // ✅ itemContent - jednoduché renderování s ref (ResizeObserver je v MessageItem)
             itemContent={useCallback((index, msg) => {
