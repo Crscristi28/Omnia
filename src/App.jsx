@@ -1432,7 +1432,7 @@ function App() {
                         id: generateMessageId(),
                         sender: 'bot',
                         text: currentText,
-                        isStreaming: false,
+                        isStreaming: true, // Keep streaming during word-by-word
                         sources: geminiSources,
                         timestamp: botTimestamp
                       };
@@ -1443,7 +1443,8 @@ function App() {
                         const updated = [...prev];
                         updated[lastIndex] = {
                           ...updated[lastIndex],
-                          text: currentText
+                          text: currentText,
+                          isStreaming: index < words.length - 1 // False only on last word
                         };
                         return updated;
                       }
@@ -2383,7 +2384,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                       id: generateMessageId(),
                       sender: 'bot',
                       text: currentText,
-                      isStreaming: false,
+                      isStreaming: true, // Keep streaming during word-by-word
                       sources: geminiSourcesForDocs,
                       timestamp: botTimestampDocs
                     };
@@ -2394,7 +2395,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                       const updated = [...prev];
                       updated[lastIndex] = {
                         ...updated[lastIndex],
-                        text: currentText
+                        text: currentText,
+                        isStreaming: index < words.length - 1 // False only on last word
                       };
                       return updated;
                     }
