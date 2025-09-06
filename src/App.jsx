@@ -2787,7 +2787,7 @@ const virtuosoComponents = React.useMemo(() => ({
               style={virtuosoInlineStyle}
               overscan={600}
               atBottomThreshold={200}
-              defaultItemHeight={120}
+              defaultItemHeight={500}
               components={virtuosoComponents}
               computeItemKey={useCallback((index, item) => {
                 // Use message UUID for better React reconciliation
