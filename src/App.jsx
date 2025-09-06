@@ -41,6 +41,7 @@ import { convertMessagesForOpenAI } from './utils/messageConverters.js'; // 🔄
 
 // 🔧 IMPORT UI COMPONENTS (MODULAR)
 import { SettingsDropdown, OmniaLogo, MiniOmniaLogo, OfflineIndicator, SplashScreen } from './components/ui';
+import ThinkingIndicator from './components/ui/ThinkingIndicator';
 
 import { VoiceScreen } from './components/chat';
 import MessageItem from './components/chat/MessageItem';
@@ -2798,19 +2799,9 @@ const virtuosoComponents = React.useMemo(() => ({
               }, [])}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
-              const filtered = messages.filter(msg => !msg.isHidden);
-              
-              if (loading || streaming) {
-                return [...filtered, {
-                  id: 'loading-indicator',
-                  sender: 'bot',
-                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
-                  isLoading: true,
-                  isStreaming: streaming
-                }];
-              }
-              return filtered;
-            }, [messages, loading, streaming, isSearching, uiLanguage])}
+              // Return only real messages, no fake loading indicator
+              return messages.filter(msg => !msg.isHidden);
+            }, [messages])}
             itemContent={useCallback((index, msg) => (
               <MessageItem
                 msg={msg}
@@ -2828,6 +2819,14 @@ const virtuosoComponents = React.useMemo(() => ({
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
+          
+          {/* 🤔 THINKING INDICATOR - Outside Virtuoso */}
+          <ThinkingIndicator 
+            loading={loading}
+            streaming={streaming}
+            isSearching={isSearching}
+            uiLanguage={uiLanguage}
+          />
           
           <div ref={endOfMessagesRef} />
         </div>
