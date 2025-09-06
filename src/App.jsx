@@ -2794,7 +2794,7 @@ const virtuosoComponents = React.useMemo(() => ({
                 console.log(`🔍 Debug index ${index}:`, { item, hasId: !!item?.id, id: item?.id });
                 
                 // Use message ID for better React reconciliation
-                const msgId = item?.id || `fallback-${index}`;
+                const msgId = item?.uuid || `fallback-${index}`;
                 console.log(`🔑 Virtuoso key for index ${index}:`, msgId);
                 return msgId;
               }, [])}
