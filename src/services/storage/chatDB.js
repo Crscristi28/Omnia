@@ -39,6 +39,16 @@ class ChatDatabase extends Dexie {
     }).upgrade(tx => {
       // Empty migration - all data cleared before deployment
     });
+    
+    // V5 Schema (HEIGHT CACHE - add height measurement storage)
+    this.version(5).stores({
+      chats: 'id, title, createdAt, updatedAt, messageCount',
+      messages: 'uuid, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp], [chatId+uuid]',
+      messageHeights: '++id, chatId, messageId, height, deviceType, measuredAt, [chatId+messageId], [chatId+deviceType]',
+      averageHeights: 'chatId, averageHeight, measuredAt'
+    }).upgrade(tx => {
+      console.log('🔧 [HEIGHT-CACHE] Upgrading IndexedDB to V5 - adding height cache tables');
+    });
   }
 }
 
@@ -702,6 +712,86 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   };
   
   // Development debugging available in omniaDB object
+},
+
+// 📏 HEIGHT CACHE METHODS (NEW in V5)
+
+  // 💾 Save single message height to IndexedDB
+  async saveMessageHeight(chatId, messageId, height, deviceType = 'desktop') {
+    console.log(`📏 [HEIGHT-CACHE] Saving height for message ${messageId}: ${height}px (${deviceType})`);
+    
+    try {
+      const heightData = {
+        chatId: chatId,
+        messageId: messageId,
+        height: height,
+        deviceType: deviceType,
+        measuredAt: Date.now()
+      };
+
+      await db.messageHeights.put(heightData);
+      console.log(`✅ [HEIGHT-CACHE] Successfully saved height for ${messageId}`);
+      
+    } catch (error) {
+      console.error(`❌ [HEIGHT-CACHE] Failed to save height for ${messageId}:`, error);
+    }
+  },
+
+  // 📋 Get all cached heights for a chat
+  async getMessageHeightsForChat(chatId) {
+    console.log(`📏 [HEIGHT-CACHE] Loading cached heights for chat: ${chatId}`);
+    
+    try {
+      const heights = await db.messageHeights
+        .where('chatId')
+        .equals(chatId)
+        .toArray();
+      
+      console.log(`✅ [HEIGHT-CACHE] Loaded ${heights.length} cached heights for chat ${chatId}`);
+      return heights;
+      
+    } catch (error) {
+      console.error(`❌ [HEIGHT-CACHE] Failed to load heights for chat ${chatId}:`, error);
+      return [];
+    }
+  },
+
+  // 📊 Save average height for chat
+  async saveAverageHeight(chatId, avgHeight) {
+    console.log(`📐 [HEIGHT-CACHE] Saving average height for chat ${chatId}: ${avgHeight}px`);
+    
+    try {
+      const avgData = {
+        chatId: chatId,
+        averageHeight: avgHeight,
+        measuredAt: Date.now()
+      };
+
+      await db.averageHeights.put(avgData);
+      console.log(`✅ [HEIGHT-CACHE] Successfully saved average height for ${chatId}`);
+      
+    } catch (error) {
+      console.error(`❌ [HEIGHT-CACHE] Failed to save average height for ${chatId}:`, error);
+    }
+  },
+
+  // 📊 Get average height for chat
+  async getAverageHeight(chatId) {
+    console.log(`📐 [HEIGHT-CACHE] Loading average height for chat: ${chatId}`);
+    
+    try {
+      const avgData = await db.averageHeights.get(chatId);
+      const avgHeight = avgData?.averageHeight || null;
+      
+      console.log(`✅ [HEIGHT-CACHE] Average height for ${chatId}: ${avgHeight}px`);
+      return avgHeight;
+      
+    } catch (error) {
+      console.error(`❌ [HEIGHT-CACHE] Failed to load average height for ${chatId}:`, error);
+      return null;
+    }
+  }
+
 }
 
 export default chatDB;
