@@ -2788,6 +2788,9 @@ const virtuosoComponents = React.useMemo(() => ({
               defaultItemHeight={120}
               components={virtuosoComponents}
               computeItemKey={useCallback((index, item) => {
+                // Debug: log message structure
+                console.log(`🔍 Debug index ${index}:`, { item, hasId: !!item?.id, id: item?.id });
+                
                 // Use message ID for better React reconciliation
                 const msgId = item?.id || `fallback-${index}`;
                 console.log(`🔑 Virtuoso key for index ${index}:`, msgId);
