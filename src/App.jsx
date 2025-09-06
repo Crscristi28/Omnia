@@ -165,7 +165,7 @@ function App() {
     }, 1500); // 1.5 seconds to scroll to bottom, then disable
     
     return () => clearTimeout(timer);
-  }, [currentChatId, messages.length]); // Trigger when switching chats or messages load
+  }, [currentChatId]); // Trigger only when switching chats
   
   // ❌ REMOVED: All scroll limit logic - keeping only spacer
   
