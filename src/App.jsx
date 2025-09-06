@@ -1424,7 +1424,8 @@ function App() {
                         const updated = [...prev];
                         updated[lastIndex] = {
                           ...updated[lastIndex],
-                          text: currentText
+                          text: currentText,
+                          isStreaming: true  // ✅ Mark as streaming
                         };
                         return updated;
                       }
@@ -1435,6 +1436,19 @@ function App() {
                   // Reset buffer after last word
                   if (index === words.length - 1) {
                     chunkBuffer = '';
+                    // ✅ Mark streaming as complete
+                    setMessages(prev => {
+                      const lastIndex = prev.length - 1;
+                      if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                        const updated = [...prev];
+                        updated[lastIndex] = {
+                          ...updated[lastIndex],
+                          isStreaming: false
+                        };
+                        return updated;
+                      }
+                      return prev;
+                    });
                   }
                 }, index * 25); // 25ms delay for better readability
               });
@@ -2372,7 +2386,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                       const updated = [...prev];
                       updated[lastIndex] = {
                         ...updated[lastIndex],
-                        text: currentText
+                        text: currentText,
+                        isStreaming: true  // ✅ Mark as streaming
                       };
                       return updated;
                     }
@@ -2383,6 +2398,19 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                 // Reset buffer after last word
                 if (index === words.length - 1) {
                   chunkBufferDocs = '';
+                  // ✅ Mark streaming as complete
+                  setMessages(prev => {
+                    const lastIndex = prev.length - 1;
+                    if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                      const updated = [...prev];
+                      updated[lastIndex] = {
+                        ...updated[lastIndex],
+                        isStreaming: false
+                      };
+                      return updated;
+                    }
+                    return prev;
+                  });
                 }
               }, index * 25); // 25ms delay for better readability
             });
@@ -2817,7 +2845,7 @@ const virtuosoComponents = React.useMemo(() => ({
               style={virtuosoInlineStyle}
               overscan={200}
               atBottomThreshold={100}
-              followOutput="smooth"
+              followOutput={messages.some(msg => msg.isStreaming) ? false : "smooth"}
               components={virtuosoComponents}
               // 🚀 SMART HEIGHT OPTIMIZATION: Use cache-driven defaults + range monitoring
               defaultItemHeight={heightCache.getDefaultItemHeight()}
