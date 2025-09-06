@@ -714,6 +714,4 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   // Development debugging available in omniaDB object
 }
 
-}
-
 export default chatDB;
