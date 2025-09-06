@@ -142,7 +142,18 @@ function App() {
   
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [shouldFollowOutput, setShouldFollowOutput] = useState(true); // Follow output when chat opens
   
+  // Reset followOutput when switching chats or loading new messages
+  useEffect(() => {
+    setShouldFollowOutput(true);
+    // Disable after a short delay to allow initial scroll
+    const timer = setTimeout(() => {
+      setShouldFollowOutput(false);
+    }, 1500); // 1.5 seconds to scroll to bottom, then disable
+    
+    return () => clearTimeout(timer);
+  }, [messages.length === 0]); // Trigger when messages reset (new chat)
   
   // ❌ REMOVED: All scroll limit logic - keeping only spacer
   
@@ -2788,7 +2799,7 @@ const virtuosoComponents = React.useMemo(() => ({
                 onAudioStateChange={setIsAudioPlaying}
               />
             ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
-            followOutput="smooth"
+            followOutput={shouldFollowOutput ? "smooth" : false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
             }, [setShowScrollToBottom])}
