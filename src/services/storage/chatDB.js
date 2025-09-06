@@ -142,6 +142,11 @@ const chatDB = {
     const { skipSync = false } = options;
     
     try {
+      // 🗑️ CRITICAL FIX: Delete ALL messages for this chat first
+      const messagesDeleted = await db.messages.where('chatId').equals(chatId).delete();
+      console.log(`🗑️ [SECURITY] Deleted ${messagesDeleted} messages for chat: ${chatId}`);
+      
+      // 🗑️ Then delete chat metadata
       await db.chats.delete(chatId);
       
       // 🔄 SYNC DELETE - Remove from Supabase too (unless skipped)
