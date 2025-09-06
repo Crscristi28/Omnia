@@ -2787,6 +2787,12 @@ const virtuosoComponents = React.useMemo(() => ({
               atBottomThreshold={200}
               defaultItemHeight={120}
               components={virtuosoComponents}
+              computeItemKey={useCallback((index, item) => {
+                // Use message ID for better React reconciliation
+                const msgId = item?.id || `fallback-${index}`;
+                console.log(`🔑 Virtuoso key for index ${index}:`, msgId);
+                return msgId;
+              }, [])}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
