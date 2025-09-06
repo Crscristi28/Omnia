@@ -2785,7 +2785,7 @@ const virtuosoComponents = React.useMemo(() => ({
             <Virtuoso
               ref={virtuosoRef}
               style={virtuosoInlineStyle}
-              overscan={600}
+              overscan={800}
               atBottomThreshold={200}
               defaultItemHeight={200}
               increaseViewportBy={300}
