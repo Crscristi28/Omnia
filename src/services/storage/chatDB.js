@@ -44,7 +44,7 @@ class ChatDatabase extends Dexie {
     this.version(5).stores({
       chats: 'id, title, createdAt, updatedAt, messageCount',
       messages: 'uuid, chatId, timestamp, sender, text, type, attachments, image, [chatId+timestamp], [chatId+uuid]',
-      messageHeights: '++id, chatId, messageId, height, deviceType, measuredAt, [chatId+messageId], [chatId+deviceType]',
+      messageHeights: '++id, chatId, messageId, height, measuredAt',
       averageHeights: 'chatId, averageHeight, measuredAt'
     }).upgrade(tx => {
       console.log('🔧 [HEIGHT-CACHE] Upgrading IndexedDB to V5 - adding height cache tables');
