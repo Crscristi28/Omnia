@@ -147,13 +147,25 @@ function App() {
   // Reset followOutput when switching chats or loading new messages
   useEffect(() => {
     setShouldFollowOutput(true);
-    // Disable after a short delay to allow initial scroll
+    
+    // Explicitly scroll to bottom when chat opens
+    if (virtuosoRef.current && messages.length > 0) {
+      // Small delay to ensure Virtuoso is ready
+      setTimeout(() => {
+        virtuosoRef.current.scrollToIndex({
+          index: messages.length - 1,
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
+    
+    // Disable followOutput after a short delay 
     const timer = setTimeout(() => {
       setShouldFollowOutput(false);
     }, 1500); // 1.5 seconds to scroll to bottom, then disable
     
     return () => clearTimeout(timer);
-  }, [currentChatId]); // Trigger when switching to any chat
+  }, [currentChatId, messages.length]); // Trigger when switching chats or messages load
   
   // ❌ REMOVED: All scroll limit logic - keeping only spacer
   
