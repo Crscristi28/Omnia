@@ -8,7 +8,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
 import './App.css';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, LogLevel } from 'react-virtuoso';
 import MDEditor from '@uiw/react-md-editor';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -2788,6 +2788,7 @@ const virtuosoComponents = React.useMemo(() => ({
               overscan={600}
               atBottomThreshold={200}
               defaultItemHeight={250}
+              logLevel={LogLevel.DEBUG}
               components={virtuosoComponents}
               computeItemKey={useCallback((index, item) => {
                 // Use message UUID for better React reconciliation
