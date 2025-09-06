@@ -2785,7 +2785,7 @@ const virtuosoComponents = React.useMemo(() => ({
               style={virtuosoInlineStyle}
               overscan={600}
               atBottomThreshold={200}
-              initialItemCount={15}
+              initialItemCount={Math.min(15, messages.length)}
               defaultItemHeight={120}
               components={virtuosoComponents}
               // ❌ REMOVED: All scroll limit logic
@@ -2803,16 +2803,24 @@ const virtuosoComponents = React.useMemo(() => ({
               }
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
-            itemContent={useCallback((index, msg) => (
-              <MessageItem
-                msg={msg}
-                index={index}
-                onPreviewImage={setPreviewImage}
-                onDocumentView={setDocumentViewer}
-                onSourcesClick={handleSourcesClick}
-                onAudioStateChange={setIsAudioPlaying}
-              />
-            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
+            itemContent={useCallback((index, msg) => {
+              // Safety check: handle undefined messages
+              if (!msg) {
+                console.warn(`⚠️ Virtuoso: undefined message at index ${index}`);
+                return <div>Loading...</div>;
+              }
+              
+              return (
+                <MessageItem
+                  msg={msg}
+                  index={index}
+                  onPreviewImage={setPreviewImage}
+                  onDocumentView={setDocumentViewer}
+                  onSourcesClick={handleSourcesClick}
+                  onAudioStateChange={setIsAudioPlaying}
+                />
+              );
+            }, [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={shouldFollowOutput ? "smooth" : false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
