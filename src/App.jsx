@@ -1412,8 +1412,9 @@ function App() {
                       // First word - create new bot message
                       const newMessage = {
                         sender: 'bot',
-                        text: currentText,
-                        isStreaming: true,  // ✅ Start with streaming true!
+                        text: null,  // ✅ Start with null text to prevent flash
+                        isStreaming: true,
+                        isReadyToDisplay: false,  // ✅ Not ready until first word
                         sources: geminiSources,
                         timestamp: botTimestamp
                       };
@@ -1425,7 +1426,8 @@ function App() {
                         updated[lastIndex] = {
                           ...updated[lastIndex],
                           text: currentText,
-                          isStreaming: true  // ✅ Mark as streaming
+                          isStreaming: true,
+                          isReadyToDisplay: true  // ✅ Ready to display after first word
                         };
                         return updated;
                       }
@@ -2374,8 +2376,9 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                     // First word - create new bot message
                     const newMessage = {
                       sender: 'bot',
-                      text: currentText,
-                      isStreaming: true,  // ✅ Start with streaming true!
+                      text: null,  // ✅ Start with null text to prevent flash
+                      isStreaming: true,
+                      isReadyToDisplay: false,  // ✅ Not ready until first word
                       sources: geminiSourcesForDocs,
                       timestamp: botTimestampDocs
                     };
@@ -2387,7 +2390,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                       updated[lastIndex] = {
                         ...updated[lastIndex],
                         text: currentText,
-                        isStreaming: true  // ✅ Mark as streaming
+                        isStreaming: true,
+                        isReadyToDisplay: true  // ✅ Ready to display after first word
                       };
                       return updated;
                     }

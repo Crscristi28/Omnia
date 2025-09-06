@@ -315,10 +315,13 @@ const MessageItem = ({
             </div>
           )}
           
-          <MessageRenderer 
-            content={msg.text || ''}
-            className="text-white"
-          />
+          {/* ✅ Only render text when ready to prevent flash */}
+          {msg.isReadyToDisplay && msg.text && (
+            <MessageRenderer 
+              content={msg.text}
+              className="text-white"
+            />
+          )}
           
           {/* 🔘 ACTION BUTTONS - Hide completely during streaming to prevent height jumps */}
           {!msg.isStreaming && (
