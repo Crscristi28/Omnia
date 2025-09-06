@@ -1476,6 +1476,7 @@ function App() {
         
         // Messages already updated via streaming, just check auto-save
         const currentMessages = [...messagesWithUser, { 
+          id: generateMessageId(),
           sender: 'bot', 
           text: responseText,
           sources: sources,
@@ -2379,6 +2380,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                   if (index === 0) {
                     // First word - create new bot message
                     const newMessage = {
+                      id: generateMessageId(),
                       sender: 'bot',
                       text: currentText,
                       isStreaming: false,
