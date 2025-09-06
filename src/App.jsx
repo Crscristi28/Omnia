@@ -2817,16 +2817,16 @@ const virtuosoComponents = React.useMemo(() => ({
               setShowScrollToBottom(!atBottom);
             }, [setShowScrollToBottom])}
           />
-          </div>
-          {/* End of Virtuoso wrapper with padding */}
           
-          {/* 🤔 THINKING INDICATOR - Outside Virtuoso */}
+          {/* 🤔 THINKING INDICATOR - Inside chat wrapper, after Virtuoso */}
           <ThinkingIndicator 
             loading={loading}
             streaming={streaming}
             isSearching={isSearching}
             uiLanguage={uiLanguage}
           />
+          </div>
+          {/* End of Virtuoso wrapper with padding */}
           
           <div ref={endOfMessagesRef} />
         </div>

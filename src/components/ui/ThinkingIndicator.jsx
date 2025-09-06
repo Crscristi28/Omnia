@@ -35,9 +35,6 @@ const ThinkingIndicator = ({
     return getTranslation(uiLanguage, 'thinking');
   };
 
-  // Always show dots for all loading states (fix for the original issue)
-  const shouldShowDots = loading || streaming || isSearching;
-
   return (
     <div style={{
       ...messageContainerBaseStyle,
@@ -47,17 +44,12 @@ const ThinkingIndicator = ({
         <div style={loadingBoxStyle}>
           <div style={loadingAnimationContainerStyle}>
             <div style={loadingSpinnerStyle}></div>
-            {shouldShowDots ? (
-              <span style={loadingDotsContainerStyle}>
-                <span style={loadingDotStyle}>●</span>
-                <span style={loadingDot2Style}>●</span>
-                <span style={loadingDot3Style}>●</span>
-              </span>
-            ) : (
-              <span style={{ color: '#a0aec0', fontWeight: '500' }}>
-                {getText()}
-              </span>
-            )}
+            {/* ALWAYS show dots for all loading states */}
+            <span style={loadingDotsContainerStyle}>
+              <span style={loadingDotStyle}>●</span>
+              <span style={loadingDot2Style}>●</span>
+              <span style={loadingDot3Style}>●</span>
+            </span>
           </div>
         </div>
       </div>
