@@ -316,7 +316,7 @@ const MessageItem = ({
           )}
           
           {/* ✅ Only render text when ready to prevent flash */}
-          {msg.isReadyToDisplay && msg.text && (
+          {msg.text && (msg.isReadyToDisplay !== false) && (
             <MessageRenderer 
               content={msg.text}
               className="text-white"
