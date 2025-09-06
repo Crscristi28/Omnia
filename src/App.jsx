@@ -2788,9 +2788,13 @@ const virtuosoComponents = React.useMemo(() => ({
               defaultItemHeight={120}
               components={virtuosoComponents}
               computeItemKey={useCallback((index, item) => {
-                // Use message ID for better React reconciliation  
-                // Note: User messages have IDs, some bot messages may not
-                return item?.id || `fallback-${index}`;
+                // Debug: log message structure
+                console.log(`🔍 Debug index ${index}:`, { item, hasId: !!item?.id, id: item?.id });
+                
+                // Use message ID for better React reconciliation
+                const msgId = item?.id || `fallback-${index}`;
+                console.log(`🔑 Virtuoso key for index ${index}:`, msgId);
+                return msgId;
               }, [])}
               // ❌ REMOVED: All scroll limit logic
             data={React.useMemo(() => {
