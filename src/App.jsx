@@ -1411,6 +1411,7 @@ function App() {
                     if (index === 0) {
                       // First word - create new bot message
                       const newMessage = {
+                        id: generateMessageId(), // ✅ Add ID to prevent computeItemKey fallback
                         sender: 'bot',
                         text: null,  // ✅ Start with null text to prevent flash
                         isStreaming: true,
@@ -2375,6 +2376,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                   if (index === 0) {
                     // First word - create new bot message
                     const newMessage = {
+                      id: generateMessageId(), // ✅ Add ID to prevent computeItemKey fallback
                       sender: 'bot',
                       text: null,  // ✅ Start with null text to prevent flash
                       isStreaming: true,
@@ -2855,7 +2857,7 @@ const virtuosoComponents = React.useMemo(() => ({
               defaultItemHeight={heightCache.getDefaultItemHeight()}
               computeItemKey={useCallback((index, msg) => {
                 return msg.id || `msg_${index}_${createMessageFingerprint(msg, currentChatId || 'main-chat')}`;
-              }, [])}
+              }, [currentChatId])}
               rangeChanged={useCallback((range) => {
                 // Pre-warm cache for visible range + buffer
                 console.log('👁️ [RANGE] Visible range:', range.startIndex, '-', range.endIndex);
