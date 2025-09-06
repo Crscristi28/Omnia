@@ -1,7 +1,7 @@
 // 🎨 MessageItem.jsx - Individual message rendering component
 // ✅ Extracted from App.jsx to reduce file size and improve maintainability
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 
 // Import components that are used in message rendering
 import MessageRenderer from '../MessageRenderer';
@@ -27,39 +27,65 @@ const MessageItem = ({
   onSourcesClick, 
   onAudioStateChange 
 }) => {
-  // 📏 HEIGHT CACHE - Step 3: ResizeObserver for measuring message heights
+  // 📏 OPTIMIZED HEIGHT CACHE - Efficient ResizeObserver with debouncing
   const messageRef = useRef(null);
+  const fingerprintRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
   
+  // Pre-calculate fingerprint to avoid hot path computation
+  const fingerprint = useMemo(() => {
+    if (!msg || !chatId) return null;
+    const fp = createMessageFingerprint(msg, chatId);
+    fingerprintRef.current = fp;
+    return fp;
+  }, [msg?.text, msg?.sender, msg?.attachments?.length, chatId]);
+  
+  // Single ResizeObserver setup with optimizations
   useEffect(() => {
-    if (!messageRef.current || !msg) return;
+    if (!messageRef.current || !fingerprint) return;
     
-    const observer = new ResizeObserver(([entry]) => {
-      const height = entry.contentRect.height;
-      
-      if (height > 0) {
-        const fingerprint = createMessageFingerprint(msg, chatId);
-        
-        // ✅ CHECK FIRST: Only cache if not already cached
-        if (!heightCache.get(fingerprint)) {
-          console.log('📏 [RESIZE] Measuring NEW message:', {
-            fingerprint,
-            height: Math.round(height),
-            textPreview: msg.text?.slice(0, 50) + '...',
-            sender: msg.sender
-          });
-          
-          // Store height in cache - only for new messages
-          heightCache.set(fingerprint, height);
-        }
+    // Check if already cached before setting up observer
+    if (heightCache.get(fingerprint)) {
+      return; // Skip observer setup for cached messages
+    }
+    
+    const observer = new ResizeObserver((entries) => {
+      // Clear previous debounce
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
+      
+      // Debounce resize events to avoid spam
+      debounceTimeoutRef.current = setTimeout(() => {
+        const entry = entries[0];
+        if (!entry) return;
+        
+        const height = Math.round(entry.contentRect.height);
+        
+        if (height > 50) { // Minimum reasonable height
+          // Double-check cache to avoid race conditions
+          if (!heightCache.get(fingerprintRef.current)) {
+            console.log('📏 [RESIZE] Caching height:', {
+              fingerprint: fingerprintRef.current?.slice(-8),
+              height,
+              textPreview: msg?.text?.slice(0, 30) + '...'
+            });
+            
+            heightCache.set(fingerprintRef.current, height);
+          }
+        }
+      }, 16); // ~60fps debounce
     });
     
     observer.observe(messageRef.current);
     
     return () => {
       observer.disconnect();
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
     };
-  }, [msg]); // Re-observe when message content changes
+  }, [fingerprint]); // Only re-setup when fingerprint changes
 
   // Extract styles from ChatStyles.js
   const { 
