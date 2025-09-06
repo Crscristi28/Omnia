@@ -32,13 +32,16 @@ const MessageItem = ({
   const fingerprintRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
   
-  // Pre-calculate fingerprint to avoid hot path computation
+  // Calculate fingerprint only once and cache it in ref
   const fingerprint = useMemo(() => {
     if (!msg || !chatId) return null;
+    // Check if we already have cached fingerprint for this message
+    if (fingerprintRef.current) return fingerprintRef.current;
+    
     const fp = createMessageFingerprint(msg, chatId);
     fingerprintRef.current = fp;
     return fp;
-  }, [msg?.text, msg?.sender, msg?.attachments?.length, chatId]);
+  }, [msg?.id, chatId]); // Minimal dependencies
   
   // Single ResizeObserver setup with optimizations
   useEffect(() => {

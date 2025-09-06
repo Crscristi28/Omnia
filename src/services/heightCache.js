@@ -34,13 +34,7 @@ function createMessageFingerprint(msg, chatId) {
   };
   
   const fingerprint = `${chatId}_msg_${simpleHash(JSON.stringify(factors))}`;
-  console.log('🔍 [HEIGHT-CACHE] Created chat-aware fingerprint:', fingerprint, 'for message:', {
-    chatId,
-    textPreview: msg.text?.slice(0, 50) + '...',
-    sender: msg.sender,
-    hasAttachments: !!msg.attachments?.length
-  });
-  
+  // console.log('🔍 [HEIGHT-CACHE] Created fingerprint:', fingerprint); // Debug disabled
   return fingerprint;
 }
 
@@ -113,11 +107,11 @@ class HeightCache {
     // Try memory first (fast)
     const cached = this.cache.get(fingerprint);
     if (cached) {
-      console.log('⚡ [HEIGHT-CACHE] Memory HIT for:', fingerprint, '-> height:', cached.height);
+      // console.log('⚡ [HEIGHT-CACHE] Memory HIT for:', fingerprint, '-> height:', cached.height);
       return cached.height;
     }
     
-    console.log('❌ [HEIGHT-CACHE] Cache MISS for:', fingerprint);
+    // console.log('❌ [HEIGHT-CACHE] Cache MISS for:', fingerprint);
     return null;
   }
   
