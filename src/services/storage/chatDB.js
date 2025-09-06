@@ -142,11 +142,7 @@ const chatDB = {
     const { skipSync = false } = options;
     
     try {
-      // 🗑️ CRITICAL FIX: Delete ALL messages for this chat first
-      const messagesDeleted = await db.messages.where('chatId').equals(chatId).delete();
-      console.log(`🗑️ [SECURITY] Deleted ${messagesDeleted} messages for chat: ${chatId}`);
-      
-      // 🗑️ Then delete chat metadata
+      // 🗑️ ORIGINAL ORDER: Chat metadata first
       await db.chats.delete(chatId);
       
       // 🔄 SYNC DELETE - Remove from Supabase too (unless skipped)
@@ -158,6 +154,10 @@ const chatDB = {
           console.error('❌ [SYNC] Delete sync failed:', error.message);
         }
       }
+      
+      // 🗑️ SECURITY CLEANUP: Delete orphaned messages after main delete
+      const messagesDeleted = await db.messages.where('chatId').equals(chatId).delete();
+      console.log(`🗑️ [SECURITY] Cleaned up ${messagesDeleted} orphaned messages for chat: ${chatId}`);
       
       return true;
     } catch (error) {
