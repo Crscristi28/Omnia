@@ -1413,7 +1413,7 @@ function App() {
                       const newMessage = {
                         sender: 'bot',
                         text: currentText,
-                        isStreaming: false,
+                        isStreaming: true,  // ✅ Start with streaming true!
                         sources: geminiSources,
                         timestamp: botTimestamp
                       };
@@ -2375,7 +2375,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                     const newMessage = {
                       sender: 'bot',
                       text: currentText,
-                      isStreaming: false,
+                      isStreaming: true,  // ✅ Start with streaming true!
                       sources: geminiSourcesForDocs,
                       timestamp: botTimestampDocs
                     };

@@ -320,14 +320,13 @@ const MessageItem = ({
             className="text-white"
           />
           
-          {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
+          {/* 🔘 ACTION BUTTONS - Hide completely during streaming to prevent height jumps */}
+          {!msg.isStreaming && (
           <div style={{ 
             display: 'flex', 
             gap: '10px', 
             paddingTop: '1.5rem',
             justifyContent: 'flex-start',
-            opacity: msg.isStreaming ? 0 : 1,
-            pointerEvents: msg.isStreaming ? 'none' : 'auto',
             transition: 'opacity 0.3s ease'
           }}>
             <SourcesButton 
@@ -342,6 +341,7 @@ const MessageItem = ({
             />
             <CopyButton text={msg.text} language={detectLanguage(msg.text)} />
           </div>
+          )}
         </div>
       )}
     </div>
