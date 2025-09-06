@@ -2847,7 +2847,7 @@ const virtuosoComponents = React.useMemo(() => ({
             <Virtuoso
               ref={virtuosoRef}
               style={virtuosoInlineStyle}
-              overscan={200}
+              overscan={600}
               atBottomThreshold={100}
               followOutput={messages.some(msg => msg.isStreaming) ? false : "smooth"}
               components={virtuosoComponents}
