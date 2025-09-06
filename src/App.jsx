@@ -1838,6 +1838,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   // Add user message to chat immediately (with persistent attachment data)
   const userTimestamp = Date.now();
   const userMessage = {
+    id: generateMessageId(),
     sender: 'user',
     text: text.trim(), // Keep empty if no text - no default message
     attachments: attachments, // Use new persistent base64 format
