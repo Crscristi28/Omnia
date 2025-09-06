@@ -358,7 +358,7 @@ export const virtuosoStyle = {
 };
 
 export const virtuosoFooterStyle = {
-  height: '330px' // Reduced from 475px for better scroll behavior
+  height: '450px'
 };
 
 export const virtuosoInlineStyle = {
