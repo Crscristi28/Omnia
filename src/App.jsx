@@ -1394,44 +1394,36 @@ function App() {
             accumulatedText += chunk;
             
             if (chunk.trim()) {
-              // Immediate processing: 50ms delay for markdown then word-by-word
-              setTimeout(() => {
-                const words = chunk.split(' ').filter(w => w.trim());
+              // Simple approach: show accumulated text immediately
+              setMessages(prev => {
+                const lastIndex = prev.length - 1;
                 
-                words.forEach((word, index) => {
-                  setTimeout(() => {
-                    setMessages(prev => {
-                      const lastIndex = prev.length - 1;
-                      
-                      if (!messageCreated) {
-                        // Create initial bot message with first word
-                        messageCreated = true;
-                        const newMessage = {
-                          id: generateMessageId(),
-                          sender: 'bot',
-                          text: word,
-                          isStreaming: true,
-                          sources: geminiSources,
-                          timestamp: botTimestamp
-                        };
-                        return [...prev, newMessage];
-                      } else {
-                        // Append words to existing message
-                        if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                          const updated = [...prev];
-                          updated[lastIndex] = {
-                            ...updated[lastIndex],
-                            text: updated[lastIndex].text + ' ' + word,
-                            sources: geminiSources
-                          };
-                          return updated;
-                        }
-                        return prev;
-                      }
-                    });
-                  }, index * 10); // 10ms delay between words
-                });
-              }, 50); // 50ms delay for markdown processing
+                if (!messageCreated) {
+                  // Create initial bot message
+                  messageCreated = true;
+                  const newMessage = {
+                    id: generateMessageId(),
+                    sender: 'bot',
+                    text: accumulatedText,
+                    isStreaming: true,
+                    sources: geminiSources,
+                    timestamp: botTimestamp
+                  };
+                  return [...prev, newMessage];
+                } else {
+                  // Update existing message with accumulated text
+                  if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                    const updated = [...prev];
+                    updated[lastIndex] = {
+                      ...updated[lastIndex],
+                      text: accumulatedText,
+                      sources: geminiSources
+                    };
+                    return updated;
+                  }
+                  return prev;
+                }
+              });
             }
             
             if (!isStreaming) {
@@ -2352,44 +2344,36 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           accumulatedTextDocs += chunk;
           
           if (chunk.trim()) {
-            // Immediate processing: 50ms delay for markdown then word-by-word
-            setTimeout(() => {
-              const words = chunk.split(' ').filter(w => w.trim());
+            // Simple approach: show accumulated text immediately
+            setMessages(prev => {
+              const lastIndex = prev.length - 1;
               
-              words.forEach((word, index) => {
-                setTimeout(() => {
-                  setMessages(prev => {
-                    const lastIndex = prev.length - 1;
-                    
-                    if (!messageCreatedDocs) {
-                      // Create initial bot message with first word
-                      messageCreatedDocs = true;
-                      const newMessage = {
-                        id: generateMessageId(),
-                        sender: 'bot',
-                        text: word,
-                        isStreaming: true,
-                        sources: geminiSourcesForDocs,
-                        timestamp: botTimestampDocs
-                      };
-                      return [...prev, newMessage];
-                    } else {
-                      // Append words to existing message
-                      if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                        const updated = [...prev];
-                        updated[lastIndex] = {
-                          ...updated[lastIndex],
-                          text: updated[lastIndex].text + ' ' + word,
-                          sources: geminiSourcesForDocs
-                        };
-                        return updated;
-                      }
-                      return prev;
-                    }
-                  });
-                }, index * 10); // 10ms delay between words
-              });
-            }, 50); // 50ms delay for markdown processing
+              if (!messageCreatedDocs) {
+                // Create initial bot message
+                messageCreatedDocs = true;
+                const newMessage = {
+                  id: generateMessageId(),
+                  sender: 'bot',
+                  text: accumulatedTextDocs,
+                  isStreaming: true,
+                  sources: geminiSourcesForDocs,
+                  timestamp: botTimestampDocs
+                };
+                return [...prev, newMessage];
+              } else {
+                // Update existing message with accumulated text
+                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                  const updated = [...prev];
+                  updated[lastIndex] = {
+                    ...updated[lastIndex],
+                    text: accumulatedTextDocs,
+                    sources: geminiSourcesForDocs
+                  };
+                  return updated;
+                }
+                return prev;
+              }
+            });
           }
           
           if (!isStreaming) {
