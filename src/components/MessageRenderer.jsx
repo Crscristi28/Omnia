@@ -52,7 +52,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           opacity: 0.9
         }}>
           <MDEditor.Markdown 
-            source={content} 
+            source={preprocessStreamingText(content)} 
             style={{ 
               backgroundColor: 'transparent',
               color: 'inherit'
@@ -87,7 +87,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
     <div className={className}>
       <div className="markdown-container">
         <MDEditor.Markdown 
-          source={content} 
+          source={content}
           style={{ 
             backgroundColor: 'transparent',
             color: 'inherit'
