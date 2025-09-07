@@ -1472,18 +1472,11 @@ function App() {
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // Messages already updated via streaming, just check auto-save
-        const currentMessages = [...messagesWithUser, { 
-          id: generateMessageId(),
-          sender: 'bot', 
-          text: responseText,
-          sources: sources,
-          isStreaming: false,
-          timestamp: botTimestamp // Use same timestamp as streaming
-        }];
+        // Messages already updated via progressive streaming - use current state for save
+        const currentMessagesFromState = messagesRef.current;
         
-        // 🔄 Check auto-save after AI response
-        const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
+        // 🔄 Check auto-save after AI response  
+        const cleanedMessages = await checkAutoSave(currentMessagesFromState, activeChatId);
         setMessages(cleanedMessages);
         
         // ❌ REMOVED: Scroll limit activation
@@ -2449,18 +2442,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Get all current messages from state (includes user message with updated base64)
       const currentMessagesFromState = messagesRef.current;
       
-      // Add bot response to current messages
-      const currentMessages = [...currentMessagesFromState, {
-        id: generateMessageId(),
-        sender: 'bot',
-        text: cleanedText,
-        timestamp: botTimestampDocs,
-        sources: result.sources || [],
-        isStreaming: false
-      }];
+      // Messages already updated via progressive streaming - use current state for save
+      // Bot message was already created during streaming, just use current state
       
       // Check auto-save after AI response (saves both user and bot messages with base64)
-      const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
+      const cleanedMessages = await checkAutoSave(currentMessagesFromState, activeChatId);
       // Update state with saved messages to ensure bot messages are persisted
       setMessages(cleanedMessages);
       
