@@ -116,13 +116,15 @@ const ChatSidebar = ({
     // If deleting the current chat, start new chat but keep sidebar open
     const isDeletingCurrentChat = chatId === currentChatId;
     
+    // 🚨 FIX: Call onChatDeleted BEFORE other operations to clear React state first
+    onChatDeleted(chatId); // Clear React state immediately
+    
     await chatDB.deleteChat(chatId);
     
     if (isDeletingCurrentChat) {
       onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open
     }
     
-    onChatDeleted(chatId); // Refresh the chat history
     closeDeleteModal();
   };
 
@@ -134,13 +136,15 @@ const ChatSidebar = ({
       // If deleting the current chat, start new chat but keep sidebar open
       const isDeletingCurrentChat = chatId === currentChatId;
       
+      // 🚨 FIX: Call onChatDeleted BEFORE other operations to clear React state first
+      onChatDeleted(chatId); // Clear React state immediately
+      
       await chatDB.deleteChat(chatId);
       
       if (isDeletingCurrentChat) {
         onNewChatKeepSidebar(); // This will clear messages and start fresh but keep sidebar open
       }
       
-      onChatDeleted(chatId); // Refresh the chat history
       // Note: Sidebar stays open, no automatic chat selection
     }
     // Whether confirmed or cancelled, sidebar stays open
