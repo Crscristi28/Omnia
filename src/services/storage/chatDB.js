@@ -142,8 +142,16 @@ const chatDB = {
     const { skipSync = false } = options;
     
     try {
-      // 🗑️ ORIGINAL ORDER: Chat metadata first
-      await db.chats.delete(chatId);
+      // 🗑️ ATOMIC DELETE: Like Supabase CASCADE - delete chat + messages in single transaction
+      let messagesDeleted = 0;
+      
+      await db.transaction('rw', [db.chats, db.messages], async () => {
+        // Delete messages first, then chat - all atomic
+        messagesDeleted = await db.messages.where('chatId').equals(chatId).delete();
+        await db.chats.delete(chatId);
+      });
+      
+      console.log(`🗑️ [ATOMIC] Cleaned up chat + ${messagesDeleted} messages atomically: ${chatId}`);
       
       // 🔄 SYNC DELETE - Remove from Supabase too (unless skipped)
       if (!skipSync) {
@@ -154,10 +162,6 @@ const chatDB = {
           console.error('❌ [SYNC] Delete sync failed:', error.message);
         }
       }
-      
-      // 🗑️ SECURITY CLEANUP: Delete orphaned messages after main delete
-      const messagesDeleted = await db.messages.where('chatId').equals(chatId).delete();
-      console.log(`🗑️ [SECURITY] Cleaned up ${messagesDeleted} orphaned messages for chat: ${chatId}`);
       
       return true;
     } catch (error) {
