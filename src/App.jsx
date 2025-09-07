@@ -1376,75 +1376,85 @@ function App() {
           name: doc.name 
         }));
         
-        // 🆕 STREAMING: Enable buffer + batch markdown processing
+        // 🚀 PROGRESSIVE STREAMING: Process chunks immediately as they arrive
         let geminiSources = [];
-        let chunkBuffer = ''; // Buffer for collecting all chunks
+        let accumulatedText = ''; // Track total text for final save
         const botTimestamp = Date.now() + 100; // +100ms to ensure bot comes after user
+        let messageCreated = false;
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreaming, sources = []) => {
-            // Buffer system: collect chunks until streaming complete
+            // Update sources immediately
             if (sources.length > 0) {
               geminiSources = sources;
             }
             
-            // Accumulate incremental chunks from gemini.service.js
-            chunkBuffer += chunk;
+            // Accumulate text for final save
+            accumulatedText += chunk;
+            
+            if (chunk.trim()) {
+              // Immediate processing: 50ms delay for markdown then word-by-word
+              setTimeout(() => {
+                const words = chunk.split(' ').filter(w => w.trim());
+                
+                words.forEach((word, index) => {
+                  setTimeout(() => {
+                    setMessages(prev => {
+                      const lastIndex = prev.length - 1;
+                      
+                      if (!messageCreated) {
+                        // Create initial bot message with first word
+                        messageCreated = true;
+                        const newMessage = {
+                          id: generateMessageId(),
+                          sender: 'bot',
+                          text: word,
+                          isStreaming: true,
+                          sources: geminiSources,
+                          timestamp: botTimestamp
+                        };
+                        return [...prev, newMessage];
+                      } else {
+                        // Append words to existing message
+                        if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                          const updated = [...prev];
+                          updated[lastIndex] = {
+                            ...updated[lastIndex],
+                            text: updated[lastIndex].text + ' ' + word,
+                            sources: geminiSources
+                          };
+                          return updated;
+                        }
+                        return prev;
+                      }
+                    });
+                  }, index * 10); // 10ms delay between words
+                });
+              }, 50); // 50ms delay for markdown processing
+            }
             
             if (!isStreaming) {
-              // Streaming complete - hide ALL loading indicators immediately
+              // Hide loading indicators when streaming complete
               setIsSearching(false);
               setLoading(false);
               setStreaming(false);
               
-              // Process buffer and start word-by-word display
-              console.log('🎯 Buffer complete, starting word-by-word:', chunkBuffer.length, 'chars');
-              
-              // Start word-by-word display with the complete markdown text
-              const words = chunkBuffer.split(' ');
-              
-              // Start word-by-word display without empty message
-              words.forEach((word, index) => {
-                setTimeout(() => {
-                  // Build text from word array slice instead of shared variable
-                  const currentText = words.slice(0, index + 1).join(' ');
-                  
-                  setMessages(prev => {
-                    const lastIndex = prev.length - 1;
-                    
-                    if (index === 0) {
-                      // First word - create new bot message
-                      const newMessage = {
-                        id: generateMessageId(),
-                        sender: 'bot',
-                        text: currentText,
-                        isStreaming: true, // Keep streaming during word-by-word
-                        sources: geminiSources,
-                        timestamp: botTimestamp
-                      };
-                      return [...prev, newMessage];
-                    } else {
-                      // Subsequent words - update existing message
-                      if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                        const updated = [...prev];
-                        updated[lastIndex] = {
-                          ...updated[lastIndex],
-                          text: currentText,
-                          isStreaming: index < words.length - 1 // False only on last word
-                        };
-                        return updated;
-                      }
-                      return prev;
-                    }
-                  });
-                  
-                  // Reset buffer after last word
-                  if (index === words.length - 1) {
-                    chunkBuffer = '';
+              // Mark message as complete
+              setTimeout(() => {
+                setMessages(prev => {
+                  const lastIndex = prev.length - 1;
+                  if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                    const updated = [...prev];
+                    updated[lastIndex] = {
+                      ...updated[lastIndex],
+                      isStreaming: false
+                    };
+                    return updated;
                   }
-                }, index * 10); // 10ms delay for faster display
-              });
+                  return prev;
+                });
+              }, 100);
             }
           },
           () => {
@@ -1455,8 +1465,8 @@ function App() {
           documentsToPassToGemini
         );
         
-        // Use final result for saving
-        responseText = result.text;
+        // Use accumulated text for saving
+        responseText = accumulatedText;
         const sources = geminiSources.length > 0 ? geminiSources : (result.sources || []);
         sourcesToSave = sources;
         
@@ -2328,75 +2338,85 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // No streaming for document uploads - same as regular Gemini chat
       
-      // Send to Gemini with FILTERED documents only - WITH STREAMING
+      // 🚀 PROGRESSIVE STREAMING: Process chunks immediately as they arrive (documents)
       let geminiSourcesForDocs = [];
-      let chunkBufferDocs = ''; // Buffer for collecting all chunks (documents)
+      let accumulatedTextDocs = ''; // Track total text for final save
       const botTimestampDocs = Date.now() + 100; // +100ms to ensure bot comes after user
+      let messageCreatedDocs = false;
       
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
         (chunk, isStreaming, sources = []) => {
-          // Buffer system: collect chunks until streaming complete (documents)
+          // Update sources immediately
           if (sources.length > 0) {
             geminiSourcesForDocs = sources;
           }
           
-          // Accumulate incremental chunks from gemini.service.js
-          chunkBufferDocs += chunk;
+          // Accumulate text for final save
+          accumulatedTextDocs += chunk;
+          
+          if (chunk.trim()) {
+            // Immediate processing: 50ms delay for markdown then word-by-word
+            setTimeout(() => {
+              const words = chunk.split(' ').filter(w => w.trim());
+              
+              words.forEach((word, index) => {
+                setTimeout(() => {
+                  setMessages(prev => {
+                    const lastIndex = prev.length - 1;
+                    
+                    if (!messageCreatedDocs) {
+                      // Create initial bot message with first word
+                      messageCreatedDocs = true;
+                      const newMessage = {
+                        id: generateMessageId(),
+                        sender: 'bot',
+                        text: word,
+                        isStreaming: true,
+                        sources: geminiSourcesForDocs,
+                        timestamp: botTimestampDocs
+                      };
+                      return [...prev, newMessage];
+                    } else {
+                      // Append words to existing message
+                      if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                        const updated = [...prev];
+                        updated[lastIndex] = {
+                          ...updated[lastIndex],
+                          text: updated[lastIndex].text + ' ' + word,
+                          sources: geminiSourcesForDocs
+                        };
+                        return updated;
+                      }
+                      return prev;
+                    }
+                  });
+                }, index * 10); // 10ms delay between words
+              });
+            }, 50); // 50ms delay for markdown processing
+          }
           
           if (!isStreaming) {
-            // Streaming complete - hide ALL loading indicators immediately
+            // Hide loading indicators when streaming complete
             setIsSearching(false);
             setLoading(false);
             setStreaming(false);
             
-            // Process buffer and start word-by-word display
-            console.log('🎯 [DOCS] Buffer complete, starting word-by-word:', chunkBufferDocs.length, 'chars');
-            
-            // Start word-by-word display with the complete markdown text
-            const words = chunkBufferDocs.split(' ');
-            
-            // Start word-by-word display without empty message
-            words.forEach((word, index) => {
-              setTimeout(() => {
-                // Build text from word array slice instead of shared variable
-                const currentText = words.slice(0, index + 1).join(' ');
-                
-                setMessages(prev => {
-                  const lastIndex = prev.length - 1;
-                  
-                  if (index === 0) {
-                    // First word - create new bot message
-                    const newMessage = {
-                      id: generateMessageId(),
-                      sender: 'bot',
-                      text: currentText,
-                      isStreaming: true, // Keep streaming during word-by-word
-                      sources: geminiSourcesForDocs,
-                      timestamp: botTimestampDocs
-                    };
-                    return [...prev, newMessage];
-                  } else {
-                    // Subsequent words - update existing message
-                    if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                      const updated = [...prev];
-                      updated[lastIndex] = {
-                        ...updated[lastIndex],
-                        text: currentText,
-                        isStreaming: index < words.length - 1 // False only on last word
-                      };
-                      return updated;
-                    }
-                    return prev;
-                  }
-                });
-                
-                // Reset buffer after last word
-                if (index === words.length - 1) {
-                  chunkBufferDocs = '';
+            // Mark message as complete
+            setTimeout(() => {
+              setMessages(prev => {
+                const lastIndex = prev.length - 1;
+                if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
+                  const updated = [...prev];
+                  updated[lastIndex] = {
+                    ...updated[lastIndex],
+                    isStreaming: false
+                  };
+                  return updated;
                 }
-              }, index * 10); // 10ms delay same as normal streaming
-            });
+                return prev;
+              });
+            }, 100);
           }
         },
         (searchMsg) => {
@@ -2424,7 +2444,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       setActiveDocumentContexts(filteredActiveDocs);
       
       // Use Gemini response directly without post-processing
-      const cleanedText = result.text;
+      const cleanedText = accumulatedTextDocs;
       
       // Get all current messages from state (includes user message with updated base64)
       const currentMessagesFromState = messagesRef.current;
