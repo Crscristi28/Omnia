@@ -163,6 +163,14 @@ const chatDB = {
       
       console.log(`🗑️ [ATOMIC] Cleaned up chat + ${messagesDeleted} messages atomically: ${chatId}`);
       
+      // 🧹 CLEANUP: Remove from sync queue to prevent unnecessary sync attempts
+      const syncQueue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+      const cleanedQueue = syncQueue.filter(queuedChatId => queuedChatId !== chatId);
+      if (cleanedQueue.length !== syncQueue.length) {
+        localStorage.setItem('syncQueue', JSON.stringify(cleanedQueue));
+        console.log(`🧹 [SYNC-CLEANUP] Removed deleted chat from sync queue: ${chatId}`);
+      }
+      
       // 🔄 SYNC DELETE - Remove from Supabase too (unless skipped)
       if (!skipSync) {
         try {
