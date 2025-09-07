@@ -146,9 +146,19 @@ const chatDB = {
       let messagesDeleted = 0;
       
       await db.transaction('rw', [db.chats, db.messages], async () => {
+        // Debug: Check messages before delete
+        const messagesBefore = await db.messages.where('chatId').equals(chatId).count();
+        console.log(`🔍 [DEBUG] Messages before delete for ${chatId}: ${messagesBefore}`);
+        
         // Delete messages first, then chat - all atomic
         messagesDeleted = await db.messages.where('chatId').equals(chatId).delete();
+        console.log(`🔍 [DEBUG] Messages deleted: ${messagesDeleted}`);
+        
         await db.chats.delete(chatId);
+        
+        // Debug: Verify messages are gone
+        const messagesAfter = await db.messages.where('chatId').equals(chatId).count();
+        console.log(`🔍 [DEBUG] Messages after delete for ${chatId}: ${messagesAfter}`);
       });
       
       console.log(`🗑️ [ATOMIC] Cleaned up chat + ${messagesDeleted} messages atomically: ${chatId}`);
