@@ -48,19 +48,12 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   if (isStreaming) {
     return (
       <div className={className}>
-        <div className="streaming-markdown" style={{ 
-          opacity: 0.9
+        <div className="streaming-text" style={{ 
+          opacity: 0.9,
+          whiteSpace: 'pre-wrap',
+          lineHeight: '1.6'
         }}>
-          <MDEditor.Markdown 
-            source={preprocessStreamingText(content)} 
-            style={{ 
-              backgroundColor: 'transparent',
-              color: 'inherit'
-            }}
-            data-color-mode="dark"
-            remarkPlugins={[remarkMath, remarkGfm]}
-            rehypePlugins={[rehypeKatex]}
-          />
+          {content}
         </div>
         
         <style>{`
