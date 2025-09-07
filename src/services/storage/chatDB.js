@@ -263,6 +263,10 @@ const chatDB = {
         newMessageCount++;
       }
       
+      // 🕵️ DEBUG: Show call stack for resurrection analysis
+      console.log(`🔍 [DEBUG] APPEND-ONLY called for chat: ${chatId} with ${newMessageCount} new messages`);
+      console.trace('🔍 [CALL-STACK] APPEND-ONLY call stack trace:');
+      
       console.log(`✅ [CHAT-DB-V2] APPEND-ONLY: Added ${newMessageCount} new messages, preserved ${existingMessages.length} existing`)
 
       // Calculate total message count (existing + new)
