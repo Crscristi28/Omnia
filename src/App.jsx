@@ -2913,6 +2913,13 @@ const virtuosoComponents = React.useMemo(() => ({
         onChatDeleted={(deletedChatId) => {
           // Remove deleted chat from current metadata without reloading all
           setChatHistories(prev => prev.filter(chat => chat.id !== deletedChatId));
+          
+          // 🚨 CRITICAL FIX: Clear messages state if we deleted current chat
+          // This prevents async save operations from recreating deleted chat
+          if (deletedChatId === currentChatId) {
+            console.log('🗑️ Clearing messages state for deleted current chat:', deletedChatId);
+            setMessages([]);
+          }
         }}
         user={user}
         onSignOut={handleSignOut}
