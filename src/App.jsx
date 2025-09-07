@@ -912,16 +912,7 @@ function App() {
   const handleNewChat = async () => {
     crashMonitor.trackChatOperation('new_chat_start', { currentChatId, messageCount: messages.length });
     try {
-      // ✅ SMART POJISTKA: Save only NEW messages to prevent duplicates
-      if (currentChatId && messages.length > 0) {
-        const wasSaved = await smartIncrementalSave(currentChatId, messages);
-        if (wasSaved) {
-          setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
-        }
-        if (wasSaved) {
-          crashMonitor.trackIndexedDB('save', currentChatId, true);
-        }
-      }
+      // ❌ REMOVED problematic save - prevents chat resurrection (same fix as handleNewChatKeepSidebar)
 
       // 🆕 STREAMING: Stop any ongoing streaming
       if (stopStreamingRef) {
