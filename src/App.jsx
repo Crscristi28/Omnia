@@ -427,11 +427,7 @@ function App() {
 
   const handleNewChatKeepSidebar = async () => {
     // Same as handleSidebarNewChat but keeps sidebar open
-    // 💾 SMART POJISTKA: Save only NEW messages to prevent duplicates
-    if (currentChatId && messages.length > 0) {
-      await smartIncrementalSave(currentChatId, messages);
-      setSyncDirtyChats(prev => new Set(prev).add(currentChatId));
-    }
+    // ❌ REMOVED problematic save - prevents chat resurrection after delete
     handleNewChat();
     const newKeepSidebarId = chatDB.generateChatId();
     updateCurrentChatId(newKeepSidebarId);
