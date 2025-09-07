@@ -1472,12 +1472,15 @@ function App() {
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
-        // Messages already updated via progressive streaming - use current state for save
-        const currentMessagesFromState = messagesRef.current;
-        
-        // 🔄 Check auto-save after AI response  
-        const cleanedMessages = await checkAutoSave(currentMessagesFromState, activeChatId);
-        setMessages(cleanedMessages);
+        // Messages already updated via progressive streaming - wait for completion then save
+        // Wait a bit for progressive streaming to complete and state to update
+        setTimeout(async () => {
+          const currentMessagesFromState = messagesRef.current;
+          
+          // 🔄 Check auto-save after AI response  
+          const cleanedMessages = await checkAutoSave(currentMessagesFromState, activeChatId);
+          setMessages(cleanedMessages);
+        }, 200); // Wait for streaming to complete
         
         // ❌ REMOVED: Scroll limit activation
 
@@ -2442,13 +2445,16 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Get all current messages from state (includes user message with updated base64)
       const currentMessagesFromState = messagesRef.current;
       
-      // Messages already updated via progressive streaming - use current state for save
-      // Bot message was already created during streaming, just use current state
-      
-      // Check auto-save after AI response (saves both user and bot messages with base64)
-      const cleanedMessages = await checkAutoSave(currentMessagesFromState, activeChatId);
-      // Update state with saved messages to ensure bot messages are persisted
-      setMessages(cleanedMessages);
+      // Messages already updated via progressive streaming - wait for completion then save
+      // Wait a bit for progressive streaming to complete and state to update
+      setTimeout(async () => {
+        const currentMessagesFromState = messagesRef.current;
+        
+        // Check auto-save after AI response (saves both user and bot messages with base64)
+        const cleanedMessages = await checkAutoSave(currentMessagesFromState, activeChatId);
+        // Update state with saved messages to ensure bot messages are persisted
+        setMessages(cleanedMessages);
+      }, 200); // Wait for streaming to complete
       
       // ❌ REMOVED: Scroll limit activation
     }
