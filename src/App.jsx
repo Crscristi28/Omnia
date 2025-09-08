@@ -1086,6 +1086,19 @@ function App() {
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
         
+        // Add bot message with image generation indicator immediately
+        const imageGenBotMessageId = generateMessageId();
+        const imageGenBotMessage = {
+          id: imageGenBotMessageId,
+          sender: 'bot',
+          text: '<span class="animate-pulse">🎨</span> Generuji obrázek...',
+          isStreaming: true,
+          timestamp: Date.now()
+        };
+        
+        const messagesWithImageIndicator = [...messagesWithUser, imageGenBotMessage];
+        setMessages(messagesWithImageIndicator);
+        
         try {
           const response = await fetch('/api/imagen', {
             method: 'POST',
@@ -1132,29 +1145,32 @@ function App() {
               // Continue with base64 if upload fails
             }
             
-            const imageMessage = {
-              id: generateMessageId(),
-              sender: 'bot',
-              text: `${t('imageGenerated')} "${finalTextInput}"`,
-              image: {
-                // Keep only essential metadata and Storage URLs for database
-                mimeType: imageData.mimeType,
-                width: imageData.width,
-                height: imageData.height,
-                storageUrl, // Storage URL for database and display
-                storagePath, // Storage path for operations
-                // Keep base64 temporarily for immediate display
-                base64: storageUrl ? undefined : imageData.base64
-              },
-              timestamp: Date.now() + 100,
-              isStreaming: false
-            };
-            
-            const finalMessages = [...messagesWithUser, imageMessage];
+            // Update existing message with image result
+            setMessages(prev => prev.map(msg => 
+              msg.id === imageGenBotMessageId 
+                ? {
+                    ...msg,
+                    text: `${t('imageGenerated')} "${finalTextInput}"`,
+                    image: {
+                      // Keep only essential metadata and Storage URLs for database
+                      mimeType: imageData.mimeType,
+                      width: imageData.width,
+                      height: imageData.height,
+                      storageUrl, // Storage URL for database and display
+                      storagePath, // Storage path for operations
+                      // Keep base64 temporarily for immediate display
+                      base64: storageUrl ? undefined : imageData.base64
+                    },
+                    isStreaming: false
+                  }
+                : msg
+            ));
             
             // 🔄 Check auto-save after image generation
-            const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
-            setMessages(cleanedMessages);
+            setTimeout(async () => {
+              const finalMessages = messagesRef.current;
+              await checkAutoSave(finalMessages, activeChatId);
+            }, 100);
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
@@ -1164,18 +1180,22 @@ function App() {
         } catch (imageError) {
           console.error('💥 Image generation error:', imageError);
           
-          const errorMessage = {
-            id: generateMessageId(),
-            sender: 'bot',
-            text: `❌ Nepodařilo se vygenerovat obrázek: ${imageError.message}`,
-            isStreaming: false
-          };
-          
-          const finalMessages = [...messagesWithUser, errorMessage];
+          // Update existing message with error
+          setMessages(prev => prev.map(msg => 
+            msg.id === imageGenBotMessageId 
+              ? {
+                  ...msg,
+                  text: `❌ Nepodařilo se vygenerovat obrázek: ${imageError.message}`,
+                  isStreaming: false
+                }
+              : msg
+          ));
           
           // 🔄 Check auto-save after error message
-          const cleanedMessages = await checkAutoSave(finalMessages, activeChatId);
-          setMessages(cleanedMessages);
+          setTimeout(async () => {
+            const finalMessages = messagesRef.current;
+            await checkAutoSave(finalMessages, activeChatId);
+          }, 100);
           
           showNotification('Chyba při generování obrázku', 'error');
         }
