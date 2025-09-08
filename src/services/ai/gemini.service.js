@@ -24,7 +24,7 @@ const geminiService = {
           requestId: requestId,
           messages: geminiMessages,
           system: systemPrompt,
-          max_tokens: 5000,
+          max_tokens: 8000,
           language: detectedLanguage,
           documents: documents
         })
