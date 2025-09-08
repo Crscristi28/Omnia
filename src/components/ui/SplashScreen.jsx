@@ -121,30 +121,21 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
           />
         ))}
 
-        {/* GLASSMORPHISM CONTAINER */}
+        {/* CONTENT CONTAINER - Direct on background */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '30px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          padding: '60px 40px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           transform: showContent ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(20px)',
           opacity: showContent ? 1 : 0,
-          transition: 'all 1000ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-          boxShadow: `
-            0 20px 40px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2)
-          `
+          transition: 'all 1000ms cubic-bezier(0.4, 0.0, 0.2, 1)'
         }}>
           
           {/* ROTATING GRADIENT LOGO RING */}
           <div style={{
-            width: '220px',
-            height: '220px',
-            marginBottom: '40px',
+            width: '240px',
+            height: '240px',
+            marginBottom: '50px',
             borderRadius: '50%',
             background: `conic-gradient(from 0deg,
               #00d4ff 0deg,
@@ -158,21 +149,21 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
             animation: 'gradientSpin 3s ease-in-out forwards, pulseGlow 2s ease-in-out infinite',
             position: 'relative'
           }}>
-            {/* INNER CIRCLE WITH GLASSMORPHISM */}
+            {/* INNER CIRCLE WITH SUBTLE GLASSMORPHISM */}
             <div style={{
               position: 'absolute',
-              top: '25px',
-              left: '25px',
-              width: '170px',
-              height: '170px',
+              top: '30px',
+              left: '30px',
+              width: '180px',
+              height: '180px',
               borderRadius: '50%',
               background: `
-                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-                rgba(10, 10, 15, 0.9)
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+                rgba(0, 0, 0, 0.3)
               `,
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(15px)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -180,11 +171,11 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
               
               {/* AI BRAIN ICON */}
               <div style={{
-                fontSize: '60px',
+                fontSize: '70px',
                 background: 'linear-gradient(45deg, #00d4ff, #8c52ff)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 20px rgba(0, 212, 255, 0.5))'
+                filter: 'drop-shadow(0 0 25px rgba(0, 212, 255, 0.6))'
               }}>
                 🧠
               </div>
