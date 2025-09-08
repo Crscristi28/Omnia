@@ -2353,75 +2353,61 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       // No streaming for document uploads - same as regular Gemini chat
       
-      // Send to Gemini with FILTERED documents only - WITH STREAMING
+      // 🚀 TRUE PROGRESSIVE STREAMING FOR DOCUMENTS - Same as normal streaming
       let geminiSourcesForDocs = [];
-      let chunkBufferDocs = ''; // Buffer for collecting all chunks (documents)
+      const botMessageIdDocs = generateMessageId();
       const botTimestampDocs = Date.now() + 100; // +100ms to ensure bot comes after user
+      
+      // Progressive streaming variables for documents
+      let rawChunkBufferDocs = ''; // Buffer for incomplete words
+      let wordQueueDocs = []; // Queue of words to display
+      let animationIntervalDocs = null; // Interval for animation
+      let isStreamFinishedDocs = false; // Flag for stream completion
+      let currentDisplayedTextDocs = ''; // Currently displayed text
+      
+      // Add empty bot message immediately
+      setMessages(prev => [...prev, {
+        id: botMessageIdDocs,
+        sender: 'bot',
+        text: '',
+        sources: [],
+        isStreaming: true,
+        timestamp: botTimestampDocs
+      }]);
       
       const result = await geminiService.sendMessage(
         messagesWithHiddenContext,
-        (chunk, isStreaming, sources = []) => {
-          // Buffer system: collect chunks until streaming complete (documents)
+        (chunk, isStreamingParam, sources = []) => {
+          // Add chunk to buffer immediately
+          rawChunkBufferDocs += chunk;
+          
+          // Split into words (including punctuation)
+          const newWords = rawChunkBufferDocs.split(/(\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
+          rawChunkBufferDocs = newWords.pop() || ''; // Last part might be incomplete word
+          
+          // Add complete words to queue
+          wordQueueDocs.push(...newWords.filter(w => w !== ''));
+          
           if (sources.length > 0) {
             geminiSourcesForDocs = sources;
           }
           
-          // Accumulate incremental chunks from gemini.service.js
-          chunkBufferDocs += chunk;
+          // Set stream finished flag
+          isStreamFinishedDocs = !isStreamingParam;
           
-          if (!isStreaming) {
-            // Streaming complete - hide ALL loading indicators immediately
+          if (isStreamFinishedDocs) {
+            // Add remaining buffer content
+            if (rawChunkBufferDocs) {
+              wordQueueDocs.push(rawChunkBufferDocs);
+              rawChunkBufferDocs = '';
+            }
+            
+            // Hide loading indicators
             setIsSearching(false);
             setLoading(false);
             setStreaming(false);
             
-            // Process buffer and start word-by-word display
-            console.log('🎯 [DOCS] Buffer complete, starting word-by-word:', chunkBufferDocs.length, 'chars');
-            
-            // Start word-by-word display with the complete markdown text
-            const words = chunkBufferDocs.split(' ');
-            
-            // Start word-by-word display without empty message
-            words.forEach((word, index) => {
-              setTimeout(() => {
-                // Build text from word array slice instead of shared variable
-                const currentText = words.slice(0, index + 1).join(' ');
-                
-                setMessages(prev => {
-                  const lastIndex = prev.length - 1;
-                  
-                  if (index === 0) {
-                    // First word - create new bot message
-                    const newMessage = {
-                      id: generateMessageId(),
-                      sender: 'bot',
-                      text: currentText,
-                      isStreaming: true, // Keep streaming during word-by-word
-                      sources: geminiSourcesForDocs,
-                      timestamp: botTimestampDocs
-                    };
-                    return [...prev, newMessage];
-                  } else {
-                    // Subsequent words - update existing message
-                    if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                      const updated = [...prev];
-                      updated[lastIndex] = {
-                        ...updated[lastIndex],
-                        text: currentText,
-                        isStreaming: index < words.length - 1 // False only on last word
-                      };
-                      return updated;
-                    }
-                    return prev;
-                  }
-                });
-                
-                // Reset buffer after last word
-                if (index === words.length - 1) {
-                  chunkBufferDocs = '';
-                }
-              }, index * 10); // 10ms delay same as normal streaming
-            });
+            console.log('🎯 [DOCS] Stream finished, word queue has', wordQueueDocs.length, 'words');
           }
         },
         (searchMsg) => {
@@ -2440,6 +2426,43 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
         })
       );
       
+      // Start animation interval immediately for progressive streaming (documents)
+      animationIntervalDocs = setInterval(() => {
+        if (wordQueueDocs.length > 0) {
+          const nextWord = wordQueueDocs.shift();
+          currentDisplayedTextDocs += nextWord;
+          
+          // Update message progressively
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === botMessageIdDocs 
+                ? { ...msg, text: currentDisplayedTextDocs }
+                : msg
+            )
+          );
+        } else if (isStreamFinishedDocs && wordQueueDocs.length === 0) {
+          // Animation complete
+          clearInterval(animationIntervalDocs);
+          
+          // Finalize message
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === botMessageIdDocs
+                ? { ...msg, isStreaming: false, sources: geminiSourcesForDocs }
+                : msg
+            )
+          );
+          
+          // Save to DB after animation completes
+          setTimeout(async () => {
+            const finalMessages = messagesRef.current;
+            await checkAutoSave(finalMessages, activeChatId);
+          }, 100);
+          
+          console.log('🎯 [DOCS] Progressive streaming animation complete');
+        }
+      }, 30); // 30ms for smooth word-by-word animation (same as normal streaming)
+      
       // Update uploadedDocuments state AFTER successful AI response
       if (processedDocuments.length > 0) {
         setUploadedDocuments(prev => [...prev, ...processedDocuments]);
@@ -2448,26 +2471,20 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       // Update activeDocumentContexts with the filtered list
       setActiveDocumentContexts(filteredActiveDocs);
       
-      // Use Gemini response directly without post-processing
-      const cleanedText = result.text;
-      
-      // Get all current messages from state (includes user message with updated base64)
-      const currentMessagesFromState = messagesRef.current;
-      
-      // Add bot response to current messages
-      const currentMessages = [...currentMessagesFromState, {
-        id: generateMessageId(),
-        sender: 'bot',
-        text: cleanedText,
-        timestamp: botTimestampDocs,
-        sources: result.sources || [],
-        isStreaming: false
-      }];
-      
-      // Check auto-save after AI response (saves both user and bot messages with base64)
-      const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
-      // Update state with saved messages to ensure bot messages are persisted
-      setMessages(cleanedMessages);
+      // Messages already updated via streaming, no need to duplicate
+      // COMMENTED OUT - This was causing flash effect for documents
+      // const cleanedText = result.text;
+      // const currentMessagesFromState = messagesRef.current;
+      // const currentMessages = [...currentMessagesFromState, {
+      //   id: generateMessageId(),
+      //   sender: 'bot',
+      //   text: cleanedText,
+      //   timestamp: botTimestampDocs,
+      //   sources: result.sources || [],
+      //   isStreaming: false
+      // }];
+      // const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
+      // setMessages(cleanedMessages);
       
       // ❌ REMOVED: Scroll limit activation
     }
