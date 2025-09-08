@@ -15,6 +15,65 @@
   100% { transform: rotate(360deg); }
 }
 
+/* 🎨 Loading dots animations */
+.image-loading-dots {
+  display: inline-flex;
+  align-items: center;
+}
+
+.image-loading-dots span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin: 0 2px;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.image-loading-dots span:nth-child(1) { 
+  animation-delay: -0.32s; 
+  background-color: #ff6b6b; 
+}
+.image-loading-dots span:nth-child(2) { 
+  animation-delay: -0.16s; 
+  background-color: #4ecdc4; 
+}
+.image-loading-dots span:nth-child(3) { 
+  animation-delay: 0s;
+  background-color: #45b7d1; 
+}
+
+/* 💬 Chat loading dots - Omnia blue */
+.chat-loading-dots {
+  display: inline-flex;
+  align-items: center;
+}
+
+.chat-loading-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;  
+  border-radius: 50%;
+  margin: 0 2px;
+  background-color: #3b82f6;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.chat-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.chat-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.chat-loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0.8); 
+    opacity: 0.5; 
+  }
+  40% { 
+    transform: scale(1.2); 
+    opacity: 1; 
+  }
+}
+
 /* 🎨 Breathing animation for streaming - Pure CSS for performance */
 @keyframes subtle-breathing {
   0%, 100% { 

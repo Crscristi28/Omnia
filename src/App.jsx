@@ -1091,7 +1091,7 @@ function App() {
         const imageGenBotMessage = {
           id: imageGenBotMessageId,
           sender: 'bot',
-          text: '<span class="animate-pulse">🎨</span> Generuji obrázek...',
+          text: '<span class="image-loading-dots"><span></span><span></span><span></span></span>',
           isStreaming: true,
           timestamp: Date.now()
         };
@@ -1412,7 +1412,7 @@ function App() {
         setMessages(prev => [...prev, {
           id: botMessageId,
           sender: 'bot',
-          text: '<span class="animate-pulse">●</span>',
+          text: '<span class="chat-loading-dots"><span></span><span></span><span></span></span>',
           sources: [],
           isStreaming: true,
           timestamp: botTimestamp
@@ -2389,7 +2389,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       setMessages(prev => [...prev, {
         id: botMessageIdDocs,
         sender: 'bot',
-        text: '<span class="animate-pulse">●</span>',
+        text: '<span class="chat-loading-dots"><span></span><span></span><span></span></span>',
         sources: [],
         isStreaming: true,
         timestamp: botTimestampDocs
