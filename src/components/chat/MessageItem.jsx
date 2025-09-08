@@ -53,8 +53,8 @@ const MessageItem = ({
       data-sender={msg.sender}
       style={msg.sender === 'user' ? userMessageContainerStyle : botMessageContainerStyle}
     >
-      {/* Special rendering for loading indicator */}
-      {msg.isLoading ? (
+      {/* COMMENTED OUT - Using animate-pulse indicator in message text instead */}
+      {/* {msg.isLoading ? (
         <div style={loadingContainerStyle}>
           <div style={loadingBoxStyle}>
             <div style={loadingAnimationContainerStyle}>
@@ -71,7 +71,8 @@ const MessageItem = ({
             </div>
           </div>
         </div>
-      ) : msg.sender === 'user' ? (
+      ) : */}
+      {msg.sender === 'user' ? (
         <div style={userContainerStyle}>
           {/* User text bubble */}
           {msg.text && (

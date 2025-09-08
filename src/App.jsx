@@ -1388,11 +1388,11 @@ function App() {
         let isStreamFinished = false; // Flag for stream completion
         let currentDisplayedText = ''; // Currently displayed text
         
-        // Add empty bot message immediately
+        // Add bot message with animate-pulse indicator immediately
         setMessages(prev => [...prev, {
           id: botMessageId,
           sender: 'bot',
-          text: '',
+          text: '<span class="animate-pulse">●</span>',
           sources: [],
           isStreaming: true,
           timestamp: botTimestamp
@@ -2365,11 +2365,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       let isStreamFinishedDocs = false; // Flag for stream completion
       let currentDisplayedTextDocs = ''; // Currently displayed text
       
-      // Add empty bot message immediately
+      // Add bot message with animate-pulse indicator immediately
       setMessages(prev => [...prev, {
         id: botMessageIdDocs,
         sender: 'bot',
-        text: '',
+        text: '<span class="animate-pulse">●</span>',
         sources: [],
         isStreaming: true,
         timestamp: botTimestampDocs
@@ -2829,15 +2829,16 @@ const virtuosoComponents = React.useMemo(() => ({
             data={React.useMemo(() => {
               const filtered = messages.filter(msg => !msg.isHidden);
               
-              if (loading || streaming) {
-                return [...filtered, {
-                  id: 'loading-indicator',
-                  sender: 'bot',
-                  text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
-                  isLoading: true,
-                  isStreaming: streaming
-                }];
-              }
+              // COMMENTED OUT - Using animate-pulse indicator in message text instead
+              // if (loading || streaming) {
+              //   return [...filtered, {
+              //     id: 'loading-indicator',
+              //     sender: 'bot',
+              //     text: streaming ? 'Streaming...' : (isSearching ? t('searching') : t('thinking')),
+              //     isLoading: true,
+              //     isStreaming: streaming
+              //   }];
+              // }
               return filtered;
             }, [messages, loading, streaming, isSearching, uiLanguage])}
             itemContent={useCallback((index, msg) => (
