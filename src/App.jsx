@@ -1439,9 +1439,15 @@ function App() {
                     }
                   });
                   
-                  // Reset buffer after last word
+                  // Reset buffer after last word and save to DB
                   if (index === words.length - 1) {
                     chunkBuffer = '';
+                    
+                    // Call checkAutoSave after animation completes
+                    setTimeout(async () => {
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
+                    }, 100);
                   }
                 }, index * 10); // 10ms delay for faster display
               });
@@ -1463,18 +1469,20 @@ function App() {
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
         
         // Messages already updated via streaming, just check auto-save
-        const currentMessages = [...messagesWithUser, { 
-          id: generateMessageId(),
-          sender: 'bot', 
-          text: responseText,
-          sources: sources,
-          isStreaming: false,
-          timestamp: botTimestamp // Use same timestamp as streaming
-        }];
+        // COMMENTED OUT - This was causing flash effect by duplicating the message
+        // const currentMessages = [...messagesWithUser, { 
+        //   id: generateMessageId(),
+        //   sender: 'bot', 
+        //   text: responseText,
+        //   sources: sources,
+        //   isStreaming: false,
+        //   timestamp: botTimestamp // Use same timestamp as streaming
+        // }];
         
         // 🔄 Check auto-save after AI response
-        const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
-        setMessages(cleanedMessages);
+        // MOVED TO word-by-word animation completion
+        // const cleanedMessages = await checkAutoSave(currentMessages, activeChatId);
+        // setMessages(cleanedMessages);
         
         // ❌ REMOVED: Scroll limit activation
 

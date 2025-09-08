@@ -44,45 +44,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   //   prevStreamingRef.current = isStreaming;
   // }, [isStreaming]);
   
-  
-  if (isStreaming) {
-    return (
-      <div className={className}>
-        <div className="streaming-markdown" style={{ 
-          opacity: 0.9
-        }}>
-          <MDEditor.Markdown 
-            source={content} 
-            style={{ 
-              backgroundColor: 'transparent',
-              color: 'inherit'
-            }}
-            data-color-mode="dark"
-            remarkPlugins={[remarkMath, remarkGfm]}
-            rehypePlugins={[rehypeKatex]}
-          />
-        </div>
-        
-        <style>{`
-          .streaming-markdown {
-            animation: subtlePulse 2s ease-in-out infinite;
-          }
-          
-          @keyframes subtlePulse {
-            0%, 100% { opacity: 0.9; }
-            50% { opacity: 1; }
-          }
-          
-          /* Smooth text appearance */
-          .streaming-markdown {
-            position: relative;
-          }
-        `}</style>
-      </div>
-    );
-  }
-  
-  // Final render with full markdown parsing
+  // Unified markdown rendering - same for streaming and final
   return (
     <div className={className}>
       <div className="markdown-container">
