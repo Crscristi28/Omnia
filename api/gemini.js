@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { requestId, messages, system, max_tokens = 5000, language, documents = [] } = req.body;
+    const { requestId, messages, system, max_tokens = 8000, language, documents = [] } = req.body;
     
     // Log request ID for debugging concurrent requests
     console.log('🔄 [GEMINI] Processing request ID:', requestId || 'NO_ID');
