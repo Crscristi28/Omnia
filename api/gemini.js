@@ -119,44 +119,70 @@ export default async function handler(req, res) {
     let fullText = '';
     let sources = [];
     let searchNotified = false;
+    let hasError = false;
 
-    // Process stream in real-time
-    for await (const item of result.stream) {
-      // Process grounding metadata (sources) as soon as they arrive
-      if (item.candidates && item.candidates[0].groundingMetadata) {
-        const extractedSources = extractSources(item.candidates[0].groundingMetadata);
-        if (extractedSources.length > 0 && !searchNotified) {
-          res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
-          await new Promise(resolve => setTimeout(resolve, 50)); // Short pause for UI
-          sources = extractedSources;
-          searchNotified = true;
+    // Process stream in real-time with robust error handling
+    try {
+      for await (const item of result.stream) {
+        // Process grounding metadata (sources) as soon as they arrive
+        if (item.candidates && item.candidates[0].groundingMetadata) {
+          const extractedSources = extractSources(item.candidates[0].groundingMetadata);
+          if (extractedSources.length > 0 && !searchNotified) {
+            res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
+            if (typeof res.flush === 'function') { res.flush(); }
+            sources = extractedSources;
+            searchNotified = true;
+          }
+        }
+        
+        // Process text parts
+        if (item.candidates && item.candidates[0].content.parts[0].text) {
+          const textChunk = item.candidates[0].content.parts[0].text;
+          fullText += textChunk; // Build complete text
+          
+          // 🚀 ROBUST STREAMING: Send raw chunks with immediate flush
+          res.write(JSON.stringify({ 
+            requestId,
+            type: 'text', 
+            content: textChunk
+          }) + '\n');
+          if (typeof res.flush === 'function') { res.flush(); }
         }
       }
+    } catch (streamError) {
+      console.error('💥 Stream processing error [ID:', requestId || 'NO_ID', ']:', streamError);
+      hasError = true;
       
-      // Process text parts
-      if (item.candidates && item.candidates[0].content.parts[0].text) {
-        const textChunk = item.candidates[0].content.parts[0].text;
-        fullText += textChunk; // Build complete text
-        
-        // 🚀 CLEAN STREAMING: Send raw chunks from Gemini API
-        res.write(JSON.stringify({ 
+      // Send error chunk to client
+      res.write(JSON.stringify({
+        requestId,
+        type: 'error',
+        message: 'Stream processing failed: ' + streamError.message
+      }) + '\n');
+      if (typeof res.flush === 'function') { res.flush(); }
+    } finally {
+      // Always send final message and close connection
+      if (!hasError) {
+        res.write(JSON.stringify({
           requestId,
-          type: 'text', 
-          content: textChunk
+          type: 'completed',
+          sources: sources,
+          webSearchUsed: sources.length > 0
         }) + '\n');
+        console.log('✅ Gemini streaming completed');
+      } else {
+        res.write(JSON.stringify({
+          requestId,
+          type: 'end',
+          error: true,
+          message: 'Stream ended with errors'
+        }) + '\n');
+        console.log('❌ Gemini streaming ended with errors');
       }
+      
+      if (typeof res.flush === 'function') { res.flush(); }
+      res.end();
     }
-
-    // After stream completion, send final message with sources
-    res.write(JSON.stringify({
-      requestId,
-      type: 'completed',
-      sources: sources,
-      webSearchUsed: sources.length > 0
-    }) + '\n');
-
-    console.log('✅ Gemini streaming completed');
-    res.end();
 
   } catch (error) {
     console.error('💥 Gemini API error [ID:', requestId || 'NO_ID', ']:', error);
