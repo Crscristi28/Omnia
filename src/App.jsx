@@ -1376,81 +1376,61 @@ function App() {
           name: doc.name 
         }));
         
-        // 🆕 STREAMING: Enable buffer + batch markdown processing
+        // 🚀 TRUE PROGRESSIVE STREAMING - Omnia Plan Implementation
         let geminiSources = [];
-        let chunkBuffer = ''; // Buffer for collecting all chunks
+        const botMessageId = generateMessageId();
         const botTimestamp = Date.now() + 100; // +100ms to ensure bot comes after user
+        
+        // Progressive streaming variables
+        let rawChunkBuffer = ''; // Buffer for incomplete words
+        let wordQueue = []; // Queue of words to display
+        let animationInterval = null; // Interval for animation
+        let isStreamFinished = false; // Flag for stream completion
+        let currentDisplayedText = ''; // Currently displayed text
+        
+        // Add empty bot message immediately
+        setMessages(prev => [...prev, {
+          id: botMessageId,
+          sender: 'bot',
+          text: '',
+          sources: [],
+          isStreaming: true,
+          timestamp: botTimestamp
+        }]);
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (chunk, isStreaming, sources = []) => {
-            // Buffer system: collect chunks until streaming complete
+          (chunk, isStreamingParam, sources = []) => {
+            // Add chunk to buffer immediately
+            rawChunkBuffer += chunk;
+            
+            // Split into words (including punctuation)
+            const newWords = rawChunkBuffer.split(/(\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
+            rawChunkBuffer = newWords.pop() || ''; // Last part might be incomplete word
+            
+            // Add complete words to queue
+            wordQueue.push(...newWords.filter(w => w !== ''));
+            
             if (sources.length > 0) {
               geminiSources = sources;
             }
             
-            // Accumulate incremental chunks from gemini.service.js
-            chunkBuffer += chunk;
+            // Set stream finished flag
+            isStreamFinished = !isStreamingParam;
             
-            if (!isStreaming) {
-              // Streaming complete - hide ALL loading indicators immediately
+            if (isStreamFinished) {
+              // Add remaining buffer content
+              if (rawChunkBuffer) {
+                wordQueue.push(rawChunkBuffer);
+                rawChunkBuffer = '';
+              }
+              
+              // Hide loading indicators
               setIsSearching(false);
               setLoading(false);
               setStreaming(false);
               
-              // Process buffer and start word-by-word display
-              console.log('🎯 Buffer complete, starting word-by-word:', chunkBuffer.length, 'chars');
-              
-              // Start word-by-word display with the complete markdown text
-              const words = chunkBuffer.split(' ');
-              
-              // Start word-by-word display without empty message
-              words.forEach((word, index) => {
-                setTimeout(() => {
-                  // Build text from word array slice instead of shared variable
-                  const currentText = words.slice(0, index + 1).join(' ');
-                  
-                  setMessages(prev => {
-                    const lastIndex = prev.length - 1;
-                    
-                    if (index === 0) {
-                      // First word - create new bot message
-                      const newMessage = {
-                        id: generateMessageId(),
-                        sender: 'bot',
-                        text: currentText,
-                        isStreaming: true, // Keep streaming during word-by-word
-                        sources: geminiSources,
-                        timestamp: botTimestamp
-                      };
-                      return [...prev, newMessage];
-                    } else {
-                      // Subsequent words - update existing message
-                      if (lastIndex >= 0 && prev[lastIndex]?.sender === 'bot') {
-                        const updated = [...prev];
-                        updated[lastIndex] = {
-                          ...updated[lastIndex],
-                          text: currentText,
-                          isStreaming: index < words.length - 1 // False only on last word
-                        };
-                        return updated;
-                      }
-                      return prev;
-                    }
-                  });
-                  
-                  // Reset buffer after last word and save to DB
-                  if (index === words.length - 1) {
-                    chunkBuffer = '';
-                    
-                    // Call checkAutoSave after animation completes
-                    setTimeout(async () => {
-                      const finalMessages = messagesRef.current;
-                      await checkAutoSave(finalMessages, activeChatId);
-                    }, 100);
-                  }
-                }, index * 10); // 10ms delay for faster display
-              });
+              console.log('🎯 Stream finished, word queue has', wordQueue.length, 'words');
             }
           },
           () => {
@@ -1460,6 +1440,43 @@ function App() {
           detectedLang,
           documentsToPassToGemini
         );
+        
+        // Start animation interval immediately for progressive streaming
+        animationInterval = setInterval(() => {
+          if (wordQueue.length > 0) {
+            const nextWord = wordQueue.shift();
+            currentDisplayedText += nextWord;
+            
+            // Update message progressively
+            setMessages(prev => 
+              prev.map(msg => 
+                msg.id === botMessageId 
+                  ? { ...msg, text: currentDisplayedText }
+                  : msg
+              )
+            );
+          } else if (isStreamFinished && wordQueue.length === 0) {
+            // Animation complete
+            clearInterval(animationInterval);
+            
+            // Finalize message
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === botMessageId
+                  ? { ...msg, isStreaming: false, sources: geminiSources }
+                  : msg
+              )
+            );
+            
+            // Save to DB after animation completes
+            setTimeout(async () => {
+              const finalMessages = messagesRef.current;
+              await checkAutoSave(finalMessages, activeChatId);
+            }, 100);
+            
+            console.log('🎯 Progressive streaming animation complete');
+          }
+        }, 30); // 30ms for smooth word-by-word animation
         
         // Use final result for saving
         responseText = result.text;
