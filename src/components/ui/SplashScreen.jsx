@@ -106,11 +106,8 @@ const ModernSplashScreen = ({ isVisible, onComplete }) => {
               width: '220px',
               height: '220px',
               objectFit: 'contain',
-              animation: logoVisible ? 'fadeInScale 0.8s ease-out, softPulse 3s ease-in-out infinite' : 'none',
               opacity: logoVisible ? 1 : 0,
-              transform: logoVisible ? 'scale(1)' : 'scale(0.8)',
-              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              filter: 'drop-shadow(0 0 60px rgba(100, 150, 255, 0.5)) drop-shadow(0 0 100px rgba(200, 100, 255, 0.3))'
+              transition: 'opacity 0.8s ease-out'
             }}
           />
           
