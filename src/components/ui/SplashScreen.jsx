@@ -154,13 +154,16 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
               justifyContent: 'center'
             }}>
               
-              {/* AI BRAIN ICON */}
+              {/* AI BRAIN ICON - ENHANCED VISIBILITY */}
               <div style={{
-                fontSize: '70px',
-                background: 'linear-gradient(45deg, #00d4ff, #8c52ff)',
+                fontSize: '90px',
+                background: 'linear-gradient(45deg, #ffffff 0%, #00d4ff 30%, #8c52ff 70%, #ffffff 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 25px rgba(0, 212, 255, 0.6))'
+                filter: 'drop-shadow(0 0 40px rgba(0, 212, 255, 1)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8))',
+                textShadow: '0 0 60px rgba(140, 82, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6)',
+                transform: 'scale(1.1)',
+                fontWeight: 'bold'
               }}>
                 🧠
               </div>
