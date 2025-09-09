@@ -2,7 +2,7 @@
 // ✨ Clean design with smooth animations
 
 import React from 'react';
-import omniaSphere from '../../assets/omnia-sphere.png';
+import omniaSphere from '../../assets/omnia-sphere-bright.jpg';
 
 const ModernSplashScreen = ({ isVisible, onComplete }) => {
   const [fadeOut, setFadeOut] = React.useState(false);
