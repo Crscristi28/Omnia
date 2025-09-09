@@ -2,6 +2,7 @@
 // ✨ Clean design with smooth animations
 
 import React from 'react';
+import omniaLogo from '../../assets/omnia-logo.jpg';
 
 const ModernSplashScreen = ({ isVisible, onComplete }) => {
   const [fadeOut, setFadeOut] = React.useState(false);
@@ -11,14 +12,14 @@ const ModernSplashScreen = ({ isVisible, onComplete }) => {
   React.useEffect(() => {
     if (isVisible) {
       // Smooth entrance sequence
-      setTimeout(() => setLogoVisible(true), 100);
-      setTimeout(() => setTextVisible(true), 400);
+      setTimeout(() => setLogoVisible(true), 200);
+      setTimeout(() => setTextVisible(true), 800);
       
       // Start fade out
       const fadeTimer = setTimeout(() => {
         setFadeOut(true);
-        setTimeout(() => onComplete(), 500);
-      }, 2000);
+        setTimeout(() => onComplete(), 600);
+      }, 3000);
       
       return () => {
         clearTimeout(fadeTimer);
@@ -70,14 +71,14 @@ const ModernSplashScreen = ({ isVisible, onComplete }) => {
         }
       `}</style>
 
-      {/* CLEAN MODERN CONTAINER */}
+      {/* PURE BLACK CONTAINER */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100vw',
         height: '100vh',
-        background: 'linear-gradient(135deg, #0a0e27 0%, #151931 50%, #1a1f3a 100%)',
+        backgroundColor: '#000000',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -94,90 +95,80 @@ const ModernSplashScreen = ({ isVisible, onComplete }) => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '50px'
+          gap: '40px'
         }}>
           
-          {/* COLORFUL GRADIENT LOGO */}
-          <div style={{
-            width: '180px',
-            height: '180px',
-            borderRadius: '50%',
-            background: `linear-gradient(135deg, 
-              #00d4ff 0%, 
-              #7e57ff 25%, 
-              #ff57d0 50%, 
-              #ffb457 75%, 
-              #00d4ff 100%)`,
-            backgroundSize: '200% 200%',
-            animation: logoVisible ? 'fadeInScale 0.6s ease-out, gradientShift 3s ease infinite' : 'none',
-            opacity: logoVisible ? 1 : 0,
-            transform: logoVisible ? 'scale(1)' : 'scale(0.9)',
-            transition: 'all 0.6s ease-out',
-            boxShadow: `
-              0 10px 40px rgba(126, 87, 255, 0.3),
-              0 20px 60px rgba(0, 212, 255, 0.2)
-            `,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative'
-          }}>
-            {/* INNER WHITE CIRCLE */}
-            <div style={{
-              width: '140px',
-              height: '140px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.05)'
-            }}>
-              {/* OMNIA LOGO TEXT */}
-              <div style={{
-                fontSize: '48px',
-                fontWeight: '700',
-                background: 'linear-gradient(135deg, #00d4ff 0%, #7e57ff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-              }}>
-                O
-              </div>
-            </div>
-          </div>
+          {/* OMNIA SPHERE LOGO */}
+          <img 
+            src={omniaLogo}
+            alt="Omnia Logo"
+            style={{
+              width: '200px',
+              height: '200px',
+              objectFit: 'contain',
+              animation: logoVisible ? 'fadeInScale 0.8s ease-out, softPulse 3s ease-in-out infinite' : 'none',
+              opacity: logoVisible ? 1 : 0,
+              transform: logoVisible ? 'scale(1)' : 'scale(0.8)',
+              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+              filter: 'drop-shadow(0 0 40px rgba(0, 150, 255, 0.4))'
+            }}
+          />
           
-          {/* CLEAN TEXT */}
+          {/* TEXT SECTION */}
           <div style={{ 
             textAlign: 'center',
             opacity: textVisible ? 1 : 0,
-            animation: textVisible ? 'fadeInUp 0.6s ease-out' : 'none'
+            animation: textVisible ? 'fadeInUp 0.8s ease-out' : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
           }}>
             
-            {/* OMNIA TITLE */}
-            <h1 style={{
-              fontSize: '3.5rem',
-              fontWeight: '600',
-              color: '#ffffff',
-              letterSpacing: '0.4rem',
-              margin: '0 0 10px 0',
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            {/* OMNIA ONE AI */}
+            <div style={{
+              marginBottom: '10px'
             }}>
-              OMNIA
-            </h1>
+              <h1 style={{
+                fontSize: '3.2rem',
+                fontWeight: '600',
+                color: '#ffffff',
+                letterSpacing: '0.3rem',
+                margin: '0 0 8px 0',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+              }}>
+                OMNIA
+              </h1>
+              
+              <p style={{
+                fontSize: '1.3rem',
+                fontWeight: '300',
+                color: 'rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.2rem',
+                margin: 0,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+              }}>
+                ONE AI
+              </p>
+            </div>
             
-            {/* SUBTITLE */}
-            <p style={{
-              fontSize: '1.1rem',
-              fontWeight: '300',
-              color: 'rgba(255, 255, 255, 0.7)',
-              letterSpacing: '0.3rem',
-              margin: 0,
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              textTransform: 'uppercase'
+            {/* TAGLINE */}
+            <div style={{
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              paddingTop: '20px',
+              marginTop: '10px'
             }}>
-              ONE AI
-            </p>
+              <p style={{
+                fontSize: '0.9rem',
+                fontWeight: '400',
+                color: 'rgba(255, 255, 255, 0.6)',
+                letterSpacing: '0.15rem',
+                margin: 0,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                textTransform: 'uppercase'
+              }}>
+                THINK GLOBAL. ANSWER LOCAL
+              </p>
+            </div>
           </div>
         </div>
 
