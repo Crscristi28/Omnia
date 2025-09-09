@@ -165,20 +165,15 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
               justifyContent: 'center'
             }}>
               
-              {/* AI TEXT LOGO */}
+              {/* AI BRAIN ICON */}
               <div style={{
-                fontSize: '72px',
-                fontWeight: '900',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                background: 'linear-gradient(135deg, #ffffff 0%, #00d4ff 30%, #8c52ff 70%, #ffffff 100%)',
+                fontSize: '70px',
+                background: 'linear-gradient(45deg, #00d4ff, #8c52ff)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 30px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5))',
-                textShadow: '0 0 40px rgba(140, 82, 255, 0.6)',
-                letterSpacing: '-0.05em',
-                animation: 'pulseGlow 2s ease-in-out infinite'
+                filter: 'drop-shadow(0 0 25px rgba(0, 212, 255, 0.6))'
               }}>
-                AI
+                🧠
               </div>
             </div>
           </div>
