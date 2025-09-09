@@ -88,11 +88,9 @@ export default async function handler(req, res) {
     // Use the complete system prompt sent from frontend
     const systemInstruction = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
     
-    // Always add language instruction when language is detected
-    const languageInstruction = language ? `\n\nVŽDY odpovídaj v jazyce: ${language === 'cs' ? 'češtině' : language === 'en' ? 'English' : language === 'ro' ? 'română' : 'kterém se tě uživatel ptá'}` : '\n\nVŽDY odpovídaj v jazyce, ve kterém se tě uživatel ptá';
-    
-    // Documents are provided via file_data in Vertex AI Files, no need to duplicate in system prompt
-    const finalSystemInstruction = systemInstruction + languageInstruction;
+    // Let Gemini respond in the same language as user's question naturally
+    // No forced language instruction needed - Gemini is smart enough
+    const finalSystemInstruction = systemInstruction;
 
     // Initialize model with proper system instruction and Google Search grounding
     const generativeModel = vertexAI.getGenerativeModel({
