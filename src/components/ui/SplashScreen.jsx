@@ -1,38 +1,37 @@
-// 🎨 PROFESIONÁLNÍ SPLASH SCREEN - PREVIEW NÁVRH
-// 🚀 Modern design s pokročilými animacemi
+// ⚡ ULTRA MODERN NEON SPLASH SCREEN
+// 🎯 Minimalist design with electric glow effects
 
 import React from 'react';
 
-const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
+const NeonSplashScreen = ({ isVisible, onComplete }) => {
   const [fadeOut, setFadeOut] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
-  const [showContent, setShowContent] = React.useState(false);
+  const [logoState, setLogoState] = React.useState('off'); // off, flicker, on
+  const [textVisible, setTextVisible] = React.useState(false);
+  const [scanlinePosition, setScanlinePosition] = React.useState(0);
   
   React.useEffect(() => {
     if (isVisible) {
-      // Fade in content po 200ms
-      setTimeout(() => setShowContent(true), 200);
+      // Scanline animation
+      const scanInterval = setInterval(() => {
+        setScanlinePosition(prev => (prev + 1) % 100);
+      }, 50);
       
-      // Simulace loading progress
-      const progressTimer = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(progressTimer);
-            return 100;
-          }
-          return prev + Math.random() * 15 + 5;
-        });
-      }, 150);
+      // Logo flicker sequence
+      setTimeout(() => setLogoState('flicker'), 200);
+      setTimeout(() => setLogoState('on'), 600);
       
-      // Start fade out po 2.5s
+      // Text appears after logo
+      setTimeout(() => setTextVisible(true), 800);
+      
+      // Start fade out
       const fadeTimer = setTimeout(() => {
         setFadeOut(true);
-        setTimeout(() => onComplete(), 800);
+        setTimeout(() => onComplete(), 600);
       }, 2500);
       
       return () => {
         clearTimeout(fadeTimer);
-        clearInterval(progressTimer);
+        clearInterval(scanInterval);
       };
     }
   }, [isVisible, onComplete]);
@@ -41,228 +40,266 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
 
   return (
     <>
-      {/* CSS ANIMACE - Professional keyframes */}
+      {/* NEON CSS ANIMATIONS */}
       <style jsx>{`
-        @keyframes gradientSpin {
-          0% { transform: rotate(0deg) scale(0.8); filter: blur(20px); }
-          50% { transform: rotate(180deg) scale(1.1); filter: blur(0px); }
-          100% { transform: rotate(360deg) scale(1); filter: blur(0px); }
-        }
-        
-        @keyframes pulseGlow {
-          0%, 100% { 
-            box-shadow: 0 0 40px rgba(0, 212, 255, 0.4),
-                        0 0 80px rgba(153, 102, 255, 0.2),
-                        inset 0 0 40px rgba(255, 255, 255, 0.1);
+        @keyframes neonFlicker {
+          0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+            opacity: 1;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1))
+                    drop-shadow(0 0 40px rgba(0, 255, 255, 0.8))
+                    drop-shadow(0 0 60px rgba(0, 255, 255, 0.6));
           }
-          50% { 
-            box-shadow: 0 0 80px rgba(0, 212, 255, 0.8),
-                        0 0 160px rgba(153, 102, 255, 0.4),
-                        inset 0 0 60px rgba(255, 255, 255, 0.2);
+          20%, 24%, 55% {
+            opacity: 0.3;
+            filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5));
           }
         }
         
-        @keyframes fadeInUp {
-          0% { opacity: 0; transform: translateY(30px) blur(10px); }
-          100% { opacity: 1; transform: translateY(0) blur(0px); }
+        @keyframes neonPulse {
+          0%, 100% {
+            filter: drop-shadow(0 0 30px rgba(0, 255, 255, 1))
+                    drop-shadow(0 0 60px rgba(0, 255, 255, 0.8))
+                    drop-shadow(0 0 90px rgba(0, 255, 255, 0.6))
+                    drop-shadow(0 0 120px rgba(0, 255, 255, 0.4));
+          }
+          50% {
+            filter: drop-shadow(0 0 40px rgba(0, 255, 255, 1))
+                    drop-shadow(0 0 80px rgba(0, 255, 255, 0.9))
+                    drop-shadow(0 0 110px rgba(0, 255, 255, 0.7))
+                    drop-shadow(0 0 140px rgba(0, 255, 255, 0.5));
+          }
         }
         
-        @keyframes typewriter {
-          0% { width: 0; }
-          100% { width: 100%; }
+        @keyframes textGlow {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
         
-        @keyframes particles {
-          0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        @keyframes electricSpark {
+          0% { opacity: 0; transform: scale(0); }
+          50% { opacity: 1; transform: scale(1.5); }
+          100% { opacity: 0; transform: scale(2); }
+        }
+        
+        @keyframes scanline {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100vh); }
         }
       `}</style>
 
-      {/* MAIN SPLASH CONTAINER */}
+      {/* PURE BLACK CONTAINER WITH NEON */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100vw',
         height: '100vh',
-        background: `
-          radial-gradient(ellipse at top, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-          radial-gradient(ellipse at bottom, rgba(153, 102, 255, 0.1) 0%, transparent 50%),
-          linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)
-        `,
+        backgroundColor: '#000000',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10000,
         opacity: fadeOut ? 0 : 1,
-        filter: fadeOut ? 'blur(10px)' : 'blur(0px)',
-        transform: fadeOut ? 'scale(0.9)' : 'scale(1)',
-        transition: 'all 800ms cubic-bezier(0.4, 0.0, 0.2, 1)',
+        transition: 'opacity 600ms ease-out',
         overflow: 'hidden'
       }}>
 
-        {/* FLOATING PARTICLES BACKGROUND */}
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              width: Math.random() * 4 + 2 + 'px',
-              height: Math.random() * 4 + 2 + 'px',
-              borderRadius: '50%',
-              background: `rgba(${Math.random() > 0.5 ? '0, 212, 255' : '153, 102, 255'}, ${Math.random() * 0.6 + 0.3})`,
-              left: Math.random() * 100 + '%',
-              animation: `particles ${Math.random() * 8 + 6}s linear infinite`,
-              animationDelay: Math.random() * 4 + 's'
-            }}
-          />
-        ))}
+        {/* SUBTLE SCANLINE EFFECT */}
+        <div style={{
+          position: 'absolute',
+          top: `${scanlinePosition}%`,
+          left: 0,
+          width: '100%',
+          height: '2px',
+          background: 'linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent)',
+          pointerEvents: 'none',
+          opacity: 0.5
+        }} />
+        
+        {/* ELECTRIC SPARKS ON LOGO ACTIVATION */}
+        {logoState === 'flicker' && (
+          <>
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  width: '4px',
+                  height: '4px',
+                  borderRadius: '50%',
+                  background: '#00ffff',
+                  left: '50%',
+                  top: '50%',
+                  transform: `translate(-50%, -50%) rotate(${i * 72}deg) translateX(150px)`,
+                  animation: 'electricSpark 0.4s ease-out forwards',
+                  animationDelay: `${i * 0.05}s`
+                }}
+              />
+            ))}
+          </>
+        )}
 
-        {/* CONTENT CONTAINER - Direct on background */}
+        {/* NEON LOGO CONTAINER */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          transform: showContent ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(20px)',
-          opacity: showContent ? 1 : 0,
-          transition: 'all 1000ms cubic-bezier(0.4, 0.0, 0.2, 1)'
+          gap: '60px'
         }}>
           
-          {/* ROTATING GRADIENT LOGO RING */}
+          {/* NEON CIRCLE LOGO */}
           <div style={{
-            width: '240px',
-            height: '240px',
-            marginBottom: '50px',
-            borderRadius: '50%',
-            background: `conic-gradient(from 0deg,
-              #00d4ff 0deg,
-              #0099ff 60deg,
-              #4d79ff 120deg,
-              #8c52ff 180deg,
-              #b833ff 240deg,
-              #ff33cc 300deg,
-              #00d4ff 360deg
-            )`,
-            animation: 'gradientSpin 3s ease-in-out forwards, pulseGlow 2s ease-in-out infinite',
-            position: 'relative'
+            position: 'relative',
+            width: '200px',
+            height: '200px'
           }}>
-            {/* INNER CIRCLE WITH SUBTLE GLASSMORPHISM */}
+            {/* NEON RING */}
+            <svg
+              width="200"
+              height="200"
+              style={{
+                position: 'absolute',
+                opacity: logoState === 'off' ? 0 : 1,
+                animation: logoState === 'flicker' ? 'neonFlicker 0.5s' : logoState === 'on' ? 'neonPulse 2s infinite' : 'none',
+                transition: 'opacity 0.3s'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r="90"
+                fill="none"
+                stroke="#00ffff"
+                strokeWidth="2"
+                style={{
+                  filter: 'url(#neonGlow)'
+                }}
+              />
+              <defs>
+                <filter id="neonGlow">
+                  <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+            </svg>
+            
+            {/* CENTER LETTER O */}
             <div style={{
               position: 'absolute',
-              top: '30px',
-              left: '30px',
-              width: '180px',
-              height: '180px',
-              borderRadius: '50%',
-              background: `
-                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
-                rgba(0, 0, 0, 0.3)
-              `,
-              backdropFilter: 'blur(15px)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: '80px',
+              fontWeight: '100',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              color: '#00ffff',
+              opacity: logoState === 'off' ? 0 : 1,
+              animation: logoState === 'flicker' ? 'neonFlicker 0.5s' : logoState === 'on' ? 'neonPulse 2s infinite' : 'none',
+              transition: 'opacity 0.3s'
             }}>
-              
-              {/* AI BRAIN ICON */}
-              <div style={{
-                fontSize: '70px',
-                background: 'linear-gradient(45deg, #00d4ff, #8c52ff)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 25px rgba(0, 212, 255, 0.6))'
-              }}>
-                🧠
-              </div>
+              O
+            </div>
+            
+            {/* REFLECTION ON FLOOR */}
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%) scaleY(-0.3)',
+              width: '200px',
+              height: '200px',
+              opacity: logoState === 'on' ? 0.2 : 0,
+              transition: 'opacity 1s',
+              pointerEvents: 'none'
+            }}>
+              <svg width="200" height="200">
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  fill="none"
+                  stroke="#00ffff"
+                  strokeWidth="2"
+                  opacity="0.3"
+                />
+              </svg>
             </div>
           </div>
           
-          {/* ANIMATED TEXT */}
+          {/* NEON TEXT */}
           <div style={{ 
             textAlign: 'center',
-            animation: 'fadeInUp 1.2s cubic-bezier(0.4, 0.0, 0.2, 1) 0.5s both'
+            opacity: textVisible ? 1 : 0,
+            transform: textVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'all 0.8s ease-out'
           }}>
             
-            {/* OMNIA TITLE */}
+            {/* OMNIA TITLE - ULTRA THIN */}
             <h1 style={{
-              fontSize: '4rem',
-              fontWeight: '700',
-              background: 'linear-gradient(135deg, #ffffff 0%, #00d4ff 50%, #8c52ff 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '0.3rem',
-              margin: '0 0 8px 0',
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              filter: 'drop-shadow(0 0 30px rgba(0, 212, 255, 0.3))',
-              textShadow: '0 0 40px rgba(140, 82, 255, 0.3)',
-              animation: 'fadeInUp 1s cubic-bezier(0.4, 0.0, 0.2, 1) 0.8s both'
+              fontSize: '5rem',
+              fontWeight: '100',
+              color: '#00ffff',
+              letterSpacing: '1.5rem',
+              margin: '0 0 20px 0',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+              textShadow: `
+                0 0 10px rgba(0, 255, 255, 0.8),
+                0 0 20px rgba(0, 255, 255, 0.6),
+                0 0 30px rgba(0, 255, 255, 0.4),
+                0 0 40px rgba(0, 255, 255, 0.2)
+              `,
+              animation: textVisible ? 'textGlow 0.8s ease-out' : 'none'
             }}>
               OMNIA
             </h1>
             
-            {/* SUBTITLE WITH TYPEWRITER EFFECT */}
-            <div style={{ overflow: 'hidden', height: '40px' }}>
-              <p style={{
-                fontSize: '1.3rem',
-                fontWeight: '300',
-                color: 'rgba(255, 255, 255, 0.8)',
-                letterSpacing: '0.25rem',
-                margin: 0,
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                whiteSpace: 'nowrap',
-                borderRight: '2px solid #00d4ff',
-                animation: 'typewriter 1.5s steps(20) 1.2s both, fadeInUp 0.5s ease 1.2s both',
-                paddingRight: '5px'
-              }}>
-                ONE AI ASSISTANT
-              </p>
-            </div>
+            {/* SUBTITLE - MINIMAL */}
+            <p style={{
+              fontSize: '1rem',
+              fontWeight: '200',
+              color: 'rgba(0, 255, 255, 0.7)',
+              letterSpacing: '0.8rem',
+              margin: 0,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+              textTransform: 'uppercase',
+              textShadow: '0 0 10px rgba(0, 255, 255, 0.3)'
+            }}>
+              ONE AI
+            </p>
           </div>
         </div>
 
-        {/* ELEGANT PROGRESS BAR */}
+        {/* MINIMAL LOADING INDICATOR */}
         <div style={{
           position: 'absolute',
-          bottom: '80px',
-          width: '300px',
-          height: '2px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '2px',
-          overflow: 'hidden',
-          opacity: showContent ? 1 : 0,
-          transition: 'opacity 1s ease 1.5s'
+          bottom: '60px',
+          display: 'flex',
+          gap: '10px',
+          opacity: textVisible ? 1 : 0,
+          transition: 'opacity 0.5s ease-out'
         }}>
-          <div style={{
-            width: `${Math.min(progress, 100)}%`,
-            height: '100%',
-            background: 'linear-gradient(90deg, #00d4ff, #8c52ff)',
-            borderRadius: '2px',
-            transition: 'width 0.3s ease',
-            boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)'
-          }} />
-        </div>
-
-        {/* PROGRESS PERCENTAGE */}
-        <div style={{
-          position: 'absolute',
-          bottom: '45px',
-          fontSize: '0.9rem',
-          color: 'rgba(255, 255, 255, 0.6)',
-          fontWeight: '300',
-          letterSpacing: '0.1rem',
-          opacity: showContent ? 1 : 0,
-          transition: 'opacity 1s ease 1.8s'
-        }}>
-          {Math.round(Math.min(progress, 100))}%
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: '3px',
+                height: '3px',
+                borderRadius: '50%',
+                background: '#00ffff',
+                opacity: 0.5,
+                animation: `neonPulse 1.5s infinite`,
+                animationDelay: `${i * 0.2}s`
+              }}
+            />
+          ))}
         </div>
       </div>
     </>
   );
 };
 
-export default ProfessionalSplashScreen;
+export default NeonSplashScreen;
