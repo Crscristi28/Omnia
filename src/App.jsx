@@ -56,6 +56,7 @@ import { ChatSidebar } from './components/layout';
 import DocumentViewer from './components/modals/DocumentViewer.jsx'; // 📄 Document viewer
 import AuthModal from './components/auth/AuthModal.jsx'; // 🔐 Auth modal
 import ResetPasswordModal from './components/auth/ResetPasswordModal.jsx'; // 🔐 Reset password modal
+import OmniaWebsite from './components/website/OmniaWebsite.jsx'; // 🌐 Website component
 
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -66,6 +67,11 @@ import { useOnlineStatus } from './hooks/useOnlineStatus';
 // ✅ CONSOLE CLEANUP: Vite automatically removes console.log in production builds
 
 function App() {
+  // 🌐 WEBSITE ROUTING CHECK - Show static website for www subdomain
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
+    return <OmniaWebsite />;
+  }
+  
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
