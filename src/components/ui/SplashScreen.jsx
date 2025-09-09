@@ -119,7 +119,8 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
           <div style={{
             width: '240px',
             height: '240px',
-            marginBottom: '50px',
+            marginBottom: '40px',
+            marginTop: '-60px',
             borderRadius: '50%',
             background: `conic-gradient(from 0deg,
               #00d4ff 0deg,
@@ -200,10 +201,10 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                 whiteSpace: 'nowrap',
                 borderRight: '2px solid #00d4ff',
-                animation: 'typewriter 1.5s steps(20) 1.2s both, fadeInUp 0.5s ease 1.2s both',
+                animation: 'typewriter 2s steps(32) 1.2s both, fadeInUp 0.5s ease 1.2s both',
                 paddingRight: '5px'
               }}>
-                ONE AI ASSISTANT
+                Think global. Answer local
               </p>
             </div>
           </div>
