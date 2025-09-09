@@ -218,19 +218,6 @@ const OmniaWebsite = () => {
           box-shadow: 0 15px 30px rgba(0, 212, 255, 0.4);
         }
         
-        .coming-soon {
-          margin-top: 40px;
-          padding: 20px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 15px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-        }
-        
-        .coming-soon h3 {
-          color: #00d4ff;
-          margin-bottom: 10px;
-        }
         
         .fade-in {
           opacity: 0;
@@ -289,11 +276,6 @@ const OmniaWebsite = () => {
               
               <div className="hero-cta">
                 <a href="https://omniaoneai.com" className="btn-primary">Try Omnia Now</a>
-              </div>
-              
-              <div className="coming-soon">
-                <h3>🚀 More Features Coming Soon</h3>
-                <p>Full website with detailed features, demos, and documentation launching tomorrow.</p>
               </div>
             </div>
           </div>
