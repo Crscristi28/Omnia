@@ -104,22 +104,6 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
         overflow: 'hidden'
       }}>
 
-        {/* FLOATING PARTICLES BACKGROUND */}
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              width: Math.random() * 4 + 2 + 'px',
-              height: Math.random() * 4 + 2 + 'px',
-              borderRadius: '50%',
-              background: `rgba(${Math.random() > 0.5 ? '0, 212, 255' : '153, 102, 255'}, ${Math.random() * 0.6 + 0.3})`,
-              left: Math.random() * 100 + '%',
-              animation: `particles ${Math.random() * 8 + 6}s linear infinite`,
-              animationDelay: Math.random() * 4 + 's'
-            }}
-          />
-        ))}
 
         {/* CONTENT CONTAINER - Direct on background */}
         <div style={{
