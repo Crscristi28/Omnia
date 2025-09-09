@@ -78,6 +78,17 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
           90% { opacity: 1; }
           100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
         }
+        
+        @keyframes pulseNode {
+          0%, 100% { 
+            transform: translate(-50%, -50%) scale(1);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+          }
+          50% { 
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 1), 0 0 40px rgba(140, 82, 255, 0.6);
+          }
+        }
       `}</style>
 
       {/* MAIN SPLASH CONTAINER */}
@@ -154,18 +165,61 @@ const ProfessionalSplashScreen = ({ isVisible, onComplete }) => {
               justifyContent: 'center'
             }}>
               
-              {/* AI BRAIN ICON - ENHANCED VISIBILITY */}
+              {/* NEURAL NETWORK / DATA FLOW VISUALIZATION */}
               <div style={{
-                fontSize: '90px',
-                background: 'linear-gradient(45deg, #ffffff 0%, #00d4ff 30%, #8c52ff 70%, #ffffff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 40px rgba(0, 212, 255, 1)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8))',
-                textShadow: '0 0 60px rgba(140, 82, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6)',
-                transform: 'scale(1.1)',
-                fontWeight: 'bold'
+                position: 'relative',
+                width: '100px',
+                height: '100px'
               }}>
-                🧠
+                {/* Neural Network Nodes */}
+                {[
+                  {x: 50, y: 20, delay: '0s'},
+                  {x: 25, y: 45, delay: '0.3s'},
+                  {x: 75, y: 45, delay: '0.6s'},
+                  {x: 35, y: 75, delay: '0.9s'},
+                  {x: 65, y: 75, delay: '1.2s'},
+                  {x: 50, y: 95, delay: '1.5s'}
+                ].map((node, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      left: node.x + '%',
+                      top: node.y + '%',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(45deg, #00d4ff, #8c52ff)',
+                      boxShadow: '0 0 15px rgba(0, 212, 255, 0.8)',
+                      transform: 'translate(-50%, -50%)',
+                      animation: `pulseNode 2s ease-in-out infinite ${node.delay}`
+                    }}
+                  />
+                ))}
+                
+                {/* Connection Lines */}
+                <svg style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'visible'
+                }}>
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style={{stopColor: '#00d4ff', stopOpacity: 0.6}} />
+                      <stop offset="100%" style={{stopColor: '#8c52ff', stopOpacity: 0.6}} />
+                    </linearGradient>
+                  </defs>
+                  {/* Network connections */}
+                  <line x1="50%" y1="20%" x2="25%" y2="45%" stroke="url(#lineGradient)" strokeWidth="1" opacity="0.7" />
+                  <line x1="50%" y1="20%" x2="75%" y2="45%" stroke="url(#lineGradient)" strokeWidth="1" opacity="0.7" />
+                  <line x1="25%" y1="45%" x2="35%" y2="75%" stroke="url(#lineGradient)" strokeWidth="1" opacity="0.7" />
+                  <line x1="75%" y1="45%" x2="65%" y2="75%" stroke="url(#lineGradient)" strokeWidth="1" opacity="0.7" />
+                  <line x1="35%" y1="75%" x2="50%" y2="95%" stroke="url(#lineGradient)" strokeWidth="1" opacity="0.7" />
+                  <line x1="65%" y1="75%" x2="50%" y2="95%" stroke="url(#lineGradient)" strokeWidth="1" opacity="0.7" />
+                </svg>
               </div>
             </div>
           </div>
