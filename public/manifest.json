@@ -12,7 +12,7 @@
   "categories": ["productivity", "utilities", "ai"],
   "icons": [
     {
-      "src": "/omnia.png",
+      "src": "/omnia-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
