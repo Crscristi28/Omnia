@@ -2,7 +2,7 @@
 // ✨ Clean design with smooth animations
 
 import React from 'react';
-import omniaLogo from '../../assets/omnia-logo.jpg';
+import omniaSphere from '../../assets/omnia-sphere.png';
 
 const ModernSplashScreen = ({ isVisible, onComplete }) => {
   const [fadeOut, setFadeOut] = React.useState(false);
@@ -100,17 +100,17 @@ const ModernSplashScreen = ({ isVisible, onComplete }) => {
           
           {/* OMNIA SPHERE LOGO */}
           <img 
-            src={omniaLogo}
-            alt="Omnia Logo"
+            src={omniaSphere}
+            alt="Omnia Sphere Logo"
             style={{
-              width: '200px',
-              height: '200px',
+              width: '220px',
+              height: '220px',
               objectFit: 'contain',
               animation: logoVisible ? 'fadeInScale 0.8s ease-out, softPulse 3s ease-in-out infinite' : 'none',
               opacity: logoVisible ? 1 : 0,
               transform: logoVisible ? 'scale(1)' : 'scale(0.8)',
               transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              filter: 'drop-shadow(0 0 40px rgba(0, 150, 255, 0.4))'
+              filter: 'drop-shadow(0 0 60px rgba(100, 150, 255, 0.5)) drop-shadow(0 0 100px rgba(200, 100, 255, 0.3))'
             }}
           />
           
