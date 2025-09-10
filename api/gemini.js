@@ -411,22 +411,10 @@ function getMimeTypeFromName(fileName) {
     'pdf': 'application/pdf',
     'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'doc': 'application/msword',
-    'txt': 'text/plain',
+    'txt': 'text/plain',  // Only supported text format
     'png': 'image/png',
     'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    // Text file types for GCS processing
-    'js': 'application/javascript',
-    'jsx': 'text/jsx',
-    'ts': 'text/typescript',
-    'tsx': 'text/tsx',
-    'md': 'text/markdown',
-    'csv': 'text/csv',
-    'json': 'application/json',
-    'xml': 'application/xml',
-    'css': 'text/css',
-    'html': 'text/html',
-    'htm': 'text/html'
+    'jpeg': 'image/jpeg'
   };
   
   return mimeTypes[extension] || 'application/pdf';

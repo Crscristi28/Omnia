@@ -2146,36 +2146,17 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword',
-      'text/plain',
+      'text/plain',  // Only .txt files supported for text
       'image/png',
       'image/jpeg',
       'image/jpg',
       'image/bmp',
       'image/tiff',
-      'image/gif',
-      'text/markdown',
-      'application/json',
-      'application/javascript',
-      'text/javascript',
-      'text/jsx',
-      'text/typescript',
-      'text/css',
-      'text/html'
+      'image/gif'
     ];
     
     const textFileTypes = [
-      'text/plain',
-      'text/markdown', 
-      'text/csv',
-      'text/html',
-      'text/css',
-      'text/javascript',
-      'text/jsx',
-      'text/typescript',
-      'application/json',
-      'application/javascript',
-      'application/xml',
-      'text/xml'
+      'text/plain'  // Only .txt files are supported by Gemini File API
     ];
     
     const imageFileTypes = [
