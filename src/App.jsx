@@ -1139,6 +1139,11 @@ function App() {
             true // imageMode = true
           );
           
+          // Also check result.images from the final return value
+          if (result && result.images && result.images.length > 0) {
+            generatedImages = result.images;
+          }
+          
           // Process images if generated via tool call
           if (generatedImages && generatedImages.length > 0) {
             
@@ -1198,7 +1203,19 @@ function App() {
             
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
-            throw new Error('No images generated');
+            // No images generated, but Omnia should have explained why
+            console.log('No images generated, but Omnia responded:', responseText);
+            
+            // Update message with just Omnia's text (no image)
+            setMessages(prev => prev.map(msg => 
+              msg.id === imageGenBotMessageId 
+                ? {
+                    ...msg,
+                    text: responseText,
+                    isStreaming: false
+                  }
+                : msg
+            ));
           }
           
         } catch (imageError) {
