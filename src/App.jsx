@@ -1321,10 +1321,8 @@ function App() {
                 : msg
             ));
             
-            // Queue delayed upload for this generated image (3s after display)
-            setTimeout(() => {
-              processUploadQueue(0); // Process only generated image uploads immediately after delay
-            }, 3000);
+            // INSTANT UPLOAD: Upload generated image immediately (prevent data loss)
+            processUploadQueue(0);
             
             // 🔄 Check auto-save after image generation
             setTimeout(async () => {
