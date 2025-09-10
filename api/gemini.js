@@ -264,9 +264,25 @@ export default async function handler(req, res) {
                   } else {
                     const errorText = await imagenResponse.text();
                     console.error('❌ [GEMINI] Imagen API failed:', imagenResponse.status, errorText);
+                    
+                    // Send error chunk to client
+                    res.write(JSON.stringify({
+                      requestId,
+                      type: 'error',
+                      message: `Imagen API failed: ${imagenResponse.status} - ${errorText}`
+                    }) + '\n');
+                    if (typeof res.flush === 'function') { res.flush(); }
                   }
                 } catch (imagenError) {
                   console.error('💥 [GEMINI] Imagen call error:', imagenError);
+                  
+                  // Send error chunk to client
+                  res.write(JSON.stringify({
+                    requestId,
+                    type: 'error',
+                    message: `Image generation failed: ${imagenError.message}`
+                  }) + '\n');
+                  if (typeof res.flush === 'function') { res.flush(); }
                 }
               }
             }
