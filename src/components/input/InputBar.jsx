@@ -99,7 +99,7 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUploa
                   console.log('📄 Document upload initiated');
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.txt,.md,.js,.jsx,.ts,.tsx,.css,.html,.json,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif,text/*,application/json,application/javascript';
+                  input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.txt,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif,text/plain';
                   input.onchange = onDocumentUpload;
                   input.click();
                   onClose();
@@ -691,7 +691,7 @@ const InputBar = ({
                       const input = document.createElement('input');
                       input.type = 'file';
                       input.multiple = true;
-                      input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.txt,.md,.js,.jsx,.ts,.tsx,.css,.html,.json,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif,text/*,application/json,application/javascript';
+                      input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.txt,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif,text/plain';
                       input.onchange = handleDocumentUploadToChips;
                       input.click();
                     }, isMobile ? 100 : 0);
