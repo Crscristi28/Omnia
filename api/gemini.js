@@ -95,15 +95,8 @@ export default async function handler(req, res) {
     // Prepare tools based on mode
     let tools = [];
     
-    // Add Google Search (always available)
-    tools.push({
-      google_search: {}
-    });
-    
-    // Add image generation tool when in image mode
     if (imageMode) {
-      console.log('🎨 [GEMINI] Image mode detected, adding generation tools');
-      console.log('🔍 [DEBUG] System instruction will be:', finalSystemInstruction);
+      console.log('🎨 [GEMINI] Image mode detected, adding ONLY generation tools (no search)');
       
       // Update system instruction for image mode
       const imageSystemAddition = `
@@ -116,7 +109,7 @@ export default async function handler(req, res) {
       
       finalSystemInstruction += imageSystemAddition;
       
-      // Add image generation function as separate tool declaration
+      // Add ONLY image generation function (no Google Search in image mode)
       tools.push({
         functionDeclarations: [{
           name: "generate_image",
@@ -139,7 +132,14 @@ export default async function handler(req, res) {
         }]
       });
       
-      console.log('🔍 [DEBUG] Final tools array:', JSON.stringify(tools, null, 2));
+      console.log('🔍 [DEBUG] Image mode - tools array:', JSON.stringify(tools, null, 2));
+    } else {
+      // Normal mode - only Google Search
+      tools.push({
+        google_search: {}
+      });
+      
+      console.log('🔍 [DEBUG] Normal mode - Google Search only');
     }
     
     // Initialize model with proper system instruction and tools
