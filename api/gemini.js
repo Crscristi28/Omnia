@@ -98,17 +98,6 @@ export default async function handler(req, res) {
     if (imageMode) {
       console.log('🎨 [GEMINI] Image mode detected, adding ONLY generation tools (no search)');
       
-      // Update system instruction for image mode
-      const imageSystemAddition = `
-
-🎨 IMAGE GENERATION MODE ACTIVATED:
-- When user requests any image creation, editing, or asks for visual content, ALWAYS use the generate_image function
-- ALWAYS respond with enthusiasm and personality as Omnia during image generation
-- Example response: "Super! Vytvářím krásný obrázek podle tvého popisu! 🎨✨"
-- Call generate_image with detailed, creative prompts even for simple requests`;
-      
-      finalSystemInstruction += imageSystemAddition;
-      
       // Add ONLY image generation function (no Google Search in image mode)
       tools.push({
         functionDeclarations: [{
