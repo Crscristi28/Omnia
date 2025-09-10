@@ -261,6 +261,10 @@ export default async function handler(req, res) {
                     if (typeof res.flush === 'function') { res.flush(); }
                     
                     console.log('✅ [GEMINI] Images generated successfully:', images.length);
+                    
+                    // After successful image generation, end the stream
+                    // AI has "responded" with functionCall, no more text chunks expected
+                    return;
                   } else {
                     const errorText = await imagenResponse.text();
                     console.error('❌ [GEMINI] Imagen API failed:', imagenResponse.status, errorText);
@@ -272,6 +276,7 @@ export default async function handler(req, res) {
                       message: `Imagen API failed: ${imagenResponse.status} - ${errorText}`
                     }) + '\n');
                     if (typeof res.flush === 'function') { res.flush(); }
+                    return; // End stream after error
                   }
                 } catch (imagenError) {
                   console.error('💥 [GEMINI] Imagen call error:', imagenError);
@@ -283,6 +288,7 @@ export default async function handler(req, res) {
                     message: `Image generation failed: ${imagenError.message}`
                   }) + '\n');
                   if (typeof res.flush === 'function') { res.flush(); }
+                  return; // End stream after error
                 }
               }
             }
