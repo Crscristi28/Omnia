@@ -339,7 +339,7 @@ export default async function handler(req, res) {
       res.write(JSON.stringify({ 
         requestId: req.body?.requestId,
         error: true, 
-        message: '⏳ Příliš mnoho požadavků. Zkus to znovu za chvilku.' 
+        message: '⏳ Too many requests. Please try again in a moment.' 
       }) + '\n');
     } else {
       res.write(JSON.stringify({ requestId: req.body?.requestId, error: true, message: 'Server error: ' + error.message }) + '\n');
