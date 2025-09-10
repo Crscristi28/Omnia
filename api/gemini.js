@@ -334,6 +334,13 @@ export default async function handler(req, res) {
         error: true, 
         message: '⏳ Google Cloud nastavuje servisní agenty pro dokumenty. Zkus to znovu za 5 minut nebo piš bez dokumentu.' 
       }) + '\n');
+    } else if (error.cause?.code === 429 || error.message.includes('429') || error.message.includes('Too Many Requests')) {
+      // Handle 429 rate limiting with user-friendly message
+      res.write(JSON.stringify({ 
+        requestId: req.body?.requestId,
+        error: true, 
+        message: '⏳ Příliš mnoho požadavků. Zkus to znovu za chvilku.' 
+      }) + '\n');
     } else {
       res.write(JSON.stringify({ requestId: req.body?.requestId, error: true, message: 'Server error: ' + error.message }) + '\n');
     }
