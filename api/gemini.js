@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { requestId, messages, system, max_tokens = 8000, language, documents = [] } = req.body;
+    const { requestId, messages, system, max_tokens = 8000, language, documents = [], imageMode = false } = req.body;
     
     // Log request ID for debugging concurrent requests
     console.log('🔄 [GEMINI] Processing request ID:', requestId || 'NO_ID');
@@ -90,15 +90,56 @@ export default async function handler(req, res) {
     
     // Let Gemini respond in the same language as user's question naturally
     // No forced language instruction needed - Gemini is smart enough
-    const finalSystemInstruction = systemInstruction;
+    let finalSystemInstruction = systemInstruction;
 
-    // Initialize model with proper system instruction and Google Search grounding
+    // Prepare tools based on mode
+    let tools = [{
+      google_search: {}
+    }];
+    
+    // Add image generation tool when in image mode
+    if (imageMode) {
+      console.log('🎨 [GEMINI] Image mode detected, adding generation tools');
+      
+      // Update system instruction for image mode
+      const imageSystemAddition = `\n\n🎨 IMAGE GENERATION MODE:
+You are now in image generation mode. When the user asks for an image:
+1. Respond naturally as Omnia with personality, emojis, and enthusiasm
+2. Call the generate_image function with an enhanced prompt
+3. Comment on what you're creating or what you created
+Example: "Jasně! Vytvářím pro tebe červené sportovní auto... 🏎️"`;
+      
+      finalSystemInstruction += imageSystemAddition;
+      
+      // Add image generation function
+      tools.push({
+        functionDeclarations: [{
+          name: "generate_image",
+          description: "Generate a new image from text description",
+          parameters: {
+            type: "object",
+            properties: {
+              prompt: {
+                type: "string",
+                description: "Detailed description of the image to generate"
+              },
+              imageCount: {
+                type: "integer",
+                description: "Number of images to generate (1-4)",
+                default: 1
+              }
+            },
+            required: ["prompt"]
+          }
+        }]
+      });
+    }
+    
+    // Initialize model with proper system instruction and tools
     const generativeModel = vertexAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction: finalSystemInstruction,
-      tools: [{
-        google_search: {}
-      }]
+      tools: tools
     });
 
     console.log('🚀 Sending to Gemini 2.5 Flash with streaming and Google Search grounding...');
@@ -134,17 +175,56 @@ export default async function handler(req, res) {
         }
         
         // Process text parts
-        if (item.candidates && item.candidates[0].content.parts[0].text) {
-          const textChunk = item.candidates[0].content.parts[0].text;
-          fullText += textChunk; // Build complete text
-          
-          // 🚀 ROBUST STREAMING: Send raw chunks with immediate flush
-          res.write(JSON.stringify({ 
-            requestId,
-            type: 'text', 
-            content: textChunk
-          }) + '\n');
-          if (typeof res.flush === 'function') { res.flush(); }
+        if (item.candidates && item.candidates[0].content.parts) {
+          for (const part of item.candidates[0].content.parts) {
+            // Handle text
+            if (part.text) {
+              const textChunk = part.text;
+              fullText += textChunk; // Build complete text
+              
+              // 🚀 ROBUST STREAMING: Send raw chunks with immediate flush
+              res.write(JSON.stringify({ 
+                requestId,
+                type: 'text', 
+                content: textChunk
+              }) + '\n');
+              if (typeof res.flush === 'function') { res.flush(); }
+            }
+            
+            // Handle function calls (tool use)
+            if (part.functionCall) {
+              console.log('🎨 [GEMINI] Function call detected:', part.functionCall.name);
+              
+              if (part.functionCall.name === 'generate_image') {
+                try {
+                  // Call internal Imagen API
+                  const imagenResponse = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/imagen`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(part.functionCall.args)
+                  });
+                  
+                  if (imagenResponse.ok) {
+                    const imagenResult = await imagenResponse.json();
+                    
+                    // Send images to client
+                    res.write(JSON.stringify({
+                      requestId,
+                      type: 'image_generated',
+                      images: imagenResult.images
+                    }) + '\n');
+                    if (typeof res.flush === 'function') { res.flush(); }
+                    
+                    console.log('✅ [GEMINI] Images generated successfully');
+                  } else {
+                    console.error('❌ [GEMINI] Imagen API failed:', imagenResponse.status);
+                  }
+                } catch (imagenError) {
+                  console.error('❌ [GEMINI] Error calling Imagen:', imagenError);
+                }
+              }
+            }
+          }
         }
       }
     } catch (streamError) {

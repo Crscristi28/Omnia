@@ -1093,12 +1093,12 @@ function App() {
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
         
-        // Add bot message with image generation indicator immediately
+        // Add bot message for Gemini response (Omnia will respond with personality)
         const imageGenBotMessageId = generateMessageId();
         const imageGenBotMessage = {
           id: imageGenBotMessageId,
           sender: 'bot',
-          text: '<span class="image-loading-dots"><span></span><span></span><span></span></span>',
+          text: '',
           isStreaming: true,
           timestamp: Date.now()
         };
@@ -1107,26 +1107,43 @@ function App() {
         setMessages(messagesWithImageIndicator);
         
         try {
-          const response = await fetch('/api/imagen', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              prompt: finalTextInput,
-              imageCount: 1
-            })
-          });
-
-          if (!response.ok) {
-            throw new Error(`Image generation failed: HTTP ${response.status}`);
-          }
-
-          const result = await response.json();
+          // Call Gemini with imageMode flag instead of direct Imagen
+          let responseText = '';
+          let generatedImages = [];
           
-          if (result.success && result.images && result.images.length > 0) {
-            const t = getTranslation(detectedLang);
+          const result = await geminiService.sendMessage(
+            messagesWithUser,
+            (chunk, isChunk, extra) => {
+              // Handle streaming text from Omnia
+              if (chunk) {
+                responseText += chunk;
+                setMessages(prev => prev.map(msg => 
+                  msg.id === imageGenBotMessageId
+                    ? { ...msg, text: responseText, isStreaming: true }
+                    : msg
+                ));
+              }
+              
+              // Handle generated images from tool call
+              if (extra && extra.images) {
+                generatedImages = extra.images;
+              }
+            },
+            (searchMsg) => {
+              // Handle search notifications if needed
+              setIsSearching(true);
+              setTimeout(() => setIsSearching(false), 3000);
+            },
+            detectedLang,
+            [], // documents
+            true // imageMode = true
+          );
+          
+          // Process images if generated via tool call
+          if (generatedImages && generatedImages.length > 0) {
             
             // Upload generated image to Supabase Storage
-            let imageData = result.images[0];
+            let imageData = generatedImages[0];
             let storageUrl = null;
             let storagePath = null;
             
@@ -1152,12 +1169,12 @@ function App() {
               // Continue with base64 if upload fails
             }
             
-            // Update existing message with image result
+            // Update existing message with Omnia's text and image
             setMessages(prev => prev.map(msg => 
               msg.id === imageGenBotMessageId 
                 ? {
                     ...msg,
-                    text: `${t('imageGenerated')} "${finalTextInput}"`,
+                    text: responseText, // Only Omnia's response, no fallback
                     image: {
                       // Keep only essential metadata and Storage URLs for database
                       mimeType: imageData.mimeType,
@@ -1207,8 +1224,7 @@ function App() {
           showNotification('Chyba při generování obrázku', 'error');
         }
         
-        // Reset to chat mode after image generation
-        setIsImageMode(false);
+        // Keep image mode active (user can toggle it off manually)
         return;
       }
 

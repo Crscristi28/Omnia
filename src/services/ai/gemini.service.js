@@ -5,7 +5,7 @@
 import { profileService } from '../profile/profileService.js';
 
 const geminiService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = null, documents = []) {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = null, documents = [], imageMode = false) {
     try {
       // Generate unique request ID for concurrent user isolation
       const requestId = Date.now() + '-' + Math.random().toString(36).substring(2, 11);
@@ -26,7 +26,8 @@ const geminiService = {
           system: systemPrompt,
           max_tokens: 8000,
           language: detectedLanguage,
-          documents: documents
+          documents: documents,
+          imageMode: imageMode
         })
       });
 
@@ -40,6 +41,7 @@ const geminiService = {
       let fullText = '';
       let buffer = '';
       let sourcesExtracted = [];
+      let generatedImages = [];
 
       try {
         while (true) {
@@ -74,6 +76,16 @@ const geminiService = {
                     onSearchNotification(this.getSearchMessage(detectedLanguage));
                   }
                 }
+                else if (data.type === 'image_generated') {
+                  console.log('🎨 Images received from tool call:', data.images?.length);
+                  if (data.images) {
+                    generatedImages = data.images;
+                    if (onStreamUpdate) {
+                      // Pass images as third parameter
+                      onStreamUpdate('', false, { images: data.images });
+                    }
+                  }
+                }
                 else if (data.type === 'completed') {
                   if (data.webSearchUsed) {
                     sourcesExtracted = this.extractGoogleSources(data);
@@ -101,7 +113,8 @@ const geminiService = {
       return {
         text: fullText,
         sources: sourcesExtracted,
-        webSearchUsed: sourcesExtracted.length > 0
+        webSearchUsed: sourcesExtracted.length > 0,
+        images: generatedImages
       };
 
     } catch (error) {
