@@ -207,30 +207,77 @@ export default async function handler(req, res) {
               
               if (part.functionCall.name === 'generate_image') {
                 try {
-                  // Call internal Imagen API
-                  const imagenResponse = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/imagen`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(part.functionCall.args)
+                  console.log('🔍 [DEBUG] Calling Imagen API directly...');
+                  
+                  // Call Imagen API directly (same logic as /api/imagen.js)
+                  const { prompt, imageCount = 1 } = part.functionCall.args;
+                  
+                  // Parse JSON credentials - same setup as current Gemini API
+                  const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+                  const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
+                  const location = 'us-central1';
+                  const model = 'imagen-4.0-generate-preview-06-06';
+                  
+                  const requestBody = {
+                    instances: [{ prompt: prompt.trim() }],
+                    parameters: {
+                      sampleCount: Math.min(Math.max(1, imageCount), 4),
+                      aspectRatio: "1:1",
+                      outputMimeType: "image/png"
+                    }
+                  };
+
+                  const apiUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:predict`;
+
+                  // Get access token using same auth as Gemini
+                  const { GoogleAuth } = await import('google-auth-library');
+                  const auth = new GoogleAuth({
+                    credentials: credentials,
+                    scopes: ['https://www.googleapis.com/auth/cloud-platform']
                   });
                   
+                  const authClient = await auth.getClient();
+                  const accessToken = await authClient.getAccessToken();
+
+                  // Call Imagen API directly
+                  const imagenResponse = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${accessToken.token}`,
+                      'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: JSON.stringify(requestBody)
+                  });
+
                   if (imagenResponse.ok) {
                     const imagenResult = await imagenResponse.json();
+                    
+                    // Process images same way as /api/imagen.js
+                    const images = [];
+                    for (const prediction of imagenResult.predictions || []) {
+                      if (prediction.bytesBase64Encoded) {
+                        images.push({
+                          base64: prediction.bytesBase64Encoded,
+                          mimeType: 'image/png'
+                        });
+                      }
+                    }
                     
                     // Send images to client
                     res.write(JSON.stringify({
                       requestId,
                       type: 'image_generated',
-                      images: imagenResult.images
+                      images: images
                     }) + '\n');
                     if (typeof res.flush === 'function') { res.flush(); }
                     
-                    console.log('✅ [GEMINI] Images generated successfully');
+                    console.log('✅ [GEMINI] Images generated successfully:', images.length);
                   } else {
-                    console.error('❌ [GEMINI] Imagen API failed:', imagenResponse.status);
+                    const errorText = await imagenResponse.text();
+                    console.error('❌ [GEMINI] Imagen API failed:', imagenResponse.status, errorText);
                   }
                 } catch (imagenError) {
-                  console.error('❌ [GEMINI] Error calling Imagen:', imagenError);
+                  console.error('💥 [GEMINI] Imagen call error:', imagenError);
                 }
               }
             }
