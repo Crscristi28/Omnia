@@ -93,25 +93,30 @@ export default async function handler(req, res) {
     let finalSystemInstruction = systemInstruction;
 
     // Prepare tools based on mode
-    let tools = [{
+    let tools = [];
+    
+    // Add Google Search (always available)
+    tools.push({
       google_search: {}
-    }];
+    });
     
     // Add image generation tool when in image mode
     if (imageMode) {
       console.log('🎨 [GEMINI] Image mode detected, adding generation tools');
+      console.log('🔍 [DEBUG] System instruction will be:', finalSystemInstruction);
       
       // Update system instruction for image mode
-      const imageSystemAddition = `\n\n🎨 IMAGE GENERATION MODE:
-You are now in image generation mode. When the user asks for an image:
-1. Respond naturally as Omnia with personality, emojis, and enthusiasm
-2. Call the generate_image function with an enhanced prompt
-3. Comment on what you're creating or what you created
-Example: "Jasně! Vytvářím pro tebe červené sportovní auto... 🏎️"`;
+      const imageSystemAddition = `
+
+🎨 IMAGE GENERATION MODE ACTIVATED:
+- When user requests any image creation, editing, or asks for visual content, ALWAYS use the generate_image function
+- ALWAYS respond with enthusiasm and personality as Omnia during image generation
+- Example response: "Super! Vytvářím krásný obrázek podle tvého popisu! 🎨✨"
+- Call generate_image with detailed, creative prompts even for simple requests`;
       
       finalSystemInstruction += imageSystemAddition;
       
-      // Add image generation function
+      // Add image generation function as separate tool declaration
       tools.push({
         functionDeclarations: [{
           name: "generate_image",
@@ -133,16 +138,20 @@ Example: "Jasně! Vytvářím pro tebe červené sportovní auto... 🏎️"`;
           }
         }]
       });
+      
+      console.log('🔍 [DEBUG] Final tools array:', JSON.stringify(tools, null, 2));
     }
     
     // Initialize model with proper system instruction and tools
+    console.log('🤖 [GEMINI] Initializing model with tools:', tools.length);
     const generativeModel = vertexAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction: finalSystemInstruction,
       tools: tools
     });
 
-    console.log('🚀 Sending to Gemini 2.5 Flash with streaming and Google Search grounding...');
+    const modeText = imageMode ? 'with IMAGE GENERATION tools' : 'with Google Search grounding';
+    console.log(`🚀 Sending to Gemini 2.5 Flash ${modeText}...`);
 
     // Generate response with streaming
     const result = await generativeModel.generateContentStream({
@@ -194,6 +203,7 @@ Example: "Jasně! Vytvářím pro tebe červené sportovní auto... 🏎️"`;
             // Handle function calls (tool use)
             if (part.functionCall) {
               console.log('🎨 [GEMINI] Function call detected:', part.functionCall.name);
+              console.log('🔍 [DEBUG] Function call args:', part.functionCall.args);
               
               if (part.functionCall.name === 'generate_image') {
                 try {
