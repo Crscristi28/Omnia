@@ -126,6 +126,26 @@ function App() {
   
   // 🔄 Sync dirty tracking - for 30s incremental sync
   const [syncDirtyChats, setSyncDirtyChats] = useState(new Set());
+  
+  // 📦 UPLOAD QUEUE SYSTEM - Smart delayed uploads
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const [isAIStreaming, setIsAIStreaming] = useState(false);
+  
+  // 🔄 Sync AI streaming state with main streaming state
+  useEffect(() => {
+    setIsAIStreaming(streaming);
+    
+    // Trigger user file uploads when AI streaming ends
+    if (!streaming && uploadQueue.length > 0) {
+      console.log('🎯 [UPLOAD-TRIGGER] AI streaming ended, processing user file uploads in 2s');
+      setTimeout(() => {
+        const userFileQueue = uploadQueue.filter(item => item.type === 'user_file');
+        if (userFileQueue.length > 0) {
+          processUploadQueue(0);
+        }
+      }, 2000);
+    }
+  }, [streaming, uploadQueue]);
 
   // 🎬 SPLASH SCREEN STATE - PWA startup animation
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -348,6 +368,94 @@ function App() {
 
 // 🔔 NOTIFICATION SYSTEM - Initialize with setIsSearching callback
   const { showNotification } = createNotificationSystem(setIsSearching);
+  
+  // 📦 UPLOAD QUEUE MANAGEMENT
+  const addToUploadQueue = (file, type, messageTimestamp, attachmentIndex, chatId) => {
+    const queueItem = {
+      id: `${type}_${Date.now()}_${Math.random()}`,
+      file,
+      type, // 'user_file' or 'generated_image'
+      messageTimestamp,
+      attachmentIndex,
+      chatId,
+      addedAt: Date.now()
+    };
+    
+    setUploadQueue(prev => [...prev, queueItem]);
+    console.log(`📦 [UPLOAD-QUEUE] Added ${type}:`, queueItem.id);
+  };
+  
+  const processUploadQueue = async (delay = 0) => {
+    if (uploadQueue.length === 0) return;
+    
+    console.log(`📦 [UPLOAD-QUEUE] Processing ${uploadQueue.length} items after ${delay}ms delay`);
+    
+    setTimeout(async () => {
+      const queueToProcess = [...uploadQueue];
+      setUploadQueue([]); // Clear queue
+      
+      for (const item of queueToProcess) {
+        try {
+          if (item.type === 'user_file') {
+            await processUserFileUpload(item);
+          } else if (item.type === 'generated_image') {
+            await processGeneratedImageUpload(item);
+          }
+        } catch (error) {
+          console.error(`📦 [UPLOAD-QUEUE] Failed to upload ${item.id}:`, error);
+        }
+      }
+    }, delay);
+  };
+  
+  const processUserFileUpload = async (item) => {
+    console.log(`📁 [DELAYED-UPLOAD] Processing user file:`, item.id);
+    
+    const uploadResult = await uploadToSupabaseStorage(item.file, 'attachments');
+    
+    // Update message with storage URL
+    setMessages(prev => prev.map(msg => 
+      msg.timestamp === item.messageTimestamp ? {
+        ...msg,
+        attachments: msg.attachments.map((att, i) => 
+          i === item.attachmentIndex ? {
+            ...att,
+            storageUrl: uploadResult.publicUrl,
+            storagePath: uploadResult.path,
+            name: uploadResult.fileName,
+            previewUrl: null,
+            _tempFile: undefined
+          } : att
+        )
+      } : msg
+    ));
+    
+    console.log(`✅ [DELAYED-UPLOAD] User file uploaded:`, uploadResult.fileName);
+  };
+  
+  const processGeneratedImageUpload = async (item) => {
+    console.log(`🎨 [DELAYED-UPLOAD] Processing generated image:`, item.id);
+    
+    const uploadResult = await uploadBase64ToSupabaseStorage(
+      item.file.base64Data, 
+      item.file.fileName, 
+      'generated-images'
+    );
+    
+    // Update message with storage URL using image timestamp
+    setMessages(prev => prev.map(msg => 
+      msg.image && msg.image.timestamp === item.messageTimestamp ? {
+        ...msg,
+        image: {
+          ...msg.image,
+          storageUrl: uploadResult.publicUrl,
+          storagePath: uploadResult.path
+        }
+      } : msg
+    ));
+    
+    console.log(`✅ [DELAYED-UPLOAD] Generated image uploaded:`, uploadResult.fileName);
+  };
 
   // 🔗 SOURCES MODAL HANDLERS (UNCHANGED)
   const handleSourcesClick = (sources) => {
@@ -1142,6 +1250,24 @@ function App() {
             true // imageMode = true
           );
           
+          // Show beautiful indicator IMMEDIATELY after streaming ends
+          const beautifulGeneratingText = `<span style="
+            background: linear-gradient(45deg, #00d4ff, #8c52ff); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            opacity: 0.8;
+            animation: subtle-breathing 2s ease-in-out infinite;
+            font-size: 0.9em;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+          ">✨ generating image...</span>`;
+          
+          setMessages(prev => prev.map(msg => 
+            msg.id === imageGenBotMessageId
+              ? { ...msg, text: responseText + '\n\n' + beautifulGeneratingText, isStreaming: true }
+              : msg
+          ));
+          
           // Also check result.images from the final return value
           if (result && result.images && result.images.length > 0) {
             generatedImages = result.images;
@@ -1149,71 +1275,56 @@ function App() {
           
           // Process images if generated via tool call
           if (generatedImages && generatedImages.length > 0) {
-            // Show beautiful progress indicator for image processing
-            const beautifulGeneratingText = `<span style="
-              background: linear-gradient(45deg, #00d4ff, #8c52ff); 
-              -webkit-background-clip: text; 
-              -webkit-text-fill-color: transparent;
-              opacity: 0.8;
-              animation: subtle-breathing 2s ease-in-out infinite;
-              font-size: 0.9em;
-              letter-spacing: 0.05em;
-              font-weight: 500;
-            ">✨ generating image...</span>`;
-            
-            setMessages(prev => prev.map(msg => 
-              msg.id === imageGenBotMessageId
-                ? { ...msg, text: responseText + '\n\n' + beautifulGeneratingText, isStreaming: true }
-                : msg
-            ));
-            
             // Upload generated image to Supabase Storage
             let imageData = generatedImages[0];
             let storageUrl = null;
             let storagePath = null;
             
-            try {
-              // Convert base64 to data URI if needed
-              const base64String = imageData.base64.startsWith('data:') 
-                ? imageData.base64 
-                : `data:${imageData.mimeType};base64,${imageData.base64}`;
+            // Convert base64 to data URI if needed
+            const base64String = imageData.base64.startsWith('data:') 
+              ? imageData.base64 
+              : `data:${imageData.mimeType};base64,${imageData.base64}`;
               
-              // Upload to Supabase Storage
-              const uploadResult = await uploadBase64ToSupabaseStorage(
-                base64String,
-                `generated-${Date.now()}.png`,
-                'generated-images'
-              );
-              
-              storageUrl = uploadResult.publicUrl;
-              storagePath = uploadResult.path;
-              
-              console.log('✅ Generated image uploaded to Supabase Storage:', storageUrl);
-            } catch (uploadError) {
-              console.error('Failed to upload generated image to Storage:', uploadError);
-              // Continue with base64 if upload fails
-            }
+            // Queue generated image for delayed upload (3s after display)
+            const imageTimestamp = Date.now();
+            addToUploadQueue(
+              {
+                base64Data: base64String,
+                fileName: `generated-${imageTimestamp}.png`
+              },
+              'generated_image',
+              imageTimestamp,
+              0, // no attachment index for generated images
+              activeChatId
+            );
             
-            // Update existing message with Omnia's text and image
+            console.log('📦 [QUEUE] Generated image queued for delayed upload');
+            
+            // Update existing message with Omnia's text and image (immediate display with base64)
             setMessages(prev => prev.map(msg => 
               msg.id === imageGenBotMessageId 
                 ? {
                     ...msg,
                     text: responseText, // Only Omnia's response, no fallback
                     image: {
-                      // Keep only essential metadata and Storage URLs for database
+                      // Essential metadata
                       mimeType: imageData.mimeType,
                       width: imageData.width,
                       height: imageData.height,
-                      storageUrl, // Storage URL for database and display
-                      storagePath, // Storage path for operations
-                      // Keep base64 temporarily for immediate display
-                      base64: storageUrl ? undefined : imageData.base64
+                      // Immediate display with base64 (storageUrl will be added later by queue)
+                      base64: imageData.base64,
+                      // Timestamp for queue tracking
+                      timestamp: imageTimestamp
                     },
                     isStreaming: false
                   }
                 : msg
             ));
+            
+            // Queue delayed upload for this generated image (3s after display)
+            setTimeout(() => {
+              processUploadQueue(0); // Process only generated image uploads immediately after delay
+            }, 3000);
             
             // 🔄 Check auto-save after image generation
             setTimeout(async () => {
@@ -1986,41 +2097,16 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   
   scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
 
-  // 🚀 BACKGROUND UPLOAD - Upload files without blocking UI
+  // 📦 QUEUE USER FILES - Upload after AI streaming ends + 2s delay
   attachments.forEach((attachment, index) => {
     if (attachment._tempFile) {
-      // Upload to Supabase Storage in background
-      uploadToSupabaseStorage(attachment._tempFile, 'attachments')
-        .then(uploadResult => {
-          // Update message with storage URL when upload completes
-          setMessages(prev => prev.map(msg => 
-            msg.timestamp === userTimestamp ? {
-              ...msg,
-              attachments: msg.attachments.map((att, i) => 
-                i === index ? {
-                  ...att,
-                  storageUrl: uploadResult.publicUrl,
-                  storagePath: uploadResult.path,
-                  name: uploadResult.fileName, // Use the generated filename from storage
-                  previewUrl: null, // 🎯 Remove blob URL - use storageUrl now
-                  _tempFile: undefined // Clean temporary file reference
-                } : att
-              )
-            } : msg
-          ));
-          
-          // 🧹 Cleanup blob URL from memory after switching to storageUrl
-          if (attachment.previewUrl) {
-            URL.revokeObjectURL(attachment.previewUrl);
-            console.log(`🧹 Cleaned up blob URL for ${attachment.name}`);
-          }
-          
-          console.log(`✅ Background upload completed for ${attachment.name}`);
-        })
-        .catch(error => {
-          console.error(`❌ Background upload failed for ${attachment.name}:`, error);
-          // Keep local File object if upload fails - UI still works
-        });
+      addToUploadQueue(
+        attachment._tempFile, 
+        'user_file', 
+        userTimestamp, 
+        index, 
+        activeChatId
+      );
     }
   });
 
