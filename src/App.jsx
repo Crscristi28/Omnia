@@ -1285,44 +1285,65 @@ function App() {
               ? imageData.base64 
               : `data:${imageData.mimeType};base64,${imageData.base64}`;
               
-            // Queue generated image for delayed upload (3s after display)
+            // INSTANT UPLOAD: Upload generated image immediately (no queue)
             const imageTimestamp = Date.now();
-            addToUploadQueue(
-              {
-                base64Data: base64String,
-                fileName: `generated-${imageTimestamp}.png`
-              },
-              'generated_image',
-              imageTimestamp,
-              0, // no attachment index for generated images
-              activeChatId
-            );
             
-            console.log('📦 [QUEUE] Generated image queued for delayed upload');
+            console.log('📤 [INSTANT] Uploading generated image immediately to prevent data loss');
             
-            // Update existing message with Omnia's text and image (immediate display with base64)
-            setMessages(prev => prev.map(msg => 
-              msg.id === imageGenBotMessageId 
-                ? {
-                    ...msg,
-                    text: responseText, // Only Omnia's response, no fallback
-                    image: {
-                      // Essential metadata
-                      mimeType: imageData.mimeType,
-                      width: imageData.width,
-                      height: imageData.height,
-                      // Immediate display with base64 (storageUrl will be added later by queue)
-                      base64: imageData.base64,
-                      // Timestamp for queue tracking
-                      timestamp: imageTimestamp
-                    },
-                    isStreaming: false
-                  }
-                : msg
-            ));
-            
-            // INSTANT UPLOAD: Upload generated image immediately (prevent data loss)
-            processUploadQueue(0);
+            // Upload to Supabase immediately
+            try {
+              const uploadResult = await uploadBase64ToSupabaseStorage(
+                base64String,
+                `generated-${imageTimestamp}.png`,
+                'generated-images'
+              );
+              
+              console.log('✅ [INSTANT] Generated image uploaded:', uploadResult.fileName);
+              
+              // Update message with BOTH base64 (immediate display) AND storageUrl (persistence)
+              setMessages(prev => prev.map(msg => 
+                msg.id === imageGenBotMessageId 
+                  ? {
+                      ...msg,
+                      text: responseText, // Only Omnia's response, no fallback
+                      image: {
+                        // Essential metadata
+                        mimeType: imageData.mimeType,
+                        width: imageData.width,
+                        height: imageData.height,
+                        // Immediate display with base64
+                        base64: imageData.base64,
+                        // Persistence with storage URL
+                        storageUrl: uploadResult.publicUrl,
+                        storagePath: uploadResult.path,
+                        timestamp: imageTimestamp
+                      },
+                      isStreaming: false
+                    }
+                  : msg
+              ));
+              
+            } catch (uploadError) {
+              console.error('❌ [INSTANT] Failed to upload generated image:', uploadError);
+              
+              // Still update message with base64 (display works, just no persistence)
+              setMessages(prev => prev.map(msg => 
+                msg.id === imageGenBotMessageId 
+                  ? {
+                      ...msg,
+                      text: responseText,
+                      image: {
+                        mimeType: imageData.mimeType,
+                        width: imageData.width,
+                        height: imageData.height,
+                        base64: imageData.base64,
+                        timestamp: imageTimestamp
+                      },
+                      isStreaming: false
+                    }
+                  : msg
+              ));
+            }
             
             // 🔄 Check auto-save after image generation
             setTimeout(async () => {
