@@ -2225,32 +2225,56 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Process files by category for optimal performance
     const processedDocuments = [];
     
-    // 1️⃣ PROCESS TEXT FILES FIRST (instant, sequential)
+    // 1️⃣ PROCESS TEXT FILES VIA GCS (same as documents, but skip Document AI)
     for (const { doc, index } of textFiles) {
-      console.log(`📝 [LOCAL] Reading text file locally: ${doc.file.name}`);
+      console.log(`📝 [GCS] Uploading text file to GCS: ${doc.file.name}`);
       
       try {
-        const textContent = await doc.file.text(); // INSTANT READ!
+        // Upload text file to GCS (same as documents)
+        const uploadResult = await uploadDirectToGCS(doc.file);
         
+        console.log('📝 Text file uploaded to GCS - sending to Gemini for analysis');
+        
+        // Upload to Gemini File API (same as documents, but skip Document AI processing)
+        const geminiResponse = await fetch('/api/upload-to-gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pdfUrl: uploadResult.gcsUri,
+            originalName: uploadResult.originalName
+          })
+        });
+        
+        if (!geminiResponse.ok) {
+          throw new Error('Failed to upload text file to Gemini');
+        }
+        
+        const geminiResult = await geminiResponse.json();
+        
+        // Create text file document with Gemini URI (same structure as documents)
         const newDoc = {
           id: Date.now() + Math.random(),
-          name: doc.file.name,
-          extractedText: textContent, // Direct text content
-          processingMethod: 'local-text-read',
+          name: uploadResult.originalName,
+          documentUrl: null, // Text files don't have document URL
+          originalPdfUrl: uploadResult.gcsUri,
+          geminiFileUri: geminiResult.fileUri, // Clean URI reference
+          processingMethod: 'gcs-text-upload',
           metadata: {
             size: doc.file.size,
             type: doc.file.type,
-            lastModified: doc.file.lastModified
+            lastModified: doc.file.lastModified,
+            gcsUri: uploadResult.gcsUri,
+            publicUrl: uploadResult.publicUrl
           },
           uploadedAt: new Date()
         };
         
         processedDocuments.push(newDoc);
-        console.log(`✅ [LOCAL] Text file read instantly: ${doc.file.name} (${textContent.length} chars)`);
+        console.log(`✅ [GCS] Text file processed with geminiFileUri: ${doc.file.name}`);
         
       } catch (error) {
-        console.error(`❌ Failed to read text file locally:`, error);
-        throw new Error(`Failed to read text file: ${doc.file.name}`);
+        console.error(`❌ Failed to process text file via GCS:`, error);
+        throw new Error(`Failed to process text file: ${doc.file.name}`);
       }
     }
     
