@@ -1101,7 +1101,7 @@ function App() {
         const imageGenBotMessage = {
           id: imageGenBotMessageId,
           sender: 'bot',
-          text: '',
+          text: '<span class="chat-loading-dots"><span></span><span></span><span></span></span>',
           isStreaming: true,
           timestamp: Date.now()
         };
@@ -1149,10 +1149,21 @@ function App() {
           
           // Process images if generated via tool call
           if (generatedImages && generatedImages.length > 0) {
-            // Show progress indicator for image processing
+            // Show beautiful progress indicator for image processing
+            const beautifulGeneratingText = `<span style="
+              background: linear-gradient(45deg, #00d4ff, #8c52ff); 
+              -webkit-background-clip: text; 
+              -webkit-text-fill-color: transparent;
+              opacity: 0.8;
+              animation: subtle-breathing 2s ease-in-out infinite;
+              font-size: 0.9em;
+              letter-spacing: 0.05em;
+              font-weight: 500;
+            ">✨ generating image...</span>`;
+            
             setMessages(prev => prev.map(msg => 
               msg.id === imageGenBotMessageId
-                ? { ...msg, text: responseText + '\n\n🔄 Zpracovávám obrázek...', isStreaming: true }
+                ? { ...msg, text: responseText + '\n\n' + beautifulGeneratingText, isStreaming: true }
                 : msg
             ));
             

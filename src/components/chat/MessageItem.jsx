@@ -244,7 +244,13 @@ const MessageItem = ({
             </span>
           </div>
           
-          {/* 🎨 GENERATED IMAGE - Display if message contains image */}
+          {/* 📝 MESSAGE TEXT - Display first to prevent jumping */}
+          <MessageRenderer 
+            content={msg.text || ''}
+            className="text-white"
+          />
+          
+          {/* 🎨 GENERATED IMAGE - Display after text */}
           {msg.image && (
             <div style={{
               paddingTop: '1rem',
@@ -276,11 +282,6 @@ const MessageItem = ({
               />
             </div>
           )}
-          
-          <MessageRenderer 
-            content={msg.text || ''}
-            className="text-white"
-          />
           
           {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
           <div style={{ 
