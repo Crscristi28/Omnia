@@ -1149,6 +1149,12 @@ function App() {
           
           // Process images if generated via tool call
           if (generatedImages && generatedImages.length > 0) {
+            // Show progress indicator for image processing
+            setMessages(prev => prev.map(msg => 
+              msg.id === imageGenBotMessageId
+                ? { ...msg, text: responseText + '\n\n🔄 Zpracovávám obrázek...', isStreaming: true }
+                : msg
+            ));
             
             // Upload generated image to Supabase Storage
             let imageData = generatedImages[0];
