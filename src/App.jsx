@@ -1092,6 +1092,9 @@ function App() {
 
       // 🎨 IMAGE GENERATION MODE
       if (isImageMode) {
+        // Set loading states same as normal chat
+        setLoading(true);
+        setStreaming(true);
         
         // Add bot message for Gemini response (Omnia will respond with personality)
         const imageGenBotMessageId = generateMessageId();
@@ -1201,6 +1204,10 @@ function App() {
               await checkAutoSave(finalMessages, activeChatId);
             }, 100);
             
+            // Hide loading indicators same as normal chat
+            setLoading(false);
+            setStreaming(false);
+            
             // showNotification('Obrázek byl úspěšně vygenerován! 🎨', 'success');
           } else {
             // No images generated, but Omnia should have explained why
@@ -1216,6 +1223,10 @@ function App() {
                   }
                 : msg
             ));
+            
+            // Hide loading indicators same as normal chat
+            setLoading(false);
+            setStreaming(false);
           }
           
         } catch (imageError) {
@@ -1237,6 +1248,10 @@ function App() {
             const finalMessages = messagesRef.current;
             await checkAutoSave(finalMessages, activeChatId);
           }, 100);
+          
+          // Hide loading indicators same as normal chat
+          setLoading(false);
+          setStreaming(false);
           
           showNotification('Chyba při generování obrázku', 'error');
         }
