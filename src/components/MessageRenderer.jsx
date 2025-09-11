@@ -6,6 +6,10 @@ import rehypeKatex from 'rehype-katex';
 import '@uiw/react-md-editor/markdown-editor.css';
 import 'katex/dist/katex.css';
 
+// Import YouTube utilities and component
+import { findYouTubeUrls } from '../utils/youtube';
+import { YouTubeEmbed } from './ui';
+
 
 // Aggressive preprocessing for better visual during streaming
 const preprocessStreamingText = (text) => {
@@ -29,6 +33,52 @@ const preprocessStreamingText = (text) => {
   return processed;
 };
 
+/**
+ * Parse content into segments - text and YouTube embeds
+ * @param {string} content - Message content
+ * @returns {Array} - Array of {type: 'text'|'youtube', content: string, videoId?: string}
+ */
+const parseContentSegments = (content) => {
+  if (!content) return [{ type: 'text', content: '' }];
+  
+  const youtubeUrls = findYouTubeUrls(content);
+  if (youtubeUrls.length === 0) {
+    return [{ type: 'text', content }];
+  }
+  
+  const segments = [];
+  let lastIndex = 0;
+  
+  youtubeUrls.forEach((match) => {
+    // Add text before YouTube URL
+    if (match.startIndex > lastIndex) {
+      const textContent = content.slice(lastIndex, match.startIndex);
+      if (textContent.trim()) {
+        segments.push({ type: 'text', content: textContent });
+      }
+    }
+    
+    // Add YouTube embed
+    segments.push({ 
+      type: 'youtube', 
+      content: match.url,
+      videoId: match.videoId 
+    });
+    
+    lastIndex = match.endIndex;
+  });
+  
+  // Add remaining text after last YouTube URL
+  if (lastIndex < content.length) {
+    const textContent = content.slice(lastIndex);
+    if (textContent.trim()) {
+      segments.push({ type: 'text', content: textContent });
+    }
+  }
+  
+  return segments;
+};
+
 const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
   // TEMPORARILY DISABLED: Transition causes scroll jumping with Virtuoso
   // const [isTransitioning, setIsTransitioning] = React.useState(false);
@@ -44,20 +94,36 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   //   prevStreamingRef.current = isStreaming;
   // }, [isStreaming]);
   
-  // Unified markdown rendering - same for streaming and final
+  // Parse content into segments for YouTube embed support
+  const segments = React.useMemo(() => {
+    return parseContentSegments(content);
+  }, [content]);
+
+  // Unified rendering - same for streaming and final
   return (
     <div className={className}>
       <div className="markdown-container">
-        <MDEditor.Markdown 
-          source={content} 
-          style={{ 
-            backgroundColor: 'transparent',
-            color: 'inherit'
-          }}
-          data-color-mode="dark"
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex]}
-        />
+        {segments.map((segment, index) => (
+          segment.type === 'youtube' ? (
+            <YouTubeEmbed 
+              key={`youtube-${index}-${segment.videoId}`}
+              videoId={segment.videoId}
+              title="YouTube video"
+            />
+          ) : (
+            <MDEditor.Markdown 
+              key={`text-${index}`}
+              source={segment.content} 
+              style={{ 
+                backgroundColor: 'transparent',
+                color: 'inherit'
+              }}
+              data-color-mode="dark"
+              remarkPlugins={[remarkMath, remarkGfm]}
+              rehypePlugins={[rehypeKatex]}
+            />
+          )
+        ))}
       </div>
       
       <style>{`

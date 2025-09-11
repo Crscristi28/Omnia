@@ -8,3 +8,4 @@ export { default as SettingsDropdown } from './SettingsDropdown.jsx';
 export { default as SplashScreen } from './SplashScreen.jsx';
 export { default as UpdatePrompt } from './UpdatePrompt.jsx';
 export { default as VoiceButton } from './VoiceButton.jsx';
+export { default as YouTubeEmbed } from './YouTubeEmbed.jsx';
