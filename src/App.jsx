@@ -14,6 +14,10 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 
+// 🖼️ YARL - Yet Another React Lightbox
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, grokService, geminiService } from './services/ai';
 import { elevenLabsService } from './services/voice';
@@ -3344,70 +3348,16 @@ const virtuosoComponents = React.useMemo(() => ({
         input:focus { outline: none !important; }
       `}</style>
       
-      {/* 🖼️ FULLSCREEN PHOTO PREVIEW OVERLAY */}
-      {previewImage && (
-        <div
-          onClick={closePreview}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.95)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.5rem',
-            animation: 'fadeIn 0.3s ease',
-            transform: 'translateZ(0)',
-            cursor: 'pointer',
-          }}
-        >
-          {/* Close hint text */}
-          <div style={{
-            position: 'absolute',
-            top: '40px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            color: 'rgba(255, 255, 255, 0.8)',
-            fontSize: '14px',
-            fontWeight: '500',
-            textAlign: 'center',
-            zIndex: 1,
-          }}>
-            {previewImage.name}
-            <br />
-            <span style={{ fontSize: '12px', opacity: 0.6 }}>
-              Tap to close
-            </span>
-          </div>
-
-          {/* Image container */}
-          <img 
-            src={previewImage.url}
-            alt={previewImage.name}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking image
-            style={{
-              maxWidth: '90%',
-              maxHeight: '80%',
-              objectFit: 'contain',
-              borderRadius: '12px',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-              animation: 'fadeIn 0.3s ease',
-              transform: 'scale(1) translateZ(0)',
-              transition: 'transform 0.2s ease',
-            }}
-            onLoad={(e) => {
-              // Subtle scale animation on load
-              e.target.style.transform = 'scale(0.95) translateZ(0)';
-              setTimeout(() => {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }, 50);
-            }}
-          />
-        </div>
-      )}
+      {/* 🖼️ YARL LIGHTBOX - Modern image viewer */}
+      <Lightbox
+        open={!!previewImage}
+        close={closePreview}
+        slides={previewImage ? [{
+          src: previewImage.url,
+          alt: previewImage.name,
+          title: previewImage.name
+        }] : []}
+      />
       
       {/* 📄 DOCUMENT VIEWER */}
       <DocumentViewer
