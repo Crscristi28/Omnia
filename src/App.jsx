@@ -97,7 +97,7 @@ function App() {
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
-  const [lightboxState, setLightboxState] = useState({ open: false, index: 0 }); // For YARL lightbox
+  const [lightboxState, setLightboxState] = useState({ open: false, index: 0, slides: [] }); // For YARL lightbox
   const [documentViewer, setDocumentViewer] = useState({ isOpen: false, document: null }); // For document viewer
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -1898,23 +1898,33 @@ function App() {
     return slides;
   }, [messages]);
 
-  // Open lightbox with specific image index
+  // Open lightbox for single image preview (InputBar)
+  const openSingleImageLightbox = useCallback((imageUrl, imageName) => {
+    const singleSlide = [{ src: imageUrl, alt: imageName, title: imageName }];
+    setLightboxState({ 
+      open: true, 
+      index: 0,
+      slides: singleSlide 
+    });
+  }, []);
+
+  // Open lightbox with all chat images navigation (MessageItem)
   const openLightbox = useCallback((imageUrl, imageName) => {
     const slides = getAllImagesFromChat();
     const index = slides.findIndex(slide => slide.src === imageUrl);
     
     if (index !== -1) {
-      setLightboxState({ open: true, index });
+      setLightboxState({ open: true, index, slides });
     } else {
       // Fallback - add this image to slides if not found
       slides.push({ src: imageUrl, alt: imageName, title: imageName });
-      setLightboxState({ open: true, index: slides.length - 1 });
+      setLightboxState({ open: true, index: slides.length - 1, slides });
     }
   }, [getAllImagesFromChat]);
 
   // Close lightbox
   const closeLightbox = () => {
-    setLightboxState({ open: false, index: 0 });
+    setLightboxState({ open: false, index: 0, slides: [] });
   };
 
   // 🔄 Helper function to convert File object to base64 string
@@ -3252,7 +3262,7 @@ const virtuosoComponents = React.useMemo(() => ({
         isAudioPlaying={isAudioPlaying}
         isImageMode={isImageMode}
         uiLanguage={uiLanguage}
-        onPreviewImage={(imageData) => openLightbox(imageData.url, imageData.name)}
+        onPreviewImage={(imageData) => openSingleImageLightbox(imageData.url, imageData.name)}
         audioLevel={audioLevel}
       />
 
@@ -3399,7 +3409,7 @@ const virtuosoComponents = React.useMemo(() => ({
       <Lightbox
         open={lightboxState.open}
         close={closeLightbox}
-        slides={getAllImagesFromChat()}
+        slides={lightboxState.slides.length > 0 ? lightboxState.slides : getAllImagesFromChat()}
         index={lightboxState.index}
       />
       
