@@ -603,6 +603,7 @@ function App() {
         // 🔄 Load new chat into clean memory
         setMessages(chatData.messages);
         updateCurrentChatId(chatId);
+        setIsImageMode(false); // Reset image mode when switching chats
         // V2: No offset tracking needed - using timestamp-based pagination
         crashMonitor.trackIndexedDB('load', chatId, true);
         crashMonitor.trackChatOperation('switch_chat_success', { 
@@ -617,6 +618,7 @@ function App() {
         // 🧹 MEMORY CLEAR: Empty chat - ensure RAM is clean
         setMessages([]);
         updateCurrentChatId(chatId);
+        setIsImageMode(false); // Reset image mode when switching chats
         // V2: No offset tracking needed
         } else {
         crashMonitor.trackIndexedDB('load', chatId, false, new Error('Chat not found'));
@@ -1054,6 +1056,9 @@ function App() {
       // 📄 Clear document states to prevent context leakage
       setActiveDocumentContexts([]);
       setUploadedDocuments([]);
+      
+      // 🎨 Reset image mode to prevent cross-chat contamination
+      setIsImageMode(false);
       
     
       // Create new chat ID for history tracking
