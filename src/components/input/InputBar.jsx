@@ -382,6 +382,7 @@ const InputBar = ({
         size: formattedSize,
         file: file, // Store file for later upload
         uploadStatus: 'pending', // 'pending' | 'uploading' | 'completed' | 'error'
+        uploadProgress: 0, // 0-100% for visual progress
         supabaseUrl: null,
         supabasePath: null, // Pro cleanup
         geminiFileUri: null,
@@ -444,25 +445,27 @@ const InputBar = ({
     
     // Update status to uploading
     setPendingDocuments(prev => prev.map(doc => 
-      doc.id === docChip.id ? { ...doc, uploadStatus: 'uploading' } : doc
+      doc.id === docChip.id ? { ...doc, uploadStatus: 'uploading', uploadProgress: 0 } : doc
     ));
     
     try {
-      // 🔄 PARALLEL UPLOAD - All 3 at once for maximum speed
-      const [supabaseResult, gcsResult, geminiResult] = await Promise.all([
-        // 1. Supabase upload (for backup/sync)
-        uploadToSupabaseStorage(docChip.file, 'attachments'),
-        
-        // 2. GCS upload (for AI processing)
-        uploadDirectToGCS(docChip.file),
-        
-        // 3. Gemini upload (will be done after GCS)
-        null // We'll do Gemini upload after GCS is ready
-      ]);
+      // 🔄 STEP-BY-STEP UPLOAD with progress updates
       
-      console.log(`✅ [BACKGROUND-UPLOAD] Supabase + GCS completed for: ${docChip.name}`);
+      // Step 1: Supabase upload (33%)
+      const supabaseResult = await uploadToSupabaseStorage(docChip.file, 'attachments');
+      setPendingDocuments(prev => prev.map(doc => 
+        doc.id === docChip.id ? { ...doc, uploadProgress: 33 } : doc
+      ));
+      console.log(`✅ [BACKGROUND-UPLOAD] Supabase completed (33%) for: ${docChip.name}`);
       
-      // 4. Upload to Gemini using GCS URI
+      // Step 2: GCS upload (66%)
+      const gcsResult = await uploadDirectToGCS(docChip.file);
+      setPendingDocuments(prev => prev.map(doc => 
+        doc.id === docChip.id ? { ...doc, uploadProgress: 66 } : doc
+      ));
+      console.log(`✅ [BACKGROUND-UPLOAD] GCS completed (66%) for: ${docChip.name}`);
+      
+      // Step 3: Gemini upload (100%)
       const geminiResponse = await fetch('/api/upload-to-gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -478,13 +481,14 @@ const InputBar = ({
       
       const geminiData = await geminiResponse.json();
       
-      console.log(`✅ [BACKGROUND-UPLOAD] All uploads completed for: ${docChip.name}`);
+      console.log(`✅ [BACKGROUND-UPLOAD] All uploads completed (100%) for: ${docChip.name}`);
       
-      // Update document with all URLs
+      // Final update - completed with all URLs
       setPendingDocuments(prev => prev.map(doc => 
         doc.id === docChip.id ? {
           ...doc,
           uploadStatus: 'completed',
+          uploadProgress: 100,
           supabaseUrl: supabaseResult.publicUrl,
           supabasePath: supabaseResult.path,
           gcsUri: gcsResult.gcsUri,
@@ -644,7 +648,14 @@ const InputBar = ({
                         width: '80px',
                         height: '80px',
                         flexShrink: 0,
-                        background: 'rgba(255, 255, 255, 0.1)',
+                        // 🎨 PROGRESSIVE LIGHTING EFFECT - hodinky zleva doprava
+                        background: doc.uploadStatus === 'error' 
+                          ? 'rgba(239, 68, 68, 0.2)' 
+                          : `linear-gradient(to right, 
+                              rgba(59, 130, 246, 0.3) 0%, 
+                              rgba(59, 130, 246, 0.3) ${doc.uploadProgress}%, 
+                              rgba(255, 255, 255, 0.05) ${doc.uploadProgress}%, 
+                              rgba(255, 255, 255, 0.05) 100%)`,
                         border: doc.uploadStatus === 'error' 
                           ? '2px solid #ef4444' 
                           : '1px solid rgba(255, 255, 255, 0.15)',
@@ -655,10 +666,10 @@ const InputBar = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        // 🎨 FADE-IN EFFECT based on upload status
-                        opacity: doc.uploadStatus === 'completed' ? 1.0 : 0.4,
-                        animation: doc.uploadStatus === 'uploading' ? 'pulse 2s ease-in-out infinite' : 'none',
-                        transition: 'opacity 0.5s ease-in-out',
+                        // 🎨 SMOOTH TRANSITIONS for progress changes
+                        transition: 'background 0.3s ease-in-out',
+                        // 🎯 SUBTLE PULSE ANIMATION when uploading
+                        animation: doc.uploadStatus === 'uploading' ? 'progressPulse 2s infinite' : 'none',
                       }}
                     >
                       {/* X Button */}
@@ -759,11 +770,11 @@ const InputBar = ({
                 opacity: 1;
               }
               
-              /* Upload animation */
-              @keyframes pulse {
-                0% { opacity: 0.4; }
-                50% { opacity: 0.7; }
-                100% { opacity: 0.4; }
+              /* Upload progress animation - subtle pulse on uploading cards */
+              @keyframes progressPulse {
+                0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+                70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
               }
             `}</style>
             <textarea
