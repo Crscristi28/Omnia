@@ -157,7 +157,16 @@ function App() {
   };
 
   const getSafeChatId = () => {
-    return currentChatId || currentChatIdRef.current;
+    // Prefer ref over state as it's more stable during re-renders
+    const safeId = currentChatIdRef.current || currentChatId;
+    if (!safeId) {
+      console.error('⚠️ [CRITICAL] Both currentChatId and ref are null!', {
+        state: currentChatId,
+        ref: currentChatIdRef.current,
+        stack: new Error().stack
+      });
+    }
+    return safeId;
   };
   
   // 🆕 STREAMING STATE - For controlling streaming effect
@@ -1177,10 +1186,19 @@ function App() {
       let activeChatId = getSafeChatId();
       
       if (!activeChatId) {
-        activeChatId = chatDB.generateChatId();
-        updateCurrentChatId(activeChatId);
-        console.trace('🔍 [DEBUG] New chat creation call stack:');
-      } else {
+        // Extra safety check - if we have messages, we should have a chat ID
+        if (currentMessages.length > 0) {
+          console.error('❌ [CRITICAL] Have messages but no chat ID! This should not happen!');
+          // Try to recover by generating new ID
+          activeChatId = chatDB.generateChatId();
+          updateCurrentChatId(activeChatId);
+          console.warn('⚠️ [RECOVERY] Generated emergency chat ID:', activeChatId);
+        } else {
+          // Normal case - truly a new chat
+          activeChatId = chatDB.generateChatId();
+          updateCurrentChatId(activeChatId);
+          console.log('✅ [NEW CHAT] Created new chat ID:', activeChatId);
+        }
       }
       
       const userTimestamp = Date.now();
