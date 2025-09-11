@@ -135,12 +135,12 @@ function App() {
   useEffect(() => {
     setIsAIStreaming(streaming);
     
-    // Trigger user file uploads when AI streaming ends
+    // Only process generated image uploads when AI streaming ends (user files handled in InputBar)
     if (!streaming && uploadQueue.length > 0) {
-      console.log('🎯 [UPLOAD-TRIGGER] AI streaming ended, processing user file uploads in 2s');
+      console.log('🎯 [UPLOAD-TRIGGER] AI streaming ended, processing generated image uploads in 2s');
       setTimeout(() => {
-        const userFileQueue = uploadQueue.filter(item => item.type === 'user_file');
-        if (userFileQueue.length > 0) {
+        const imageQueue = uploadQueue.filter(item => item.type === 'generated_image');
+        if (imageQueue.length > 0) {
           processUploadQueue(0);
         }
       }, 2000);
@@ -405,11 +405,10 @@ function App() {
       
       for (const item of queueToProcess) {
         try {
-          if (item.type === 'user_file') {
-            await processUserFileUpload(item);
-          } else if (item.type === 'generated_image') {
+          if (item.type === 'generated_image') {
             await processGeneratedImageUpload(item);
           }
+          // ❌ REMOVED: user_file processing - now handled by background upload
         } catch (error) {
           console.error(`📦 [UPLOAD-QUEUE] Failed to upload ${item.id}:`, error);
         }
@@ -417,30 +416,7 @@ function App() {
     }, delay);
   };
   
-  const processUserFileUpload = async (item) => {
-    console.log(`📁 [DELAYED-UPLOAD] Processing user file:`, item.id);
-    
-    const uploadResult = await uploadToSupabaseStorage(item.file, 'attachments');
-    
-    // Update message with storage URL
-    setMessages(prev => prev.map(msg => 
-      msg.timestamp === item.messageTimestamp ? {
-        ...msg,
-        attachments: msg.attachments.map((att, i) => 
-          i === item.attachmentIndex ? {
-            ...att,
-            storageUrl: uploadResult.publicUrl,
-            storagePath: uploadResult.path,
-            name: uploadResult.fileName,
-            previewUrl: null,
-            _tempFile: undefined
-          } : att
-        )
-      } : msg
-    ));
-    
-    console.log(`✅ [DELAYED-UPLOAD] User file uploaded:`, uploadResult.fileName);
-  };
+  // ❌ REMOVED: processUserFileUpload - now handled by background upload in InputBar
   
   const processGeneratedImageUpload = async (item) => {
     console.log(`🎨 [DELAYED-UPLOAD] Processing generated image:`, item.id);
@@ -2093,8 +2069,32 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     console.log('🆕 [DOC-SEND] Created new chat for documents:', activeChatId);
   }
   
-  // Create attachments WITHOUT File objects (for IndexedDB persistence)
+  // Create attachments using prepared URLs or fallback to file processing
   const attachments = await Promise.all(safeDocuments.map(async (doc) => {
+    // 🚀 CHECK IF DOCUMENT IS ALREADY UPLOADED (from background upload)
+    if (doc.geminiFileUri && doc.supabaseUrl) {
+      console.log(`✅ [PREPARED-DOC] Using pre-uploaded URLs for: ${doc.name}`);
+      
+      // Create preview URL for display  
+      const previewUrl = URL.createObjectURL(doc.file);
+      
+      return {
+        name: doc.name,
+        size: doc.size || 'Unknown size',
+        type: doc.file.type || 'application/octet-stream',
+        previewUrl: previewUrl,
+        storageUrl: doc.supabaseUrl, // Already on Supabase
+        storagePath: doc.supabasePath,
+        geminiFileUri: doc.geminiFileUri, // Already prepared for AI
+        gcsUri: doc.gcsUri,
+        // Don't include _tempFile since we already have cloud URLs
+        preparationMethod: 'background-upload' // Track how it was prepared
+      };
+    }
+    
+    // 🔄 FALLBACK - Process file if not pre-uploaded (safety)
+    console.log(`⏳ [FALLBACK-DOC] Processing file traditionally: ${doc.name}`);
+    
     // Create preview URL immediately for instant display
     const previewUrl = URL.createObjectURL(doc.file);
     
@@ -2139,18 +2139,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   
   scrollToUserMessageAt(virtuosoRef, newUserMessageIndex); // Scroll to the new user message
 
-  // 📦 QUEUE USER FILES - Upload after AI streaming ends + 2s delay
-  attachments.forEach((attachment, index) => {
-    if (attachment._tempFile) {
-      addToUploadQueue(
-        attachment._tempFile, 
-        'user_file', 
-        userTimestamp, 
-        index, 
-        activeChatId
-      );
-    }
-  });
+  // ❌ REMOVED: Upload queue for user files - now handled by background upload in InputBar
 
   // ❌ REMOVED: DOC-AUTO-SAVE - using unified auto-save system instead (every 10 messages)
   
@@ -2215,9 +2204,16 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     const textFiles = [];
     const imageFiles = [];
     const documentFiles = [];
+    const preUploadedFiles = []; // 🚀 Files already uploaded via background upload
     
     safeDocuments.forEach((doc, index) => {
       if (!doc.file) return;
+      
+      // 🚀 CHECK IF ALREADY UPLOADED via background upload
+      if (doc.geminiFileUri && doc.supabaseUrl) {
+        preUploadedFiles.push({ doc, index });
+        return; // Skip traditional processing
+      }
       
       // Validate file format
       const isSupported = supportedTypes.includes(doc.file.type) || 
@@ -2243,10 +2239,28 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       }
     });
     
-    console.log(`📂 File categorization: ${textFiles.length} text, ${imageFiles.length} images, ${documentFiles.length} documents`);
+    console.log(`📂 File categorization: ${preUploadedFiles.length} pre-uploaded, ${textFiles.length} text, ${imageFiles.length} images, ${documentFiles.length} documents`);
     
     // Process files by category for optimal performance
     const processedDocuments = [];
+    
+    // 🚀 PROCESS PRE-UPLOADED FILES (already have all URLs)
+    for (const { doc, index } of preUploadedFiles) {
+      console.log(`✅ [PRE-UPLOADED] Adding prepared file: ${doc.name}`);
+      
+      const preparedDoc = {
+        id: Date.now() + Math.random(),
+        name: doc.name,
+        geminiFileUri: doc.geminiFileUri, // Already prepared
+        gcsUri: doc.gcsUri,
+        supabaseUrl: doc.supabaseUrl, // Already on Supabase
+        processingMethod: 'background-upload-prepared',
+        uploadedAt: new Date()
+      };
+      
+      processedDocuments.push(preparedDoc);
+      console.log(`✅ [PRE-UPLOADED] Ready for AI: ${doc.name}`);
+    }
     
     // 1️⃣ PROCESS TEXT FILES VIA GCS (same as documents, but skip Document AI)
     for (const { doc, index } of textFiles) {

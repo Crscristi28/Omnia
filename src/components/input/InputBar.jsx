@@ -5,6 +5,8 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
+import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
+import { uploadDirectToGCS } from '../../services/directUpload.js';
 
 // Using Lucide React icons instead of custom SVG components
 
@@ -282,9 +284,19 @@ const InputBar = ({
     }
   };
 
+  // 🚫 CHECK IF ALL UPLOADS ARE COMPLETED
+  const allUploadsCompleted = pendingDocuments.every(doc => doc.uploadStatus === 'completed');
+  const canSend = (localInput.trim() || pendingDocuments.length > 0) && allUploadsCompleted;
+  
   const handleSendMessage = () => {
+    // Don't send if uploads are still pending
+    if (pendingDocuments.length > 0 && !allUploadsCompleted) {
+      console.log('⏳ Cannot send - uploads still pending');
+      return;
+    }
+    
     if (pendingDocuments.length > 0) {
-      // Send with documents (regardless of whether there's text or not)
+      // Send with documents (only if all uploads completed)
       if (onSendWithDocuments) {
         onSendWithDocuments(localInput, pendingDocuments);
         setPendingDocuments([]); // Clear chips after sending
@@ -310,7 +322,7 @@ const InputBar = ({
   };
 
   const handleKeyDown = (e) => {
-    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && (localInput.trim() || pendingDocuments.length > 0)) {
+    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && canSend) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -363,18 +375,131 @@ const InputBar = ({
         console.log(`🔍 DEBUG - Invalid file.size for file ${index + 1}:`, file.size, typeof file.size);
       }
       
-      // Only add chip - NO background upload yet
+      // Enhanced chip structure for background upload
       const docChip = {
         id: Date.now() + index, // Unique ID for each file
         name: file.name,
         size: formattedSize,
-        file: file // Store file for later upload
+        file: file, // Store file for later upload
+        uploadStatus: 'pending', // 'pending' | 'uploading' | 'completed' | 'error'
+        supabaseUrl: null,
+        supabasePath: null, // Pro cleanup
+        geminiFileUri: null,
+        gcsUri: null
       };
       setPendingDocuments(prev => [...prev, docChip]);
+      
+      // 🚀 START BACKGROUND UPLOAD immediately
+      startBackgroundUpload(docChip);
     });
     
     // Clear the file input for next time
     event.target.value = '';
+  };
+
+  // 🗑️ CLEANUP FUNCTION - Remove document and cleanup cloud files
+  const handleRemoveDocument = async (docId) => {
+    const docToRemove = pendingDocuments.find(doc => doc.id === docId);
+    
+    if (!docToRemove) return;
+    
+    console.log(`🗑️ [CLEANUP] Removing document: ${docToRemove.name}`);
+    
+    // Remove from UI first for immediate feedback
+    setPendingDocuments(prev => prev.filter(d => d.id !== docId));
+    
+    // Cleanup cloud files in background
+    try {
+      if (docToRemove.supabasePath) {
+        console.log(`🗑️ [CLEANUP] Deleting from Supabase: ${docToRemove.supabasePath}`);
+        await deleteFromSupabaseStorage(docToRemove.supabasePath, 'attachments');
+      }
+      
+      // TODO: Add GCS cleanup if there's a delete API
+      // TODO: Add Gemini file cleanup if there's a delete API
+      
+      console.log(`✅ [CLEANUP] Successfully cleaned up: ${docToRemove.name}`);
+    } catch (error) {
+      console.error(`❌ [CLEANUP] Failed to cleanup cloud files for: ${docToRemove.name}`, error);
+      // Don't show error to user - file is already removed from UI
+    }
+  };
+
+  // 🚮 CLEANUP ON UNMOUNT - Remove unused files from cloud
+  React.useEffect(() => {
+    return () => {
+      // Cleanup any pending documents that weren't sent
+      pendingDocuments.forEach(doc => {
+        if (doc.uploadStatus === 'completed') {
+          console.log(`🚮 [UNMOUNT-CLEANUP] Cleaning up unsent file: ${doc.name}`);
+          handleRemoveDocument(doc.id);
+        }
+      });
+    };
+  }, []); // Empty dependency array = cleanup on unmount only
+
+  // 🚀 BACKGROUND UPLOAD FUNCTION
+  const startBackgroundUpload = async (docChip) => {
+    console.log(`🚀 [BACKGROUND-UPLOAD] Starting upload for: ${docChip.name}`);
+    
+    // Update status to uploading
+    setPendingDocuments(prev => prev.map(doc => 
+      doc.id === docChip.id ? { ...doc, uploadStatus: 'uploading' } : doc
+    ));
+    
+    try {
+      // 🔄 PARALLEL UPLOAD - All 3 at once for maximum speed
+      const [supabaseResult, gcsResult, geminiResult] = await Promise.all([
+        // 1. Supabase upload (for backup/sync)
+        uploadToSupabaseStorage(docChip.file, 'attachments'),
+        
+        // 2. GCS upload (for AI processing)
+        uploadDirectToGCS(docChip.file),
+        
+        // 3. Gemini upload (will be done after GCS)
+        null // We'll do Gemini upload after GCS is ready
+      ]);
+      
+      console.log(`✅ [BACKGROUND-UPLOAD] Supabase + GCS completed for: ${docChip.name}`);
+      
+      // 4. Upload to Gemini using GCS URI
+      const geminiResponse = await fetch('/api/upload-to-gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pdfUrl: gcsResult.gcsUri,
+          originalName: gcsResult.originalName
+        })
+      });
+      
+      if (!geminiResponse.ok) {
+        throw new Error('Gemini upload failed');
+      }
+      
+      const geminiData = await geminiResponse.json();
+      
+      console.log(`✅ [BACKGROUND-UPLOAD] All uploads completed for: ${docChip.name}`);
+      
+      // Update document with all URLs
+      setPendingDocuments(prev => prev.map(doc => 
+        doc.id === docChip.id ? {
+          ...doc,
+          uploadStatus: 'completed',
+          supabaseUrl: supabaseResult.publicUrl,
+          supabasePath: supabaseResult.path,
+          gcsUri: gcsResult.gcsUri,
+          geminiFileUri: geminiData.fileUri
+        } : doc
+      ));
+      
+    } catch (error) {
+      console.error(`❌ [BACKGROUND-UPLOAD] Failed for ${docChip.name}:`, error);
+      
+      // Update status to error
+      setPendingDocuments(prev => prev.map(doc => 
+        doc.id === docChip.id ? { ...doc, uploadStatus: 'error' } : doc
+      ));
+    }
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
@@ -520,7 +645,9 @@ const InputBar = ({
                         height: '80px',
                         flexShrink: 0,
                         background: 'rgba(255, 255, 255, 0.1)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        border: doc.uploadStatus === 'error' 
+                          ? '2px solid #ef4444' 
+                          : '1px solid rgba(255, 255, 255, 0.15)',
                         borderRadius: '12px',
                         overflow: 'hidden',
                         display: 'flex',
@@ -528,11 +655,15 @@ const InputBar = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
+                        // 🎨 FADE-IN EFFECT based on upload status
+                        opacity: doc.uploadStatus === 'completed' ? 1.0 : 0.4,
+                        animation: doc.uploadStatus === 'uploading' ? 'pulse 2s ease-in-out infinite' : 'none',
+                        transition: 'opacity 0.5s ease-in-out',
                       }}
                     >
                       {/* X Button */}
                       <button
-                        onClick={() => setPendingDocuments(prev => prev.filter(d => d.id !== doc.id))}
+                        onClick={() => handleRemoveDocument(doc.id)}
                         style={{
                           position: 'absolute',
                           top: '2px',
@@ -626,6 +757,13 @@ const InputBar = ({
               .omnia-chat-input::placeholder {
                 color: ${isRecording ? '#ff4444' : 'rgba(255, 255, 255, 0.6)'};
                 opacity: 1;
+              }
+              
+              /* Upload animation */
+              @keyframes pulse {
+                0% { opacity: 0.4; }
+                50% { opacity: 0.7; }
+                100% { opacity: 0.4; }
               }
             `}</style>
             <textarea
@@ -781,16 +919,16 @@ const InputBar = ({
                 
                 {/* 5. DYNAMIC BUTTON */}
                 <button
-                  onClick={(localInput.trim() || pendingDocuments.length > 0) ? handleSendMessage : onVoiceScreen}
-                  disabled={isLoading}
+                  onClick={canSend ? handleSendMessage : onVoiceScreen}
+                  disabled={isLoading || (pendingDocuments.length > 0 && !allUploadsCompleted)}
                   style={{
                     background: 'none',
                     border: 'none',
                     padding: '8px',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    opacity: isLoading ? 0.5 : 1,
+                    cursor: (isLoading || (pendingDocuments.length > 0 && !allUploadsCompleted)) ? 'not-allowed' : 'pointer',
+                    opacity: (isLoading || (pendingDocuments.length > 0 && !allUploadsCompleted)) ? 0.5 : 1,
                   }}
-                  title={(localInput.trim() || pendingDocuments.length > 0) ? 'Send Message' : 'Voice Chat'}
+                  title={canSend ? 'Send Message' : (pendingDocuments.length > 0 && !allUploadsCompleted) ? 'Uploading files...' : 'Voice Chat'}
                 >
                   {(localInput.trim() || pendingDocuments.length > 0) ? 
                     <Send size={iconSize} strokeWidth={2} style={{ color: 'rgba(255, 255, 255, 0.7)' }} /> : 
