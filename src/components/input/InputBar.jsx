@@ -648,14 +648,10 @@ const InputBar = ({
                         width: '80px',
                         height: '80px',
                         flexShrink: 0,
-                        // 🎨 PROGRESSIVE LIGHTING EFFECT - hodinky zleva doprava
+                        // 🎨 SIMPLE BACKGROUND - no complex gradients
                         background: doc.uploadStatus === 'error' 
                           ? 'rgba(239, 68, 68, 0.2)' 
-                          : `linear-gradient(to right, 
-                              rgba(59, 130, 246, 0.3) 0%, 
-                              rgba(59, 130, 246, 0.3) ${doc.uploadProgress}%, 
-                              rgba(255, 255, 255, 0.05) ${doc.uploadProgress}%, 
-                              rgba(255, 255, 255, 0.05) 100%)`,
+                          : 'rgba(255, 255, 255, 0.1)',
                         border: doc.uploadStatus === 'error' 
                           ? '2px solid #ef4444' 
                           : '1px solid rgba(255, 255, 255, 0.15)',
@@ -666,8 +662,11 @@ const InputBar = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        // 🎨 SMOOTH TRANSITIONS for progress changes
-                        transition: 'background 0.3s ease-in-out',
+                        // 🎨 PROGRESSIVE OPACITY - starts dim, gets brighter with progress
+                        opacity: doc.uploadStatus === 'error' 
+                          ? 0.7 
+                          : 0.4 + (doc.uploadProgress * 0.006), // 0.4 → 1.0
+                        transition: 'opacity 0.2s ease',
                         // 🎯 SUBTLE PULSE ANIMATION when uploading
                         animation: doc.uploadStatus === 'uploading' ? 'progressPulse 2s infinite' : 'none',
                       }}
