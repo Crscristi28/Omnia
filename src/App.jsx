@@ -1306,31 +1306,6 @@ function App() {
             }
           }, 30); // 30ms for smooth word-by-word animation (same as normal mode)
           
-          // Show beautiful indicator AFTER animation completes
-          const beautifulGeneratingText = `<span style="
-            background: linear-gradient(45deg, #00d4ff, #8c52ff); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
-            opacity: 0.8;
-            animation: subtle-breathing 2s ease-in-out infinite;
-            font-size: 0.9em;
-            letter-spacing: 0.05em;
-            font-weight: 500;
-          ">✨ generating image...</span>`;
-          
-          // Wait for animation to complete before adding generating indicator
-          const waitForAnimation = setInterval(() => {
-            if (!animationIntervalImage) {
-              clearInterval(waitForAnimation);
-              
-              setMessages(prev => prev.map(msg => 
-                msg.id === imageGenBotMessageId
-                  ? { ...msg, text: responseText + '\n\n' + beautifulGeneratingText, isStreaming: false }
-                  : msg
-              ));
-            }
-          }, 100);
-          
           // Also check result.images from the final return value
           if (result && result.images && result.images.length > 0) {
             generatedImages = result.images;
