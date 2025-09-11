@@ -3177,7 +3177,7 @@ const virtuosoComponents = React.useMemo(() => ({
                 onSourcesClick={handleSourcesClick}
                 onAudioStateChange={setIsAudioPlaying}
               />
-            ), [setPreviewImage, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
+            ), [openLightbox, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={shouldFollowOutput ? "smooth" : false}
             atBottomStateChange={useCallback((atBottom) => {
               setShowScrollToBottom(!atBottom);
