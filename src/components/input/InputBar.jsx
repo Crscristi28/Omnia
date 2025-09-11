@@ -166,8 +166,7 @@ const InputBar = ({
   isAudioPlaying,
   isImageMode = false,
   uiLanguage = 'cs',
-  previewImage,
-  setPreviewImage,
+  onPreviewImage,
   audioLevel = 0
 }) => {
   // LOCAL STATE FOR INPUT - Performance optimization
@@ -616,7 +615,7 @@ const InputBar = ({
                       // Show custom fullscreen preview instead of iframe
                       if (isImage) {
                         const fileUrl = URL.createObjectURL(doc.file);
-                        setPreviewImage({
+                        onPreviewImage({
                           url: fileUrl,
                           name: doc.name
                         });

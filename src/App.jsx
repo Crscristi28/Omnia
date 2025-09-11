@@ -97,7 +97,7 @@ function App() {
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null); // For fullscreen photo preview
+  const [lightboxState, setLightboxState] = useState({ open: false, index: 0 }); // For YARL lightbox
   const [documentViewer, setDocumentViewer] = useState({ isOpen: false, document: null }); // For document viewer
   const [isRecordingSTT, setIsRecordingSTT] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -1861,12 +1861,60 @@ function App() {
     }
   }, [showVoiceScreen, handleSend]);
 
-  // Close photo preview and cleanup
-  const closePreview = () => {
-    if (previewImage?.url) {
-      URL.revokeObjectURL(previewImage.url);
+  // Create slides array from all images in current conversation
+  const getAllImagesFromChat = useCallback(() => {
+    const slides = [];
+    
+    messages.forEach(msg => {
+      // Generated images (from image mode)
+      if (msg.image) {
+        const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : null);
+        if (imageUrl) {
+          slides.push({
+            src: imageUrl,
+            alt: `Generated: ${msg.text.slice(0, 30)}...`,
+            title: `Generated: ${msg.text.slice(0, 30)}...`
+          });
+        }
+      }
+      
+      // User uploaded attachments (images)
+      if (msg.attachments) {
+        msg.attachments.forEach(attachment => {
+          if (attachment.type?.startsWith('image/')) {
+            const imageUrl = attachment.previewUrl || attachment.storageUrl || attachment.base64;
+            if (imageUrl) {
+              slides.push({
+                src: imageUrl,
+                alt: attachment.name,
+                title: attachment.name
+              });
+            }
+          }
+        });
+      }
+    });
+    
+    return slides;
+  }, [messages]);
+
+  // Open lightbox with specific image index
+  const openLightbox = useCallback((imageUrl, imageName) => {
+    const slides = getAllImagesFromChat();
+    const index = slides.findIndex(slide => slide.src === imageUrl);
+    
+    if (index !== -1) {
+      setLightboxState({ open: true, index });
+    } else {
+      // Fallback - add this image to slides if not found
+      slides.push({ src: imageUrl, alt: imageName, title: imageName });
+      setLightboxState({ open: true, index: slides.length - 1 });
     }
-    setPreviewImage(null);
+  }, [getAllImagesFromChat]);
+
+  // Close lightbox
+  const closeLightbox = () => {
+    setLightboxState({ open: false, index: 0 });
   };
 
   // 🔄 Helper function to convert File object to base64 string
@@ -3124,7 +3172,7 @@ const virtuosoComponents = React.useMemo(() => ({
               <MessageItem
                 msg={msg}
                 index={index}
-                onPreviewImage={setPreviewImage}
+                onPreviewImage={(imageData) => openLightbox(imageData.url, imageData.name)}
                 onDocumentView={setDocumentViewer}
                 onSourcesClick={handleSourcesClick}
                 onAudioStateChange={setIsAudioPlaying}
@@ -3204,8 +3252,7 @@ const virtuosoComponents = React.useMemo(() => ({
         isAudioPlaying={isAudioPlaying}
         isImageMode={isImageMode}
         uiLanguage={uiLanguage}
-        previewImage={previewImage}
-        setPreviewImage={setPreviewImage}
+        onPreviewImage={(imageData) => openLightbox(imageData.url, imageData.name)}
         audioLevel={audioLevel}
       />
 
@@ -3348,15 +3395,12 @@ const virtuosoComponents = React.useMemo(() => ({
         input:focus { outline: none !important; }
       `}</style>
       
-      {/* 🖼️ YARL LIGHTBOX - Modern image viewer */}
+      {/* 🖼️ YARL LIGHTBOX - Modern image viewer with navigation */}
       <Lightbox
-        open={!!previewImage}
-        close={closePreview}
-        slides={previewImage ? [{
-          src: previewImage.url,
-          alt: previewImage.name,
-          title: previewImage.name
-        }] : []}
+        open={lightboxState.open}
+        close={closeLightbox}
+        slides={getAllImagesFromChat()}
+        index={lightboxState.index}
       />
       
       {/* 📄 DOCUMENT VIEWER */}
