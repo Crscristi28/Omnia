@@ -1362,22 +1362,22 @@ function App() {
               );
               
               console.log('✅ [INSTANT] Generated image uploaded:', uploadResult.fileName);
+              console.log('🎬 [NO-LAG] Showing image only after upload completion');
               
-              // Update message with BOTH base64 (immediate display) AND storageUrl (persistence)
+              // Show image ONLY after upload is complete (prevents lag)
               setMessages(prev => prev.map(msg => 
                 msg.id === imageGenBotMessageId 
                   ? {
                       ...msg,
-                      text: responseText, // Only Omnia's response, no fallback
+                      text: responseText,
                       image: {
                         // Essential metadata
                         mimeType: imageData.mimeType,
                         width: imageData.width,
                         height: imageData.height,
-                        // Immediate display with base64
-                        base64: imageData.base64,
-                        // Persistence with storage URL
+                        // Use Supabase URL (no base64 = no lag during upload)
                         storageUrl: uploadResult.publicUrl,
+                        base64: imageData.base64, // Fallback only
                         storagePath: uploadResult.path,
                         timestamp: imageTimestamp
                       },
