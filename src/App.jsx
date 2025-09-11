@@ -1221,17 +1221,40 @@ function App() {
           let responseText = '';
           let generatedImages = [];
           
+          // Word-by-word animation variables (same as normal mode)
+          let rawChunkBufferImage = '';
+          let wordQueueImage = [];
+          let currentDisplayedTextImage = '';
+          let isStreamFinishedImage = false;
+          let animationIntervalImage = null;
+          
           const result = await geminiService.sendMessage(
             messagesWithUser,
-            (chunk, isChunk, extra) => {
-              // Handle streaming text from Omnia
+            (chunk, isStreamingParam, extra) => {
+              // Handle streaming text from Omnia (same as normal mode)
               if (chunk) {
-                responseText += chunk;
-                setMessages(prev => prev.map(msg => 
-                  msg.id === imageGenBotMessageId
-                    ? { ...msg, text: responseText, isStreaming: true }
-                    : msg
-                ));
+                // Add chunk to buffer
+                rawChunkBufferImage += chunk;
+                
+                // Split by spaces to get words
+                const newWords = rawChunkBufferImage.split(/\s+/);
+                rawChunkBufferImage = newWords.pop() || ''; // Last part might be incomplete word
+                
+                // Add complete words to queue
+                wordQueueImage.push(...newWords.filter(w => w !== ''));
+              }
+              
+              // Set stream finished flag
+              isStreamFinishedImage = !isStreamingParam;
+              
+              if (isStreamFinishedImage) {
+                // Add remaining buffer content
+                if (rawChunkBufferImage) {
+                  wordQueueImage.push(rawChunkBufferImage);
+                  rawChunkBufferImage = '';
+                }
+                
+                console.log('🎯 Image mode stream finished, word queue has', wordQueueImage.length, 'words');
               }
               
               // Handle generated images from tool call
@@ -1249,7 +1272,41 @@ function App() {
             true // imageMode = true
           );
           
-          // Show beautiful indicator IMMEDIATELY after streaming ends
+          // Start animation interval for word-by-word display (same as normal mode)
+          animationIntervalImage = setInterval(() => {
+            if (wordQueueImage.length > 0) {
+              const nextWord = wordQueueImage.shift();
+              currentDisplayedTextImage += nextWord + ' ';
+              
+              // Update message progressively
+              setMessages(prev => 
+                prev.map(msg => 
+                  msg.id === imageGenBotMessageId 
+                    ? { ...msg, text: currentDisplayedTextImage, isStreaming: true }
+                    : msg
+                )
+              );
+            } else if (isStreamFinishedImage && wordQueueImage.length === 0) {
+              // Animation complete
+              clearInterval(animationIntervalImage);
+              
+              // Finalize message with isStreaming: false
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === imageGenBotMessageId
+                    ? { ...msg, text: currentDisplayedTextImage, isStreaming: false }
+                    : msg
+                )
+              );
+              
+              // Store final response text
+              responseText = currentDisplayedTextImage;
+              
+              console.log('🎯 Image mode progressive streaming animation complete');
+            }
+          }, 30); // 30ms for smooth word-by-word animation (same as normal mode)
+          
+          // Show beautiful indicator AFTER animation completes
           const beautifulGeneratingText = `<span style="
             background: linear-gradient(45deg, #00d4ff, #8c52ff); 
             -webkit-background-clip: text; 
@@ -1261,11 +1318,18 @@ function App() {
             font-weight: 500;
           ">✨ generating image...</span>`;
           
-          setMessages(prev => prev.map(msg => 
-            msg.id === imageGenBotMessageId
-              ? { ...msg, text: responseText + '\n\n' + beautifulGeneratingText, isStreaming: true }
-              : msg
-          ));
+          // Wait for animation to complete before adding generating indicator
+          const waitForAnimation = setInterval(() => {
+            if (!animationIntervalImage) {
+              clearInterval(waitForAnimation);
+              
+              setMessages(prev => prev.map(msg => 
+                msg.id === imageGenBotMessageId
+                  ? { ...msg, text: responseText + '\n\n' + beautifulGeneratingText, isStreaming: false }
+                  : msg
+              ));
+            }
+          }, 100);
           
           // Also check result.images from the final return value
           if (result && result.images && result.images.length > 0) {
