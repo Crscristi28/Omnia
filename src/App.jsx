@@ -2075,14 +2075,11 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     if (doc.geminiFileUri && doc.supabaseUrl) {
       console.log(`✅ [PREPARED-DOC] Using pre-uploaded URLs for: ${doc.name}`);
       
-      // Create preview URL for display  
-      const previewUrl = URL.createObjectURL(doc.file);
-      
       return {
         name: doc.name,
         size: doc.size || 'Unknown size',
         type: doc.file.type || 'application/octet-stream',
-        previewUrl: previewUrl,
+        previewUrl: doc.supabaseUrl, // Use Supabase URL directly, no blob
         storageUrl: doc.supabaseUrl, // Already on Supabase
         storagePath: doc.supabasePath,
         geminiFileUri: doc.geminiFileUri, // Already prepared for AI
@@ -2095,20 +2092,20 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // 🔄 FALLBACK - Process file if not pre-uploaded (safety)
     console.log(`⏳ [FALLBACK-DOC] Processing file traditionally: ${doc.name}`);
     
-    // Create preview URL immediately for instant display
-    const previewUrl = URL.createObjectURL(doc.file);
-    
     // Start base64 conversion for persistence (non-blocking)
     const base64Promise = convertFileToBase64(doc.file).catch(error => {
       console.error(`Base64 conversion failed for ${doc.name}:`, error);
       return null;
     });
     
+    // Wait for base64 to be ready
+    const base64Data = await base64Promise;
+    
     return {
       name: doc.name,
       size: doc.file.size,
       type: doc.file.type,
-      previewUrl: previewUrl, // For instant local display
+      previewUrl: base64Data, // Use base64 directly, no blob URL
       base64Promise: base64Promise, // Will resolve to base64 string
       storageUrl: null, // Will be added after background upload
       storagePath: null,
