@@ -941,7 +941,7 @@ function App() {
       console.error('❌ STT Recording setup error:', error);
       setIsRecordingSTT(false);
       setAudioLevel(0);
-      showNotification('Nepodařilo se získat přístup k mikrofonu', 'error');
+      showNotification('Could not access microphone', 'error');
     }
   };
 
@@ -994,7 +994,7 @@ function App() {
         const transcribedText = data.text.trim();
         setInput(transcribedText);
       } else {
-        throw new Error('Nepodařilo se rozpoznat řeč');
+        throw new Error('Speech recognition failed');
       }
 
     } catch (error) {
@@ -1428,7 +1428,7 @@ function App() {
             msg.id === imageGenBotMessageId 
               ? {
                   ...msg,
-                  text: `❌ Nepodařilo se vygenerovat obrázek: ${imageError.message}`,
+                  text: `❌ Failed to generate image: ${imageError.message}`,
                   isStreaming: false
                 }
               : msg
@@ -1444,7 +1444,7 @@ function App() {
           setLoading(false);
           setStreaming(false);
           
-          showNotification('Chyba při generování obrázku', 'error');
+          showNotification('Image generation error', 'error');
         }
         
         // Keep image mode active (user can toggle it off manually)
@@ -2163,7 +2163,7 @@ const handleDocumentUpload = async (event) => {
     
   } catch (error) {
     console.error('❌ [UPLOAD] Document upload error:', error);
-    showNotification(error.message || 'Chyba při zpracování dokumentu', 'error');
+    showNotification(error.message || 'Document processing error', 'error');
   } finally {
     setLoading(false);
   }
@@ -2348,7 +2348,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                           isFileExtensionSupported(doc.file.name);
       
       if (!isSupported) {
-        throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
+        throw new Error(`Unsupported format: ${doc.file.name}`);
       }
       
       // Categorize based on file type

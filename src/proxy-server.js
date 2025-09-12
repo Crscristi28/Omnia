@@ -225,7 +225,7 @@ app.post('/openai', async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('OpenAI error:', error);
-    res.status(500).json({ error: 'Chyba při komunikaci s OpenAI API.' });
+    res.status(500).json({ error: 'OpenAI API communication error.' });
   }
 });
 

@@ -22,7 +22,7 @@ const DocumentViewer = ({
   const texts = {
     cs: {
       loading: 'Načítám dokument...',
-      error: 'Chyba při načítání dokumentu',
+      error: 'Document loading error',
       download: 'Stáhnout',
       close: 'Zavřít'
     },
