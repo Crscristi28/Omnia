@@ -77,7 +77,7 @@ export const createNotificationSystem = (setIsSearching) => {
           }
         }, 400);
       }
-    }, type === 'error' ? 8000 : 4000);
+    }, type === 'error' ? 5000 : 4000);
   };
   
   return { showNotification };
