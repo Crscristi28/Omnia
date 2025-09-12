@@ -1668,10 +1668,6 @@ function App() {
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreamingParam, sources = []) => {
-            // 🧪 TEST: Simulate empty stream failure
-            // COMMENT THIS OUT AFTER TESTING!
-            chunk = ''; // Force empty chunk
-            
             // Add chunk to buffer immediately
             rawChunkBuffer += chunk;
             
