@@ -1,0 +1,382 @@
+# 📋 OMNIA - OBCHODNÍ PODMÍNKY / TERMS OF SERVICE
+
+## 🇨🇿 ČESKÁ VERZE
+
+### 1. ZÁKLADNÍ INFORMACE
+**Poskytovatel služby**: Omnia AI s.r.o.
+**IČO**: [TBD]
+**Sídlo**: Praha, Česká republika
+**Kontakt**: info@omnia-ai.com
+**Datum účinnosti**: 13. září 2024
+**Poslední aktualizace**: 13. září 2024
+
+### 2. POPIS SLUŽBY OMNIA
+
+#### 🤖 Co je Omnia
+Omnia je AI asistent aplikace, která umožňuje:
+- Textové konverzace s pokročilými AI modely
+- Hlasové ovládání a komunikaci
+- Nahrávání a analýzu dokumentů a obrázků
+- Vícejazyčnou podporu (6 jazyků)
+- Cloudové synchronizování dat
+
+#### 🎯 Účel služby
+- Asistence při práci s dokumenty
+- Kreativní psaní a brainstorming
+- Vzdělávací podpora
+- Jazyková pomoc a překlady
+
+### 3. REGISTRACE A PŘÍSTUP
+
+#### 👤 Uživatelský účet
+- Omnia funguje bez povinné registrace
+- Data se ukládají lokálně v prohlížeči + cloudová záloha
+- Jeden uživatel může mít více nezávislých chatů
+
+#### 🔐 Bezpečnost přístupu
+- Zodpovídáte za zabezpečení svého zařízení
+- Při ztrátě přístupu kontaktujte support
+- Podezřelou aktivitu nahlaste okamžitě
+
+### 4. PRAVIDLA POUŽÍVÁNÍ
+
+#### ✅ Povolené použití
+- Legální obchodní a osobní účely
+- Vzdělávací a výzkumné aktivity
+- Kreativní tvorba obsahu
+- Analýza veřejně dostupných dokumentů
+
+#### ❌ Zakázané použití
+- Vytváření škodlivého, nezákonného obsahu
+- Porušování autorských práv třetích stran
+- Spam, phishing nebo podvodné aktivity
+- Reverse engineering aplikace
+- Automatizované scripting bez souhlasu
+
+#### 📁 Limity souborů
+- **Maximální velikost souboru**: 100 MB
+- **Denní limit uploadů**: 200 MB
+- **Podporované formáty**: PDF, obrázky (PNG, JPG), textové soubory
+- Limity se mohou lišit podle tarifu
+
+### 5. DUŠEVNÍ VLASTNICTVÍ
+
+#### 👨‍💻 Vaše obsah
+- **Vlastníte**: Všechen obsah, který nahrajete nebo vytvoříte
+- **Udělujete nám**: Licenci ke zpracování pro poskytování služby
+- **Můžete**: Kdykoli smazat nebo exportovat svá data
+
+#### 🏢 Naše práva
+- **Vlastníme**: Aplikaci Omnia, její kód a design
+- **Vyhrazujeme si**: Právo na vylepšování služby
+- **Ochráníme**: Vaše data podle Privacy Policy
+
+### 6. DOSTUPNOST SLUŽBY
+
+#### ⏱️ Provozní doba
+- Služba je dostupná 24/7 s nejlepším úsilím
+- **Nezaručujeme**: 100% dostupnost (plánované údržby)
+- **Oznámíme**: Větší výpadky předem když je to možné
+
+#### 🔧 Údržba a aktualizace
+- Pravidelné vylepšování funkcí
+- Bezpečnostní záplaty
+- Performance optimalizace
+
+### 7. TARIFY A PLATBY
+
+#### 🆓 Aktuální stav (BETA)
+- **Omnia je momentálně zdarma** pro všechny uživatele
+- Základní funkce dostupné bez placení
+- Fair usage policy pro všechny
+
+#### 💳 Budoucí prémiové tarify
+- **Basic**: Rozšířené limity uploadů
+- **Pro**: Prioritní zpracování, více modelů
+- **Enterprise**: Vlastní instance, API přístup
+- 30 dní na zrušení bez udání důvodu
+
+#### 💰 Platební podmínky
+- Platby zpracovává Stripe (bezpečné mezinárodní platby)
+- Faktury v CZK nebo EUR
+- Automatické obnovování (zrušitelné kdykoli)
+
+### 8. ODPOVĚDNOST A ZÁRUKY
+
+#### ⚖️ Omezení odpovědnosti
+- Služba poskytována "tak jak je"
+- **Nezodpovídáme** za: Ztrátu dat při hardwarové poruše vašeho zařízení
+- **Maximální náhrada**: Výše zaplacená za službu v posledních 12 měsících
+- **Vyloučeno**: Nepřímé škody, ztráta zisku
+
+#### 🛡️ Vaše odpovědnost
+- Legální používání služby
+- Ochrana vlastních dat a zařízení
+- Respektování práv třetích stran
+- Nahlašování chyb a bezpečnostních problémů
+
+### 9. OCHRANA DAT A SOUKROMÍ
+
+#### 📋 Reference na Privacy Policy
+- Detailní informace v dokumentu GDPR_PRIVACY_POLICY.txt
+- Data ukládána v EU (Supabase, Google Cloud)
+- Žádné sledování pro reklamní účely
+- Právo na export a smazání dat
+
+#### 🔒 Bezpečnostní opatření
+- Šifrování všech přenosů (HTTPS)
+- Pravidelné bezpečnostní audity
+- Minimalizace sbíraných dat
+- Transparentnost o použití dat
+
+### 10. UKONČENÍ SLUŽBY
+
+#### 👋 Ukončení ze strany uživatele
+- **Můžete kdykoli**: Smazat své chaty a data
+- **Export dat**: Před ukončením si můžete data exportovat
+- **Zrušení předplatného**: 30 dní výpovědní lhůta
+
+#### 🚪 Ukončení ze strany Omnia
+- **Důvody**: Porušení těchto podmínek, zneužití služby
+- **Výpověď**: 30 dní předem (kromě závažných porušení)
+- **Vaše data**: 90 dní na stažení po ukončení
+
+### 11. ZMĚNY PODMÍNEK
+
+#### 📝 Jak vás informujeme
+- Oznámení v aplikaci před změnami
+- E-mail (pokud máme váš kontakt)
+- 30 dní na vznesení námitky
+
+#### ⚖️ Významné změny
+- Změny cen: 60 dní předem
+- Změny funkcí: 30 dní předem
+- Bezpečnostní změny: Okamžitě
+
+### 12. ŘEŠENÍ SPORŮ
+
+#### 🇨🇿 Rozhodné právo
+- Tyto podmínky se řídí českým právem
+- Místní příslušnost: soudy v Praze
+
+#### 🤝 Mimosoudní řešení
+- Přednostně řešíme spory smírně
+- Kontaktujte: support@omnia-ai.com
+- Odpovíme do 5 pracovních dnů
+
+#### 🏛️ Soudní řízení
+- Alternativní řešení sporů: www.adr.eu
+- Česká obchodní inspekce pro spotřebitelské spory
+- Evropská platforma ODR: ec.europa.eu/consumers/odr
+
+### 13. KONTAKTNÍ INFORMACE
+
+**📧 Hlavní kontakt**: info@omnia-ai.com
+**🛠️ Technická podpora**: support@omnia-ai.com
+**🔒 Ochrana dat**: privacy@omnia-ai.com
+**💼 Obchodní záležitosti**: business@omnia-ai.com
+
+---
+
+## 🇺🇸 ENGLISH VERSION
+
+### 1. BASIC INFORMATION
+**Service Provider**: Omnia AI s.r.o.
+**Business ID**: [TBD]
+**Address**: Prague, Czech Republic
+**Contact**: info@omnia-ai.com
+**Effective Date**: September 13, 2024
+**Last Updated**: September 13, 2024
+
+### 2. OMNIA SERVICE DESCRIPTION
+
+#### 🤖 What is Omnia
+Omnia is an AI assistant application that enables:
+- Text conversations with advanced AI models
+- Voice control and communication
+- Document and image upload and analysis
+- Multi-language support (6 languages)
+- Cloud data synchronization
+
+#### 🎯 Service Purpose
+- Document work assistance
+- Creative writing and brainstorming
+- Educational support
+- Language help and translations
+
+### 3. REGISTRATION AND ACCESS
+
+#### 👤 User Account
+- Omnia works without mandatory registration
+- Data stored locally in browser + cloud backup
+- One user can have multiple independent chats
+
+#### 🔐 Access Security
+- You are responsible for securing your device
+- Contact support if you lose access
+- Report suspicious activity immediately
+
+### 4. USAGE RULES
+
+#### ✅ Permitted Use
+- Legal business and personal purposes
+- Educational and research activities
+- Creative content creation
+- Analysis of publicly available documents
+
+#### ❌ Prohibited Use
+- Creating harmful, illegal content
+- Violating third-party copyrights
+- Spam, phishing, or fraudulent activities
+- Reverse engineering the application
+- Automated scripting without consent
+
+#### 📁 File Limits
+- **Maximum file size**: 100 MB
+- **Daily upload limit**: 200 MB
+- **Supported formats**: PDF, images (PNG, JPG), text files
+- Limits may vary by plan
+
+### 5. INTELLECTUAL PROPERTY
+
+#### 👨‍💻 Your Content
+- **You own**: All content you upload or create
+- **You grant us**: License to process for service provision
+- **You can**: Delete or export your data anytime
+
+#### 🏢 Our Rights
+- **We own**: Omnia application, its code and design
+- **We reserve**: Right to improve the service
+- **We protect**: Your data according to Privacy Policy
+
+### 6. SERVICE AVAILABILITY
+
+#### ⏱️ Operating Hours
+- Service available 24/7 with best effort
+- **We don't guarantee**: 100% availability (planned maintenance)
+- **We announce**: Major outages in advance when possible
+
+#### 🔧 Maintenance and Updates
+- Regular feature improvements
+- Security patches
+- Performance optimization
+
+### 7. PRICING AND PAYMENTS
+
+#### 🆓 Current Status (BETA)
+- **Omnia is currently free** for all users
+- Basic features available without payment
+- Fair usage policy for everyone
+
+#### 💳 Future Premium Plans
+- **Basic**: Extended upload limits
+- **Pro**: Priority processing, more models
+- **Enterprise**: Private instance, API access
+- 30-day cancellation without reason
+
+#### 💰 Payment Terms
+- Payments processed by Stripe (secure international payments)
+- Invoices in CZK or EUR
+- Auto-renewal (cancellable anytime)
+
+### 8. LIABILITY AND WARRANTIES
+
+#### ⚖️ Limitation of Liability
+- Service provided "as is"
+- **We're not liable** for: Data loss due to your device hardware failure
+- **Maximum compensation**: Amount paid for service in last 12 months
+- **Excluded**: Indirect damages, loss of profit
+
+#### 🛡️ Your Responsibility
+- Legal use of service
+- Protection of your own data and devices
+- Respecting third-party rights
+- Reporting bugs and security issues
+
+### 9. DATA PROTECTION AND PRIVACY
+
+#### 📋 Privacy Policy Reference
+- Detailed information in GDPR_PRIVACY_POLICY.txt document
+- Data stored in EU (Supabase, Google Cloud)
+- No tracking for advertising purposes
+- Right to export and delete data
+
+#### 🔒 Security Measures
+- Encryption of all transfers (HTTPS)
+- Regular security audits
+- Data collection minimization
+- Transparency about data use
+
+### 10. SERVICE TERMINATION
+
+#### 👋 User Termination
+- **You can anytime**: Delete your chats and data
+- **Data export**: You can export data before termination
+- **Subscription cancellation**: 30-day notice period
+
+#### 🚪 Omnia Termination
+- **Reasons**: Violation of these terms, service abuse
+- **Notice**: 30 days in advance (except serious violations)
+- **Your data**: 90 days to download after termination
+
+### 11. TERMS CHANGES
+
+#### 📝 How We Inform You
+- In-app notification before changes
+- Email (if we have your contact)
+- 30 days to raise objections
+
+#### ⚖️ Significant Changes
+- Price changes: 60 days advance
+- Feature changes: 30 days advance
+- Security changes: Immediately
+
+### 12. DISPUTE RESOLUTION
+
+#### 🇨🇿 Governing Law
+- These terms are governed by Czech law
+- Jurisdiction: courts in Prague
+
+#### 🤝 Out-of-court Resolution
+- We preferentially resolve disputes amicably
+- Contact: support@omnia-ai.com
+- We respond within 5 business days
+
+#### 🏛️ Legal Proceedings
+- Alternative dispute resolution: www.adr.eu
+- Czech Trade Inspection for consumer disputes
+- European ODR platform: ec.europa.eu/consumers/odr
+
+### 13. CONTACT INFORMATION
+
+**📧 Main contact**: info@omnia-ai.com
+**🛠️ Technical support**: support@omnia-ai.com
+**🔒 Data protection**: privacy@omnia-ai.com
+**💼 Business matters**: business@omnia-ai.com
+
+---
+
+## 🔄 VZTAH K DALŠÍM DOKUMENTŮM
+
+**Tento dokument je doplněn:**
+- GDPR_PRIVACY_POLICY.txt (ochrana osobních údajů)
+- README.txt (technická dokumentace)
+- Budoucí předplatné podmínky (při spuštění placených plánů)
+
+**This document is supplemented by:**
+- GDPR_PRIVACY_POLICY.txt (personal data protection)
+- README.txt (technical documentation)  
+- Future subscription terms (when paid plans launch)
+
+---
+
+## 📜 PLATNOST
+
+Tyto obchodní podmínky nabývají účinnosti dnem 13. září 2024 a platí do jejich změny nebo zrušení v souladu s bodem 11.
+
+These terms of service become effective on September 13, 2024, and remain valid until changed or cancelled in accordance with section 11.
+
+---
+
+*© 2024 Omnia AI s.r.o. Všechna práva vyhrazena.*
+*© 2024 Omnia AI s.r.o. All rights reserved.*

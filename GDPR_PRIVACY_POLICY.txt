@@ -1,0 +1,248 @@
+# 🛡️ OMNIA - ZÁSADY OCHRANY OSOBNÍCH ÚDAJŮ / PRIVACY POLICY
+
+## 🇨🇿 ČESKÁ VERZE
+
+### 1. ZÁKLADNÍ INFORMACE
+**Správce údajů**: Omnia AI s.r.o.
+**Kontakt**: info@omnia-ai.com
+**Datum účinnosti**: 13. září 2024
+**Poslední aktualizace**: 13. září 2024
+
+### 2. JAKÉ ÚDAJE SBÍRÁME A PROČ
+
+#### 📝 Chat zprávy a konverzace
+- **Co**: Vaše textové zprávy, dokumenty, obrázky nahrané do chatu
+- **Proč**: Poskytování AI asistent služby, zlepšování odpovědí
+- **Právní základ**: Oprávněný zájem (poskytování služby)
+- **Uchovávání**: Do smazání uživatelem nebo ukončení účtu
+
+#### 🎤 Hlasové nahrávky
+- **Co**: Dočasné audio nahrávky pro převod řeči na text
+- **Proč**: Umožnění hlasového ovládání aplikace
+- **Právní základ**: Souhlas uživatele (kliknutím na mikrofon)
+- **Uchovávání**: Okamžité smazání po zpracování (max. 30 sekund)
+
+#### 📁 Nahrané soubory
+- **Co**: PDF dokumenty, obrázky, textové soubory
+- **Proč**: Analýza obsahu AI modelem pro lepší odpovědi
+- **Právní základ**: Oprávněný zájem (poskytování služby)
+- **Uchovávání**: Do smazání uživatelem
+
+#### ⚙️ Technické údaje
+- **Co**: Jazyk rozhraní, limity uploadů, chybové logy
+- **Proč**: Optimalizace výkonu, zabezpečení služby
+- **Právní základ**: Oprávněný zájem (technický provoz)
+- **Uchovávání**: 12 měsíců
+
+### 3. KDE UKLÁDÁME VAŠE DATA
+
+#### 🏠 Lokální úložiště (váš prohlížeč)
+- **IndexedDB**: Kompletní historie chatů pro rychlý přístup offline
+- **LocalStorage**: Nastavení jazyka, denní limity uploadů
+- **Bezpečnost**: Data zůstávají ve vašem zařízení
+
+#### ☁️ Cloudové úložiště
+- **Supabase (EU)**: Zálohování chat historie a metadat
+- **Google Cloud Storage (EU)**: Nahrané soubory
+- **Bezpečnost**: Šifrování při přenosu i ukládání
+
+#### 🤖 Zpracovatelské služby
+- **Google Vertex AI**: Dočasné zpracování zpráv (smazáno ihned)
+- **ElevenLabs**: Převod řeči na text (smazáno do 30 sekund)
+
+### 4. VAŠE PRÁVA PODLE GDPR
+
+#### ✅ Právo na přístup
+- Můžete požádat o kopii všech vašich dat
+- Odpovíme do 30 dnů
+
+#### ✏️ Právo na opravu
+- Můžete upravit nebo opravit své údaje přímo v aplikaci
+
+#### 🗑️ Právo na smazání ("právo být zapomenut")
+- Kliknutím na "Smazat chat" odstraníte data ze všech systémů
+- Kompletní smazání účtu na požádání
+
+#### 📦 Právo na přenositelnost
+- Export všech vašych dat ve standardním formátu JSON
+
+#### ⛔ Právo na omezení zpracování
+- Můžete požádat o pozastavení zpracování konkrétních dat
+
+#### 📧 Kontakt pro výkon práv
+- Email: privacy@omnia-ai.com
+- Odpovíme do 30 dnů podle GDPR
+
+### 5. ZABEZPEČENÍ DAT
+
+#### 🔒 Technická opatření
+- Šifrování HTTPS pro všechny přenosy
+- Šifrování dat v cloudových úložištích
+- Pravidelné bezpečnostní audity
+
+#### 👥 Organizační opatření
+- Přístup k datům pouze oprávněných zaměstnanců
+- Školení o ochraně osobních údajů
+- Incident response plán
+
+### 6. SDÍLENÍ DAT S TŘETÍMI STRANAMI
+
+Vaše data sdílíme pouze s:
+- **Google (Vertex AI)**: Zpracování AI odpovědí (dočasné)
+- **ElevenLabs**: Převod řeči na text (dočasné)
+- **Supabase**: Cloudové ukládání (EU servery)
+
+❌ **NIKDY** neprodáváme vaše data reklamním společnostem!
+
+### 7. MEZINÁRODNÍ PŘENOSY DAT
+
+Všechny naše služby používají servery v EU:
+- Supabase: Frankfurt, Německo
+- Google Cloud: Evropská unie
+- ElevenLabs: Zpracování v EU
+
+### 8. COOKIES A SLEDOVÁNÍ
+
+- ✅ **Používáme**: LocalStorage pro funkčnost (jazyk, nastavení)
+- ❌ **Nepoužíváme**: Sledovací cookies, analytiku třetích stran
+
+### 9. ZMĚNY TĚCHTO ZÁSAD
+
+O změnách vás informujeme:
+- Oznámením v aplikaci
+- E-mailem (pokud máme váš kontakt)
+- Aktualizací tohoto dokumentu s novým datem
+
+---
+
+## 🇺🇸 ENGLISH VERSION
+
+### 1. BASIC INFORMATION
+**Data Controller**: Omnia AI s.r.o.
+**Contact**: info@omnia-ai.com
+**Effective Date**: September 13, 2024
+**Last Updated**: September 13, 2024
+
+### 2. WHAT DATA WE COLLECT AND WHY
+
+#### 📝 Chat Messages and Conversations
+- **What**: Your text messages, documents, images uploaded to chat
+- **Why**: Providing AI assistant service, improving responses
+- **Legal Basis**: Legitimate interest (service provision)
+- **Retention**: Until deleted by user or account termination
+
+#### 🎤 Voice Recordings
+- **What**: Temporary audio recordings for speech-to-text conversion
+- **Why**: Enabling voice control of the application
+- **Legal Basis**: User consent (clicking microphone button)
+- **Retention**: Immediate deletion after processing (max 30 seconds)
+
+#### 📁 Uploaded Files
+- **What**: PDF documents, images, text files
+- **Why**: Content analysis by AI model for better responses
+- **Legal Basis**: Legitimate interest (service provision)
+- **Retention**: Until deleted by user
+
+#### ⚙️ Technical Data
+- **What**: Interface language, upload limits, error logs
+- **Why**: Performance optimization, service security
+- **Legal Basis**: Legitimate interest (technical operation)
+- **Retention**: 12 months
+
+### 3. WHERE WE STORE YOUR DATA
+
+#### 🏠 Local Storage (your browser)
+- **IndexedDB**: Complete chat history for quick offline access
+- **LocalStorage**: Language settings, daily upload limits
+- **Security**: Data remains on your device
+
+#### ☁️ Cloud Storage
+- **Supabase (EU)**: Chat history and metadata backup
+- **Google Cloud Storage (EU)**: Uploaded files
+- **Security**: Encryption in transit and at rest
+
+#### 🤖 Processing Services
+- **Google Vertex AI**: Temporary message processing (deleted immediately)
+- **ElevenLabs**: Speech-to-text conversion (deleted within 30 seconds)
+
+### 4. YOUR GDPR RIGHTS
+
+#### ✅ Right of Access
+- You can request a copy of all your data
+- We respond within 30 days
+
+#### ✏️ Right of Rectification
+- You can edit or correct your data directly in the app
+
+#### 🗑️ Right of Erasure ("right to be forgotten")
+- Click "Delete chat" removes data from all systems
+- Complete account deletion upon request
+
+#### 📦 Right to Data Portability
+- Export all your data in standard JSON format
+
+#### ⛔ Right to Restrict Processing
+- You can request suspension of specific data processing
+
+#### 📧 Contact for Rights Exercise
+- Email: privacy@omnia-ai.com
+- We respond within 30 days per GDPR
+
+### 5. DATA SECURITY
+
+#### 🔒 Technical Measures
+- HTTPS encryption for all transfers
+- Data encryption in cloud storage
+- Regular security audits
+
+#### 👥 Organizational Measures
+- Data access only by authorized employees
+- Privacy protection training
+- Incident response plan
+
+### 6. DATA SHARING WITH THIRD PARTIES
+
+We share your data only with:
+- **Google (Vertex AI)**: AI response processing (temporary)
+- **ElevenLabs**: Speech-to-text conversion (temporary)
+- **Supabase**: Cloud storage (EU servers)
+
+❌ **NEVER** sell your data to advertising companies!
+
+### 7. INTERNATIONAL DATA TRANSFERS
+
+All our services use EU servers:
+- Supabase: Frankfurt, Germany
+- Google Cloud: European Union
+- ElevenLabs: EU processing
+
+### 8. COOKIES AND TRACKING
+
+- ✅ **We use**: LocalStorage for functionality (language, settings)
+- ❌ **We don't use**: Tracking cookies, third-party analytics
+
+### 9. CHANGES TO THIS POLICY
+
+We inform you of changes through:
+- Notification in the app
+- Email (if we have your contact)
+- Updating this document with new date
+
+---
+
+## 📞 KONTAKT / CONTACT
+
+**Email**: privacy@omnia-ai.com  
+**Adresa**: Omnia AI s.r.o., Praha, Česká republika  
+**DPO**: privacy@omnia-ai.com
+
+Pro stížnosti můžete kontaktovat také:
+**Úřad pro ochranu osobních údajů**: www.uoou.cz
+
+For complaints, you can also contact:
+**Czech Data Protection Authority**: www.uoou.cz
+
+---
+
+*Tento dokument je součástí Terms of Service aplikace Omnia AI.*
+*This document is part of the Omnia AI Terms of Service.*
