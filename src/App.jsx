@@ -1118,6 +1118,9 @@ function App() {
     
     const finalTextInput = textInput || currentInput;
     
+    // 🔄 ROLLBACK: Save original text for potential restoration
+    const originalUserText = finalTextInput;
+    
     if (!finalTextInput.trim() || loading) return;
     
     // Transform single newlines to double newlines for proper markdown rendering in user messages
@@ -1665,6 +1668,10 @@ function App() {
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreamingParam, sources = []) => {
+            // 🧪 TEST: Simulate empty stream failure
+            // COMMENT THIS OUT AFTER TESTING!
+            chunk = ''; // Force empty chunk
+            
             // Add chunk to buffer immediately
             rawChunkBuffer += chunk;
             
@@ -1695,6 +1702,12 @@ function App() {
               setStreaming(false);
               
               console.log('🎯 Stream finished, word queue has', wordQueue.length, 'words');
+              
+              // 🔄 ROLLBACK: Check if stream failed (no content received)
+              if (wordQueue.length === 0) {
+                console.error('❌ Stream finished but no content received - initiating rollback');
+                // Rollback will be handled in animation interval
+              }
             }
           },
           () => {
@@ -1723,6 +1736,25 @@ function App() {
             // Animation complete
             clearInterval(animationInterval);
             
+            // 🔄 ROLLBACK: Check if stream produced no content
+            if (currentDisplayedText === '') {
+              console.error('❌ Stream failed - no content received, initiating rollback');
+              
+              // Remove the failed messages (user + bot with span indicator)
+              setMessages(prev => prev.slice(0, -2));
+              
+              // Restore user text to input
+              setInput(originalUserText);
+              
+              // Show error notification
+              showNotification('Something went wrong. Please try again.', 'error');
+              
+              // Don't save to DB - rollback complete
+              console.log('✅ Rollback complete - messages removed, text restored to input');
+              return;
+            }
+            
+            // Normal completion - stream had content
             // Finalize message
             setMessages(prev =>
               prev.map(msg =>
