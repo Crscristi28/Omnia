@@ -993,14 +993,13 @@ function App() {
       if (data.success && data.text && data.text.trim()) {
         const transcribedText = data.text.trim();
         setInput(transcribedText);
-        showNotification(`Text převeden pomocí ${usedService}! Zkontrolujte a odešlete.`, 'success');
       } else {
         throw new Error('Nepodařilo se rozpoznat řeč');
       }
 
     } catch (error) {
       console.error('💥 STT processing error:', error);
-      showNotification(`Chyba při převodu: ${error.message}`, 'error');
+      showNotification('Speech recognition error - please try again', 'error');
     }
   };
 
@@ -2024,7 +2023,7 @@ const handleDocumentUpload = async (event) => {
   // Check file size - now supporting much larger files with direct upload
   const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for direct upload
   if (file.size > MAX_FILE_SIZE) {
-    showNotification(`Soubor je příliš velký. Maximální velikost je ${MAX_FILE_SIZE / (1024 * 1024)} MB.`, 'error');
+    showNotification(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)} MB`, 'error');
     return;
   }
 
@@ -2042,7 +2041,7 @@ const handleDocumentUpload = async (event) => {
   // Check if adding this file would exceed daily limit
   if (todayUploaded.bytes + file.size > DAILY_LIMIT) {
     const remainingMB = Math.max(0, (DAILY_LIMIT - todayUploaded.bytes) / (1024 * 1024)).toFixed(1);
-    showNotification(messages.dailyLimit ? messages.dailyLimit(remainingMB) : `Denní limit překročen. Zbývá ${remainingMB} MB.`, 'error');
+    showNotification(`Daily upload limit exceeded. Remaining: ${remainingMB} MB`, 'error');
     return;
   }
   
