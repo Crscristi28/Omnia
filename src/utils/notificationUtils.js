@@ -25,9 +25,9 @@ export const createNotificationSystem = (setIsSearching) => {
     `;
     
     const typeStyles = {
-      error: 'background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(200, 35, 51, 0.95)); color: white;',
-      success: 'background: linear-gradient(135deg, rgba(40, 167, 69, 0.95), rgba(32, 201, 151, 0.95)); color: white;',
-      info: 'background: linear-gradient(135deg, rgba(0, 123, 255, 0.95), rgba(0, 150, 255, 0.95)); color: white;'
+      error: 'background: linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(200, 35, 51, 0.15)); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3);',
+      success: 'background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.15)); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.3);',
+      info: 'background: linear-gradient(135deg, rgba(0, 123, 255, 0.15), rgba(0, 150, 255, 0.15)); color: #007bff; border: 1px solid rgba(0, 123, 255, 0.3);'
     };
     
     notification.style.cssText = baseStyle + (typeStyles[type] || typeStyles.info);

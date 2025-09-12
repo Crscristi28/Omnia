@@ -3132,6 +3132,22 @@ const virtuosoComponents = React.useMemo(() => ({
           )}
         </div>
 
+        {/* 🧪 TEST NOTIFICATION BUTTON - temporary */}
+        <button
+          onClick={() => showNotification('Something went wrong. Please try again.', 'error')}
+          style={{
+            ...newChatButtonStyle,
+            width: isMobile ? 40 : 44,
+            height: isMobile ? 40 : 44,
+            marginRight: '8px',
+            background: 'rgba(220, 53, 69, 0.1)',
+            border: '1px solid rgba(220, 53, 69, 0.3)',
+          }}
+          title="Test Error Notification"
+        >
+          🧪
+        </button>
+
         {/* NEW CHAT BUTTON - vpravo */}
         <button
           onClick={handleNewChat}
