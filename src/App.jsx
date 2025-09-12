@@ -2179,6 +2179,9 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const currentLoading = loading;
   const currentStreaming = streaming;
   
+  // 🔄 ROLLBACK: Save original text for potential restoration
+  const originalUserText = text;
+  
   // 🛡️ Safety check: Ensure documents is always an array
   const safeDocuments = documents || [];
   
@@ -2806,6 +2809,22 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             )
           );
         } else if (isStreamFinishedDocs && wordQueueDocs.length === 0) {
+          // 🔄 ROLLBACK: Check if stream failed (empty content)
+          if (currentDisplayedTextDocs === '') {
+            console.error('❌ [DOCS] Stream failed - no content received, initiating rollback');
+            clearInterval(animationIntervalDocs);
+            
+            // Remove both user and bot messages from state (don't save to DB)
+            setMessages(prev => prev.slice(0, -2));
+            
+            // Restore original text to input bar
+            setInput(originalUserText);
+            
+            // Show error notification
+            showNotification('Something went wrong. Please try again.', 'error');
+            return;
+          }
+          
           // Animation complete
           clearInterval(animationIntervalDocs);
           
