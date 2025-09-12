@@ -10,6 +10,12 @@
 
 ### 2. JAKÉ ÚDAJE SBÍRÁME A PROČ
 
+#### 📧 Registrační údaje
+- **Co**: E-mailová adresa, heslo (hashované), datum registrace
+- **Proč**: Autentifikace uživatele, zabezpečení účtu, komunikace
+- **Právní základ**: Plnění smlouvy (poskytování služby)
+- **Uchovávání**: Do smazání účtu uživatelem
+
 #### 📝 Chat zprávy a konverzace
 - **Co**: Vaše textové zprávy, dokumenty, obrázky nahrané do chatu
 - **Proč**: Poskytování AI asistent služby, zlepšování odpovědí
@@ -124,6 +130,12 @@ O změnách vás informujeme:
 **Last Updated**: September 13, 2024
 
 ### 2. WHAT DATA WE COLLECT AND WHY
+
+#### 📧 Registration Data
+- **What**: Email address, password (hashed), registration date
+- **Why**: User authentication, account security, communication
+- **Legal Basis**: Contract performance (service provision)
+- **Retention**: Until account deletion by user
 
 #### 📝 Chat Messages and Conversations
 - **What**: Your text messages, documents, images uploaded to chat

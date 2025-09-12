@@ -29,9 +29,10 @@ Omnia je AI asistent aplikace, která umožňuje:
 ### 3. REGISTRACE A PŘÍSTUP
 
 #### 👤 Uživatelský účet
-- Omnia funguje bez povinné registrace
+- **Registrace je povinná** - e-mail a heslo přes Supabase Auth
 - Data se ukládají lokálně v prohlížeči + cloudová záloha
 - Jeden uživatel může mít více nezávislých chatů
+- **E-mail verifikace** vyžadována při první registraci
 
 #### 🔐 Bezpečnost přístupu
 - Zodpovídáte za zabezpečení svého zařízení
@@ -207,9 +208,10 @@ Omnia is an AI assistant application that enables:
 ### 3. REGISTRATION AND ACCESS
 
 #### 👤 User Account
-- Omnia works without mandatory registration
+- **Registration is mandatory** - email and password via Supabase Auth
 - Data stored locally in browser + cloud backup
 - One user can have multiple independent chats
+- **Email verification** required upon first registration
 
 #### 🔐 Access Security
 - You are responsible for securing your device
