@@ -38,54 +38,52 @@ const AboutModal = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* MODAL CONTENT */}
+      {/* MODAL CONTENT - FULLSCREEN */}
       <div
         style={{
-          width: '90vw',
-          maxWidth: '500px',
-          maxHeight: '80vh',
+          width: '100vw',
+          height: '100vh',
           background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '16px',
           display: 'flex',
           flexDirection: 'column',
           animation: 'slideUp 0.3s ease-out',
-          position: 'relative',
-          overflow: 'hidden'
+          position: 'relative'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER */}
+        {/* HEADER - Fixed Top (like UserSettingsModal) */}
         <div style={{
-          padding: '1.5rem',
+          padding: '2rem 2rem 1rem',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'space-between',
           position: 'relative'
         }}>
-          <h2 style={{
-            color: 'white',
-            fontSize: '1.25rem',
-            fontWeight: 'bold',
-            margin: 0
-          }}>
-            About Omnia
-          </h2>
-
+          {/* Close Button */}
           <button
             onClick={onClose}
             style={{
+              position: 'absolute',
+              top: '2rem',
+              right: '2rem',
               background: 'transparent',
               border: 'none',
               color: 'rgba(255, 255, 255, 0.7)',
               cursor: 'pointer',
               outline: 'none',
-              WebkitTapHighlightColor: 'transparent',
+              WebkitTapHighlightColor: 'transparent !important',
+              WebkitFocusRingColor: 'transparent !important',
+              boxShadow: 'none !important',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
               padding: '0.25rem',
               borderRadius: '6px',
+              fontSize: '1.25rem',
+              lineHeight: 1,
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
@@ -102,16 +100,26 @@ const AboutModal = ({
           >
             <X size={20} />
           </button>
+
+          {/* Title */}
+          <h1 style={{
+            color: 'white',
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            margin: '0 0 1rem 0'
+          }}>
+            About Omnia
+          </h1>
         </div>
 
-        {/* CONTENT */}
+        {/* SCROLLABLE CONTENT (like UserSettingsModal) */}
         <div style={{
           flex: 1,
-          padding: '1.5rem',
+          padding: '1.5rem 2rem',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem'
+          gap: '0.75rem'
         }}>
 
           {/* App Info */}

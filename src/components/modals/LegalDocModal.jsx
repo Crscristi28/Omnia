@@ -148,151 +148,106 @@ const LegalDocModal = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         zIndex: 99999, // Higher than AboutModal
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
-        // iOS Safe area support
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)'
+        animation: 'fadeIn 0.2s ease'
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* MODAL CONTENT */}
+      {/* MODAL CONTENT - FULLSCREEN */}
       <div
         style={{
           width: '100vw',
           height: '100vh',
-          background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.98), rgba(0, 78, 146, 0.95))',
+          background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           flexDirection: 'column',
           animation: 'slideUp 0.3s ease-out',
-          position: 'relative',
-          overflow: 'hidden'
+          position: 'relative'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER - Fixed Top */}
+        {/* HEADER - Fixed Top (like UserSettingsModal) */}
         <div style={{
-          padding: '1rem 1.5rem',
-          paddingTop: `max(1rem, calc(env(safe-area-inset-top) + 0.5rem))`,
+          padding: '2rem 2rem 1rem',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000
+          position: 'relative'
         }}>
+          {/* Close Button */}
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: 'rgba(255, 255, 255, 0.9)',
+              position: 'absolute',
+              top: '2rem',
+              right: '2rem',
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255, 255, 255, 0.7)',
               cursor: 'pointer',
               outline: 'none',
-              WebkitTapHighlightColor: 'transparent',
-              padding: '0.75rem 1rem',
-              borderRadius: '12px',
+              WebkitTapHighlightColor: 'transparent !important',
+              WebkitFocusRingColor: 'transparent !important',
+              boxShadow: 'none !important',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              padding: '0.25rem',
+              borderRadius: '6px',
+              fontSize: '1.25rem',
+              lineHeight: 1,
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+              justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-              e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              e.target.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
               e.target.style.color = 'rgba(255, 255, 255, 0.9)';
             }}
-          >
-            <ArrowLeft size={18} />
-            Back
-          </button>
-
-          <div style={{
-            textAlign: 'center',
-            flex: 1,
-            margin: '0 1rem'
-          }}>
-            <div style={{
-              color: 'white',
-              fontSize: '1.1rem',
-              fontWeight: 'bold'
-            }}>
-              {docData.title}
-            </div>
-            <div style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '0.8rem'
-            }}>
-              Last updated: {docData.lastUpdated}
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: 'rgba(255, 255, 255, 0.9)',
-              cursor: 'pointer',
-              outline: 'none',
-              WebkitTapHighlightColor: 'transparent',
-              padding: '0.75rem',
-              borderRadius: '12px',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-              e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              e.target.style.color = 'white';
-            }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-              e.target.style.color = 'rgba(255, 255, 255, 0.9)';
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = 'rgba(255, 255, 255, 0.7)';
             }}
           >
             <X size={20} />
           </button>
+
+          {/* Title */}
+          <h1 style={{
+            color: 'white',
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            margin: '0 0 0.5rem 0'
+          }}>
+            {docData.title}
+          </h1>
+
+          {/* Last Updated */}
+          <div style={{
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '0.9rem'
+          }}>
+            Last updated: {docData.lastUpdated}
+          </div>
         </div>
 
-        {/* SCROLLABLE CONTENT */}
+        {/* SCROLLABLE CONTENT (like UserSettingsModal) */}
         <div style={{
           flex: 1,
-          padding: '2rem',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch'
+          padding: '1.5rem 2rem',
+          overflowY: 'auto'
         }}>
           <div style={{
             maxWidth: '800px',
