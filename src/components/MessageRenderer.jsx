@@ -213,42 +213,68 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           padding-top: 0.5rem;
         }
         
-        /* Code block styling */
-        .markdown-container pre {
+        /* Code block styling - FORCE dark theme always (looks best) */
+        .markdown-container pre,
+        .markdown-container .w-md-editor-text pre,
+        .w-md-editor-text-pre .wmde-markdown pre,
+        .wmde-markdown pre,
+        [data-color-mode="light"] pre,
+        [data-color-mode="dark"] pre {
           background-color: rgba(0, 0, 0, 0.3) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          padding: 1rem;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          padding: 1rem !important;
+          color: #f3f4f6 !important;
         }
-        .markdown-container code {
+        .markdown-container code,
+        .markdown-container .w-md-editor-text code,
+        .wmde-markdown code,
+        [data-color-mode="light"] code,
+        [data-color-mode="dark"] code {
           background-color: #374151 !important;
           color: #f3f4f6 !important;
         }
-        .markdown-container pre code {
+        .markdown-container pre code,
+        .markdown-container .w-md-editor-text pre code,
+        .wmde-markdown pre code,
+        [data-color-mode="light"] pre code,
+        [data-color-mode="dark"] pre code {
           background-color: transparent !important;
           color: #f3f4f6 !important;
         }
+
+        /* Force override MDEditor's light mode */
+        [data-color-mode="light"] .markdown-container * {
+          color-scheme: dark !important;
+        }
         
-        /* Syntax highlighting colors for better visibility */
-        .markdown-container .token.keyword {
+        /* Syntax highlighting colors - optimized for dark background */
+        .markdown-container .token.keyword,
+        [data-color-mode="light"] .token.keyword {
           color: #f97316 !important; /* Orange for keywords */
         }
-        .markdown-container .token.string {
+        .markdown-container .token.string,
+        [data-color-mode="light"] .token.string {
           color: #84cc16 !important; /* Lime green for strings */
         }
-        .markdown-container .token.number {
+        .markdown-container .token.number,
+        [data-color-mode="light"] .token.number {
           color: #06b6d4 !important; /* Cyan for numbers */
         }
-        .markdown-container .token.comment {
+        .markdown-container .token.comment,
+        [data-color-mode="light"] .token.comment {
           color: #94a3b8 !important; /* Light gray for comments */
         }
-        .markdown-container .token.function {
+        .markdown-container .token.function,
+        [data-color-mode="light"] .token.function {
           color: #fbbf24 !important; /* Yellow for functions */
         }
-        .markdown-container .token.operator {
+        .markdown-container .token.operator,
+        [data-color-mode="light"] .token.operator {
           color: #e5e7eb !important; /* White for operators */
         }
-        .markdown-container .token.punctuation {
+        .markdown-container .token.punctuation,
+        [data-color-mode="light"] .token.punctuation {
           color: #e5e7eb !important; /* White for punctuation */
         }
       `}</style>
