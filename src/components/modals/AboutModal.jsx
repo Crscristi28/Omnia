@@ -382,7 +382,7 @@ const AboutModal = ({
               gap: '0.5rem'
             }}>
 
-              {/* Terms of Service */}
+              {/* Terms of Service - stays in app */}
               <button
                 onClick={() => openLegalDoc('terms')}
                 style={{
