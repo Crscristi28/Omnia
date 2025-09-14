@@ -127,21 +127,23 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
       </div>
       
       <style>{`
-        .markdown-container strong {
-          color: #facc15 !important;
-          font-weight: bold !important;
-        }
-        .markdown-container .w-md-editor-text strong {
-          color: #facc15 !important;
-        }
-        .markdown-container .w-md-editor-text b {
-          color: #facc15 !important;
-        }
-        .w-md-editor-text strong {
-          color: #facc15 !important;
-        }
+        /* Bold text styling with GPU acceleration to prevent rendering artifacts */
+        .markdown-container strong,
+        .markdown-container .w-md-editor-text strong,
+        .markdown-container .w-md-editor-text b,
+        .w-md-editor-text strong,
         .w-md-editor-text b {
           color: #facc15 !important;
+          font-weight: bold !important;
+          /* GPU acceleration for smooth bold text rendering */
+          transform: translateZ(0);
+          will-change: auto;
+          backface-visibility: hidden;
+          /* Prevent text measurement artifacts during streaming */
+          contain: layout style;
+          /* Force consistent rendering */
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
         
         /* List styling - CONSISTENT and STABLE formatting */
@@ -196,11 +198,19 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           padding-bottom: 0;
         }
         
-        /* Container stability - prevent layout shifts */
+        /* Container stability - prevent layout shifts + GPU acceleration */
         .markdown-container {
           min-height: 1.5em;
           overflow-wrap: break-word;
           word-wrap: break-word;
+          /* GPU acceleration for smooth rendering */
+          transform: translateZ(0);
+          will-change: transform;
+          backface-visibility: hidden;
+          /* Text rendering optimization */
+          text-rendering: optimizeLegibility;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
         
         /* List and paragraph spacing coordination */
