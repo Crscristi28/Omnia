@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { X, User, Check } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
 import { profileService } from '../../services/profile/profileService';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ProfileModal = ({ 
   isOpen, 
@@ -12,6 +13,7 @@ const ProfileModal = ({
   onSave 
 }) => {
   const t = getTranslation(uiLanguage);
+  const { isDark } = useTheme();
   const [fullName, setFullName] = useState('');
   const [callMeName, setCallMeName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -135,10 +137,14 @@ const ProfileModal = ({
             maxWidth: '400px',
             maxHeight: '80vh',
             margin: '2rem',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+            background: isDark
+              ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 10, 10, 0.95))'
+              : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -150,7 +156,9 @@ const ProfileModal = ({
           {/* HEADER */}
           <div style={{
             padding: '1.5rem 1.5rem 1rem',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderBottom: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
@@ -252,8 +260,12 @@ const ProfileModal = ({
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  border: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '8px',
                   color: '#ffffff',
                   fontSize: '0.9rem',
@@ -262,11 +274,15 @@ const ProfileModal = ({
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.12)'
+                    : 'rgba(255, 255, 255, 0.08)';
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)';
                 }}
               />
             </div>
@@ -292,8 +308,12 @@ const ProfileModal = ({
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  border: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '8px',
                   color: '#ffffff',
                   fontSize: '0.9rem',
@@ -302,11 +322,15 @@ const ProfileModal = ({
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.12)'
+                    : 'rgba(255, 255, 255, 0.08)';
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)';
                 }}
               />
               <p style={{
@@ -324,7 +348,9 @@ const ProfileModal = ({
           {/* FOOTER */}
           <div style={{
             padding: '1rem 1.5rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            borderTop: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             gap: '1rem',
             justifyContent: 'flex-end'
@@ -346,7 +372,9 @@ const ProfileModal = ({
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)';
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
                 }
               }}

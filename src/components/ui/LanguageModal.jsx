@@ -2,14 +2,16 @@
 import React, { useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import { sessionManager } from '../../services/storage';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const LanguageModal = ({ 
   isOpen, 
   onClose, 
   uiLanguage, 
   setUILanguage, 
-  t 
+  t
 }) => {
+  const { isDark } = useTheme();
   // Language options - CS, EN, RO + German
   const languageOptions = [
     { code: 'cs', flag: '🇨🇿', label: 'Čeština', nativeName: 'Čeština' },
@@ -107,10 +109,14 @@ const LanguageModal = ({
           style={{
             width: '100vw',
             height: '100vh',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+            background: isDark
+              ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 10, 10, 0.95))'
+              : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             flexDirection: 'column',
             animation: 'slideUp 0.3s ease-out',
@@ -121,7 +127,9 @@ const LanguageModal = ({
           {/* HEADER - Fixed Top */}
           <div style={{
             padding: '2rem 2rem 1rem',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderBottom: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -201,13 +209,13 @@ const LanguageModal = ({
                 onClick={() => handleLanguageSelect(lang.code)}
                 style={{
                   width: '100%',
-                  background: uiLanguage === lang.code 
-                    ? 'rgba(255, 255, 255, 0.1)' 
-                    : 'rgba(255, 255, 255, 0.05)',
+                  background: uiLanguage === lang.code
+                    ? (isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)')
+                    : (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)'),
                   borderRadius: '12px',
-                  border: uiLanguage === lang.code 
-                    ? '1px solid rgba(255, 255, 255, 0.2)' 
-                    : '1px solid rgba(255, 255, 255, 0.1)',
+                  border: uiLanguage === lang.code
+                    ? (isDark ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.2)')
+                    : (isDark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.1)'),
                   padding: '1rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -229,14 +237,22 @@ const LanguageModal = ({
                 }}
                 onMouseEnter={(e) => {
                   if (uiLanguage !== lang.code) {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                    e.target.style.background = isDark
+                      ? 'rgba(255, 255, 255, 0.12)'
+                      : 'rgba(255, 255, 255, 0.08)';
+                    e.target.style.borderColor = isDark
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(255, 255, 255, 0.15)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (uiLanguage !== lang.code) {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    e.target.style.background = isDark
+                      ? 'rgba(255, 255, 255, 0.08)'
+                      : 'rgba(255, 255, 255, 0.05)';
+                    e.target.style.borderColor = isDark
+                      ? 'rgba(255, 255, 255, 0.15)'
+                      : 'rgba(255, 255, 255, 0.1)';
                   }
                 }}
               >
@@ -284,7 +300,9 @@ const LanguageModal = ({
           {/* FOOTER - Status */}
           <div style={{
             padding: '1rem 2rem 6rem', // Extra bottom padding for mobile safe area
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            borderTop: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             textAlign: 'center'
           }}>
             <div style={{
