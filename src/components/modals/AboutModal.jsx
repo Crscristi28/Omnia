@@ -382,9 +382,11 @@ const AboutModal = ({
               gap: '0.5rem'
             }}>
 
-              {/* Terms of Service - stays in app */}
-              <button
-                onClick={() => openLegalDoc('terms')}
+              {/* Terms of Service - Sources pattern (in-app HTML) */}
+              <a
+                href="/legal/terms.html"
+                {...(window.innerWidth > 768 && { target: "_blank" })}
+                rel="noopener noreferrer"
                 style={{
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -403,7 +405,8 @@ const AboutModal = ({
                   color: '#ffffff',
                   fontSize: '0.9rem',
                   fontWeight: '500',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  textDecoration: 'none'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.background = 'rgba(255, 255, 255, 0.08)';
@@ -423,7 +426,7 @@ const AboutModal = ({
                     transform: 'rotate(-90deg)'
                   }}
                 />
-              </button>
+              </a>
 
               {/* Privacy Policy */}
               <button
