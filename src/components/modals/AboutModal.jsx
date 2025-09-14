@@ -145,16 +145,80 @@ const AboutModal = ({
               lineHeight: '1.5',
               margin: '0 0 1rem 0'
             }}>
-              Omnia One AI is an advanced artificial intelligence application that utilizes the latest AI technologies to provide intelligent conversations, document processing, and voice interactions.
+              Omnia One AI is your personal AI assistant that thinks global and answers local.
             </p>
 
             <p style={{
-              color: '#00d4ff',
+              color: 'rgba(255, 255, 255, 0.8)',
               fontSize: '0.9rem',
-              fontWeight: '600',
+              lineHeight: '1.5',
               margin: 0
             }}>
-              Powered by Leading AI Technologies
+              Powered by{' '}
+              <a
+                href="https://www.anthropic.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#00d4ff',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid transparent',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+              >
+                Anthropic
+              </a>
+              ,{' '}
+              <a
+                href="https://openai.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#00d4ff',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid transparent',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+              >
+                OpenAI
+              </a>
+              ,{' '}
+              <a
+                href="https://ai.google"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#00d4ff',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid transparent',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+              >
+                Google
+              </a>
+              ,{' '}
+              <a
+                href="https://elevenlabs.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#00d4ff',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid transparent',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+              >
+                ElevenLabs
+              </a>
+              .
             </p>
           </div>
 
