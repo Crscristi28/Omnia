@@ -815,6 +815,7 @@ const InputBar = ({
                 color: isDark
                   ? 'rgba(255, 255, 255, 0.95)' // Dark mode: brighter white text
                   : 'rgba(255, 255, 255, 0.9)', // Light mode: current white text
+                caretColor: 'white', // Force white cursor/caret color on all platforms
                 fontSize: isMobile ? '16px' : '18px',
                 fontFamily: 'inherit',
                 resize: 'none',
