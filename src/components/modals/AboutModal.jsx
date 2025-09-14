@@ -222,36 +222,6 @@ const AboutModal = ({
             </p>
           </div>
 
-          {/* Important Data Processing Disclaimer */}
-          <div style={{
-            background: 'rgba(255, 193, 7, 0.1)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 193, 7, 0.3)',
-            padding: '1rem',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)'
-          }}>
-            <h3 style={{
-              color: '#ffc107',
-              fontSize: '0.95rem',
-              fontWeight: '600',
-              margin: '0 0 0.5rem 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              ⚠️ Important: Third-Party Data Processing
-            </h3>
-            <p style={{
-              color: 'rgba(255, 255, 255, 0.9)',
-              fontSize: '0.85rem',
-              lineHeight: '1.4',
-              margin: 0
-            }}>
-              When using Omnia One AI, your conversations and data are processed by third-party AI providers (Anthropic, OpenAI, Google, ElevenLabs, X.AI) through their respective APIs. <strong>We are not responsible for how these providers handle your data.</strong> For detailed information about their data processing practices, please visit their privacy policies directly through the links above.
-            </p>
-          </div>
-
           {/* Legal Documents Section */}
           <div>
             <h3 style={{
@@ -262,6 +232,113 @@ const AboutModal = ({
             }}>
               Legal Documents
             </h3>
+
+            {/* Important Data Processing Disclaimer - moved here */}
+            <div style={{
+              background: 'rgba(255, 193, 7, 0.1)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 193, 7, 0.3)',
+              padding: '1rem',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              marginBottom: '1rem'
+            }}>
+              <h4 style={{
+                color: '#ffc107',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                margin: '0 0 0.5rem 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                ⚠️ Important: Third-Party Data Processing
+              </h4>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontSize: '0.85rem',
+                lineHeight: '1.4',
+                margin: '0 0 0.75rem 0'
+              }}>
+                When using Omnia One AI, your conversations and data are processed by third-party AI providers through their respective APIs. <strong>We are not responsible for how these providers handle your data.</strong>
+              </p>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontSize: '0.85rem',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                For detailed information about their data processing practices, please visit their privacy policies:
+              </p>
+              <div style={{
+                marginTop: '0.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.25rem',
+                fontSize: '0.85rem'
+              }}>
+                <a
+                  href="https://www.anthropic.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  • Anthropic Privacy Policy
+                </a>
+                <a
+                  href="https://openai.com/privacy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  • OpenAI Privacy Policy
+                </a>
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  • Google Privacy Policy
+                </a>
+                <a
+                  href="https://elevenlabs.io/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  • ElevenLabs Privacy Policy
+                </a>
+              </div>
+            </div>
 
             <div style={{
               display: 'flex',
