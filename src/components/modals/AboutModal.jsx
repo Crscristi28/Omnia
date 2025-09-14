@@ -277,11 +277,12 @@ const AboutModal = ({
                 gap: '0.25rem',
                 fontSize: '0.85rem'
               }}>
-                <button
-                  onClick={() => openLegalDoc('anthropic-privacy')}
+                <a
+                  href="https://www.anthropic.com/privacy"
+                  {...(window.innerWidth > 768 && { target: "_blank" })}
+                  rel="noopener noreferrer"
                   style={{
                     background: 'transparent',
-                    border: 'none',
                     color: '#00d4ff',
                     fontSize: '0.85rem',
                     textAlign: 'left',
@@ -292,18 +293,20 @@ const AboutModal = ({
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
                     transition: 'border-color 0.2s ease',
-                    width: '100%'
+                    width: '100%',
+                    display: 'block'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • Anthropic Privacy Policy
-                </button>
-                <button
-                  onClick={() => openLegalDoc('openai-privacy')}
+                </a>
+                <a
+                  href="https://openai.com/privacy/"
+                  {...(window.innerWidth > 768 && { target: "_blank" })}
+                  rel="noopener noreferrer"
                   style={{
                     background: 'transparent',
-                    border: 'none',
                     color: '#00d4ff',
                     fontSize: '0.85rem',
                     textAlign: 'left',
@@ -314,18 +317,20 @@ const AboutModal = ({
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
                     transition: 'border-color 0.2s ease',
-                    width: '100%'
+                    width: '100%',
+                    display: 'block'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • OpenAI Privacy Policy
-                </button>
-                <button
-                  onClick={() => openLegalDoc('google-privacy')}
+                </a>
+                <a
+                  href="https://policies.google.com/privacy"
+                  {...(window.innerWidth > 768 && { target: "_blank" })}
+                  rel="noopener noreferrer"
                   style={{
                     background: 'transparent',
-                    border: 'none',
                     color: '#00d4ff',
                     fontSize: '0.85rem',
                     textAlign: 'left',
@@ -336,18 +341,20 @@ const AboutModal = ({
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
                     transition: 'border-color 0.2s ease',
-                    width: '100%'
+                    width: '100%',
+                    display: 'block'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • Google Privacy Policy
-                </button>
-                <button
-                  onClick={() => openLegalDoc('elevenlabs-privacy')}
+                </a>
+                <a
+                  href="https://elevenlabs.io/privacy"
+                  {...(window.innerWidth > 768 && { target: "_blank" })}
+                  rel="noopener noreferrer"
                   style={{
                     background: 'transparent',
-                    border: 'none',
                     color: '#00d4ff',
                     fontSize: '0.85rem',
                     textAlign: 'left',
@@ -358,13 +365,14 @@ const AboutModal = ({
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
                     transition: 'border-color 0.2s ease',
-                    width: '100%'
+                    width: '100%',
+                    display: 'block'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • ElevenLabs Privacy Policy
-                </button>
+                </a>
               </div>
             </div>
 
