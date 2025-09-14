@@ -1,6 +1,6 @@
 // 🔧 UserSettingsModal.jsx - Fullscreen Settings Modal inspired by Claude app
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut, Info } from 'lucide-react';
+import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut, Info, Palette } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
 import ProfileModal from './ProfileModal';
@@ -23,6 +23,7 @@ const UserSettingsModal = ({
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('light'); // Default to light (current design)
 
   // Add CSS to remove iOS focus styles
   useEffect(() => {
@@ -334,6 +335,130 @@ const UserSettingsModal = ({
                 }}
               />
             </button>
+
+            {/* Appearance Card - Theme Selection */}
+            <div
+              style={{
+                width: '100%',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '0.75rem',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginBottom: '0.75rem'
+              }}>
+                <Palette size={18} style={{ opacity: 0.7, color: '#ffffff' }} />
+                <span style={{
+                  flex: 1,
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  fontWeight: '600'
+                }}>
+                  Appearance
+                </span>
+              </div>
+
+              {/* Theme Toggle Options */}
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                padding: '0 1.5rem'
+              }}>
+                {/* Light Mode Option */}
+                <button
+                  onClick={() => setSelectedTheme('light')}
+                  style={{
+                    flex: 1,
+                    background: selectedTheme === 'light'
+                      ? 'rgba(255, 255, 255, 0.15)'
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: selectedTheme === 'light'
+                      ? '1px solid rgba(255, 255, 255, 0.3)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '0.5rem',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    fontWeight: selectedTheme === 'light' ? '600' : '400',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    outline: 'none',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedTheme !== 'light') {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedTheme !== 'light') {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                    }
+                  }}
+                >
+                  <span>☀️</span>
+                  Light
+                  {selectedTheme === 'light' && (
+                    <Check size={14} style={{ marginLeft: '0.25rem' }} />
+                  )}
+                </button>
+
+                {/* Dark Mode Option */}
+                <button
+                  onClick={() => setSelectedTheme('dark')}
+                  style={{
+                    flex: 1,
+                    background: selectedTheme === 'dark'
+                      ? 'rgba(255, 255, 255, 0.15)'
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: selectedTheme === 'dark'
+                      ? '1px solid rgba(255, 255, 255, 0.3)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '0.5rem',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    fontWeight: selectedTheme === 'dark' ? '600' : '400',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    outline: 'none',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedTheme !== 'dark') {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedTheme !== 'dark') {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                    }
+                  }}
+                >
+                  <span>🌙</span>
+                  Dark
+                  {selectedTheme === 'dark' && (
+                    <Check size={14} style={{ marginLeft: '0.25rem' }} />
+                  )}
+                </button>
+              </div>
+            </div>
 
             {/* Reset Password Card */}
             <button
