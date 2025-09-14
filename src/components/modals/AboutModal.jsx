@@ -1,6 +1,7 @@
 // 🔧 AboutModal.jsx - About modal with legal documents submenu
-import React from 'react';
+import React, { useState } from 'react';
 import { X, ChevronDown, FileText, Shield, Cookie, Eye, BookOpen } from 'lucide-react';
+import LegalDocModal from './LegalDocModal';
 
 const AboutModal = ({
   isOpen,
@@ -8,19 +9,10 @@ const AboutModal = ({
   uiLanguage = 'cs'
 }) => {
 
-  const openLegalDoc = (docType) => {
-    // For now, we'll open in new tab - later we'll create proper HTML docs
-    const urls = {
-      terms: '/legal/terms.html',
-      privacy: '/legal/privacy.html',
-      cookies: '/legal/cookies.html',
-      gdpr: '/legal/data-processing.html',
-      acceptable: '/legal/acceptable-use.html'
-    };
+  const [showLegalDoc, setShowLegalDoc] = useState(null);
 
-    if (urls[docType]) {
-      window.open(urls[docType], '_blank');
-    }
+  const openLegalDoc = (docType) => {
+    setShowLegalDoc(docType);
   };
 
   if (!isOpen) return null;
@@ -550,6 +542,16 @@ const AboutModal = ({
           </div>
         </div>
       </div>
+
+      {/* Legal Document Modal */}
+      {showLegalDoc && (
+        <LegalDocModal
+          isOpen={!!showLegalDoc}
+          onClose={() => setShowLegalDoc(null)}
+          docType={showLegalDoc}
+          uiLanguage={uiLanguage}
+        />
+      )}
     </div>
   );
 };
