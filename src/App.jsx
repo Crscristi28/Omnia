@@ -1822,17 +1822,18 @@ function App() {
       });
       console.error('💥 API call error:', err);
       
-      // 🔄 ROLLBACK: Network error or streaming failure detected
+      // 🔄 ROLLBACK: ANY error should trigger rollback to prevent stuck span indicator
       // Remove the user and bot messages with span indicator from state
       setMessages(prev => {
-        // Find and remove last 2 messages (user + bot with span indicator)
+        // Find and remove last 2 messages (user + bot with span indicator or streaming state)
         const lastBotMessage = prev[prev.length - 1];
-        const hasSpanIndicator = lastBotMessage?.text?.includes('chat-loading-dots') || 
-                                lastBotMessage?.text?.includes('•') ||
-                                lastBotMessage?.text === '';
+        const needsRollback = lastBotMessage?.isStreaming || 
+                             lastBotMessage?.text?.includes('chat-loading-dots') || 
+                             lastBotMessage?.text?.includes('•') ||
+                             lastBotMessage?.text === '';
         
-        if (hasSpanIndicator) {
-          console.log('🔄 [ROLLBACK] Removing failed messages with span indicator');
+        if (needsRollback) {
+          console.log('🔄 [ROLLBACK] Removing failed messages after error:', err.message);
           return prev.slice(0, -2);
         }
         return prev;
@@ -1843,15 +1844,24 @@ function App() {
         setInput(originalUserText);
       }
       
-      // Show user-friendly error message
-      const isNetworkError = err.message?.toLowerCase().includes('fail') || 
-                             err.message?.toLowerCase().includes('network') ||
-                             err.message?.toLowerCase().includes('fetch') ||
-                             !navigator.onLine;
+      // Show user-friendly error message based on error type
+      const errorLower = err.message?.toLowerCase() || '';
       
-      const errorMessage = isNetworkError 
-        ? 'Connection lost - please check your internet and try again'
-        : 'Something went wrong. Please try again.';
+      let errorMessage;
+      if (errorLower.includes('fail') || errorLower.includes('network') || errorLower.includes('fetch') || !navigator.onLine) {
+        errorMessage = 'Connection lost - please check your internet and try again';
+      } else if (errorLower.includes('429') || errorLower.includes('too many')) {
+        errorMessage = 'Too many requests - please wait a moment and try again';
+      } else if (errorLower.includes('500') || errorLower.includes('503') || errorLower.includes('server')) {
+        errorMessage = 'Server error - please try again in a few moments';
+      } else if (errorLower.includes('quota') || errorLower.includes('limit')) {
+        errorMessage = 'API limit reached - please try again later';
+      } else if (errorLower.includes('timeout')) {
+        errorMessage = 'Request timed out - please try again';
+      } else {
+        // Generic fallback for unknown errors
+        errorMessage = 'Something went wrong - please try again';
+      }
       
       showNotification(errorMessage, 'error');
     } finally {
@@ -2907,17 +2917,18 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   } catch (error) {
     console.error('Send with documents error:', error);
     
-    // 🔄 ROLLBACK: Network error or streaming failure detected with documents
+    // 🔄 ROLLBACK: ANY error should trigger rollback to prevent stuck span indicator
     // Remove the user and bot messages with span indicator from state
     setMessages(prev => {
-      // Find and remove last 2 messages (user + bot with span indicator)
+      // Find and remove last 2 messages (user + bot with span indicator or streaming state)
       const lastBotMessage = prev[prev.length - 1];
-      const hasSpanIndicator = lastBotMessage?.text?.includes('chat-loading-dots') || 
-                              lastBotMessage?.text?.includes('•') ||
-                              lastBotMessage?.text === '';
+      const needsRollback = lastBotMessage?.isStreaming || 
+                           lastBotMessage?.text?.includes('chat-loading-dots') || 
+                           lastBotMessage?.text?.includes('•') ||
+                           lastBotMessage?.text === '';
       
-      if (hasSpanIndicator) {
-        console.log('🔄 [ROLLBACK-DOCS] Removing failed messages with span indicator');
+      if (needsRollback) {
+        console.log('🔄 [ROLLBACK-DOCS] Removing failed messages after error:', error.message);
         return prev.slice(0, -2);
       }
       return prev;
@@ -2928,16 +2939,27 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       setInput(originalUserText);
     }
     
-    // Show user-friendly error message
-    const isNetworkError = error.message?.toLowerCase().includes('fail') || 
-                           error.message?.toLowerCase().includes('network') ||
-                           error.message?.toLowerCase().includes('fetch') ||
-                           !navigator.onLine;
-    
+    // Show user-friendly error message based on error type
+    const errorLower = error.message?.toLowerCase() || '';
     const messages = getUploadErrorMessages(userLanguage);
-    const errorMessage = isNetworkError 
-      ? 'Connection lost - please check your internet and try again'
-      : (error.message || messages.processing);
+    
+    let errorMessage;
+    if (errorLower.includes('fail') || errorLower.includes('network') || errorLower.includes('fetch') || !navigator.onLine) {
+      errorMessage = 'Connection lost - please check your internet and try again';
+    } else if (errorLower.includes('429') || errorLower.includes('too many')) {
+      errorMessage = 'Too many requests - please wait a moment and try again';
+    } else if (errorLower.includes('500') || errorLower.includes('503') || errorLower.includes('server')) {
+      errorMessage = 'Server error - please try again in a few moments';
+    } else if (errorLower.includes('quota') || errorLower.includes('limit')) {
+      errorMessage = 'API limit reached - please try again later';
+    } else if (errorLower.includes('timeout')) {
+      errorMessage = 'Request timed out - please try again';
+    } else if (errorLower.includes('document') || errorLower.includes('upload')) {
+      errorMessage = messages.processing || 'Document processing error - please try again';
+    } else {
+      // Generic fallback for unknown errors
+      errorMessage = 'Something went wrong - please try again';
+    }
     
     showNotification(errorMessage, 'error');
   } finally {
