@@ -85,6 +85,22 @@ function App() {
 function AppContent() {
   const { theme, isDark } = useTheme();
 
+  // 🎨 UPDATE STATUS BAR COLOR based on theme
+  useEffect(() => {
+    // Update meta theme-color for status bar
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', isDark ? '#000000' : '#000428');
+    }
+
+    // Update apple status bar style
+    const appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (appleStatusBar) {
+      // For dark mode use 'black', for light mode use 'default'
+      appleStatusBar.setAttribute('content', isDark ? 'black' : 'default');
+    }
+  }, [isDark]);
+
   // 🌐 WEBSITE ROUTING CHECK - Redirect to static website for www subdomain
   if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
     window.location.href = '/omnia-website.html';
@@ -3544,8 +3560,10 @@ const virtuosoComponents = React.useMemo(() => ({
         
         /* Status bar theming for PWA */
         @media (display-mode: standalone) {
-          body { 
-            background: linear-gradient(135deg, #000428, #004e92, #009ffd);
+          body {
+            background: ${isDark
+              ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a)'
+              : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'};
           }
         }
         ::-webkit-scrollbar { width: 8px; }
