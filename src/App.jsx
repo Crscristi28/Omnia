@@ -65,12 +65,26 @@ import ResetPasswordModal from './components/auth/ResetPasswordModal.jsx'; // �
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 
+// 🎨 THEME CONTEXT
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 // 🆕 SENTENCE SPLITTER (UNCHANGED)
 
 // ✅ CONSOLE CLEANUP: Vite automatically removes console.log in production builds
 
+// Main App Component wrapped with ThemeProvider
 function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+// App Content that uses theme context
+function AppContent() {
+  const { theme, isDark } = useTheme();
+
   // 🌐 WEBSITE ROUTING CHECK - Redirect to static website for www subdomain
   if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
     window.location.href = '/omnia-website.html';
@@ -3056,9 +3070,13 @@ const virtuosoComponents = React.useMemo(() => ({
       {/* 🎨 MAIN APP - VŽDY renderovaná, jen možná překrytá modalem */}
       <div style={{
           ...mainContainerStyle,
-          background: isListening 
-            ? 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)'
-            : 'linear-gradient(135deg, #000428, #004e92, #009ffd)',
+          background: isListening
+            ? (isDark
+              ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a, #2a2a2a)' // Dark mode active
+              : 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)') // Light mode active
+            : (isDark
+              ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a)' // Dark mode normal
+              : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'), // Light mode normal
           paddingTop: isMobile ? '70px' : '90px',
           paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
         }}>

@@ -7,6 +7,7 @@ import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palett
 import { getTranslation } from '../../utils/text';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
 import { uploadDirectToGCS } from '../../services/directUpload.js';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Using Lucide React icons instead of custom SVG components
 
@@ -169,6 +170,9 @@ const InputBar = ({
   onPreviewImage,
   audioLevel = 0
 }) => {
+  // THEME HOOK
+  const { theme, isDark } = useTheme();
+
   // LOCAL STATE FOR INPUT - Performance optimization
   const [localInput, setLocalInput] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState([]);
@@ -583,12 +587,18 @@ const InputBar = ({
           
           {/* GLASS CONTAINER */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.06)',
+            background: isDark
+              ? 'rgba(0, 0, 0, 0.6)' // Dark mode: black glass
+              : 'rgba(255, 255, 255, 0.06)', // Light mode: current white glass
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+            border: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: slightly brighter border
+              : '1px solid rgba(255, 255, 255, 0.08)', // Light mode: current border
+            boxShadow: isDark
+              ? '0 12px 40px rgba(0, 0, 0, 0.8)' // Dark mode: deeper shadow
+              : '0 12px 40px rgba(0, 0, 0, 0.4)', // Light mode: current shadow
             padding: isMobile ? '1rem' : '1.5rem',
           }}>
             
@@ -802,7 +812,9 @@ const InputBar = ({
                 border: 'none',
                 outline: 'none',
                 background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: isDark
+                  ? 'rgba(255, 255, 255, 0.95)' // Dark mode: brighter white text
+                  : 'rgba(255, 255, 255, 0.9)', // Light mode: current white text
                 fontSize: isMobile ? '16px' : '18px',
                 fontFamily: 'inherit',
                 resize: 'none',

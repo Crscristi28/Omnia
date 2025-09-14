@@ -9,6 +9,15 @@ const sessionManager = {
     console.log('🗑️ Session cleared completely');
   },
 
+  // 🎨 Theme preference (light/dark)
+  saveTheme(theme) {
+    localStorage.setItem('omnia-theme', theme);
+  },
+
+  getTheme() {
+    return localStorage.getItem('omnia-theme') || 'light'; // Default to light (current design)
+  },
+
   // 🌍 UI Language preference
   saveUILanguage(language) {
     localStorage.setItem('omnia-ui-language', language);

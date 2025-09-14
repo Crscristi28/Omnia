@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut, Info, Palette } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
+import { useTheme } from '../../contexts/ThemeContext';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
 import ProfileModal from './ProfileModal';
 import LanguageModal from '../ui/LanguageModal';
@@ -18,12 +19,12 @@ const UserSettingsModal = ({
   onResetPassword
 }) => {
   const t = getTranslation(uiLanguage);
+  const { theme, setTheme } = useTheme(); // Use theme from context
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState('light'); // Default to light (current design)
 
   // Add CSS to remove iOS focus styles
   useEffect(() => {
@@ -374,20 +375,20 @@ const UserSettingsModal = ({
               }}>
                 {/* Light Mode Option */}
                 <button
-                  onClick={() => setSelectedTheme('light')}
+                  onClick={() => setTheme('light')}
                   style={{
                     flex: 1,
-                    background: selectedTheme === 'light'
+                    background: theme === 'light'
                       ? 'rgba(255, 255, 255, 0.15)'
                       : 'rgba(255, 255, 255, 0.05)',
-                    border: selectedTheme === 'light'
+                    border: theme === 'light'
                       ? '1px solid rgba(255, 255, 255, 0.3)'
                       : '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '8px',
                     padding: '0.5rem',
                     color: '#ffffff',
                     fontSize: '0.85rem',
-                    fontWeight: selectedTheme === 'light' ? '600' : '400',
+                    fontWeight: theme === 'light' ? '600' : '400',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     display: 'flex',
@@ -398,39 +399,39 @@ const UserSettingsModal = ({
                     WebkitTapHighlightColor: 'transparent'
                   }}
                   onMouseEnter={(e) => {
-                    if (selectedTheme !== 'light') {
+                    if (theme !== 'light') {
                       e.target.style.background = 'rgba(255, 255, 255, 0.08)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (selectedTheme !== 'light') {
+                    if (theme !== 'light') {
                       e.target.style.background = 'rgba(255, 255, 255, 0.05)';
                     }
                   }}
                 >
                   <span>☀️</span>
                   Light
-                  {selectedTheme === 'light' && (
+                  {theme === 'light' && (
                     <Check size={14} style={{ marginLeft: '0.25rem' }} />
                   )}
                 </button>
 
                 {/* Dark Mode Option */}
                 <button
-                  onClick={() => setSelectedTheme('dark')}
+                  onClick={() => setTheme('dark')}
                   style={{
                     flex: 1,
-                    background: selectedTheme === 'dark'
+                    background: theme === 'dark'
                       ? 'rgba(255, 255, 255, 0.15)'
                       : 'rgba(255, 255, 255, 0.05)',
-                    border: selectedTheme === 'dark'
+                    border: theme === 'dark'
                       ? '1px solid rgba(255, 255, 255, 0.3)'
                       : '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '8px',
                     padding: '0.5rem',
                     color: '#ffffff',
                     fontSize: '0.85rem',
-                    fontWeight: selectedTheme === 'dark' ? '600' : '400',
+                    fontWeight: theme === 'dark' ? '600' : '400',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     display: 'flex',
@@ -441,19 +442,19 @@ const UserSettingsModal = ({
                     WebkitTapHighlightColor: 'transparent'
                   }}
                   onMouseEnter={(e) => {
-                    if (selectedTheme !== 'dark') {
+                    if (theme !== 'dark') {
                       e.target.style.background = 'rgba(255, 255, 255, 0.08)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (selectedTheme !== 'dark') {
+                    if (theme !== 'dark') {
                       e.target.style.background = 'rgba(255, 255, 255, 0.05)';
                     }
                   }}
                 >
                   <span>🌙</span>
                   Dark
-                  {selectedTheme === 'dark' && (
+                  {theme === 'dark' && (
                     <Check size={14} style={{ marginLeft: '0.25rem' }} />
                   )}
                 </button>
