@@ -148,122 +148,14 @@ const AboutModal = ({
               Omnia One AI is an advanced artificial intelligence application that utilizes the latest AI technologies to provide intelligent conversations, document processing, and voice interactions.
             </p>
 
-            <h4 style={{
+            <p style={{
               color: '#00d4ff',
               fontSize: '0.9rem',
               fontWeight: '600',
-              margin: '0 0 0.5rem 0'
+              margin: 0
             }}>
-              Powered by Leading AI Technologies:
-            </h4>
-
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-              fontSize: '0.85rem',
-              color: 'rgba(255, 255, 255, 0.8)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
-                <a
-                  href="https://www.anthropic.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#00d4ff',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
-                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
-                >
-                  Anthropic Claude
-                </a>
-                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Advanced reasoning AI</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
-                <a
-                  href="https://openai.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#00d4ff',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
-                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
-                >
-                  OpenAI GPT-4
-                </a>
-                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Language understanding</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
-                <a
-                  href="https://ai.google"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#00d4ff',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
-                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
-                >
-                  Google Gemini
-                </a>
-                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Multimodal AI capabilities</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
-                <a
-                  href="https://elevenlabs.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#00d4ff',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
-                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
-                >
-                  ElevenLabs
-                </a>
-                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Voice synthesis & recognition</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
-                <a
-                  href="https://x.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#00d4ff',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
-                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
-                >
-                  X.AI Grok
-                </a>
-                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Real-time information</span>
-              </div>
-            </div>
+              Powered by Leading AI Technologies
+            </p>
           </div>
 
           {/* Important Data Processing Disclaimer */}
