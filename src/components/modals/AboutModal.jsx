@@ -277,66 +277,94 @@ const AboutModal = ({
                 gap: '0.25rem',
                 fontSize: '0.85rem'
               }}>
-                <a
-                  href="https://www.anthropic.com/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => openLegalDoc('anthropic-privacy')}
                   style={{
+                    background: 'transparent',
+                    border: 'none',
                     color: '#00d4ff',
+                    fontSize: '0.85rem',
+                    textAlign: 'left',
+                    padding: '0.25rem 0',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    WebkitTapHighlightColor: 'transparent',
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
+                    transition: 'border-color 0.2s ease',
+                    width: '100%'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • Anthropic Privacy Policy
-                </a>
-                <a
-                  href="https://openai.com/privacy/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </button>
+                <button
+                  onClick={() => openLegalDoc('openai-privacy')}
                   style={{
+                    background: 'transparent',
+                    border: 'none',
                     color: '#00d4ff',
+                    fontSize: '0.85rem',
+                    textAlign: 'left',
+                    padding: '0.25rem 0',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    WebkitTapHighlightColor: 'transparent',
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
+                    transition: 'border-color 0.2s ease',
+                    width: '100%'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • OpenAI Privacy Policy
-                </a>
-                <a
-                  href="https://policies.google.com/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </button>
+                <button
+                  onClick={() => openLegalDoc('google-privacy')}
                   style={{
+                    background: 'transparent',
+                    border: 'none',
                     color: '#00d4ff',
+                    fontSize: '0.85rem',
+                    textAlign: 'left',
+                    padding: '0.25rem 0',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    WebkitTapHighlightColor: 'transparent',
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
+                    transition: 'border-color 0.2s ease',
+                    width: '100%'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • Google Privacy Policy
-                </a>
-                <a
-                  href="https://elevenlabs.io/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </button>
+                <button
+                  onClick={() => openLegalDoc('elevenlabs-privacy')}
                   style={{
+                    background: 'transparent',
+                    border: 'none',
                     color: '#00d4ff',
+                    fontSize: '0.85rem',
+                    textAlign: 'left',
+                    padding: '0.25rem 0',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    WebkitTapHighlightColor: 'transparent',
                     textDecoration: 'none',
                     borderBottom: '1px solid transparent',
-                    transition: 'border-color 0.2s ease'
+                    transition: 'border-color 0.2s ease',
+                    width: '100%'
                   }}
                   onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
                   onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
                 >
                   • ElevenLabs Privacy Policy
-                </a>
+                </button>
               </div>
             </div>
 

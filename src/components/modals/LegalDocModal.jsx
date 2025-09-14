@@ -127,6 +127,158 @@ const LegalDocModal = ({
           `
         };
 
+      case 'anthropic-privacy':
+        return {
+          title: 'Anthropic Privacy Policy',
+          lastUpdated: 'Referenced from Anthropic.com',
+          content: `
+            <div class="note">
+              <p><strong>Note:</strong> This is a summary of Anthropic's privacy practices. For the complete and most up-to-date policy, visit <a href="https://www.anthropic.com/privacy" target="_blank">anthropic.com/privacy</a></p>
+            </div>
+
+            <h2>How Anthropic Processes Your Data</h2>
+            <p>When you use Omnia with Anthropic Claude, your messages are sent to Anthropic's servers for processing. Key points:</p>
+
+            <ul>
+              <li>Anthropic processes your conversations to generate AI responses</li>
+              <li>They may use conversations for model training and improvement</li>
+              <li>Data is handled according to their privacy policy and security practices</li>
+              <li>You can review their full privacy policy for detailed information</li>
+            </ul>
+
+            <h2>Your Rights</h2>
+            <p>Regarding data processed by Anthropic, you may have rights including:</p>
+            <ul>
+              <li>Access to your personal data</li>
+              <li>Correction of inaccurate data</li>
+              <li>Deletion requests (subject to their policies)</li>
+              <li>Data portability in some cases</li>
+            </ul>
+
+            <h2>Contact Anthropic</h2>
+            <p>For questions about how Anthropic processes your data, contact them directly through their official channels at anthropic.com</p>
+
+            <div class="important">
+              <p><strong>Important:</strong> This summary is for informational purposes only. Anthropic's actual privacy policy at anthropic.com/privacy takes precedence and contains the authoritative terms.</p>
+            </div>
+          `
+        };
+
+      case 'openai-privacy':
+        return {
+          title: 'OpenAI Privacy Policy',
+          lastUpdated: 'Referenced from OpenAI.com',
+          content: `
+            <div class="note">
+              <p><strong>Note:</strong> This is a summary of OpenAI's privacy practices. For the complete and most up-to-date policy, visit <a href="https://openai.com/privacy/" target="_blank">openai.com/privacy</a></p>
+            </div>
+
+            <h2>How OpenAI Processes Your Data</h2>
+            <p>When you use Omnia with OpenAI GPT models, your messages are sent to OpenAI's servers. Key points:</p>
+
+            <ul>
+              <li>OpenAI processes your conversations to provide AI responses</li>
+              <li>They implement security measures to protect your data</li>
+              <li>Data handling is governed by their privacy policy</li>
+              <li>They may use data for service improvement and safety purposes</li>
+            </ul>
+
+            <h2>Data Retention</h2>
+            <p>OpenAI has specific policies regarding how long they retain conversation data:</p>
+            <ul>
+              <li>API usage data may be retained for security and abuse prevention</li>
+              <li>Specific retention periods are outlined in their privacy policy</li>
+              <li>You can find current retention policies at openai.com/privacy</li>
+            </ul>
+
+            <h2>Contact OpenAI</h2>
+            <p>For questions about how OpenAI processes your data, contact them directly through their support channels.</p>
+
+            <div class="important">
+              <p><strong>Important:</strong> This summary is for informational purposes only. OpenAI's actual privacy policy at openai.com/privacy contains the authoritative and complete terms.</p>
+            </div>
+          `
+        };
+
+      case 'google-privacy':
+        return {
+          title: 'Google Privacy Policy',
+          lastUpdated: 'Referenced from Google Policies',
+          content: `
+            <div class="note">
+              <p><strong>Note:</strong> This is a summary of Google's privacy practices. For the complete policy, visit <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></p>
+            </div>
+
+            <h2>How Google Processes Your Data</h2>
+            <p>When you use Omnia with Google Gemini, your data is processed by Google. Key aspects:</p>
+
+            <ul>
+              <li>Google processes conversations to provide AI responses</li>
+              <li>Data handling follows Google's comprehensive privacy policy</li>
+              <li>They implement various security and privacy protections</li>
+              <li>Processing may include analysis for service improvement</li>
+            </ul>
+
+            <h2>Google's Privacy Principles</h2>
+            <p>Google operates under established privacy principles:</p>
+            <ul>
+              <li>Transparency about data collection and use</li>
+              <li>User control over privacy settings</li>
+              <li>Strong security measures</li>
+              <li>Compliance with applicable privacy laws</li>
+            </ul>
+
+            <h2>Your Privacy Controls</h2>
+            <p>Google provides various tools to manage your privacy:</p>
+            <ul>
+              <li>Privacy settings and controls</li>
+              <li>Data export and portability options</li>
+              <li>Account activity management</li>
+            </ul>
+
+            <div class="important">
+              <p><strong>Important:</strong> This summary is for informational purposes only. Google's complete privacy policy at policies.google.com/privacy contains the authoritative terms.</p>
+            </div>
+          `
+        };
+
+      case 'elevenlabs-privacy':
+        return {
+          title: 'ElevenLabs Privacy Policy',
+          lastUpdated: 'Referenced from ElevenLabs.io',
+          content: `
+            <div class="note">
+              <p><strong>Note:</strong> This is a summary of ElevenLabs' privacy practices. For the complete policy, visit <a href="https://elevenlabs.io/privacy" target="_blank">elevenlabs.io/privacy</a></p>
+            </div>
+
+            <h2>How ElevenLabs Processes Your Data</h2>
+            <p>When you use Omnia's voice features powered by ElevenLabs:</p>
+
+            <ul>
+              <li>Voice data is processed to provide text-to-speech and speech-to-text services</li>
+              <li>Audio processing follows their privacy and security practices</li>
+              <li>Data handling is governed by their privacy policy</li>
+              <li>They implement measures to protect voice data privacy</li>
+            </ul>
+
+            <h2>Voice Data Processing</h2>
+            <p>ElevenLabs specializes in voice AI technology:</p>
+            <ul>
+              <li>Voice synthesis and recognition processing</li>
+              <li>Quality improvement and model training</li>
+              <li>Security measures for audio data</li>
+              <li>Compliance with privacy regulations</li>
+            </ul>
+
+            <h2>Contact ElevenLabs</h2>
+            <p>For specific questions about voice data processing, contact ElevenLabs directly through their official support channels.</p>
+
+            <div class="important">
+              <p><strong>Important:</strong> This summary is for informational purposes only. ElevenLabs' actual privacy policy at elevenlabs.io/privacy contains the complete and authoritative terms.</p>
+            </div>
+          `
+        };
+
       default:
         return {
           title: 'Legal Document',
