@@ -1,11 +1,12 @@
 // 🔧 UserSettingsModal.jsx - Fullscreen Settings Modal inspired by Claude app
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut } from 'lucide-react';
+import { X, ChevronDown, Check, User, DollarSign, Globe, Shield, LogOut, Info } from 'lucide-react';
 import { getTranslation } from '../../utils/text/translations';
 import ResetPasswordModal from '../auth/ResetPasswordModal';
 import ProfileModal from './ProfileModal';
 import LanguageModal from '../ui/LanguageModal';
 import PricingModal from './PricingModal';
+import AboutModal from './AboutModal';
 
 const UserSettingsModal = ({ 
   isOpen, 
@@ -21,6 +22,7 @@ const UserSettingsModal = ({
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   // Add CSS to remove iOS focus styles
   useEffect(() => {
@@ -450,6 +452,57 @@ const UserSettingsModal = ({
               </div>
             </button>
 
+            {/* About Card */}
+            <button
+              onClick={() => {
+                setShowAboutModal(true);
+              }}
+              style={{
+                width: '100%',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '0.75rem',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease',
+                cursor: 'pointer',
+                outline: 'none',
+                WebkitTapHighlightColor: 'transparent !important',
+                WebkitFocusRingColor: 'transparent !important',
+                boxShadow: 'none !important',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                color: '#ffffff',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+              }}
+            >
+              <Info size={18} style={{ opacity: 0.7 }} />
+              <span style={{ flex: 1 }}>
+                About
+              </span>
+              <ChevronDown
+                size={16}
+                style={{
+                  opacity: 0.6,
+                  transform: 'rotate(-90deg)' // Make it point right like →
+                }}
+              />
+            </button>
+
           </div>
 
           {/* FIXED FOOTER - Log Out Button */}
@@ -543,6 +596,15 @@ const UserSettingsModal = ({
           isOpen={showPricingModal}
           onClose={() => setShowPricingModal(false)}
           currentPlan="free" // TODO: Get from user subscription status
+        />
+      )}
+
+      {/* About Modal */}
+      {showAboutModal && (
+        <AboutModal
+          isOpen={showAboutModal}
+          onClose={() => setShowAboutModal(false)}
+          uiLanguage={uiLanguage}
         />
       )}
     </>
