@@ -135,7 +135,7 @@ const AboutModal = ({
               color: 'white',
               fontSize: '1rem',
               fontWeight: '600',
-              margin: '0 0 0.5rem 0'
+              margin: '0 0 1rem 0'
             }}>
               Omnia One AI
             </h3>
@@ -143,9 +143,156 @@ const AboutModal = ({
               color: 'rgba(255, 255, 255, 0.8)',
               fontSize: '0.9rem',
               lineHeight: '1.5',
+              margin: '0 0 1rem 0'
+            }}>
+              Omnia One AI is an advanced artificial intelligence application that utilizes the latest AI technologies to provide intelligent conversations, document processing, and voice interactions.
+            </p>
+
+            <h4 style={{
+              color: '#00d4ff',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              margin: '0 0 0.5rem 0'
+            }}>
+              Powered by Leading AI Technologies:
+            </h4>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              fontSize: '0.85rem',
+              color: 'rgba(255, 255, 255, 0.8)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
+                <a
+                  href="https://www.anthropic.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  Anthropic Claude
+                </a>
+                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Advanced reasoning AI</span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
+                <a
+                  href="https://openai.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  OpenAI GPT-4
+                </a>
+                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Language understanding</span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
+                <a
+                  href="https://ai.google"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  Google Gemini
+                </a>
+                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Multimodal AI capabilities</span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
+                <a
+                  href="https://elevenlabs.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  ElevenLabs
+                </a>
+                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Voice synthesis & recognition</span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: '#8c52ff', fontWeight: '600' }}>•</span>
+                <a
+                  href="https://x.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#00d4ff',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#00d4ff'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  X.AI Grok
+                </a>
+                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>- Real-time information</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Important Data Processing Disclaimer */}
+          <div style={{
+            background: 'rgba(255, 193, 7, 0.1)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 193, 7, 0.3)',
+            padding: '1rem',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
+          }}>
+            <h3 style={{
+              color: '#ffc107',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              margin: '0 0 0.5rem 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              ⚠️ Important: Third-Party Data Processing
+            </h3>
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '0.85rem',
+              lineHeight: '1.4',
               margin: 0
             }}>
-              Your personal AI assistant that thinks global and answers local. Powered by multiple AI models including Claude, GPT-4, and Gemini.
+              When using Omnia One AI, your conversations and data are processed by third-party AI providers (Anthropic, OpenAI, Google, ElevenLabs, X.AI) through their respective APIs. <strong>We are not responsible for how these providers handle your data.</strong> For detailed information about their data processing practices, please visit their privacy policies directly through the links above.
             </p>
           </div>
 
