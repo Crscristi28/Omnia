@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import authService from '../../services/auth/supabaseAuth';
 import { getTranslation } from '../../utils/text/translations';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
   const t = getTranslation(uiLanguage);
+  const { theme, isDark } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -96,10 +98,14 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
       <div style={{
         width: '90%',
         maxWidth: '400px',
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        backgroundColor: isDark
+          ? 'rgba(0, 0, 0, 0.98)' // Dark mode: black background
+          : 'rgba(15, 23, 42, 0.95)', // Light mode: current blue-gray
         backdropFilter: 'blur(20px)',
         borderRadius: '20px',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
         padding: '2rem',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
         animation: 'slideUp 0.3s ease-out'
@@ -141,8 +147,12 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: isDark
+                  ? 'rgba(0, 0, 0, 0.4)'
+                  : 'rgba(0, 0, 0, 0.3)',
+                border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '10px',
                 color: 'white',
                 fontSize: '1rem',
@@ -154,8 +164,12 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
                 e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+                e.target.style.borderColor = isDark
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.1)';
+                e.target.style.backgroundColor = isDark
+                  ? 'rgba(0, 0, 0, 0.4)'
+                  : 'rgba(0, 0, 0, 0.3)';
               }}
             />
             </div>
@@ -174,8 +188,12 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: isDark
+                  ? 'rgba(0, 0, 0, 0.4)'
+                  : 'rgba(0, 0, 0, 0.3)',
+                border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '10px',
                 color: 'white',
                 fontSize: '1rem',
@@ -187,8 +205,12 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
                 e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+                e.target.style.borderColor = isDark
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.1)';
+                e.target.style.backgroundColor = isDark
+                  ? 'rgba(0, 0, 0, 0.4)'
+                  : 'rgba(0, 0, 0, 0.3)';
               }}
             />
             </div>
@@ -210,8 +232,12 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backgroundColor: isDark
+                  ? 'rgba(0, 0, 0, 0.4)'
+                  : 'rgba(0, 0, 0, 0.3)',
+                  border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '10px',
                   color: 'white',
                   fontSize: '1.2rem',
@@ -225,8 +251,12 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
                   e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+                  e.target.style.borderColor = isDark
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.backgroundColor = isDark
+                  ? 'rgba(0, 0, 0, 0.4)'
+                  : 'rgba(0, 0, 0, 0.3)';
                 }}
               />
               
@@ -342,7 +372,9 @@ const AuthModal = ({ onSuccess, onForgotPassword, uiLanguage = 'cs' }) => {
           textAlign: 'center',
           marginTop: '1.5rem',
           paddingTop: '1.5rem',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          borderTop: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)'
         }}>
           <p style={{
             color: 'rgba(255, 255, 255, 0.6)',
