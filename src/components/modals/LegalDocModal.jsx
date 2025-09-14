@@ -185,40 +185,48 @@ const LegalDocModal = ({
         {/* HEADER - Fixed Top */}
         <div style={{
           padding: '1rem 1.5rem',
+          paddingTop: `max(1rem, calc(env(safe-area-inset-top) + 0.5rem))`,
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(0, 0, 0, 0.3)',
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           position: 'sticky',
           top: 0,
-          zIndex: 100
+          zIndex: 1000
         }}>
           <button
             onClick={onClose}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(255, 255, 255, 0.7)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'rgba(255, 255, 255, 0.9)',
               cursor: 'pointer',
               outline: 'none',
               WebkitTapHighlightColor: 'transparent',
-              padding: '0.5rem',
-              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+              borderRadius: '12px',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
               fontSize: '0.9rem',
-              fontWeight: '500'
+              fontWeight: '600',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              e.target.style.color = 'rgba(255, 255, 255, 0.9)';
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+              e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+              e.target.style.color = 'white';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = 'rgba(255, 255, 255, 0.7)';
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+              e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              e.target.style.color = 'rgba(255, 255, 255, 0.9)';
             }}
           >
             <ArrowLeft size={18} />
@@ -248,26 +256,31 @@ const LegalDocModal = ({
           <button
             onClick={onClose}
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(255, 255, 255, 0.7)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'rgba(255, 255, 255, 0.9)',
               cursor: 'pointer',
               outline: 'none',
               WebkitTapHighlightColor: 'transparent',
-              padding: '0.5rem',
-              borderRadius: '6px',
+              padding: '0.75rem',
+              borderRadius: '12px',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              e.target.style.color = 'rgba(255, 255, 255, 0.9)';
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+              e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+              e.target.style.color = 'white';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = 'rgba(255, 255, 255, 0.7)';
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+              e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              e.target.style.color = 'rgba(255, 255, 255, 0.9)';
             }}
           >
             <X size={20} />
