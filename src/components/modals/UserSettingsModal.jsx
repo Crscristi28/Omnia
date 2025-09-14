@@ -126,7 +126,9 @@ const UserSettingsModal = ({
           style={{
             width: '100vw',
             height: '100vh',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+            background: theme === 'dark'
+              ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(20, 20, 20, 0.95))' // Dark mode: black gradient
+              : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))', // Light mode: blue gradient
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -197,9 +199,13 @@ const UserSettingsModal = ({
             {/* User Email */}
             {user?.email && (
               <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem 1rem',
                 color: 'rgba(255, 255, 255, 0.8)',
                 fontSize: '0.9rem',
@@ -230,9 +236,13 @@ const UserSettingsModal = ({
               }}
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -253,12 +263,20 @@ const UserSettingsModal = ({
                 textAlign: 'left'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)'
+                  : 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.15)'
+                  : 'rgba(255, 255, 255, 0.1)';
               }}
             >
               <User size={18} style={{ opacity: 0.7 }} />
@@ -279,9 +297,13 @@ const UserSettingsModal = ({
               onClick={() => setShowLanguageModal(true)}
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -302,12 +324,20 @@ const UserSettingsModal = ({
                 textAlign: 'left'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)'
+                  : 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.15)'
+                  : 'rgba(255, 255, 255, 0.1)';
               }}
             >
               <Globe size={18} style={{ opacity: 0.7 }} />
@@ -341,9 +371,13 @@ const UserSettingsModal = ({
             <div
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -405,7 +439,9 @@ const UserSettingsModal = ({
                   }}
                   onMouseLeave={(e) => {
                     if (theme !== 'light') {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                      e.target.style.background = theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'rgba(255, 255, 255, 0.05)';
                     }
                   }}
                 >
@@ -448,7 +484,9 @@ const UserSettingsModal = ({
                   }}
                   onMouseLeave={(e) => {
                     if (theme !== 'dark') {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                      e.target.style.background = theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'rgba(255, 255, 255, 0.05)';
                     }
                   }}
                 >
@@ -468,9 +506,13 @@ const UserSettingsModal = ({
               }}
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -491,12 +533,20 @@ const UserSettingsModal = ({
                 textAlign: 'left'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)'
+                  : 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.15)'
+                  : 'rgba(255, 255, 255, 0.1)';
               }}
             >
               <Shield size={18} style={{ opacity: 0.7 }} />
@@ -519,9 +569,13 @@ const UserSettingsModal = ({
               }}
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -542,13 +596,21 @@ const UserSettingsModal = ({
                 textAlign: 'left'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.15)';
                 e.target.style.color = 'rgba(255, 255, 255, 0.9)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)'
+                  : 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.15)'
+                  : 'rgba(255, 255, 255, 0.1)';
                 e.target.style.color = 'rgba(255, 255, 255, 0.8)';
               }}
             >
@@ -585,9 +647,13 @@ const UserSettingsModal = ({
               }}
               style={{
                 width: '100%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                  : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: theme === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                  : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                 padding: '0.75rem',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -608,12 +674,20 @@ const UserSettingsModal = ({
                 textAlign: 'left'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(255, 255, 255, 0.08)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.08)'
+                  : 'rgba(255, 255, 255, 0.05)';
+                e.target.style.borderColor = theme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.15)'
+                  : 'rgba(255, 255, 255, 0.1)';
               }}
             >
               <Info size={18} style={{ opacity: 0.7 }} />
