@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import authService from '../../services/auth/supabaseAuth';
 import { getTranslation } from '../../utils/text/translations';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLanguage = 'cs' }) => {
   const t = getTranslation(uiLanguage);
+  const { isDark } = useTheme();
   const [step, setStep] = useState('email'); // 'email', 'otp', 'newPassword'
   const [email, setEmail] = useState(initialEmail || user?.email || '');
   const [otp, setOtp] = useState('');
@@ -189,10 +191,14 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLangua
       <div style={{
         width: '90%',
         maxWidth: '400px',
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        backgroundColor: isDark
+          ? 'rgba(0, 0, 0, 0.98)'
+          : 'rgba(15, 23, 42, 0.95)',
         backdropFilter: 'blur(20px)',
         borderRadius: '20px',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
         padding: '2rem',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
         animation: 'slideUp 0.3s ease-out'
@@ -256,8 +262,12 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLangua
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backgroundColor: isDark
+            ? 'rgba(0, 0, 0, 0.4)'
+            : 'rgba(0, 0, 0, 0.3)',
+                  border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '10px',
                   color: 'white',
                   fontSize: '1rem',
@@ -292,8 +302,12 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLangua
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backgroundColor: isDark
+            ? 'rgba(0, 0, 0, 0.4)'
+            : 'rgba(0, 0, 0, 0.3)',
+                  border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '10px',
                   color: 'white',
                   fontSize: '1.2rem',
@@ -372,8 +386,12 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLangua
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: isDark
+            ? 'rgba(0, 0, 0, 0.4)'
+            : 'rgba(0, 0, 0, 0.3)',
+                    border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '10px',
                     color: 'white',
                     fontSize: '1rem',
@@ -402,8 +420,12 @@ const ResetPasswordModal = ({ isOpen, onClose, user, initialEmail = '', uiLangua
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: isDark
+            ? 'rgba(0, 0, 0, 0.4)'
+            : 'rgba(0, 0, 0, 0.3)',
+                    border: isDark
+          ? '1px solid rgba(255, 255, 255, 0.15)'
+          : '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '10px',
                     color: 'white',
                     fontSize: '1rem',

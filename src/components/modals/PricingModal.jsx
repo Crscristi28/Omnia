@@ -1,13 +1,15 @@
 // 💰 PricingModal.jsx - Modern pricing modal for Omnia subscription plans
 import React from 'react';
 import { X, Check, Star } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const PricingModal = ({ 
   isOpen, 
   onClose,
   currentPlan = 'free' // 'free', 'premium-monthly', 'premium-quarterly'
 }) => {
-  
+  const { isDark } = useTheme();
+
   if (!isOpen) return null;
 
   const plans = [
@@ -101,10 +103,14 @@ const PricingModal = ({
           style={{
             width: '100vw',
             height: '100vh',
-            background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+            background: isDark
+              ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 10, 10, 0.95))'
+              : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: isDark
+              ? '1px solid rgba(255, 255, 255, 0.15)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             flexDirection: 'column',
             animation: 'slideUp 0.3s ease-out',

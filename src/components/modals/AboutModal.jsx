@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import { X, ChevronDown, FileText, Shield, Cookie, Eye, BookOpen } from 'lucide-react';
 import LegalDocModal from './LegalDocModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const AboutModal = ({
   isOpen,
   onClose,
   uiLanguage = 'cs'
 }) => {
-
+  const { isDark } = useTheme();
   const [showLegalDoc, setShowLegalDoc] = useState(null);
 
   const openLegalDoc = (docType) => {
@@ -43,10 +44,14 @@ const AboutModal = ({
         style={{
           width: '100vw',
           height: '100vh',
-          background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+          background: isDark
+            ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 10, 10, 0.95))'
+            : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           flexDirection: 'column',
           animation: 'slideUp 0.3s ease-out',
@@ -126,7 +131,9 @@ const AboutModal = ({
           <div style={{
             background: 'rgba(255, 255, 255, 0.05)',
             borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
             padding: '1rem',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)'
@@ -391,7 +398,9 @@ const AboutModal = ({
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
                   padding: '0.75rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -435,7 +444,9 @@ const AboutModal = ({
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
                   padding: '0.75rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -478,7 +489,9 @@ const AboutModal = ({
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
                   padding: '0.75rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -521,7 +534,9 @@ const AboutModal = ({
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
                   padding: '0.75rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -564,7 +579,9 @@ const AboutModal = ({
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
                   padding: '0.75rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -606,7 +623,9 @@ const AboutModal = ({
           <div style={{
             background: 'rgba(255, 255, 255, 0.05)',
             borderRadius: '8px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
             padding: '0.75rem',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
