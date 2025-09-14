@@ -582,11 +582,15 @@ const ChatSidebar = ({
             {/* MODAL CONTENT */}
             <div 
               style={{
-                background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+                background: isDark
+                  ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 10, 10, 0.95))'
+                  : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: isDark
+                  ? '1px solid rgba(255, 255, 255, 0.15)'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
                 padding: '1.5rem',
                 minWidth: '280px',
                 maxWidth: '400px',
@@ -627,7 +631,9 @@ const ChatSidebar = ({
                 <button
                   onClick={closeDeleteModal}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.08)',
+                    background: isDark
+                      ? 'rgba(255, 255, 255, 0.12)'
+                      : 'rgba(255, 255, 255, 0.08)',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '0.75rem 1.25rem',
@@ -639,11 +645,15 @@ const ChatSidebar = ({
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.12)';
+                    e.target.style.background = isDark
+                      ? 'rgba(255, 255, 255, 0.18)'
+                      : 'rgba(255, 255, 255, 0.12)';
                     e.target.style.color = '#ffffff';
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                    e.target.style.background = isDark
+                      ? 'rgba(255, 255, 255, 0.12)'
+                      : 'rgba(255, 255, 255, 0.08)';
                     e.target.style.color = 'rgba(255, 255, 255, 0.8)';
                   }}
                 >
