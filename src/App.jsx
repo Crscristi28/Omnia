@@ -6,7 +6,7 @@
 // 🆕 STREAMING: Added streamingUtils import
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, Menu, ChevronDown } from 'lucide-react';
+import { MessageCircle, Menu } from 'lucide-react';
 import './App.css';
 import { Virtuoso } from 'react-virtuoso';
 import MDEditor from '@uiw/react-md-editor';
@@ -139,7 +139,6 @@ function AppContent() {
   // 🌍 LANGUAGE & UI STATE (UNCHANGED)
   const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
-  const [showModelDropdown, setShowModelDropdown] = useState(false);
   
   // 🔗 SOURCES STATE (UNCHANGED)
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
@@ -3001,23 +3000,15 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
 }, [model, isImageMode]);
 
 // 🎯 MODEL CHANGE HANDLER - Optimized with useCallback
-const handleModelChange = useCallback((newModel) => {
-  setModel(newModel);
-  setShowModelDropdown(false);
-}, []);
+// handleModelChange removed - model selector removed
 
 // 🔍 DEBUG: Detailní analýza dat pro Virtuoso
 
 // 🎯 STYLE CONSTANTS - Prevent inline style object recreation that causes re-renders
 
 // Style constants still needed in App.jsx (MessageItem styles now in component)
-const { 
-  modelDropdownSpanStyle,
-  modelDropdownIconStyle,
-  modelDropdownContainerStyle,
-  modelButtonBaseStyle,
-  modelNameStyle,
-  modelDescriptionStyle,
+const {
+  // Model dropdown styles removed - model selector removed
   mainContainerStyle,
   topHeaderStyle,
   hamburgerButtonStyle,
@@ -3133,123 +3124,8 @@ const virtuosoComponents = React.useMemo(() => ({
           <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
         </button>
 
-        {/* MODEL SELECTOR - uprostřed */}
-        <div className="relative">
-          <button
-            onClick={() => setShowModelDropdown(!showModelDropdown)}
-            className={`px-4 py-2 rounded-full border-none bg-transparent text-white/90 cursor-pointer 
-                       flex items-center gap-1.5 font-medium transition-all duration-200 outline-none
-                       hover:bg-white/10 ${isMobile ? 'text-sm' : 'text-base'}`}
-          >
-            <span style={modelDropdownSpanStyle}>{model === 'claude' ? 'o1' : model === 'gpt-4o' ? 'o2' : model === 'grok-3' ? 'o3' : 'o4'}</span>
-            <ChevronDown size={14} strokeWidth={2} style={modelDropdownIconStyle} />
-          </button>
-
-          {/* MODEL DROPDOWN */}
-          {showModelDropdown && (
-            <div style={modelDropdownContainerStyle}>
-              <button
-                onClick={() => handleModelChange('claude')}
-                style={{
-                  ...modelButtonBaseStyle,
-                  background: model === 'claude' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (model !== 'claude') {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (model !== 'claude') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                <span style={modelNameStyle}>Omnia Claude</span>
-                <span style={{
-                  ...modelDescriptionStyle,
-                  color: 'rgba(156, 163, 175, 1)',
-                  fontWeight: '400',
-                }}>o1</span>
-              </button>
-              
-              <button
-                onClick={() => handleModelChange('gpt-4o')}
-                style={{
-                  ...modelButtonBaseStyle,
-                  background: model === 'gpt-4o' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (model !== 'gpt-4o') {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (model !== 'gpt-4o') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                <span style={modelNameStyle}>Omnia GPT</span>
-                <span style={{
-                  ...modelDescriptionStyle,
-                  color: 'rgba(156, 163, 175, 1)',
-                  fontWeight: '400',
-                }}>o2</span>
-              </button>
-              
-              <button
-                onClick={() => handleModelChange('grok-3')}
-                style={{
-                  ...modelButtonBaseStyle,
-                  background: model === 'grok-3' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (model !== 'grok-3') {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (model !== 'grok-3') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                <span style={modelNameStyle}>Omnia X</span>
-                <span style={{
-                  ...modelDescriptionStyle,
-                  color: 'rgba(156, 163, 175, 1)',
-                  fontWeight: '400',
-                }}>o3</span>
-              </button>
-              
-              <button
-                onClick={() => handleModelChange('gemini-2.5-flash')}
-                style={{
-                  ...modelButtonBaseStyle,
-                  background: model === 'gemini-2.5-flash' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (model !== 'gemini-2.5-flash') {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (model !== 'gemini-2.5-flash') {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                <span style={modelNameStyle}>Omnia G</span>
-                <span style={{
-                  ...modelDescriptionStyle,
-                  color: 'rgba(156, 163, 175, 1)',
-                  fontWeight: '400',
-                }}>o4</span>
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Prázdné místo uprostřed - model selector odstraněn */}
+        <div style={{ flex: 1 }}></div>
 
         {/* NEW CHAT BUTTON - vpravo */}
         <button
