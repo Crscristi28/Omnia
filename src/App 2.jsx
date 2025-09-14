@@ -941,7 +941,7 @@ function App() {
       console.error('❌ STT Recording setup error:', error);
       setIsRecordingSTT(false);
       setAudioLevel(0);
-      showNotification('Could not access microphone', 'error');
+      showNotification('Nepodařilo se získat přístup k mikrofonu', 'error');
     }
   };
 
@@ -993,13 +993,14 @@ function App() {
       if (data.success && data.text && data.text.trim()) {
         const transcribedText = data.text.trim();
         setInput(transcribedText);
+        showNotification(`Text převeden pomocí ${usedService}! Zkontrolujte a odešlete.`, 'success');
       } else {
-        throw new Error('Speech recognition failed');
+        throw new Error('Nepodařilo se rozpoznat řeč');
       }
 
     } catch (error) {
       console.error('💥 STT processing error:', error);
-      showNotification('Speech recognition error - please try again', 'error');
+      showNotification(`Chyba při převodu: ${error.message}`, 'error');
     }
   };
 
@@ -1428,7 +1429,7 @@ function App() {
             msg.id === imageGenBotMessageId 
               ? {
                   ...msg,
-                  text: `❌ Failed to generate image: ${imageError.message}`,
+                  text: `❌ Nepodařilo se vygenerovat obrázek: ${imageError.message}`,
                   isStreaming: false
                 }
               : msg
@@ -1444,7 +1445,7 @@ function App() {
           setLoading(false);
           setStreaming(false);
           
-          showNotification('Image generation error', 'error');
+          showNotification('Chyba při generování obrázku', 'error');
         }
         
         // Keep image mode active (user can toggle it off manually)
@@ -1821,39 +1822,7 @@ function App() {
         stack: err.stack 
       });
       console.error('💥 API call error:', err);
-      
-      // 🔄 ROLLBACK: Network error or streaming failure detected
-      // Remove the user and bot messages with span indicator from state
-      setMessages(prev => {
-        // Find and remove last 2 messages (user + bot with span indicator)
-        const lastBotMessage = prev[prev.length - 1];
-        const hasSpanIndicator = lastBotMessage?.text?.includes('chat-loading-dots') || 
-                                lastBotMessage?.text?.includes('•') ||
-                                lastBotMessage?.text === '';
-        
-        if (hasSpanIndicator) {
-          console.log('🔄 [ROLLBACK] Removing failed messages with span indicator');
-          return prev.slice(0, -2);
-        }
-        return prev;
-      });
-      
-      // Restore original text to input bar if we have it
-      if (originalUserText) {
-        setInput(originalUserText);
-      }
-      
-      // Show user-friendly error message
-      const isNetworkError = err.message?.toLowerCase().includes('fail') || 
-                             err.message?.toLowerCase().includes('network') ||
-                             err.message?.toLowerCase().includes('fetch') ||
-                             !navigator.onLine;
-      
-      const errorMessage = isNetworkError 
-        ? 'Connection lost - please check your internet and try again'
-        : 'Something went wrong. Please try again.';
-      
-      showNotification(errorMessage, 'error');
+      showNotification(err.message, 'error');
     } finally {
       setLoading(false);
       setStreaming(false);
@@ -2055,7 +2024,7 @@ const handleDocumentUpload = async (event) => {
   // Check file size - now supporting much larger files with direct upload
   const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for direct upload
   if (file.size > MAX_FILE_SIZE) {
-    showNotification(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)} MB`, 'error');
+    showNotification(`Soubor je příliš velký. Maximální velikost je ${MAX_FILE_SIZE / (1024 * 1024)} MB.`, 'error');
     return;
   }
 
@@ -2073,7 +2042,7 @@ const handleDocumentUpload = async (event) => {
   // Check if adding this file would exceed daily limit
   if (todayUploaded.bytes + file.size > DAILY_LIMIT) {
     const remainingMB = Math.max(0, (DAILY_LIMIT - todayUploaded.bytes) / (1024 * 1024)).toFixed(1);
-    showNotification(`Daily upload limit exceeded. Remaining: ${remainingMB} MB`, 'error');
+    showNotification(messages.dailyLimit ? messages.dailyLimit(remainingMB) : `Denní limit překročen. Zbývá ${remainingMB} MB.`, 'error');
     return;
   }
   
@@ -2195,7 +2164,7 @@ const handleDocumentUpload = async (event) => {
     
   } catch (error) {
     console.error('❌ [UPLOAD] Document upload error:', error);
-    showNotification(error.message || 'Document processing error', 'error');
+    showNotification(error.message || 'Chyba při zpracování dokumentu', 'error');
   } finally {
     setLoading(false);
   }
@@ -2380,7 +2349,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
                           isFileExtensionSupported(doc.file.name);
       
       if (!isSupported) {
-        throw new Error(`Unsupported format: ${doc.file.name}`);
+        throw new Error(`Nepodporovaný formát: ${doc.file.name}`);
       }
       
       // Categorize based on file type
@@ -2906,40 +2875,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     
   } catch (error) {
     console.error('Send with documents error:', error);
-    
-    // 🔄 ROLLBACK: Network error or streaming failure detected with documents
-    // Remove the user and bot messages with span indicator from state
-    setMessages(prev => {
-      // Find and remove last 2 messages (user + bot with span indicator)
-      const lastBotMessage = prev[prev.length - 1];
-      const hasSpanIndicator = lastBotMessage?.text?.includes('chat-loading-dots') || 
-                              lastBotMessage?.text?.includes('•') ||
-                              lastBotMessage?.text === '';
-      
-      if (hasSpanIndicator) {
-        console.log('🔄 [ROLLBACK-DOCS] Removing failed messages with span indicator');
-        return prev.slice(0, -2);
-      }
-      return prev;
-    });
-    
-    // Restore original text to input bar
-    if (originalUserText) {
-      setInput(originalUserText);
-    }
-    
-    // Show user-friendly error message
-    const isNetworkError = error.message?.toLowerCase().includes('fail') || 
-                           error.message?.toLowerCase().includes('network') ||
-                           error.message?.toLowerCase().includes('fetch') ||
-                           !navigator.onLine;
-    
     const messages = getUploadErrorMessages(userLanguage);
-    const errorMessage = isNetworkError 
-      ? 'Connection lost - please check your internet and try again'
-      : (error.message || messages.processing);
-    
-    showNotification(errorMessage, 'error');
+    showNotification(error.message || messages.processing, 'error');
   } finally {
     setLoading(false);
     setStreaming(false);
