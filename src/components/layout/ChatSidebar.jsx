@@ -7,6 +7,7 @@ import { MessageCircle, Check, X, ChevronDown, LogOut, User, Trash2, Settings } 
 import { getTranslation } from '../../utils/text/translations';
 import chatDB from '../../services/storage/chatDB';
 import UserSettingsModal from '../modals/UserSettingsModal';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ChatSidebar = ({ 
   isOpen, 
@@ -24,6 +25,7 @@ const ChatSidebar = ({
 }) => {
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+  const { theme, isDark } = useTheme();
   
   // Long press state
   const [longPressTimer, setLongPressTimer] = useState(null);
@@ -172,7 +174,7 @@ const ChatSidebar = ({
       />
       
       {/* 📋 SIDEBAR */}
-      <div 
+      <div
         style={{
           position: 'fixed',
           top: 0,
@@ -180,7 +182,9 @@ const ChatSidebar = ({
           bottom: 0,
           width: isMobile ? '85%' : '320px',
           maxWidth: isMobile ? '300px' : '320px',
-          background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))',
+          background: isDark
+            ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(20, 20, 20, 0.95))' // Dark mode: black gradient
+            : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))', // Light mode: blue gradient
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: 'none',
@@ -266,9 +270,13 @@ const ChatSidebar = ({
                 onClick={() => setIsChatHistoryExpanded(!isChatHistoryExpanded)}
                 style={{
                   width: '100%',
-                  background: 'rgba(255, 255, 255, 0.05)',
+                  background: isDark
+                    ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                    : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                   borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+                    ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                    : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                   padding: '0.75rem',
                   margin: '0.125rem 0',
                   backdropFilter: 'blur(10px)',
@@ -285,10 +293,14 @@ const ChatSidebar = ({
                   textAlign: 'left'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.12)'
+                    : 'rgba(255, 255, 255, 0.08)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)';
                 }}
               >
                 <span style={{
@@ -339,9 +351,9 @@ const ChatSidebar = ({
                           width: '100%',
                           padding: '0.6rem 0.75rem',
                           margin: '0.125rem 0',
-                          background: currentChatId === chat.id 
-                            ? 'rgba(255, 255, 255, 0.12)' 
-                            : 'rgba(255, 255, 255, 0.03)',
+                          background: currentChatId === chat.id
+                            ? (isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.12)')
+                            : (isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.03)'),
                           border: 'none',
                           borderRadius: '8px',
                           color: '#ffffff',
@@ -358,7 +370,9 @@ const ChatSidebar = ({
                         }}
                         onMouseEnter={(e) => {
                           if (currentChatId !== chat.id) {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.06)';
+                            e.target.style.background = isDark
+                              ? 'rgba(255, 255, 255, 0.08)'
+                              : 'rgba(255, 255, 255, 0.06)';
                           }
                           // Show delete button on hover (desktop)
                           const deleteBtn = e.target.querySelector('button');
@@ -368,7 +382,9 @@ const ChatSidebar = ({
                         }}
                         onMouseLeave={(e) => {
                           if (currentChatId !== chat.id) {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                            e.target.style.background = isDark
+                              ? 'rgba(255, 255, 255, 0.05)'
+                              : 'rgba(255, 255, 255, 0.03)';
                           }
                           // Hide delete button when not hovering (desktop)
                           const deleteBtn = e.target.querySelector('button');
@@ -458,9 +474,13 @@ const ChatSidebar = ({
                 onClick={() => setShowUserSettingsModal(true)}
                 style={{
                   width: '100%',
-                  background: 'rgba(255, 255, 255, 0.05)',
+                  background: isDark
+                    ? 'rgba(255, 255, 255, 0.08)' // Dark mode: slightly brighter
+                    : 'rgba(255, 255, 255, 0.05)', // Light mode: current
                   borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: isDark
+                    ? '1px solid rgba(255, 255, 255, 0.15)' // Dark mode: brighter border
+                    : '1px solid rgba(255, 255, 255, 0.1)', // Light mode: current
                   padding: '0.75rem',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -473,10 +493,14 @@ const ChatSidebar = ({
                   textAlign: 'left'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.12)'
+                    : 'rgba(255, 255, 255, 0.08)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.background = isDark
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(255, 255, 255, 0.05)';
                 }}
               >
                 {/* USER AVATAR */}
