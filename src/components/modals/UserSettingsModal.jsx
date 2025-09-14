@@ -19,7 +19,7 @@ const UserSettingsModal = ({
   onResetPassword
 }) => {
   const t = getTranslation(uiLanguage);
-  const { theme, setTheme, isAutoDetected, systemTheme } = useTheme(); // Use theme from context
+  const { theme, setTheme } = useTheme(); // Use theme from context
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -496,18 +496,6 @@ const UserSettingsModal = ({
                     <Check size={14} style={{ marginLeft: '0.25rem' }} />
                   )}
                 </button>
-              </div>
-
-              {/* Theme Status Indicator */}
-              <div style={{
-                padding: '0.5rem 1.5rem 0 1.5rem',
-                fontSize: '0.75rem',
-                color: 'rgba(255, 255, 255, 0.5)',
-                textAlign: 'center'
-              }}>
-                {isAutoDetected
-                  ? `Auto-detected from system (${systemTheme})`
-                  : 'Manual preference saved'}
               </div>
             </div>
 
