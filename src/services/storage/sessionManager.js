@@ -15,7 +15,7 @@ const sessionManager = {
   },
 
   getTheme() {
-    return localStorage.getItem('omnia-theme') || 'light'; // Default to light (current design)
+    return localStorage.getItem('omnia-theme'); // Return null if not set, for auto-detection
   },
 
   // 🌍 UI Language preference

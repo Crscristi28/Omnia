@@ -21,6 +21,11 @@ export const ThemeProvider = ({ children }) => {
     return 'light'; // fallback
   };
 
+  // Track if user has made manual selection (separate from theme value)
+  const [hasManualPreference, setHasManualPreference] = useState(() => {
+    return !!sessionManager.getTheme(); // true if theme exists in localStorage
+  });
+
   // Initialize theme with auto-detection for first-time users
   const [theme, setTheme] = useState(() => {
     const savedTheme = sessionManager.getTheme();
@@ -36,45 +41,50 @@ export const ThemeProvider = ({ children }) => {
     return savedTheme;
   });
 
-  // Save theme to localStorage when it changes
+  // Save theme to localStorage only when manually changed (not auto-detected)
   useEffect(() => {
-    sessionManager.saveTheme(theme);
-  }, [theme]);
+    if (hasManualPreference) {
+      sessionManager.saveTheme(theme);
+    }
+  }, [theme, hasManualPreference]);
 
   // Listen for system theme changes only if user hasn't set manual preference
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.matchMedia) {
+    if (typeof window !== 'undefined' && window.matchMedia && !hasManualPreference) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
       const handleSystemThemeChange = (e) => {
-        const savedTheme = sessionManager.getTheme();
-        // Only auto-update if no manual preference exists yet
-        if (!savedTheme) {
-          const newSystemTheme = e.matches ? 'dark' : 'light';
-          console.log('🎨 System theme changed to:', newSystemTheme);
-          setTheme(newSystemTheme);
-        }
+        const newSystemTheme = e.matches ? 'dark' : 'light';
+        console.log('🎨 System theme changed to:', newSystemTheme);
+        setTheme(newSystemTheme);
       };
 
       mediaQuery.addListener(handleSystemThemeChange);
       return () => mediaQuery.removeListener(handleSystemThemeChange);
     }
-  }, []);
+  }, [hasManualPreference]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     console.log('🎨 User manually changed theme to:', newTheme);
+    setHasManualPreference(true); // Mark as manual preference
     setTheme(newTheme);
     // Manual change will be saved via useEffect, marking user preference
   };
 
+  const setThemeManually = (newTheme) => {
+    console.log('🎨 User manually set theme to:', newTheme);
+    setHasManualPreference(true); // Mark as manual preference
+    setTheme(newTheme);
+  };
+
   const value = {
     theme,
-    setTheme,
+    setTheme: setThemeManually, // Use manual version for UI
     toggleTheme,
     isLight: theme === 'light',
     isDark: theme === 'dark',
-    isAutoDetected: !sessionManager.getTheme(), // true if no manual preference saved
+    isAutoDetected: !hasManualPreference, // true if no manual preference set
     systemTheme: getSystemTheme()
   };
 
