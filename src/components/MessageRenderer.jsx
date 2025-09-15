@@ -102,7 +102,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   // Unified rendering - same for streaming and final
   return (
     <div className={className}>
-      <div className="markdown-container">
+      <div className={`markdown-container ${isStreaming ? 'is-streaming' : ''}`}>
         {segments.map((segment, index) => (
           segment.type === 'youtube' ? (
             <YouTubeEmbed 
@@ -286,6 +286,22 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
         .markdown-container .token.punctuation,
         [data-color-mode="light"] .token.punctuation {
           color: #e5e7eb !important; /* White for punctuation */
+        }
+
+        /* Disable text selection during streaming to prevent blue line artifact */
+        .markdown-container.is-streaming {
+          user-select: none !important;
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+        }
+
+        /* Ensure selection is enabled after streaming completes */
+        .markdown-container:not(.is-streaming) {
+          user-select: text;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
         }
       `}</style>
     </div>
