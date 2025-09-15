@@ -145,6 +145,13 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
         }
+
+        /* Enhanced GPU acceleration for bold text during streaming */
+        .markdown-container.is-streaming strong,
+        .markdown-container.is-streaming .w-md-editor-text strong,
+        .markdown-container.is-streaming .w-md-editor-text b {
+          will-change: transform, opacity !important;
+        }
         
         /* List styling - CONSISTENT and STABLE formatting */
         .markdown-container .w-md-editor-text ul,
@@ -205,12 +212,21 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           word-wrap: break-word;
           /* GPU acceleration for smooth rendering */
           transform: translateZ(0);
-          will-change: transform;
           backface-visibility: hidden;
           /* Text rendering optimization */
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* GPU acceleration only during streaming - prevent memory leaks */
+        .markdown-container.is-streaming {
+          will-change: transform;
+        }
+
+        /* Clean up GPU resources after streaming */
+        .markdown-container:not(.is-streaming) {
+          will-change: auto;
         }
         
         /* List and paragraph spacing coordination */
