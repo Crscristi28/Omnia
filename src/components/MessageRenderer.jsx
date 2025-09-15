@@ -217,6 +217,8 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+          /* Safari font synthesis fix - prevent fake bold rendering */
+          font-synthesis: none;
         }
 
         /* GPU acceleration only during streaming - prevent memory leaks */
