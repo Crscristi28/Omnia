@@ -335,20 +335,27 @@ export default async function handler(req, res) {
     
     // Specific message for service agents provisioning
     if (error.message && error.message.includes('Service agents are being provisioned')) {
-      res.write(JSON.stringify({ 
+      res.write(JSON.stringify({
         requestId: req.body?.requestId,
-        error: true, 
-        message: '⏳ Google Cloud nastavuje servisní agenty pro dokumenty. Zkus to znovu za 5 minut nebo piš bez dokumentu.' 
+        error: true,
+        rollback: true,
+        message: '⏳ Service temporarily unavailable. Try again in a moment.'
       }) + '\n');
     } else if (error.cause?.code === 429 || error.message.includes('429') || error.message.includes('Too Many Requests')) {
-      // Handle 429 rate limiting with user-friendly message
-      res.write(JSON.stringify({ 
+      // Handle 429 rate limiting with rollback
+      res.write(JSON.stringify({
         requestId: req.body?.requestId,
-        error: true, 
-        message: '⏳ Too many requests. Please try again in a moment.' 
+        error: true,
+        rollback: true,
+        message: '⏳ Too many requests. Please try again in a moment.'
       }) + '\n');
     } else {
-      res.write(JSON.stringify({ requestId: req.body?.requestId, error: true, message: 'Server error: ' + error.message }) + '\n');
+      res.write(JSON.stringify({
+        requestId: req.body?.requestId,
+        error: true,
+        rollback: true,
+        message: 'Server error: ' + error.message
+      }) + '\n');
     }
     res.end();
   }
