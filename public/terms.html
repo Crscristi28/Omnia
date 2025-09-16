@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Omnia AI</title>
+    <meta name="description" content="Terms of Service for Omnia AI - Advanced AI Assistant">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        /* Dark theme for legal pages */
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Legal page specific styles */
+        .legal-page {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+        }
+
+        .legal-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .legal-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .legal-content .last-updated {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            color: #ffffff;
+        }
+
+        .legal-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: #e5e7eb;
+        }
+
+        .legal-content p {
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+
+        .legal-content ul, .legal-content ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        .legal-content li {
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+        }
+
+        .legal-content strong {
+            color: #facc15;
+            font-weight: 600;
+        }
+
+        .legal-content a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .legal-content a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #facc15;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #f59e0b;
+        }
+
+        /* Language Selector Styles */
+        .language-selector {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .lang-dropdown-simple {
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            min-width: 200px;
+            transition: all 0.2s ease;
+        }
+
+        .lang-dropdown-simple:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .lang-dropdown-simple:focus {
+            outline: none;
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .legal-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .legal-content h1 {
+                font-size: 2rem;
+            }
+
+            .lang-dropdown-simple {
+                min-width: 150px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="omnia-website.html" class="logo">
+                    <span class="logo-icon">⚡</span>
+                    <span class="logo-text">Omnia</span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="nav-menu" id="navMenu">
+                    <a href="omnia-website.html#features" class="nav-link" data-i18n="nav_features">Features</a>
+                    <a href="omnia-website.html#how-it-works" class="nav-link" data-i18n="nav_how">How it Works</a>
+                    <a href="omnia-website.html#pricing" class="nav-link" data-i18n="nav_pricing">Pricing</a>
+                    <a href="omnia-website.html#about" class="nav-link" data-i18n="nav_about">About</a>
+                </div>
+
+                <!-- Right Section -->
+                <div class="nav-right">
+                    <!-- CTA Button -->
+                    <a href="https://omniaoneai.com" class="nav-cta" data-i18n="nav_try">Try Omnia</a>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Legal Page Content -->
+    <section class="legal-page">
+        <div class="container">
+            <div class="legal-content">
+                <a href="omnia-website.html" class="back-link" data-i18n="terms_back_home">
+                    ← Back to Home
+                </a>
+
+                <!-- Language Selector -->
+                <div class="language-selector">
+                    <select id="languageSelect" class="lang-dropdown-simple">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="cs">🇨🇿 Čeština</option>
+                        <option value="ro">🇷🇴 Română</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="pl">🇵🇱 Polski</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                    </select>
+                </div>
+
+                <h1 data-i18n="terms_title">Terms of Service</h1>
+                <p class="last-updated" data-i18n="terms_last_updated">Last Updated: January 2025</p>
+
+                <h2 data-i18n="terms_1_title">1. Acceptance of Terms</h2>
+                <p data-i18n="terms_1_content">By accessing and using Omnia AI ("Service"), you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service ("Terms") constitute a legally binding agreement between you and Omnia AI.</p>
+
+                <h2 data-i18n="terms_2_title">2. Description of Service</h2>
+                <p data-i18n="terms_2_content">Omnia AI is an advanced AI assistant platform that provides:</p>
+                <ul>
+                    <li data-i18n="terms_2_list_1">AI-powered conversational assistance</li>
+                    <li data-i18n="terms_2_list_2">Voice conversation capabilities</li>
+                    <li data-i18n="terms_2_list_3">Document analysis and processing</li>
+                    <li data-i18n="terms_2_list_4">Image generation services</li>
+                    <li data-i18n="terms_2_list_5">Web search integration</li>
+                    <li data-i18n="terms_2_list_6">Multi-language support</li>
+                </ul>
+
+                <h2 data-i18n="terms_3_title">3. User Accounts and Registration</h2>
+                <h3 data-i18n="terms_3_1_title">3.1 Account Creation</h3>
+                <p data-i18n="terms_3_1_content">To access certain features of the Service, you may be required to create an account. You agree to provide accurate, current, and complete information during the registration process.</p>
+
+                <h3 data-i18n="terms_3_2_title">3.2 Account Security</h3>
+                <p data-i18n="terms_3_2_content">You are responsible for safeguarding your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized access.</p>
+
+                <h2 data-i18n="terms_4_title">4. Acceptable Use Policy</h2>
+                <p data-i18n="terms_4_content">You agree not to use the Service to:</p>
+                <ul>
+                    <li data-i18n="terms_4_list_1">Generate harmful, illegal, or malicious content</li>
+                    <li data-i18n="terms_4_list_2">Violate any applicable laws or regulations</li>
+                    <li data-i18n="terms_4_list_3">Infringe upon intellectual property rights</li>
+                    <li data-i18n="terms_4_list_4">Attempt to reverse engineer or compromise the Service</li>
+                    <li data-i18n="terms_4_list_5">Harass, threaten, or harm others</li>
+                    <li data-i18n="terms_4_list_6">Generate spam or unsolicited communications</li>
+                </ul>
+
+                <h2 data-i18n="terms_5_title">5. Privacy and Data Protection</h2>
+                <p data-i18n="terms_5_content">Your privacy is important to us. Our collection and use of personal information is governed by our Privacy Policy, which is incorporated into these Terms by reference.</p>
+
+                <h2 data-i18n="terms_6_title">6. Subscription Plans and Billing</h2>
+                <h3 data-i18n="terms_6_1_title">6.1 Free Plan</h3>
+                <p data-i18n="terms_6_1_content">We offer a free plan with limited features and usage quotas. Free accounts are subject to daily message limits and other restrictions.</p>
+
+                <h3 data-i18n="terms_6_2_title">6.2 Paid Plans</h3>
+                <p data-i18n="terms_6_2_content">Paid subscription plans provide enhanced features and higher usage limits. Billing is processed monthly or annually as selected during subscription.</p>
+
+                <h3 data-i18n="terms_6_3_title">6.3 Payment Terms</h3>
+                <p>All fees are charged in advance and are non-refundable except as required by law or as specified in our <a href="refund.html" style="color: #facc15;">Refund & Payment Policy</a>.</p>
+
+                <h2 data-i18n="terms_7_title">7. Intellectual Property Rights</h2>
+                <h3 data-i18n="terms_7_1_title">7.1 Service Content</h3>
+                <p data-i18n="terms_7_1_content">The Service and its original content, features, and functionality are owned by Omnia AI and are protected by international copyright, trademark, and other intellectual property laws.</p>
+
+                <h3 data-i18n="terms_7_2_title">7.2 User Content</h3>
+                <p data-i18n="terms_7_2_content">You retain ownership of any content you submit to the Service. However, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, and distribute your content solely for the purpose of providing the Service.</p>
+
+                <h2 data-i18n="terms_8_title">8. AI-Generated Content</h2>
+                <p data-i18n="terms_8_content">Content generated by our AI models is provided "as is" without warranties. You are responsible for reviewing and verifying any AI-generated content before use. We do not guarantee the accuracy, completeness, or reliability of AI-generated content.</p>
+
+                <h2 data-i18n="terms_9_title">9. Service Availability and Modifications</h2>
+                <p data-i18n="terms_9_content">We strive to maintain high service availability but cannot guarantee uninterrupted access. We reserve the right to modify, suspend, or discontinue the Service with reasonable notice.</p>
+
+                <h2 data-i18n="terms_10_title">10. Limitation of Liability</h2>
+                <p data-i18n="terms_10_content">TO THE MAXIMUM EXTENT PERMITTED BY LAW, OMNIA AI SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SERVICE.</p>
+
+                <h2 data-i18n="terms_11_title">11. Indemnification</h2>
+                <p data-i18n="terms_11_content">You agree to indemnify and hold harmless Omnia AI from any claims, damages, or expenses arising from your use of the Service or violation of these Terms.</p>
+
+                <h2 data-i18n="terms_12_title">12. Termination</h2>
+                <p data-i18n="terms_12_content">Either party may terminate this agreement at any time. Upon termination, your right to use the Service will cease immediately, and we may delete your account and associated data.</p>
+
+                <h2 data-i18n="terms_13_title">13. Governing Law and Jurisdiction</h2>
+                <p data-i18n="terms_13_content">These Terms are governed by and construed in accordance with the laws of the Czech Republic. Any disputes arising from these Terms will be resolved in the courts of that jurisdiction.</p>
+
+                <h2 data-i18n="terms_14_title">14. Changes to Terms</h2>
+                <p data-i18n="terms_14_content">We may update these Terms from time to time. We will notify users of any material changes via email or through the Service. Continued use of the Service after changes constitutes acceptance of the new Terms.</p>
+
+                <h2 data-i18n="terms_15_title">15. Third-Party Services</h2>
+                <p data-i18n="terms_15_content">Omnia AI integrates with various third-party services to provide AI functionality:</p>
+                <ul>
+                    <li data-i18n="terms_15_list_1">AI Providers: Anthropic, OpenAI, Google for AI model services</li>
+                    <li data-i18n="terms_15_list_2">Infrastructure: Supabase, Vercel, ElevenLabs for hosting and processing</li>
+                    <li data-i18n="terms_15_list_3">Data Processing: Your data may be processed by these services in accordance with their terms and privacy policies</li>
+                </ul>
+                <p data-i18n="terms_15_footer">For detailed information, see our Third-party Services page.</p>
+
+                <h2 data-i18n="terms_16_title">16. Age Requirements</h2>
+                <p data-i18n="terms_16_content">You must be at least 13 years old to use Omnia AI. If you are under 18, you must have parental or guardian consent to use the Service. We do not knowingly collect personal information from children under 13.</p>
+
+                <h2 data-i18n="terms_17_title">17. Contact Information</h2>
+                <p data-i18n="terms_17_content">For questions about these Terms, please contact us through our official support channels or website.</p>
+
+                <p><strong data-i18n="terms_final_note">By using Omnia AI, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.</strong></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_product">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="omnia-website.html#features" data-i18n="footer_features">Features</a></li>
+                        <li><a href="omnia-website.html#pricing" data-i18n="footer_pricing">Pricing</a></li>
+                        <li><a href="#" data-i18n="footer_api">API</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_company">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="omnia-website.html#about" data-i18n="footer_about">About</a></li>
+                        <li><a href="#" data-i18n="footer_blog">Blog</a></li>
+                        <li><a href="#" data-i18n="footer_contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_legal">Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="terms.html" data-i18n="footer_terms">Terms of Service</a></li>
+                        <li><a href="privacy.html" data-i18n="footer_privacy">Privacy Policy</a></li>
+                        <li><a href="refund.html" data-i18n="footer_refund">Refund Policy</a></li>
+                        <li><a href="cookies.html" data-i18n="footer_cookies">Cookie Policy</a></li>
+                        <li><a href="third-party.html" data-i18n="footer_third_party">Third-party Services</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_connect">Connect</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Twitter">𝕏</a>
+                        <a href="#" aria-label="GitHub">⚡</a>
+                        <a href="#" aria-label="Discord">💬</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p data-i18n="footer_copyright">© 2025 Omnia AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Terms page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageSelect = document.getElementById('languageSelect');
+
+            // Get current language from localStorage or default to English
+            let currentLanguage = localStorage.getItem('omnia-lang') || 'en';
+
+            // Set the dropdown to current language
+            languageSelect.value = currentLanguage;
+
+            // Apply translations on page load
+            applyTranslations(currentLanguage);
+
+            // Handle language change
+            languageSelect.addEventListener('change', function() {
+                const selectedLang = this.value;
+                currentLanguage = selectedLang;
+                localStorage.setItem('omnia-lang', selectedLang);
+                applyTranslations(selectedLang);
+            });
+
+            function applyTranslations(lang) {
+                const elements = document.querySelectorAll('[data-i18n]');
+                elements.forEach(element => {
+                    const key = element.getAttribute('data-i18n');
+                    if (window.translations && window.translations.getTranslation) {
+                        const translation = window.translations.getTranslation(lang, key);
+                        element.textContent = translation;
+                    }
+                });
+
+                // Update page title and meta description
+                document.title = window.translations.getTranslation(lang, 'terms_title') + ' - Omnia AI';
+
+                // Update HTML lang attribute
+                document.documentElement.lang = lang;
+            }
+        });
+    </script>
+</body>
+</html>

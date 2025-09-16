@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund & Payment Policy - Omnia AI</title>
+    <meta name="description" content="Refund and Payment Policy for Omnia AI - Clear terms for subscriptions and billing">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        /* Dark theme for legal pages */
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Legal page specific styles */
+        .legal-page {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+        }
+
+        .legal-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .legal-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .legal-content .last-updated {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            color: #ffffff;
+        }
+
+        .legal-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: #e5e7eb;
+        }
+
+        .legal-content p {
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+
+        .legal-content ul, .legal-content ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        .legal-content li {
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+        }
+
+        .legal-content strong {
+            color: #facc15;
+            font-weight: 600;
+        }
+
+        .legal-content a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .legal-content a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #facc15;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #f59e0b;
+        }
+
+        /* Language Selector Styles */
+        .language-selector {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .lang-dropdown-simple {
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            min-width: 200px;
+            transition: all 0.2s ease;
+        }
+
+        .lang-dropdown-simple:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .lang-dropdown-simple:focus {
+            outline: none;
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .legal-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .legal-content h1 {
+                font-size: 2rem;
+            }
+
+            .lang-dropdown-simple {
+                min-width: 150px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="omnia-website.html" class="logo">
+                    <span class="logo-icon">⚡</span>
+                    <span class="logo-text">Omnia</span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="nav-menu" id="navMenu">
+                    <a href="omnia-website.html#features" class="nav-link" data-i18n="nav_features">Features</a>
+                    <a href="omnia-website.html#how-it-works" class="nav-link" data-i18n="nav_how">How it Works</a>
+                    <a href="omnia-website.html#pricing" class="nav-link" data-i18n="nav_pricing">Pricing</a>
+                    <a href="omnia-website.html#about" class="nav-link" data-i18n="nav_about">About</a>
+                </div>
+
+                <!-- Right Section -->
+                <div class="nav-right">
+                    <!-- CTA Button -->
+                    <a href="https://omniaoneai.com" class="nav-cta" data-i18n="nav_try">Try Omnia</a>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Legal Page Content -->
+    <section class="legal-page">
+        <div class="container">
+            <div class="legal-content">
+                <a href="omnia-website.html" class="back-link" data-i18n="refund_back_home">
+                    ← Back to Home
+                </a>
+
+                <!-- Language Selector -->
+                <div class="language-selector">
+                    <select id="languageSelect" class="lang-dropdown-simple">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="cs">🇨🇿 Čeština</option>
+                        <option value="ro">🇷🇴 Română</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="pl">🇵🇱 Polski</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                    </select>
+                </div>
+
+                <h1 data-i18n="refund_title">Refund & Payment Policy</h1>
+                <p class="last-updated" data-i18n="refund_last_updated">Last Updated: January 2025</p>
+
+                <h2 data-i18n="refund_1_title">1. Subscription Plans and Pricing</h2>
+                <p data-i18n="refund_1_content">Omnia AI offers a Premium subscription plan at €15 per month. This plan provides unlimited access to all premium features including unlimited messages, voice conversations, document uploads, image generation, and priority support.</p>
+
+                <h2 data-i18n="refund_2_title">2. Billing and Payment Processing</h2>
+                <h3 data-i18n="refund_2_1_title">2.1 Monthly Billing</h3>
+                <p data-i18n="refund_2_1_content">Premium subscriptions are billed monthly on the same date you initially subscribed. Payments are processed automatically using your selected payment method.</p>
+
+                <h3 data-i18n="refund_2_2_title">2.2 Payment Methods</h3>
+                <p data-i18n="refund_2_2_content">We accept major credit cards, debit cards, and other payment methods as available through our payment processor. All payments are processed securely.</p>
+
+                <h3 data-i18n="refund_2_3_title">2.3 Failed Payments</h3>
+                <p data-i18n="refund_2_3_content">If a payment fails, we will attempt to retry the charge. If payment continues to fail, your subscription will be downgraded to the free plan until payment is successfully processed.</p>
+
+                <h2 data-i18n="refund_3_title">3. Promotional Offers and Discounts</h2>
+                <p data-i18n="refund_3_content">Omnia AI may offer promotional discounts or special pricing from time to time. These promotions are subject to specific terms and conditions, and we reserve the right to modify or cancel any promotion at our discretion. Any active promotions will be clearly communicated to eligible users.</p>
+
+                <h2 data-i18n="refund_4_title">4. Cancellation Policy</h2>
+                <h3 data-i18n="refund_4_1_title">4.1 How to Cancel</h3>
+                <p data-i18n="refund_4_1_content">You may cancel your Premium subscription at any time through your account settings or by contacting our support team. Cancellation is effective immediately for billing purposes.</p>
+
+                <h3 data-i18n="refund_4_2_title">4.2 Service After Cancellation</h3>
+                <p data-i18n="refund_4_2_content">When you cancel your subscription, you will retain access to Premium features until the end of your current billing period. After that date, your account will automatically revert to the free plan with its associated limitations.</p>
+
+                <h3 data-i18n="refund_4_3_title">4.3 No Automatic Renewal After Cancellation</h3>
+                <p data-i18n="refund_4_3_content">Once cancelled, your subscription will not automatically renew. You can resubscribe at any time through your account settings.</p>
+
+                <h2 data-i18n="refund_5_title">5. Refund Policy</h2>
+                <h3 data-i18n="refund_5_1_title">5.1 Pro-Rata Refunds</h3>
+                <p data-i18n="refund_5_1_content">If you request a refund, you may be eligible to receive a pro-rata refund for the unused portion of your subscription period. Refunds are calculated from the date of your refund request to the end of your current billing period.</p>
+
+                <h3 data-i18n="refund_5_2_title">5.2 Refund Processing</h3>
+                <p data-i18n="refund_5_2_content">Approved refunds will be processed back to your original payment method within 5-10 business days. The exact timing may vary depending on your payment provider.</p>
+
+                <h3 data-i18n="refund_5_3_title">5.3 Refund Eligibility</h3>
+                <p data-i18n="refund_5_3_content">Refunds may be considered on a case-by-case basis for technical issues, billing errors, or other exceptional circumstances. We reserve the right to approve or deny refund requests at our discretion.</p>
+
+                <h2 data-i18n="refund_6_title">6. Plan Changes and Downgrades</h2>
+                <h3 data-i18n="refund_6_1_title">6.1 Downgrading to Free Plan</h3>
+                <p data-i18n="refund_6_1_content">You may downgrade from Premium to the free plan at any time. The downgrade will take effect at the end of your current billing period, and you will retain Premium access until that date.</p>
+
+                <h3 data-i18n="refund_6_2_title">6.2 Upgrading During Billing Period</h3>
+                <p data-i18n="refund_6_2_content">If you upgrade from free to Premium during a month, you will be charged the full monthly rate and gain immediate access to all Premium features.</p>
+
+                <h2 data-i18n="refund_7_title">7. Disputes and Issues</h2>
+                <h3 data-i18n="refund_7_1_title">7.1 Billing Disputes</h3>
+                <p data-i18n="refund_7_1_content">If you believe there is an error with your billing, please contact our support team within 30 days of the charge. We will investigate all billing disputes promptly and fairly.</p>
+
+                <h3 data-i18n="refund_7_2_title">7.2 Technical Issues</h3>
+                <p data-i18n="refund_7_2_content">If you experience technical issues that significantly impact your ability to use Premium features, please contact support. We may offer service credits, refunds, or other compensation as appropriate.</p>
+
+                <h2 data-i18n="refund_8_title">8. Contact Information</h2>
+                <p data-i18n="refund_8_content">For questions about billing, refunds, or to request a cancellation, please contact our support team through the official support channels listed on our website. We aim to respond to all billing inquiries within 24-48 hours.</p>
+
+                <h2 data-i18n="refund_9_title">9. Changes to This Policy</h2>
+                <p data-i18n="refund_9_content">We may update this Refund & Payment Policy from time to time. Any changes will be communicated to active subscribers via email or through the service. Continued use of the service after changes constitutes acceptance of the updated policy.</p>
+
+                <p><strong data-i18n="refund_final_note">This policy is designed to be fair and transparent. If you have any questions or concerns, please don't hesitate to contact our support team.</strong></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_product">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="omnia-website.html#features" data-i18n="footer_features">Features</a></li>
+                        <li><a href="omnia-website.html#pricing" data-i18n="footer_pricing">Pricing</a></li>
+                        <li><a href="#" data-i18n="footer_api">API</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_company">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="omnia-website.html#about" data-i18n="footer_about">About</a></li>
+                        <li><a href="#" data-i18n="footer_blog">Blog</a></li>
+                        <li><a href="#" data-i18n="footer_contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_legal">Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="terms.html" data-i18n="footer_terms">Terms of Service</a></li>
+                        <li><a href="privacy.html" data-i18n="footer_privacy">Privacy Policy</a></li>
+                        <li><a href="refund.html" data-i18n="footer_refund">Refund Policy</a></li>
+                        <li><a href="cookies.html" data-i18n="footer_cookies">Cookie Policy</a></li>
+                        <li><a href="third-party.html" data-i18n="footer_third_party">Third-party Services</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title" data-i18n="footer_connect">Connect</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Twitter">𝕏</a>
+                        <a href="#" aria-label="GitHub">⚡</a>
+                        <a href="#" aria-label="Discord">💬</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p data-i18n="footer_copyright">© 2025 Omnia AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Refund page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageSelect = document.getElementById('languageSelect');
+
+            // Get current language from localStorage or default to English
+            let currentLanguage = localStorage.getItem('omnia-lang') || 'en';
+
+            // Set the dropdown to current language
+            languageSelect.value = currentLanguage;
+
+            // Apply translations on page load
+            applyTranslations(currentLanguage);
+
+            // Handle language change
+            languageSelect.addEventListener('change', function() {
+                const selectedLang = this.value;
+                currentLanguage = selectedLang;
+                localStorage.setItem('omnia-lang', selectedLang);
+                applyTranslations(selectedLang);
+            });
+
+            function applyTranslations(lang) {
+                const elements = document.querySelectorAll('[data-i18n]');
+                elements.forEach(element => {
+                    const key = element.getAttribute('data-i18n');
+                    if (window.translations && window.translations.getTranslation) {
+                        const translation = window.translations.getTranslation(lang, key);
+                        element.textContent = translation;
+                    }
+                });
+
+                // Update page title and meta description
+                document.title = window.translations.getTranslation(lang, 'refund_title') + ' - Omnia AI';
+
+                // Update HTML lang attribute
+                document.documentElement.lang = lang;
+            }
+        });
+    </script>
+</body>
+</html>
