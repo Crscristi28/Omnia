@@ -101,6 +101,12 @@ function AppContent() {
     }
   }, [isDark]);
 
+  // 🌐 WEBSITE ROUTING CHECK - Redirect to static website for www subdomain
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
+    window.location.href = '/omnia-website.html';
+    return null;
+  }
+
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
