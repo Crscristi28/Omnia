@@ -1,7 +1,6 @@
 // 🔧 AboutModal.jsx - About modal with legal documents submenu
-import React, { useState } from 'react';
-import { X, ChevronDown, FileText, Shield, Cookie, Eye, BookOpen } from 'lucide-react';
-import LegalDocModal from './LegalDocModal';
+import React from 'react';
+import { X, ChevronDown, FileText, Shield, Cookie, Eye } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const AboutModal = ({
@@ -10,11 +9,6 @@ const AboutModal = ({
   uiLanguage = 'cs'
 }) => {
   const { isDark } = useTheme();
-  const [showLegalDoc, setShowLegalDoc] = useState(null);
-
-  const openLegalDoc = (docType) => {
-    setShowLegalDoc(docType);
-  };
 
   if (!isOpen) return null;
 
@@ -389,9 +383,9 @@ const AboutModal = ({
               gap: '0.5rem'
             }}>
 
-              {/* Terms of Service - Sources pattern (in-app HTML) */}
+              {/* Terms of Service */}
               <a
-                href="/legal/terms.html"
+                href="/terms.html"
                 {...(window.innerWidth > 768 && { target: "_blank" })}
                 rel="noopener noreferrer"
                 style={{
@@ -438,8 +432,10 @@ const AboutModal = ({
               </a>
 
               {/* Privacy Policy */}
-              <button
-                onClick={() => openLegalDoc('privacy')}
+              <a
+                href="/privacy.html"
+                {...(window.innerWidth > 768 && { target: "_blank" })}
+                rel="noopener noreferrer"
                 style={{
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -460,7 +456,8 @@ const AboutModal = ({
                   color: '#ffffff',
                   fontSize: '0.9rem',
                   fontWeight: '500',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  textDecoration: 'none'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.background = 'rgba(255, 255, 255, 0.08)';
@@ -480,11 +477,13 @@ const AboutModal = ({
                     transform: 'rotate(-90deg)'
                   }}
                 />
-              </button>
+              </a>
 
               {/* Cookie Policy */}
-              <button
-                onClick={() => openLegalDoc('cookies')}
+              <a
+                href="/cookies.html"
+                {...(window.innerWidth > 768 && { target: "_blank" })}
+                rel="noopener noreferrer"
                 style={{
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -505,7 +504,8 @@ const AboutModal = ({
                   color: '#ffffff',
                   fontSize: '0.9rem',
                   fontWeight: '500',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  textDecoration: 'none'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.background = 'rgba(255, 255, 255, 0.08)';
@@ -525,11 +525,13 @@ const AboutModal = ({
                     transform: 'rotate(-90deg)'
                   }}
                 />
-              </button>
+              </a>
 
-              {/* Data Processing Agreement */}
-              <button
-                onClick={() => openLegalDoc('gdpr')}
+              {/* Refund Policy */}
+              <a
+                href="/refund.html"
+                {...(window.innerWidth > 768 && { target: "_blank" })}
+                rel="noopener noreferrer"
                 style={{
                   width: '100%',
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -550,7 +552,56 @@ const AboutModal = ({
                   color: '#ffffff',
                   fontSize: '0.9rem',
                   fontWeight: '500',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  textDecoration: 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+              >
+                <FileText size={16} style={{ opacity: 0.7 }} />
+                <span style={{ flex: 1 }}>Refund Policy</span>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    opacity: 0.6,
+                    transform: 'rotate(-90deg)'
+                  }}
+                />
+              </a>
+
+              {/* Third-party Services */}
+              <a
+                href="/third-party.html"
+                {...(window.innerWidth > 768 && { target: "_blank" })}
+                rel="noopener noreferrer"
+                style={{
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '8px',
+                  border: isDark
+            ? '1px solid rgba(255, 255, 255, 0.15)'
+            : '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '0.75rem',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  WebkitTapHighlightColor: 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  textAlign: 'left',
+                  textDecoration: 'none'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.background = 'rgba(255, 255, 255, 0.08)';
@@ -562,7 +613,7 @@ const AboutModal = ({
                 }}
               >
                 <Eye size={16} style={{ opacity: 0.7 }} />
-                <span style={{ flex: 1 }}>Data Processing Agreement</span>
+                <span style={{ flex: 1 }}>Third-party Services</span>
                 <ChevronDown
                   size={14}
                   style={{
@@ -570,52 +621,7 @@ const AboutModal = ({
                     transform: 'rotate(-90deg)'
                   }}
                 />
-              </button>
-
-              {/* Acceptable Use Policy */}
-              <button
-                onClick={() => openLegalDoc('acceptable')}
-                style={{
-                  width: '100%',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '8px',
-                  border: isDark
-            ? '1px solid rgba(255, 255, 255, 0.15)'
-            : '1px solid rgba(255, 255, 255, 0.1)',
-                  padding: '0.75rem',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  WebkitTapHighlightColor: 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  color: '#ffffff',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                  textAlign: 'left'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                }}
-              >
-                <BookOpen size={16} style={{ opacity: 0.7 }} />
-                <span style={{ flex: 1 }}>Acceptable Use Policy</span>
-                <ChevronDown
-                  size={14}
-                  style={{
-                    opacity: 0.6,
-                    transform: 'rotate(-90deg)'
-                  }}
-                />
-              </button>
+              </a>
             </div>
           </div>
 
@@ -641,16 +647,6 @@ const AboutModal = ({
           </div>
         </div>
       </div>
-
-      {/* Legal Document Modal */}
-      {showLegalDoc && (
-        <LegalDocModal
-          isOpen={!!showLegalDoc}
-          onClose={() => setShowLegalDoc(null)}
-          docType={showLegalDoc}
-          uiLanguage={uiLanguage}
-        />
-      )}
     </div>
   );
 };
