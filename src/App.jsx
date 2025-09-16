@@ -103,7 +103,7 @@ function AppContent() {
 
   // 🌐 WEBSITE ROUTING CHECK - Redirect to static website for www subdomain
   if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
-    window.location.href = '/omnia-landing/omnia-website.html';
+    window.location.href = '/omnia-website.html';
     return null;
   }
 
