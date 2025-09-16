@@ -74,6 +74,12 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 // Main App Component wrapped with ThemeProvider
 function App() {
+  // 🌐 WEBSITE ROUTING CHECK - Redirect to static website for www subdomain
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
+    window.location.href = '/omnia-website.html';
+    return null;
+  }
+
   return (
     <ThemeProvider>
       <AppContent />
@@ -100,12 +106,6 @@ function AppContent() {
       appleStatusBar.setAttribute('content', isDark ? 'black' : 'default');
     }
   }, [isDark]);
-
-  // 🌐 WEBSITE ROUTING CHECK - Redirect to static website for www subdomain
-  if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
-    window.location.href = '/omnia-website.html';
-    return null;
-  }
 
   // 📊 BASIC STATE (UNCHANGED)
   const [input, setInput] = useState('');
