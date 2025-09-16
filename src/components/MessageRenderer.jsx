@@ -226,6 +226,12 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
           will-change: transform;
         }
 
+        /* Hide HR elements during streaming to prevent flickering separators */
+        .markdown-container.is-streaming .w-md-editor-text hr,
+        .markdown-container.is-streaming .wmde-markdown hr {
+          display: none !important;
+        }
+
         /* Clean up GPU resources after streaming */
         .markdown-container:not(.is-streaming) {
           will-change: auto;
