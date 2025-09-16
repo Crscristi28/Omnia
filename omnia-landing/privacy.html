@@ -18,6 +18,13 @@
     <link rel="stylesheet" href="css/styles.css">
 
     <style>
+        /* Dark theme for legal pages */
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
         /* Legal page specific styles */
         .legal-page {
             padding: 120px 0 80px;
@@ -27,10 +34,11 @@
         .legal-content {
             max-width: 800px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 3rem;
+            backdrop-filter: blur(20px);
         }
 
         .legal-content h1 {
@@ -307,13 +315,59 @@
                 <p>Our Service is not intended for children under 13. We do not knowingly collect personal information from children under 13. If we become aware of such collection, we will delete the information immediately.</p>
 
                 <h2>11. GDPR Compliance</h2>
-                <p>For users in the European Union, we comply with the General Data Protection Regulation (GDPR):</p>
+                <p>For users in the European Union, we comply with the General Data Protection Regulation (GDPR). This section outlines your rights and our obligations under GDPR.</p>
+
+                <h3>11.1 Lawful Basis for Processing</h3>
+                <p>We process your personal data based on the following lawful bases:</p>
                 <ul>
-                    <li><strong>Legal Basis:</strong> We process data based on consent, contract performance, or legitimate interests</li>
-                    <li><strong>Data Protection Officer:</strong> Available for privacy-related inquiries</li>
-                    <li><strong>Right to Complain:</strong> You may lodge complaints with supervisory authorities</li>
-                    <li><strong>Data Processing Records:</strong> We maintain records of all processing activities</li>
+                    <li><strong>Consent (Article 6(1)(a)):</strong> For marketing communications and optional features</li>
+                    <li><strong>Contract Performance (Article 6(1)(b)):</strong> To provide our AI services</li>
+                    <li><strong>Legitimate Interest (Article 6(1)(f)):</strong> For security, fraud prevention, and service improvement</li>
+                    <li><strong>Legal Obligation (Article 6(1)(c)):</strong> For compliance with applicable laws</li>
                 </ul>
+
+                <h3>11.2 Your GDPR Rights</h3>
+                <p>Under GDPR, you have the following rights:</p>
+                <ul>
+                    <li><strong>Right of Access (Article 15):</strong> Request copies of your personal data</li>
+                    <li><strong>Right to Rectification (Article 16):</strong> Correct inaccurate personal data</li>
+                    <li><strong>Right to Erasure (Article 17):</strong> Request deletion of your personal data</li>
+                    <li><strong>Right to Restrict Processing (Article 18):</strong> Limit how we process your data</li>
+                    <li><strong>Right to Data Portability (Article 20):</strong> Receive your data in a portable format</li>
+                    <li><strong>Right to Object (Article 21):</strong> Object to processing based on legitimate interests</li>
+                    <li><strong>Right to Withdraw Consent:</strong> Withdraw consent for consent-based processing</li>
+                </ul>
+
+                <h3>11.3 Data Retention</h3>
+                <p>We retain personal data only as long as necessary:</p>
+                <ul>
+                    <li><strong>Active Accounts:</strong> Data retained while account is active</li>
+                    <li><strong>Inactive Accounts:</strong> Deleted after 24 months of inactivity</li>
+                    <li><strong>Legal Requirements:</strong> Some data may be retained longer for legal compliance</li>
+                    <li><strong>User Requests:</strong> Data deleted within 30 days of valid deletion request</li>
+                </ul>
+
+                <h3>11.4 International Data Transfers</h3>
+                <p>When transferring data outside the EU, we ensure adequate protection through:</p>
+                <ul>
+                    <li><strong>Adequacy Decisions:</strong> Transfers to countries with adequate protection</li>
+                    <li><strong>Standard Contractual Clauses:</strong> For transfers to other countries</li>
+                    <li><strong>Appropriate Safeguards:</strong> Technical and organizational measures</li>
+                </ul>
+
+                <h3>11.5 Data Protection Officer</h3>
+                <p>You can contact our Data Protection Officer for privacy-related questions:</p>
+                <ul>
+                    <li><strong>Email:</strong> dpo@omniaoneai.com</li>
+                    <li><strong>Response Time:</strong> Within 30 days of your request</li>
+                    <li><strong>Languages:</strong> English, Czech, and other EU languages</li>
+                </ul>
+
+                <h3>11.6 Supervisory Authority</h3>
+                <p>You have the right to lodge a complaint with your local data protection authority if you believe we have not handled your personal data in accordance with GDPR.</p>
+
+                <h3>11.7 Automated Decision Making</h3>
+                <p>We do not engage in automated decision-making or profiling that produces legal effects or significantly affects you. Our AI processes are designed to assist users, not make decisions about them.</p>
 
                 <h2>12. California Privacy Rights</h2>
                 <p>For California residents under the CCPA:</p>
@@ -332,9 +386,36 @@
                     <li>Security and fraud prevention</li>
                     <li>Analytics and performance monitoring</li>
                 </ul>
-                <p>You can manage cookie preferences through your browser settings.</p>
+                <p>You can manage cookie preferences through your browser settings. For detailed information, see our <a href="cookies.html" style="color: #60a5fa;">Cookie Policy</a>.</p>
 
-                <h2>14. Updates to This Policy</h2>
+                <h2>14. Third-Party Services</h2>
+                <p>Omnia AI integrates with various third-party services to provide our functionality. Your data may be processed by:</p>
+
+                <h3>14.1 AI Model Providers</h3>
+                <ul>
+                    <li><strong>Anthropic:</strong> Claude models for advanced reasoning (<a href="https://www.anthropic.com/privacy" target="_blank" style="color: #60a5fa;">Privacy Policy</a>)</li>
+                    <li><strong>OpenAI:</strong> GPT models for natural language processing (<a href="https://openai.com/privacy/" target="_blank" style="color: #60a5fa;">Privacy Policy</a>)</li>
+                    <li><strong>Google:</strong> Gemini models for multimodal capabilities (<a href="https://policies.google.com/privacy" target="_blank" style="color: #60a5fa;">Privacy Policy</a>)</li>
+                </ul>
+
+                <h3>14.2 Infrastructure Services</h3>
+                <ul>
+                    <li><strong>Supabase:</strong> Database and file storage (<a href="https://supabase.com/privacy" target="_blank" style="color: #60a5fa;">Privacy Policy</a>)</li>
+                    <li><strong>Vercel:</strong> Web hosting and analytics (<a href="https://vercel.com/legal/privacy-policy" target="_blank" style="color: #60a5fa;">Privacy Policy</a>)</li>
+                    <li><strong>ElevenLabs:</strong> Text-to-speech services (<a href="https://elevenlabs.io/privacy" target="_blank" style="color: #60a5fa;">Privacy Policy</a>)</li>
+                </ul>
+
+                <h3>14.3 Data Processing</h3>
+                <p>When using these services:</p>
+                <ul>
+                    <li>Your messages and files may be processed by AI providers</li>
+                    <li>We implement appropriate data processing agreements</li>
+                    <li>Data sharing is limited to service functionality</li>
+                    <li>You can request data deletion at any time</li>
+                </ul>
+                <p>For detailed information about all third-party services, see our <a href="third-party.html" style="color: #60a5fa;">Third-party Services</a> page.</p>
+
+                <h2>15. Updates to This Policy</h2>
                 <p>We may update this Privacy Policy periodically. We will:</p>
                 <ul>
                     <li>Notify users of material changes via email or through the Service</li>
@@ -343,7 +424,7 @@
                 </ul>
                 <p>Continued use after updates constitutes acceptance of the new policy.</p>
 
-                <h2>15. Contact Us</h2>
+                <h2>16. Contact Us</h2>
                 <p>For privacy-related questions or to exercise your rights, contact us:</p>
                 <ul>
                     <li><strong>Email:</strong> privacy@omniaoneai.com</li>
@@ -385,7 +466,8 @@
                     <ul class="footer-links">
                         <li><a href="terms.html">Terms of Service</a></li>
                         <li><a href="privacy.html">Privacy Policy</a></li>
-                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="cookies.html">Cookie Policy</a></li>
+                        <li><a href="third-party.html">Third-party Services</a></li>
                     </ul>
                 </div>
 

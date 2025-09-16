@@ -76,9 +76,9 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title" data-i18n="hero_title">Your AI Assistant for Everything</h1>
+                <h1 class="hero-title" data-i18n="hero_title">Omnia One AI: Your AI. Your Rules. For Everyone.</h1>
                 <p class="hero-subtitle" data-i18n="hero_subtitle">
-                    Chat, create, and explore with advanced AI. Voice conversations, document analysis, and image generation in 40+ languages.
+                    No more generic responses. Omnia is an intelligent assistant that learns from you, remembers you, and adapts to you. Experience unmatched speed, versatility, and true personalization with AI that finally works for you.
                 </p>
                 <div class="hero-buttons">
                     <a href="https://omniaoneai.com" class="btn btn-primary" data-i18n="hero_cta_start">
@@ -137,57 +137,63 @@
 
             <div class="features-grid">
                 <!-- Feature 1 -->
-                <div class="feature-card">
-                    <div class="feature-icon">🎙️</div>
-                    <h3 class="feature-title" data-i18n="feature_voice_title">Voice Conversations</h3>
-                    <p class="feature-desc" data-i18n="feature_voice_desc">
-                        Speak naturally with AI. Supports 40+ languages with advanced speech recognition.
+                <div class="feature-card" data-feature="speed" onclick="openFeatureModal('speed')">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title" data-i18n="feature_speed_title">Lightning-Fast Response</h3>
+                    <p class="feature-desc" data-i18n="feature_speed_desc">
+                        No waiting, no lags. With unique optimization, Omnia is always one step ahead, whether you're searching for information or debugging code.
                     </p>
+                    <div class="feature-arrow">→</div>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="feature-card">
-                    <div class="feature-icon">📄</div>
-                    <h3 class="feature-title" data-i18n="feature_docs_title">Document Analysis</h3>
-                    <p class="feature-desc" data-i18n="feature_docs_desc">
-                        Upload PDFs, images, and documents. Get instant insights and answers.
+                <div class="feature-card" data-feature="memory" onclick="openFeatureModal('memory')">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title" data-i18n="feature_memory_title">Remembers You</h3>
+                    <p class="feature-desc" data-i18n="feature_memory_desc">
+                        No more lost context! Omnia remembers your preferences and history across all chats to provide increasingly relevant and personalized help.
                     </p>
+                    <div class="feature-arrow">→</div>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3 class="feature-title" data-i18n="feature_image_title">Image Generation</h3>
-                    <p class="feature-desc" data-i18n="feature_image_desc">
-                        Create stunning images from text descriptions. Powered by advanced AI models.
-                    </p>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
-                    <h3 class="feature-title" data-i18n="feature_search_title">Web Search</h3>
-                    <p class="feature-desc" data-i18n="feature_search_desc">
-                        Get real-time information from the web. Always up-to-date responses.
-                    </p>
-                </div>
-
-                <!-- Feature 5 -->
-                <div class="feature-card">
-                    <div class="feature-icon">💾</div>
-                    <h3 class="feature-title" data-i18n="feature_sync_title">Cloud Sync</h3>
-                    <p class="feature-desc" data-i18n="feature_sync_desc">
-                        Your conversations sync across all devices. Never lose your work.
-                    </p>
-                </div>
-
-                <!-- Feature 6 -->
-                <div class="feature-card">
+                <div class="feature-card" data-feature="privacy" onclick="openFeatureModal('privacy')">
                     <div class="feature-icon">🔒</div>
                     <h3 class="feature-title" data-i18n="feature_privacy_title">Privacy First</h3>
                     <p class="feature-desc" data-i18n="feature_privacy_desc">
-                        Your data is encrypted and secure. Full GDPR compliance.
+                        Your data is yours alone. With Omnia, your privacy is an absolute priority, with full control over what the AI learns.
                     </p>
+                    <div class="feature-arrow">→</div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card" data-feature="versatile" onclick="openFeatureModal('versatile')">
+                    <div class="feature-icon">📚</div>
+                    <h3 class="feature-title" data-i18n="feature_versatile_title">Versatile Assistant</h3>
+                    <p class="feature-desc" data-i18n="feature_versatile_desc">
+                        From reading documents and analyzing photos, to generating content and finding real-time information – Omnia is your comprehensive partner for any task.
+                    </p>
+                    <div class="feature-arrow">→</div>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card" data-feature="unified" onclick="openFeatureModal('unified')">
+                    <div class="feature-icon">🗣️</div>
+                    <h3 class="feature-title" data-i18n="feature_unified_title">Your One Voice in AI World</h3>
+                    <p class="feature-desc" data-i18n="feature_unified_desc">
+                        We unite the power of the best AI models into one intelligent and consistent entity that adapts to your style.
+                    </p>
+                    <div class="feature-arrow">→</div>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card" data-feature="design" onclick="openFeatureModal('design')">
+                    <div class="feature-icon">💎</div>
+                    <h3 class="feature-title" data-i18n="feature_design_title">Premium Design & UX</h3>
+                    <p class="feature-desc" data-i18n="feature_design_desc">
+                        Intuitive, elegant, and smooth interface that makes your work easier and every interaction more enjoyable.
+                    </p>
+                    <div class="feature-arrow">→</div>
                 </div>
             </div>
         </div>
@@ -255,11 +261,10 @@
                         <span class="period" data-i18n="per_month">/month</span>
                     </div>
                     <ul class="plan-features">
-                        <li data-i18n="free_feature_1">✓ 50 messages per day</li>
-                        <li data-i18n="free_feature_2">✓ Voice conversations</li>
-                        <li data-i18n="free_feature_3">✓ Document uploads</li>
-                        <li data-i18n="free_feature_4">✓ Basic web search</li>
-                        <li data-i18n="free_feature_5">✓ All languages</li>
+                        <li data-i18n="free_feature_1">✓ Limited daily messages</li>
+                        <li data-i18n="free_feature_2">✓ Basic document analysis</li>
+                        <li data-i18n="free_feature_3">✓ All languages</li>
+                        <li data-i18n="free_feature_4">✓ Usage limits apply</li>
                     </ul>
                     <a href="https://omniaoneai.com" class="btn btn-secondary btn-block" data-i18n="start_free">
                         Start Free
@@ -271,16 +276,16 @@
                     <div class="badge-popular" data-i18n="badge_popular">Most Popular</div>
                     <h3 class="plan-name" data-i18n="plan_pro">Pro</h3>
                     <div class="plan-price">
-                        <span class="currency">$</span>
-                        <span class="amount">20</span>
+                        <span class="currency">€</span>
+                        <span class="amount">15</span>
                         <span class="period" data-i18n="per_month">/month</span>
                     </div>
                     <ul class="plan-features">
                         <li data-i18n="pro_feature_1">✓ Unlimited messages</li>
-                        <li data-i18n="pro_feature_2">✓ Priority processing</li>
-                        <li data-i18n="pro_feature_3">✓ Image generation</li>
-                        <li data-i18n="pro_feature_4">✓ Advanced web search</li>
-                        <li data-i18n="pro_feature_5">✓ API access</li>
+                        <li data-i18n="pro_feature_2">✓ Voice conversations</li>
+                        <li data-i18n="pro_feature_3">✓ Document uploads</li>
+                        <li data-i18n="pro_feature_4">✓ Image generation</li>
+                        <li data-i18n="pro_feature_5">✓ Advanced web search</li>
                         <li data-i18n="pro_feature_6">✓ Priority support</li>
                     </ul>
                     <a href="#" class="btn btn-primary btn-block" data-i18n="coming_soon">
@@ -318,7 +323,8 @@
                     <ul class="footer-links">
                         <li><a href="terms.html" data-i18n="footer_terms">Terms of Service</a></li>
                         <li><a href="privacy.html" data-i18n="footer_privacy">Privacy Policy</a></li>
-                        <li><a href="#" data-i18n="footer_cookies">Cookie Policy</a></li>
+                        <li><a href="cookies.html" data-i18n="footer_cookies">Cookie Policy</a></li>
+                        <li><a href="third-party.html" data-i18n="footer_third_party">Third-party Services</a></li>
                     </ul>
                 </div>
 
@@ -351,8 +357,48 @@
         </div>
     </footer>
 
+    <!-- Feature Modal -->
+    <div id="featureModal" class="feature-modal">
+        <div class="modal-overlay" onclick="closeFeatureModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeFeatureModal()">×</button>
+            <div class="modal-icon" id="modalIcon">⚡</div>
+            <h2 class="modal-title" id="modalTitle">Feature Title</h2>
+            <p class="modal-description" id="modalDescription">Detailed feature description...</p>
+            <a href="https://omniaoneai.com" class="modal-cta" data-i18n="hero_cta_start">Try Omnia Free</a>
+        </div>
+    </div>
+
+    <!-- GDPR Cookie Consent Banner -->
+    <div id="cookieConsent" class="cookie-consent">
+        <div class="cookie-content">
+            <div class="cookie-text">
+                <h3 data-i18n="cookie_title">We use cookies</h3>
+                <p data-i18n="cookie_description">We use essential cookies to make our site work. We'd also like to set analytics cookies to help us improve our website by collecting and reporting information on how you use it.</p>
+            </div>
+            <div class="cookie-buttons">
+                <button class="cookie-btn cookie-btn-secondary" onclick="acceptEssentialCookies()" data-i18n="cookie_essential">Essential only</button>
+                <button class="cookie-btn cookie-btn-primary" onclick="acceptAllCookies()" data-i18n="cookie_accept_all">Accept all</button>
+            </div>
+            <div class="cookie-links">
+                <a href="cookies.html" data-i18n="cookie_learn_more">Learn more</a>
+                <a href="privacy.html" data-i18n="privacy_policy">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/translations.js"></script>
+    <script>
+        // Wait for translations to load
+        window.addEventListener('load', function() {
+            if (window.translations) {
+                console.log('✅ Translations loaded!');
+            } else {
+                console.error('❌ Translations failed to load!');
+            }
+        });
+    </script>
     <script src="js/main.js"></script>
 </body>
 </html>
