@@ -10,8 +10,8 @@ const translations = {
     nav_try: 'Try Omnia',
 
     // Hero Section
-    hero_title: 'Omnia One AI: Your AI. Your Rules. For Everyone.',
-    hero_subtitle: 'No more generic responses. Omnia is an intelligent assistant that learns from you, remembers you, and adapts to you. Experience unmatched speed, versatility, and true personalization with AI that finally works for you.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Start Free',
     hero_cta_learn: 'Learn More',
 
@@ -277,8 +277,8 @@ const translations = {
     nav_try: 'Vyzkoušet Omnia',
 
     // Hero Section
-    hero_title: 'Omnia One AI: Vaše AI. Vaše Pravidla. Pro Každého.',
-    hero_subtitle: 'Už žádné generické odpovědi. Omnia je inteligentní asistent, který se učí od vás, pamatuje si vás a přizpůsobuje se vám. Zažijte bezkonkurenční rychlost, všestrannost a skutečnou personalizaci s AI, která konečně pracuje pro vás.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Začít zdarma',
     hero_cta_learn: 'Dozvědět se více',
 
@@ -533,8 +533,8 @@ const translations = {
     nav_try: 'Încearcă Omnia',
 
     // Hero Section
-    hero_title: 'Asistentul tău AI pentru tot',
-    hero_subtitle: 'Conversează, creează și explorează cu AI avansat. Conversații vocale, analiză documente și generare imagini în 40+ limbi.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Începe gratuit',
     hero_cta_learn: 'Află mai mult',
 
@@ -776,8 +776,8 @@ const translations = {
     nav_try: 'Omnia testen',
 
     // Hero Section
-    hero_title: 'Ihr KI-Assistent für alles',
-    hero_subtitle: 'Chatten, erstellen und erkunden Sie mit fortschrittlicher KI. Sprachgespräche, Dokumentenanalyse und Bildgenerierung in 40+ Sprachen.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Kostenlos starten',
     hero_cta_learn: 'Mehr erfahren',
 
@@ -1019,8 +1019,8 @@ const translations = {
     nav_try: 'Попробовать Omnia',
 
     // Hero Section
-    hero_title: 'Ваш ИИ-помощник для всего',
-    hero_subtitle: 'Общайтесь, создавайте и исследуйте с продвинутым ИИ. Голосовые разговоры, анализ документов и генерация изображений на 40+ языках.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Начать бесплатно',
     hero_cta_learn: 'Узнать больше',
 
@@ -1262,8 +1262,8 @@ const translations = {
     nav_try: 'Wypróbuj Omnia',
 
     // Hero Section
-    hero_title: 'Twój asystent AI do wszystkiego',
-    hero_subtitle: 'Rozmawiaj, twórz i odkrywaj z zaawansowaną AI. Rozmowy głosowe, analiza dokumentów i generowanie obrazów w 40+ językach.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Zacznij za darmo',
     hero_cta_learn: 'Dowiedz się więcej',
 
@@ -1505,8 +1505,8 @@ const translations = {
     nav_try: 'Essayer Omnia',
 
     // Hero Section
-    hero_title: 'Votre assistant IA pour tout',
-    hero_subtitle: 'Discutez, créez et explorez avec une IA avancée. Conversations vocales, analyse de documents et génération d\'images dans plus de 40 langues.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Commencer gratuitement',
     hero_cta_learn: 'En savoir plus',
 
@@ -1748,8 +1748,8 @@ const translations = {
     nav_try: 'Probar Omnia',
 
     // Hero Section
-    hero_title: 'Tu asistente de IA para todo',
-    hero_subtitle: 'Chatea, crea y explora con IA avanzada. Conversaciones por voz, análisis de documentos y generación de imágenes en más de 40 idiomas.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Comenzar gratis',
     hero_cta_learn: 'Saber más',
 
@@ -1991,8 +1991,8 @@ const translations = {
     nav_try: 'Prova Omnia',
 
     // Hero Section
-    hero_title: 'Il tuo assistente IA per tutto',
-    hero_subtitle: 'Chatta, crea ed esplora con IA avanzata. Conversazioni vocali, analisi documenti e generazione immagini in oltre 40 lingue.',
+    hero_title: 'Omnia One AI',
+    hero_subtitle: 'One AI. Infinite possibilities.',
     hero_cta_start: 'Inizia gratis',
     hero_cta_learn: 'Scopri di più',
 
