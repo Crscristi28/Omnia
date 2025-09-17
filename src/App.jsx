@@ -3084,8 +3084,8 @@ const virtuosoComponents = React.useMemo(() => ({
             : (isDark
               ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a)' // Dark mode normal
               : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'), // Light mode normal
-          paddingTop: isMobile ? '70px' : '90px',
-          paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
+          paddingTop: isMobile ? '70px' : '90px'
+          // paddingBottom removed - InputBar is now outside container
         }}>
           
           {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
@@ -3289,25 +3289,6 @@ const virtuosoComponents = React.useMemo(() => ({
         </button>
       )}
 
-      {/* 📝 INPUT BAR - WITHOUT model prop */}
-      <InputBar
-        input={input}
-        setInput={setInput}
-        onSend={(text) => handleSend(text)}
-        onSTT={toggleSTT}
-        onVoiceScreen={handleVoiceScreenOpen}
-        onImageGenerate={() => setIsImageMode(prev => !prev)}
-        onDocumentUpload={handleDocumentUpload}
-        onSendWithDocuments={handleSendWithDocuments}
-        isLoading={loading || streaming}
-        isRecording={isRecordingSTT}
-        isAudioPlaying={isAudioPlaying}
-        isImageMode={isImageMode}
-        uiLanguage={uiLanguage}
-        onPreviewImage={(imageData) => openSingleImageLightbox(imageData.url, imageData.name)}
-        audioLevel={audioLevel}
-      />
-
       {/* 📋 CHAT SIDEBAR - NEW! */}
       <ChatSidebar
         isOpen={showChatSidebar}
@@ -3475,6 +3456,25 @@ const virtuosoComponents = React.useMemo(() => ({
       />
 
       </div>
+
+      {/* 📝 INPUT BAR - MOVED OUTSIDE main container for iOS 26 fix */}
+      <InputBar
+        input={input}
+        setInput={setInput}
+        onSend={(text) => handleSend(text)}
+        onSTT={toggleSTT}
+        onVoiceScreen={handleVoiceScreenOpen}
+        onImageGenerate={() => setIsImageMode(prev => !prev)}
+        onDocumentUpload={handleDocumentUpload}
+        onSendWithDocuments={handleSendWithDocuments}
+        isLoading={loading || streaming}
+        isRecording={isRecordingSTT}
+        isAudioPlaying={isAudioPlaying}
+        isImageMode={isImageMode}
+        uiLanguage={uiLanguage}
+        onPreviewImage={(imageData) => openSingleImageLightbox(imageData.url, imageData.name)}
+        audioLevel={audioLevel}
+      />
     </>
   );
 };

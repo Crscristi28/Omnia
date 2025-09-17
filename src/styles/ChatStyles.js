@@ -234,15 +234,19 @@ export const modelDescriptionStyle = {
 
 // 🏠 MAIN LAYOUT STYLES
 export const mainContainerStyle = {
-  flex: 1,
   display: 'flex',
   flexDirection: 'column',
   color: '#ffffff',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", sans-serif',
   width: '100%',
+  height: 'calc(100vh - 120px)', // Fixed height, leave space for InputBar
   margin: 0,
   transition: 'background 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  position: 'fixed', // Prevent iOS from moving this container
+  top: 0,
+  left: 0,
+  right: 0
 };
 
 export const topHeaderStyle = {
