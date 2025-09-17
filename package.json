@@ -13,6 +13,10 @@
     "proxy": "node src/proxy-server.js"
   },
   "dependencies": {
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3",
+    "@capacitor/keyboard": "^7.0.3",
     "@google-cloud/documentai": "^8.0.0",
     "@google-cloud/storage": "^7.7.0",
     "@google-cloud/vertexai": "^1.10.0",
