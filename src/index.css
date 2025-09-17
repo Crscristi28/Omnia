@@ -67,6 +67,22 @@ ul, ol {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* 🎨 iOS 26 IAV Fix - Dynamic theme colors */
+  --app-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  --app-bg-solid: #000428;
+}
+
+/* Light Mode Theme Colors */
+[data-theme="light"] {
+  --app-bg-gradient: linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1);
+  --app-bg-solid: #f8fafc;
+}
+
+/* Dark Mode Theme Colors (explicit) */
+[data-theme="dark"] {
+  --app-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  --app-bg-solid: #000428;
 }
 
 /* PWA & Mobile Optimizations */
@@ -74,7 +90,7 @@ html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   padding-top: env(safe-area-inset-top);
-  background: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  background: var(--app-bg-gradient);
   overscroll-behavior: none;
 }
 
@@ -85,6 +101,8 @@ body {
   width: 100%;
   overscroll-behavior: none;
   line-height: 1.5;
+  /* 🍎 iOS 26 IAV Fix - explicit background for accessory bar */
+  background-color: var(--app-bg-solid);
 }
 
 #root {

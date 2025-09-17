@@ -105,6 +105,9 @@ function AppContent() {
       // For dark mode use 'black', for light mode use 'default'
       appleStatusBar.setAttribute('content', isDark ? 'black' : 'default');
     }
+
+    // 🍎 iOS 26 IAV Fix - Set data-theme for CSS variables
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   // 📊 BASIC STATE (UNCHANGED)
