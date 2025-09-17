@@ -108,6 +108,40 @@ input, textarea {
   -webkit-input-accessory-view: none !important;
 }
 
+/* iOS 26 Safari fixed position bug workarounds */
+@supports (height: env(viewport-height)) {
+  html {
+    height: env(viewport-height) !important;
+  }
+
+  body {
+    height: env(viewport-height) !important;
+  }
+}
+
+/* iOS 26 keyboard environment variables */
+html {
+  /* Force stable viewport for iOS 26 keyboard bug */
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+body {
+  /* Prevent body from moving when iOS 26 keyboard opens */
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
 /* UI Controls - prevent unwanted interactions */
 button, input, nav, header, .ui-element, .input-bar {
   touch-action: manipulation;
