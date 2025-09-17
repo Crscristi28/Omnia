@@ -96,7 +96,7 @@ function AppContent() {
     // Update meta theme-color for status bar
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', isDark ? '#000000' : '#000428');
+      metaThemeColor.setAttribute('content', isDark ? '#1a1a1a' : '#004e92');
     }
 
     // Update apple status bar style
