@@ -99,8 +99,6 @@ body {
     color: var(--text-primary);
     background: var(--bg-light);
     overflow-x: hidden;
-    /* iOS 26 fix - dark background for status bar/IAV consistency */
-    background-color: #0f0f23;
 }
 
 /* Modern Animations */
