@@ -108,6 +108,9 @@ function AppContent() {
 
     // 🍎 iOS 26 IAV Fix - Set data-theme for CSS variables
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+    // 🍎 PWA Fix - Force body background-color directly (bypass CSS variables)
+    document.body.style.backgroundColor = isDark ? '#000000' : '#000428';
   }, [isDark]);
 
   // 📊 BASIC STATE (UNCHANGED)
