@@ -72,10 +72,19 @@ ul, ol {
 /* PWA & Mobile Optimizations */
 html {
   height: 100%;
+  min-height: 100vh;
   -webkit-text-size-adjust: 100%;
   padding-top: env(safe-area-inset-top);
-  background: linear-gradient(135deg, #000428, #004e92, #009ffd);
   overscroll-behavior: none;
+}
+
+/* Theme-aware backgrounds for iOS 26 accessory bar fix */
+html[data-theme="light"], html:not([data-theme]) {
+  background: linear-gradient(135deg, #000428, #004e92, #009ffd) !important;
+}
+
+html[data-theme="dark"] {
+  background: linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a) !important;
 }
 
 body {
@@ -106,6 +115,32 @@ textarea {
 /* iOS 26 Input Accessory View fix - disable white bar */
 input, textarea {
   -webkit-input-accessory-view: none !important;
+}
+
+/* iOS 26 accessory bar background fix - extend theme background below viewport */
+html::after {
+  content: '';
+  position: fixed;
+  bottom: -300px;
+  left: 0;
+  right: 0;
+  height: 300px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+html[data-theme="light"]::after, html:not([data-theme])::after {
+  background: linear-gradient(135deg, #000428, #004e92, #009ffd);
+}
+
+html[data-theme="dark"]::after {
+  background: linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a);
+}
+
+/* Ensure body inherits and extends background */
+body {
+  background: inherit;
+  min-height: 100vh;
 }
 
 /* UI Controls - prevent unwanted interactions */

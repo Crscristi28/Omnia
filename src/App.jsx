@@ -93,6 +93,9 @@ function AppContent() {
 
   // 🎨 UPDATE STATUS BAR COLOR based on theme
   useEffect(() => {
+    // Set HTML data-theme attribute for iOS 26 accessory bar background fix
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
     // Update meta theme-color for status bar
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
