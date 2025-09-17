@@ -75,14 +75,14 @@ ul, ol {
 
 /* Light Mode Theme Colors */
 [data-theme="light"] {
-  --app-bg-gradient: linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1);
-  --app-bg-solid: #f8fafc;
+  --app-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  --app-bg-solid: #000428;
 }
 
 /* Dark Mode Theme Colors (explicit) */
 [data-theme="dark"] {
-  --app-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
-  --app-bg-solid: #000428;
+  --app-bg-gradient: linear-gradient(135deg, #000000, #1a1a1a, #2a2a2a);
+  --app-bg-solid: #000000;
 }
 
 /* PWA & Mobile Optimizations */
