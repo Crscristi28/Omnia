@@ -105,6 +105,9 @@ function AppContent() {
       // For dark mode use 'black', for light mode use 'default'
       appleStatusBar.setAttribute('content', isDark ? 'black' : 'default');
     }
+
+    // 🚀 iOS 26 Fix: Update data-theme for CSS custom properties
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   // 📊 BASIC STATE (UNCHANGED)
@@ -122,7 +125,40 @@ function AppContent() {
   const inputRef = useRef();
   const messagesRef = useRef();
   const uploadedDocumentsRef = useRef();
-  
+
+  // 🚀 iOS 26 visualViewport fix
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.visualViewport) {
+      const handleResize = () => {
+        const inputBar = document.querySelector('.input-bar');
+        if (inputBar) {
+          const viewportHeight = window.visualViewport.height;
+          const windowHeight = window.innerHeight;
+          const keyboardHeight = windowHeight - viewportHeight;
+
+          if (keyboardHeight > 0) {
+            // Keyboard is open - position input bar above keyboard
+            inputBar.style.bottom = `${keyboardHeight}px`;
+            inputBar.style.position = 'fixed';
+            inputBar.style.zIndex = '9999';
+          } else {
+            // Keyboard is closed - reset position
+            inputBar.style.bottom = '0px';
+            inputBar.style.position = 'fixed';
+          }
+        }
+      };
+
+      window.visualViewport.addEventListener('resize', handleResize);
+
+      return () => {
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleResize);
+        }
+      };
+    }
+  }, []);
+
   // 🎤 VOICE STATE (UNCHANGED)
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
   const [isListening, setIsListening] = useState(false);

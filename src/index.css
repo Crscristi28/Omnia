@@ -67,6 +67,22 @@ ul, ol {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* iOS 26 Theme Colors - Default Dark Mode */
+  --ios-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  --ios-bg-solid: #000428;
+}
+
+/* Light Mode Theme Colors */
+[data-theme="light"] {
+  --ios-bg-gradient: linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1);
+  --ios-bg-solid: #f8fafc;
+}
+
+/* Dark Mode Theme Colors (explicit) */
+[data-theme="dark"] {
+  --ios-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  --ios-bg-solid: #000428;
 }
 
 /* PWA & Mobile Optimizations */
@@ -74,7 +90,7 @@ html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   padding-top: env(safe-area-inset-top);
-  background: linear-gradient(135deg, #000428, #004e92, #009ffd);
+  background: var(--ios-bg-gradient);
   overscroll-behavior: none;
 }
 
@@ -85,11 +101,15 @@ body {
   width: 100%;
   overscroll-behavior: none;
   line-height: 1.5;
+  /* iOS 26 fix: Ensure background extends under keyboard area */
+  background: var(--ios-bg-gradient);
 }
 
 #root {
   height: 100%;
   position: relative;
+  /* iOS 26 fix: Fallback background color for accessory bar */
+  background: var(--ios-bg-gradient);
 }
 
 /* Input optimizations - prevent zoom on iOS */
@@ -123,6 +143,30 @@ button, input, nav, header, .ui-element, .input-bar {
 .scrollable {
   touch-action: pan-y;
   overscroll-behavior: none;
+}
+
+/* iOS 26 Keyboard Accessory Bar Fixes */
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  /* Aggressive iOS 26 accessory bar hiding attempts */
+  -webkit-input-accessory-view: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  border-radius: 0 !important;
+  /* Ensure transparent background so parent background shows through */
+  background: transparent !important;
+}
+
+/* iOS 26 specific meta tag support */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  input, textarea {
+    -webkit-input-accessory-view: none !important;
+  }
 }
 
 /* Custom styles will go here */
