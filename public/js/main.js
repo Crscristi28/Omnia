@@ -89,24 +89,20 @@ function initializeLanguageSystem() {
     }
 
     function updateLegalLinks(lang) {
-        // Update Terms of Service links
+        // Always use English versions (they have their own language switchers)
         const termsLinks = document.querySelectorAll('a[href*="terms"]');
         termsLinks.forEach(link => {
-            if (lang === 'en') {
-                link.href = 'terms.html';
-            } else {
-                link.href = `terms-${lang}.html`;
-            }
+            link.href = 'terms.html';
         });
 
-        // Update Privacy Policy links
         const privacyLinks = document.querySelectorAll('a[href*="privacy"]');
         privacyLinks.forEach(link => {
-            if (lang === 'en') {
-                link.href = 'privacy.html';
-            } else {
-                link.href = `privacy-${lang}.html`;
-            }
+            link.href = 'privacy.html';
+        });
+
+        const refundLinks = document.querySelectorAll('a[href*="refund"]');
+        refundLinks.forEach(link => {
+            link.href = 'refund.html';
         });
     }
 
