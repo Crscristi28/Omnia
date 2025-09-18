@@ -1249,6 +1249,7 @@ a {
 /* No section header spacing for problems section */
 .omnia-problems .showcase-content {
     margin-top: 0;
+    flex-direction: row-reverse; /* Desktop: images right, text left */
 }
 
 .showcase-text {
