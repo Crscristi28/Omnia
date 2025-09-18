@@ -1277,8 +1277,8 @@ function AppContent() {
                 // Add chunk to buffer
                 rawChunkBufferImage += chunk;
                 
-                // Split by spaces to get words
-                const newWords = rawChunkBufferImage.split(/\s+/);
+                // Split into words (including punctuation) - same as normal chat
+                const newWords = rawChunkBufferImage.split(/(\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
                 rawChunkBufferImage = newWords.pop() || ''; // Last part might be incomplete word
                 
                 // Add complete words to queue

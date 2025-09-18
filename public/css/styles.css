@@ -1332,6 +1332,7 @@ a {
     opacity: 0;
     transition: opacity 0.4s ease;
     z-index: 1;
+    pointer-events: none;
 }
 
 .image-container:hover::after {
@@ -1412,10 +1413,7 @@ a {
     background-clip: text;
 }
 
-/* Alternate layout - images left, text right */
-.omnia-problems .showcase-content {
-    flex-direction: row-reverse;
-}
+/* Alternate layout - images left, text right (no row-reverse needed) */
 
 .showcase-images-grid {
     display: grid;
