@@ -12,13 +12,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Access the world\'s most advanced AI models through one powerful, unified platform. Chat, create, and solve with cutting-edge technology. Your ideas, unlimited potential.',
+    hero_story_1: 'The future of AI isn\'t about choosing one model—it\'s about accessing the best of all.',
+    hero_story_2: 'Omnia was born from a simple belief: you shouldn\'t be limited by the strengths and weaknesses of a single AI. Whether you\'re writing, coding, analyzing, or creating, you deserve access to the most advanced AI capabilities available.',
+    hero_story_3: 'One platform. Unlimited possibilities.',
     hero_cta_start: 'Start Free',
+    hero_cta_try: 'Try Omnia Now',
     hero_cta_learn: 'Learn More',
 
     // Trust Badges
     badge_free: '✓ Free to Start',
     badge_secure: '✓ Secure & Private',
     badge_languages: '✓ 40+ Languages',
+
+    // Omnia Features
+    omnia_features_title: 'What Makes Omnia Different',
+    omnia_features_subtitle: 'Omnia combines multiple AI models for the best results, each time choosing the right model for your task.',
+    feature_models_title: 'Multiple AI Models, One Platform',
+    feature_models_desc: 'Omnia uses the most capable models from OpenAI, Anthropic, and Google for the best possible results, all in one single platform.',
+    feature_selection_title: 'Intelligent Model Selection',
+    feature_selection_desc: 'No guessing which AI to use. Omnia automatically picks the perfect model based on your specific request.',
+    feature_learning_title: 'Learns Your Style',
+    feature_learning_desc: 'Remembers your preferences, projects, and context. The more you use Omnia, the better it gets at helping you.',
+    feature_privacy_title: 'Privacy Guaranteed',
+    feature_privacy_desc: 'Your conversations stay private. No training on your data, no selling your information. Your ideas remain yours.',
 
     // Demo Chat
     demo_user: 'How can you help me today?',
@@ -279,13 +296,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Přístup k nejpokročilejším AI modelům světa prostřednictvím jedné mocné, jednotné platformy. Chatujte, tvořte a řešte s nejmodernější technologií. Vaše nápady, neomezený potenciál.',
+    hero_story_1: 'Budoucnost AI není o výběru jednoho modelu—jde o přístup k tomu nejlepšímu ze všech.',
+    hero_story_2: 'Omnia vznikla z jednoduchého přesvědčení: neměli byste být omezeni silnými a slabými stránkami jediné AI. Ať už píšete, programujete, analyzujete nebo tvoříte, zasloužíte si přístup k nejpokročilejším AI schopnostem.',
+    hero_story_3: 'Jedna platforma. Neomezené možnosti.',
     hero_cta_start: 'Začít zdarma',
+    hero_cta_try: 'Vyzkoušet Omnia',
     hero_cta_learn: 'Dozvědět se více',
 
     // Trust Badges
     badge_free: '✓ Zdarma na začátek',
     badge_secure: '✓ Bezpečné a soukromé',
     badge_languages: '✓ 40+ jazyků',
+
+    // Omnia Features
+    omnia_features_title: 'Co dělá Omnia jiné',
+    omnia_features_subtitle: 'Omnia kombinuje více AI modelů pro nejlepší výsledky, pokaždé vybere ten správný model pro váš úkol.',
+    feature_models_title: 'Více AI modelů, jedna platforma',
+    feature_models_desc: 'Omnia používá nejschopnější modely od OpenAI, Anthropic a Google pro nejlepší možné výsledky, vše v jedné platformě.',
+    feature_selection_title: 'Inteligentní výběr modelu',
+    feature_selection_desc: 'Žádné hádání kterou AI použít. Omnia automaticky vybere perfektní model podle vašeho konkrétního požadavku.',
+    feature_learning_title: 'Učí se váš styl',
+    feature_learning_desc: 'Pamatuje si vaše preference, projekty a kontext. Čím více Omnia používáte, tím lépe vám pomáhá.',
+    feature_privacy_title: 'Zaručené soukromí',
+    feature_privacy_desc: 'Vaše konverzace zůstávají soukromé. Žádné trénování na vašich datech, žádný prodej informací. Vaše nápady zůstávají vaše.',
 
     // Demo Chat
     demo_user: 'Jak mi dnes můžeš pomoct?',
@@ -535,13 +569,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Accesează cele mai avansate modele AI din lume printr-o platformă puternică și unificată. Conversează, creează și rezolvă cu tehnologia de ultimă generație. Ideile tale, potențial nelimitat.',
+    hero_story_1: 'Viitorul AI nu înseamnă să alegi un model—înseamnă să accesezi ce e mai bun din toate.',
+    hero_story_2: 'Omnia s-a născut dintr-o credință simplă: nu ar trebui să fii limitat de punctele forte și slabe ale unei singure AI. Fie că scrii, programezi, analizezi sau creezi, meriți acces la cele mai avansate capabilități AI disponibile.',
+    hero_story_3: 'O platformă. Posibilități nelimitate.',
     hero_cta_start: 'Începe gratuit',
+    hero_cta_try: 'Încearcă Omnia Acum',
     hero_cta_learn: 'Află mai mult',
 
     // Trust Badges
     badge_free: '✓ Gratuit la început',
     badge_secure: '✓ Securizat și privat',
     badge_languages: '✓ 40+ limbi',
+
+    // Omnia Features
+    omnia_features_title: 'Ce face Omnia diferit',
+    omnia_features_subtitle: 'Omnia combină multiple modele AI pentru cele mai bune rezultate, alegând de fiecare dată modelul potrivit pentru sarcina ta.',
+    feature_models_title: 'Multiple modele AI, o platformă',
+    feature_models_desc: 'Omnia folosește cele mai capabile modele de la OpenAI, Anthropic și Google pentru cele mai bune rezultate posibile, toate într-o singură platformă.',
+    feature_selection_title: 'Selecție inteligentă a modelului',
+    feature_selection_desc: 'Fără ghiceli despre ce AI să folosești. Omnia alege automat modelul perfect bazat pe cerința ta specifică.',
+    feature_learning_title: 'Învață stilul tău',
+    feature_learning_desc: 'Își amintește preferințele, proiectele și contextul tău. Cu cât folosești mai mult Omnia, cu atât devine mai bună la a te ajuta.',
+    feature_privacy_title: 'Confidențialitate garantată',
+    feature_privacy_desc: 'Conversațiile tale rămân private. Fără antrenament pe datele tale, fără vândarea informațiilor tale. Ideile tale rămân ale tale.',
 
     // Demo Chat
     demo_user: 'Cum mă poți ajuta astăzi?',
@@ -778,13 +829,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Greifen Sie auf die fortschrittlichsten KI-Modelle der Welt über eine leistungsstarke, einheitliche Plattform zu. Chatten, erstellen und lösen Sie mit modernster Technologie. Ihre Ideen, unbegrenztes Potenzial.',
+    hero_story_1: 'Die Zukunft der KI geht nicht darum, ein Modell zu wählen—es geht darum, das Beste aus allen zu nutzen.',
+    hero_story_2: 'Omnia entstand aus einer einfachen Überzeugung: Sie sollten nicht durch die Stärken und Schwächen einer einzigen KI begrenzt sein. Ob Sie schreiben, programmieren, analysieren oder erstellen, Sie verdienen Zugang zu den fortschrittlichsten verfügbaren KI-Fähigkeiten.',
+    hero_story_3: 'Eine Plattform. Unbegrenzte Möglichkeiten.',
     hero_cta_start: 'Kostenlos starten',
+    hero_cta_try: 'Omnia jetzt testen',
     hero_cta_learn: 'Mehr erfahren',
 
     // Trust Badges
     badge_free: '✓ Kostenloser Start',
     badge_secure: '✓ Sicher & privat',
     badge_languages: '✓ 40+ Sprachen',
+
+    // Omnia Features
+    omnia_features_title: 'Was macht Omnia anders',
+    omnia_features_subtitle: 'Omnia kombiniert mehrere KI-Modelle für die besten Ergebnisse und wählt jedes Mal das richtige Modell für Ihre Aufgabe.',
+    feature_models_title: 'Mehrere KI-Modelle, eine Plattform',
+    feature_models_desc: 'Omnia nutzt die leistungsfähigsten Modelle von OpenAI, Anthropic und Google für bestmögliche Ergebnisse, alles in einer einzigen Plattform.',
+    feature_selection_title: 'Intelligente Modellauswahl',
+    feature_selection_desc: 'Kein Raten, welche KI zu verwenden ist. Omnia wählt automatisch das perfekte Modell basierend auf Ihrer spezifischen Anfrage.',
+    feature_learning_title: 'Lernt Ihren Stil',
+    feature_learning_desc: 'Merkt sich Ihre Präferenzen, Projekte und Kontexte. Je mehr Sie Omnia nutzen, desto besser wird es darin, Ihnen zu helfen.',
+    feature_privacy_title: 'Datenschutz garantiert',
+    feature_privacy_desc: 'Ihre Gespräche bleiben privat. Kein Training mit Ihren Daten, kein Verkauf Ihrer Informationen. Ihre Ideen bleiben Ihre.',
 
     // Demo Chat
     demo_user: 'Wie können Sie mir heute helfen?',
@@ -1021,13 +1089,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Получите доступ к самым передовым ИИ-моделям мира через одну мощную, единую платформу. Общайтесь, творите и решайте задачи с помощью передовых технологий. Ваши идеи, безграничный потенциал.',
+    hero_story_1: 'Будущее ИИ не в выборе одной модели—а в доступе к лучшему из всех.',
+    hero_story_2: 'Omnia родилась из простого убеждения: вас не должны ограничивать сильные и слабые стороны одного ИИ. Пишете ли вы, программируете, анализируете или создаёте, вы заслуживаете доступа к самым передовым возможностям ИИ.',
+    hero_story_3: 'Одна платформа. Безграничные возможности.',
     hero_cta_start: 'Начать бесплатно',
+    hero_cta_try: 'Попробовать Omnia',
     hero_cta_learn: 'Узнать больше',
 
     // Trust Badges
     badge_free: '✓ Бесплатный старт',
     badge_secure: '✓ Безопасно и приватно',
     badge_languages: '✓ 40+ языков',
+
+    // Omnia Features
+    omnia_features_title: 'Что делает Omnia особенной',
+    omnia_features_subtitle: 'Omnia объединяет несколько ИИ-моделей для достижения лучших результатов, каждый раз выбирая подходящую модель для вашей задачи.',
+    feature_models_title: 'Несколько ИИ-моделей, одна платформа',
+    feature_models_desc: 'Omnia использует самые мощные модели от OpenAI, Anthropic и Google для достижения наилучших результатов, всё на одной платформе.',
+    feature_selection_title: 'Интеллектуальный выбор модели',
+    feature_selection_desc: 'Никаких догадок о том, какой ИИ использовать. Omnia автоматически выбирает идеальную модель на основе вашего конкретного запроса.',
+    feature_learning_title: 'Изучает ваш стиль',
+    feature_learning_desc: 'Запоминает ваши предпочтения, проекты и контекст. Чем больше вы используете Omnia, тем лучше она помогает вам.',
+    feature_privacy_title: 'Гарантированная конфиденциальность',
+    feature_privacy_desc: 'Ваши разговоры остаются приватными. Никакого обучения на ваших данных, никакой продажи вашей информации. Ваши идеи остаются вашими.',
 
     // Demo Chat
     demo_user: 'Как вы можете мне помочь сегодня?',
@@ -1264,13 +1349,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Uzyskaj dostęp do najbardziej zaawansowanych modeli AI na świecie poprzez jedną potężną, zunifikowaną platformę. Rozmawiaj, twórz i rozwiązuj problemy z najnowocześniejszą technologią. Twoje pomysły, nieograniczony potencjał.',
+    hero_story_1: 'Przyszłość AI nie polega na wyborze jednego modelu—polega na dostępie do najlepszego ze wszystkich.',
+    hero_story_2: 'Omnia narodziła się z prostego przekonania: nie powinieneś być ograniczany mocnymi i słabymi stronami pojedynczej AI. Niezależnie od tego, czy piszesz, kodujesz, analizujesz czy tworzysz, zasługujesz na dostęp do najbardziej zaawansowanych możliwości AI.',
+    hero_story_3: 'Jedna platforma. Nieograniczone możliwości.',
     hero_cta_start: 'Zacznij za darmo',
+    hero_cta_try: 'Wypróbuj Omnia Teraz',
     hero_cta_learn: 'Dowiedz się więcej',
 
     // Trust Badges
     badge_free: '✓ Darmowy start',
     badge_secure: '✓ Bezpieczne i prywatne',
     badge_languages: '✓ 40+ języków',
+
+    // Omnia Features
+    omnia_features_title: 'Co czyni Omnia wyjątkową',
+    omnia_features_subtitle: 'Omnia łączy wiele modeli AI dla najlepszych rezultatów, za każdym razem wybierając odpowiedni model do twojego zadania.',
+    feature_models_title: 'Wiele modeli AI, jedna platforma',
+    feature_models_desc: 'Omnia wykorzystuje najbardziej zaawansowane modele od OpenAI, Anthropic i Google dla najlepszych możliwych wyników, wszystko na jednej platformie.',
+    feature_selection_title: 'Inteligentny wybór modelu',
+    feature_selection_desc: 'Żadnego zgadywania, której AI użyć. Omnia automatycznie wybiera idealny model na podstawie twojego konkretnego żądania.',
+    feature_learning_title: 'Uczy się twojego stylu',
+    feature_learning_desc: 'Zapamiętuje twoje preferencje, projekty i kontekst. Im więcej używasz Omnia, tym lepiej ci pomaga.',
+    feature_privacy_title: 'Gwarantowana prywatność',
+    feature_privacy_desc: 'Twoje rozmowy pozostają prywatne. Brak treningu na twoich danych, brak sprzedaży twoich informacji. Twoje pomysły pozostają twoje.',
 
     // Demo Chat
     demo_user: 'Jak możesz mi dziś pomóc?',
@@ -1507,13 +1609,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Accédez aux modèles d\'IA les plus avancés au monde via une plateforme puissante et unifiée. Chattez, créez et résolvez avec une technologie de pointe. Vos idées, un potentiel illimité.',
+    hero_story_1: 'L\'avenir de l\'IA ne consiste pas à choisir un modèle—il s\'agit d\'accéder au meilleur de tous.',
+    hero_story_2: 'Omnia est née d\'une croyance simple : vous ne devriez pas être limité par les forces et faiblesses d\'une seule IA. Que vous écriviez, codiez, analysiez ou créiez, vous méritez l\'accès aux capacités d\'IA les plus avancées disponibles.',
+    hero_story_3: 'Une plateforme. Possibilités illimitées.',
     hero_cta_start: 'Commencer gratuitement',
+    hero_cta_try: 'Essayer Omnia Maintenant',
     hero_cta_learn: 'En savoir plus',
 
     // Trust Badges
     badge_free: '✓ Gratuit pour commencer',
     badge_secure: '✓ Sécurisé et privé',
     badge_languages: '✓ 40+ langues',
+
+    // Omnia Features
+    omnia_features_title: 'Ce qui rend Omnia différent',
+    omnia_features_subtitle: 'Omnia combine plusieurs modèles d\'IA pour de meilleurs résultats, choisissant à chaque fois le bon modèle pour votre tâche.',
+    feature_models_title: 'Plusieurs modèles d\'IA, une plateforme',
+    feature_models_desc: 'Omnia utilise les modèles les plus performants d\'OpenAI, Anthropic et Google pour les meilleurs résultats possibles, le tout sur une seule plateforme.',
+    feature_selection_title: 'Sélection intelligente de modèle',
+    feature_selection_desc: 'Pas de devinettes sur quelle IA utiliser. Omnia choisit automatiquement le modèle parfait basé sur votre demande spécifique.',
+    feature_learning_title: 'Apprend votre style',
+    feature_learning_desc: 'Se souvient de vos préférences, projets et contexte. Plus vous utilisez Omnia, mieux elle vous aide.',
+    feature_privacy_title: 'Confidentialité garantie',
+    feature_privacy_desc: 'Vos conversations restent privées. Pas d\'entraînement sur vos données, pas de vente de vos informations. Vos idées restent vôtres.',
 
     // Demo Chat
     demo_user: 'Comment pouvez-vous m\'aider aujourd\'hui ?',
@@ -1750,13 +1869,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Accede a los modelos de IA más avanzados del mundo a través de una plataforma potente y unificada. Chatea, crea y resuelve con tecnología de vanguardia. Tus ideas, potencial ilimitado.',
+    hero_story_1: 'El futuro de la IA no se trata de elegir un modelo—se trata de acceder a lo mejor de todos.',
+    hero_story_2: 'Omnia nació de una creencia simple: no deberías estar limitado por las fortalezas y debilidades de una sola IA. Ya sea que escribas, programes, analices o crees, mereces acceso a las capacidades de IA más avanzadas disponibles.',
+    hero_story_3: 'Una plataforma. Posibilidades ilimitadas.',
     hero_cta_start: 'Comenzar gratis',
+    hero_cta_try: 'Probar Omnia Ahora',
     hero_cta_learn: 'Saber más',
 
     // Trust Badges
     badge_free: '✓ Gratis para empezar',
     badge_secure: '✓ Seguro y privado',
     badge_languages: '✓ 40+ idiomas',
+
+    // Omnia Features
+    omnia_features_title: 'Qué hace Omnia diferente',
+    omnia_features_subtitle: 'Omnia combina múltiples modelos de IA para obtener los mejores resultados, eligiendo cada vez el modelo correcto para tu tarea.',
+    feature_models_title: 'Múltiples modelos de IA, una plataforma',
+    feature_models_desc: 'Omnia utiliza los modelos más capaces de OpenAI, Anthropic y Google para obtener los mejores resultados posibles, todo en una sola plataforma.',
+    feature_selection_title: 'Selección inteligente de modelo',
+    feature_selection_desc: 'Sin adivinar qué IA usar. Omnia elige automáticamente el modelo perfecto basado en tu solicitud específica.',
+    feature_learning_title: 'Aprende tu estilo',
+    feature_learning_desc: 'Recuerda tus preferencias, proyectos y contexto. Cuanto más uses Omnia, mejor te ayudará.',
+    feature_privacy_title: 'Privacidad garantizada',
+    feature_privacy_desc: 'Tus conversaciones permanecen privadas. Sin entrenamiento con tus datos, sin venta de tu información. Tus ideas siguen siendo tuyas.',
 
     // Demo Chat
     demo_user: '¿Cómo puedes ayudarme hoy?',
@@ -1993,13 +2129,30 @@ const translations = {
     // Hero Section
     hero_title: 'Omnia One AI',
     hero_subtitle: 'One AI. Infinite possibilities.',
+    hero_description: 'Accedi ai modelli di IA più avanzati al mondo attraverso una piattaforma potente e unificata. Chatta, crea e risolvi con tecnologia all\'avanguardia. Le tue idee, potenziale illimitato.',
+    hero_story_1: 'Il futuro dell\'IA non riguarda la scelta di un modello—riguarda l\'accesso al meglio di tutti.',
+    hero_story_2: 'Omnia è nata da una semplice convinzione: non dovresti essere limitato dai punti di forza e di debolezza di una singola IA. Che tu stia scrivendo, programmando, analizzando o creando, meriti l\'accesso alle capacità IA più avanzate disponibili.',
+    hero_story_3: 'Una piattaforma. Possibilità illimitate.',
     hero_cta_start: 'Inizia gratis',
+    hero_cta_try: 'Prova Omnia Ora',
     hero_cta_learn: 'Scopri di più',
 
     // Trust Badges
     badge_free: '✓ Gratis per iniziare',
     badge_secure: '✓ Sicuro e privato',
     badge_languages: '✓ 40+ lingue',
+
+    // Omnia Features
+    omnia_features_title: 'Cosa rende Omnia diversa',
+    omnia_features_subtitle: 'Omnia combina più modelli IA per i migliori risultati, scegliendo ogni volta il modello giusto per il tuo compito.',
+    feature_models_title: 'Più modelli IA, una piattaforma',
+    feature_models_desc: 'Omnia utilizza i modelli più capaci di OpenAI, Anthropic e Google per i migliori risultati possibili, tutto in un\'unica piattaforma.',
+    feature_selection_title: 'Selezione intelligente del modello',
+    feature_selection_desc: 'Niente ipotesi su quale IA usare. Omnia sceglie automaticamente il modello perfetto basato sulla tua richiesta specifica.',
+    feature_learning_title: 'Impara il tuo stile',
+    feature_learning_desc: 'Ricorda le tue preferenze, progetti e contesto. Più usi Omnia, meglio ti aiuta.',
+    feature_privacy_title: 'Privacy garantita',
+    feature_privacy_desc: 'Le tue conversazioni rimangono private. Nessun addestramento sui tuoi dati, nessuna vendita delle tue informazioni. Le tue idee rimangono tue.',
 
     // Demo Chat
     demo_user: 'Come puoi aiutarmi oggi?',
