@@ -36,6 +36,11 @@ const translations = {
     feature_learning_desc: 'Remembers your preferences, projects, and context. The more you use Omnia, the better it gets at helping you.',
     feature_privacy_title: 'Privacy Guaranteed',
     feature_privacy_desc: 'Your conversations stay private. No training on your data, no selling your information. Your ideas remain yours.',
+    showcase_title: 'See What Omnia Can Do',
+    showcase_subtitle_title: 'Want to Create Something Amazing?',
+    showcase_description: 'From writing compelling stories to generating stunning visuals, Omnia transforms your ideas into reality with professional-quality results.',
+    problems_title: 'Need Help with Complex Problems?',
+    problems_description: 'Whether it\'s debugging code, analyzing data, or solving complex challenges, Omnia has the intelligence to break it down and guide you through step by step.',
 
     // Demo Chat
     demo_user: 'How can you help me today?',
@@ -320,6 +325,11 @@ const translations = {
     feature_learning_desc: 'Pamatuje si vaše preference, projekty a kontext. Čím více Omnia používáte, tím lépe vám pomáhá.',
     feature_privacy_title: 'Zaručené soukromí',
     feature_privacy_desc: 'Vaše konverzace zůstávají soukromé. Žádné trénování na vašich datech, žádný prodej informací. Vaše nápady zůstávají vaše.',
+    showcase_title: 'Podívejte se, co Omnia umí',
+    showcase_subtitle_title: 'Chcete vytvořit něco úžasného?',
+    showcase_description: 'Od psaní poutavých příběhů po generování ohromujících vizuálů - Omnia přetváří vaše nápady v realitu s profesionální kvalitou.',
+    problems_title: 'Potřebujete pomoc se složitými problémy?',
+    problems_description: 'Ať už jde o ladění kódu, analýzu dat nebo řešení složitých výzev, Omnia má inteligenci to rozložit a provést vás procesem krok za krokem.',
 
     // Demo Chat
     demo_user: 'Jak mi dnes můžeš pomoct?',
@@ -593,6 +603,11 @@ const translations = {
     feature_learning_desc: 'Își amintește preferințele, proiectele și contextul tău. Cu cât folosești mai mult Omnia, cu atât devine mai bună la a te ajuta.',
     feature_privacy_title: 'Confidențialitate garantată',
     feature_privacy_desc: 'Conversațiile tale rămân private. Fără antrenament pe datele tale, fără vândarea informațiilor tale. Ideile tale rămân ale tale.',
+    showcase_title: 'Vezi ce poate face Omnia',
+    showcase_subtitle_title: 'Vrei să creezi ceva uimitor?',
+    showcase_description: 'De la scrierea de povești captivante la generarea de imagini spectaculoase, Omnia transformă ideile tale în realitate cu rezultate de calitate profesională.',
+    problems_title: 'Ai nevoie de ajutor cu probleme complexe?',
+    problems_description: 'Fie că e vorba despre depanarea codului, analiza datelor sau rezolvarea provocărilor complexe, Omnia are inteligența să le descompună și să te ghideze pas cu pas.',
 
     // Demo Chat
     demo_user: 'Cum mă poți ajuta astăzi?',
@@ -853,6 +868,11 @@ const translations = {
     feature_learning_desc: 'Merkt sich Ihre Präferenzen, Projekte und Kontexte. Je mehr Sie Omnia nutzen, desto besser wird es darin, Ihnen zu helfen.',
     feature_privacy_title: 'Datenschutz garantiert',
     feature_privacy_desc: 'Ihre Gespräche bleiben privat. Kein Training mit Ihren Daten, kein Verkauf Ihrer Informationen. Ihre Ideen bleiben Ihre.',
+    showcase_title: 'Sehen Sie, was Omnia kann',
+    showcase_subtitle_title: 'Möchten Sie etwas Erstaunliches schaffen?',
+    showcase_description: 'Vom Schreiben fesselnder Geschichten bis zur Generierung atemberaubender Visuals - Omnia verwandelt Ihre Ideen in Realität mit professioneller Qualität.',
+    problems_title: 'Brauchen Sie Hilfe bei komplexen Problemen?',
+    problems_description: 'Ob beim Debugging von Code, bei der Datenanalyse oder beim Lösen komplexer Herausforderungen - Omnia hat die Intelligenz, alles aufzuschlüsseln und Sie Schritt für Schritt zu führen.',
 
     // Demo Chat
     demo_user: 'Wie können Sie mir heute helfen?',
@@ -1113,6 +1133,11 @@ const translations = {
     feature_learning_desc: 'Запоминает ваши предпочтения, проекты и контекст. Чем больше вы используете Omnia, тем лучше она помогает вам.',
     feature_privacy_title: 'Гарантированная конфиденциальность',
     feature_privacy_desc: 'Ваши разговоры остаются приватными. Никакого обучения на ваших данных, никакой продажи вашей информации. Ваши идеи остаются вашими.',
+    showcase_title: 'Посмотрите, что умеет Omnia',
+    showcase_subtitle_title: 'Хотите создать что-то потрясающее?',
+    showcase_description: 'От написания увлекательных историй до создания потрясающих визуалов - Omnia превращает ваши идеи в реальность с профессиональным качеством.',
+    problems_title: 'Нужна помощь со сложными проблемами?',
+    problems_description: 'Будь то отладка кода, анализ данных или решение сложных задач, Omnia обладает интеллектом, чтобы разложить всё по полочкам и провести вас шаг за шагом.',
 
     // Demo Chat
     demo_user: 'Как вы можете мне помочь сегодня?',
@@ -1373,6 +1398,11 @@ const translations = {
     feature_learning_desc: 'Zapamiętuje twoje preferencje, projekty i kontekst. Im więcej używasz Omnia, tym lepiej ci pomaga.',
     feature_privacy_title: 'Gwarantowana prywatność',
     feature_privacy_desc: 'Twoje rozmowy pozostają prywatne. Brak treningu na twoich danych, brak sprzedaży twoich informacji. Twoje pomysły pozostają twoje.',
+    showcase_title: 'Zobacz, co potrafi Omnia',
+    showcase_subtitle_title: 'Chcesz stworzyć coś niesamowitego?',
+    showcase_description: 'Od pisania fascynujących historii po generowanie oszałamiających wizualizacji - Omnia przekształca twoje pomysły w rzeczywistość z profesjonalną jakością.',
+    problems_title: 'Potrzebujesz pomocy ze złożonymi problemami?',
+    problems_description: 'Czy to debugowanie kodu, analiza danych, czy rozwiązywanie złożonych wyzwań - Omnia ma inteligencję, aby to rozłożyć i prowadzić cię krok po kroku.',
 
     // Demo Chat
     demo_user: 'Jak możesz mi dziś pomóc?',
@@ -1633,6 +1663,11 @@ const translations = {
     feature_learning_desc: 'Se souvient de vos préférences, projets et contexte. Plus vous utilisez Omnia, mieux elle vous aide.',
     feature_privacy_title: 'Confidentialité garantie',
     feature_privacy_desc: 'Vos conversations restent privées. Pas d\'entraînement sur vos données, pas de vente de vos informations. Vos idées restent vôtres.',
+    showcase_title: 'Voyez ce qu\'Omnia peut faire',
+    showcase_subtitle_title: 'Envie de créer quelque chose d\'extraordinaire ?',
+    showcase_description: 'De l\'écriture d\'histoires captivantes à la génération de visuels époustouflants, Omnia transforme vos idées en réalité avec des résultats de qualité professionnelle.',
+    problems_title: 'Besoin d\'aide avec des problèmes complexes ?',
+    problems_description: 'Qu\'il s\'agisse de déboguer du code, d\'analyser des données ou de résoudre des défis complexes, Omnia a l\'intelligence pour tout décomposer et vous guider étape par étape.',
 
     // Demo Chat
     demo_user: 'Comment pouvez-vous m\'aider aujourd\'hui ?',
@@ -1893,6 +1928,11 @@ const translations = {
     feature_learning_desc: 'Recuerda tus preferencias, proyectos y contexto. Cuanto más uses Omnia, mejor te ayudará.',
     feature_privacy_title: 'Privacidad garantizada',
     feature_privacy_desc: 'Tus conversaciones permanecen privadas. Sin entrenamiento con tus datos, sin venta de tu información. Tus ideas siguen siendo tuyas.',
+    showcase_title: 'Mira lo que Omnia puede hacer',
+    showcase_subtitle_title: '¿Quieres crear algo increíble?',
+    showcase_description: 'Desde escribir historias cautivadoras hasta generar visuales impresionantes, Omnia transforma tus ideas en realidad con resultados de calidad profesional.',
+    problems_title: '¿Necesitas ayuda con problemas complejos?',
+    problems_description: 'Ya sea depurar código, analizar datos o resolver desafíos complejos, Omnia tiene la inteligencia para desglosarlo todo y guiarte paso a paso.',
 
     // Demo Chat
     demo_user: '¿Cómo puedes ayudarme hoy?',
@@ -2153,6 +2193,11 @@ const translations = {
     feature_learning_desc: 'Ricorda le tue preferenze, progetti e contesto. Più usi Omnia, meglio ti aiuta.',
     feature_privacy_title: 'Privacy garantita',
     feature_privacy_desc: 'Le tue conversazioni rimangono private. Nessun addestramento sui tuoi dati, nessuna vendita delle tue informazioni. Le tue idee rimangono tue.',
+    showcase_title: 'Guarda cosa può fare Omnia',
+    showcase_subtitle_title: 'Vuoi creare qualcosa di straordinario?',
+    showcase_description: 'Dalla scrittura di storie avvincenti alla generazione di immagini mozzafiato, Omnia trasforma le tue idee in realtà con risultati di qualità professionale.',
+    problems_title: 'Hai bisogno di aiuto con problemi complessi?',
+    problems_description: 'Che si tratti di debugging del codice, analisi dei dati o risoluzione di sfide complesse, Omnia ha l\'intelligenza per scomporre tutto e guidarti passo dopo passo.',
 
     // Demo Chat
     demo_user: 'Come puoi aiutarmi oggi?',
