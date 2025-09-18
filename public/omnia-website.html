@@ -94,14 +94,20 @@
             <!-- Hero Visual -->
             <div class="hero-visual">
                 <div class="screenshots-grid">
-                    <div class="app-preview">
-                        <img src="images/omnia-screenshot.png" alt="Omnia AI Chat Interface" class="app-screenshot">
+                    <div class="app-preview" onclick="openScreenshotLightbox('images/omnia-screenshot.png', 'Omnia AI Chat Interface')">
+                        <div class="image-placeholder">
+                            <img src="images/omnia-screenshot.png" alt="Omnia AI Chat Interface" class="app-screenshot" loading="lazy">
+                        </div>
                     </div>
-                    <div class="app-preview">
-                        <img src="images/omnia-screenshot-2.png" alt="Omnia AI Features" class="app-screenshot">
+                    <div class="app-preview" onclick="openScreenshotLightbox('images/omnia-screenshot-2.png', 'Omnia AI Programming')">
+                        <div class="image-placeholder">
+                            <img src="images/omnia-screenshot-2.png" alt="Omnia AI Programming" class="app-screenshot" loading="lazy">
+                        </div>
                     </div>
-                    <div class="app-preview">
-                        <img src="images/omnia-screenshot-3.png" alt="Omnia AI Settings" class="app-screenshot">
+                    <div class="app-preview" onclick="openScreenshotLightbox('images/omnia-screenshot-3.png', 'Omnia AI Analysis')">
+                        <div class="image-placeholder">
+                            <img src="images/omnia-screenshot-3.png" alt="Omnia AI Analysis" class="app-screenshot" loading="lazy">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -337,6 +343,14 @@
             </div>
         </div>
     </footer>
+
+    <!-- Screenshot Lightbox -->
+    <div id="screenshotLightbox" class="screenshot-lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeScreenshotLightbox()">×</button>
+            <img id="lightboxImage" src="" alt="" class="lightbox-image">
+        </div>
+    </div>
 
     <!-- Feature Modal -->
     <div id="featureModal" class="feature-modal">

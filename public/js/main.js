@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize GDPR cookie consent
     initializeCookieConsent();
+
+    // Initialize image loading
+    initializeImageLoading();
 });
 
 // Language System
@@ -507,3 +510,57 @@ function hasCookieConsent(type = 'any') {
 
     return consent !== null;
 }
+
+// Image Loading Optimization
+function initializeImageLoading() {
+    const screenshots = document.querySelectorAll('.app-screenshot');
+
+    screenshots.forEach(img => {
+        // Handle error case
+        img.addEventListener('error', function() {
+            this.style.opacity = '0.3';
+            console.warn('Failed to load image:', this.src);
+        });
+    });
+}
+
+// Screenshot Lightbox Functions
+function openScreenshotLightbox(imageSrc, imageAlt) {
+    const lightbox = document.getElementById('screenshotLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+
+    lightboxImage.src = imageSrc;
+    lightboxImage.alt = imageAlt;
+
+    lightbox.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        lightbox.classList.add('show');
+    }, 10);
+}
+
+function closeScreenshotLightbox() {
+    const lightbox = document.getElementById('screenshotLightbox');
+    lightbox.classList.remove('show');
+
+    setTimeout(() => {
+        lightbox.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }, 300);
+}
+
+// Close lightbox on background click
+document.addEventListener('click', function(e) {
+    const lightbox = document.getElementById('screenshotLightbox');
+    if (e.target === lightbox) {
+        closeScreenshotLightbox();
+    }
+});
+
+// Close lightbox on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeScreenshotLightbox();
+    }
+});
