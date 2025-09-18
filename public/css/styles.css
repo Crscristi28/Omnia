@@ -97,9 +97,42 @@ body {
     font-size: 16px;
     line-height: 1.6;
     color: var(--text-primary);
-    background: var(--bg-light);
+    background: #0a0a0a;
     overflow-x: hidden;
+    position: relative;
 }
+
+/* Animated Background */
+.animated-bg {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background: linear-gradient(45deg, #0a0a0a, #1a1a2e);
+    overflow: hidden;
+}
+
+.animated-bg::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    animation: rotate 30s linear infinite;
+}
+
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 
 /* Modern Animations */
 @keyframes fadeInUp {
@@ -520,7 +553,7 @@ a {
     gap: 0.75rem;
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--text-primary);
+    color: #ffffff;
     text-decoration: none;
     transition: var(--transition);
     position: relative;
@@ -558,7 +591,7 @@ a {
 }
 
 .nav-link {
-    color: var(--text-primary);
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 600;
     transition: var(--transition);
     position: relative;
@@ -583,7 +616,7 @@ a {
 }
 
 .nav-link:hover {
-    color: var(--primary);
+    color: #ffffff;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
@@ -623,11 +656,11 @@ a {
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     background: transparent;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
     cursor: pointer;
     transition: var(--transition);
-    color: var(--text-primary);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .lang-btn:hover {
@@ -683,7 +716,7 @@ a {
 .mobile-menu-toggle span {
     width: 24px;
     height: 2px;
-    background: var(--text-primary);
+    background: rgba(255, 255, 255, 0.9);
     transition: var(--transition);
 }
 
@@ -709,7 +742,7 @@ a {
 
 .hero {
     padding: calc(80px + var(--spacing-2xl)) 0 var(--spacing-2xl);
-    background: var(--gradient-hero);
+    background: transparent;
     position: relative;
     overflow: hidden;
     min-height: 100vh;
@@ -976,7 +1009,8 @@ a {
 
 .features {
     padding: calc(var(--spacing-2xl) * 1.5) 0;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
 }
@@ -1000,12 +1034,12 @@ a {
 }
 
 .section-title {
-    color: var(--text-primary);
+    color: #ffffff;
     margin-bottom: var(--spacing-sm);
 }
 
 .section-subtitle {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.8);
     max-width: 600px;
     margin: 0 auto;
 }
@@ -1117,6 +1151,8 @@ a {
 
 .how-it-works {
     padding: var(--spacing-2xl) 0;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(8px);
 }
 
 .steps {
@@ -1146,12 +1182,12 @@ a {
 }
 
 .step-title {
-    color: var(--text-primary);
+    color: #ffffff;
     margin-bottom: var(--spacing-sm);
 }
 
 .step-desc {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.95rem;
 }
 
@@ -1167,7 +1203,8 @@ a {
 
 .pricing {
     padding: calc(var(--spacing-2xl) * 1.5) 0;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
 }
