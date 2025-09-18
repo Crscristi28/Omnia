@@ -914,11 +914,18 @@ a {
 
 /* Hero Visual */
 .hero-visual {
-    max-width: 700px;
+    max-width: 1000px;
     margin: 0 auto;
     position: relative;
     z-index: 2;
     animation: fadeInScale 1.5s ease-out 0.8s both;
+}
+
+.screenshots-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    align-items: start;
 }
 
 .app-preview {
@@ -1592,6 +1599,10 @@ a {
         flex-direction: row;
         justify-content: space-between;
     }
+
+    .screenshots-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* Desktop (1024px+) */
@@ -1614,6 +1625,10 @@ a {
 
     .footer-content {
         grid-template-columns: repeat(4, 1fr);
+    }
+
+    .screenshots-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
