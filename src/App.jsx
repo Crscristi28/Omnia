@@ -1317,7 +1317,7 @@ function AppContent() {
           animationIntervalImage = setInterval(() => {
             if (wordQueueImage.length > 0) {
               const nextWord = wordQueueImage.shift();
-              currentDisplayedTextImage += nextWord + ' ';
+              currentDisplayedTextImage += nextWord;
               
               // Update message progressively
               setMessages(prev => 
