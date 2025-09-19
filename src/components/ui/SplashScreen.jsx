@@ -100,15 +100,14 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
           animation: showLogo ? 'logoGlow 3s ease-in-out infinite' : 'none'
         }}>
           <img
-            src="/images/omnia-icon.png"
+            src="/images/omnia-icon.svg"
             alt="Omnia AI Icon"
             style={{
               width: '200px',
               height: '200px',
               maxWidth: '60vw',
               objectFit: 'contain',
-              borderRadius: '50%',
-              boxShadow: '0 0 50px rgba(0, 212, 255, 0.3)'
+              filter: 'drop-shadow(0 0 30px rgba(0, 212, 255, 0.4))'
             }}
           />
         </div>
