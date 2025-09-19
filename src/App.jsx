@@ -1277,8 +1277,8 @@ function AppContent() {
                 // Add chunk to buffer
                 rawChunkBufferImage += chunk;
                 
-                // Split into words (including punctuation) - same as normal chat
-                const newWords = rawChunkBufferImage.split(/(\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
+                // Split into words (including punctuation) - keep whitespace+bullets together
+                const newWords = rawChunkBufferImage.split(/(\s+[•\-*]\s*|\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
                 rawChunkBufferImage = newWords.pop() || ''; // Last part might be incomplete word
                 
                 // Add complete words to queue
@@ -1705,8 +1705,8 @@ function AppContent() {
             // Add chunk to buffer immediately
             rawChunkBuffer += chunk;
             
-            // Split into words (including punctuation)
-            const newWords = rawChunkBuffer.split(/(\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
+            // Split into words (including punctuation) - keep whitespace+bullets together
+            const newWords = rawChunkBuffer.split(/(\s+[•\-*]\s*|\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
             rawChunkBuffer = newWords.pop() || ''; // Last part might be incomplete word
             
             // Add complete words to queue
@@ -2825,8 +2825,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           // Add chunk to buffer immediately
           rawChunkBufferDocs += chunk;
           
-          // Split into words (including punctuation)
-          const newWords = rawChunkBufferDocs.split(/(\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
+          // Split into words (including punctuation) - keep whitespace+bullets together
+          const newWords = rawChunkBufferDocs.split(/(\s+[•\-*]\s*|\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
           rawChunkBufferDocs = newWords.pop() || ''; // Last part might be incomplete word
           
           // Add complete words to queue
