@@ -119,7 +119,8 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
 
         {/* Logo Container with Enhanced Effects */}
         <div style={{
-          marginBottom: '60px',
+          marginBottom: '100px',
+          marginTop: '-80px',
           opacity: showLogo ? 1 : 0,
           transform: showLogo ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(20px)',
           filter: showLogo ? 'blur(0px)' : 'blur(10px)',
@@ -130,10 +131,10 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
           {/* Animated Gradient Border */}
           <div style={{
             position: 'absolute',
-            top: '-15px',
-            left: '-15px',
-            width: '230px',
-            height: '230px',
+            top: '-12px',
+            left: '-12px',
+            width: '184px',
+            height: '184px',
             borderRadius: '50%',
             background: `conic-gradient(from 0deg,
               #00d4ff 0deg,
@@ -152,10 +153,10 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
             {/* Inner mask for border effect */}
             <div style={{
               position: 'absolute',
-              top: '6px',
-              left: '6px',
-              width: '218px',
-              height: '218px',
+              top: '5px',
+              left: '5px',
+              width: '174px',
+              height: '174px',
               borderRadius: '50%',
               background: '#000000'
             }} />
@@ -164,10 +165,10 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
           {/* Pulsing Ring 1 */}
           <div style={{
             position: 'absolute',
-            top: '-10px',
-            left: '-10px',
-            width: '220px',
-            height: '220px',
+            top: '-8px',
+            left: '-8px',
+            width: '176px',
+            height: '176px',
             borderRadius: '50%',
             border: '2px solid rgba(0, 212, 255, 0.3)',
             animation: showLogo ? 'pulseRing 2s ease-out infinite' : 'none',
@@ -179,10 +180,10 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
           {/* Pulsing Ring 2 */}
           <div style={{
             position: 'absolute',
-            top: '-10px',
-            left: '-10px',
-            width: '220px',
-            height: '220px',
+            top: '-8px',
+            left: '-8px',
+            width: '176px',
+            height: '176px',
             borderRadius: '50%',
             border: '2px solid rgba(140, 82, 255, 0.2)',
             animation: showLogo ? 'pulseRing 2s ease-out infinite 1s' : 'none',
@@ -196,15 +197,15 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
             src="/images/omnia-icon.png"
             alt="Omnia AI Icon"
             style={{
-              width: '200px',
-              height: '200px',
-              maxWidth: '60vw',
+              width: '160px',
+              height: '160px',
+              maxWidth: '50vw',
               objectFit: 'contain',
               borderRadius: '50%',
               boxShadow: `
-                0 0 30px rgba(0, 212, 255, 0.4),
-                0 0 60px rgba(140, 82, 255, 0.3),
-                inset 0 0 30px rgba(255, 255, 255, 0.1)
+                0 0 25px rgba(0, 212, 255, 0.4),
+                0 0 50px rgba(140, 82, 255, 0.3),
+                inset 0 0 25px rgba(255, 255, 255, 0.1)
               `,
               position: 'relative',
               zIndex: 2,
