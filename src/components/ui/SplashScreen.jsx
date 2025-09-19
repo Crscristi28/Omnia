@@ -68,6 +68,33 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
             filter: drop-shadow(0 0 40px rgba(140, 82, 255, 0.5)) blur(0px);
           }
         }
+
+        @keyframes rotateGradient {
+          0% {
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            transform: rotate(180deg) scale(1.05);
+          }
+          100% {
+            transform: rotate(360deg) scale(1);
+          }
+        }
+
+        @keyframes pulseRing {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 0.7;
+          }
+          100% {
+            transform: scale(1.4);
+            opacity: 0;
+          }
+        }
       `}</style>
 
       {/* Main Splash Container */}
@@ -90,15 +117,81 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
         overflow: 'hidden'
       }}>
 
-        {/* Logo Container */}
+        {/* Logo Container with Enhanced Effects */}
         <div style={{
           marginBottom: '60px',
           opacity: showLogo ? 1 : 0,
           transform: showLogo ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(20px)',
           filter: showLogo ? 'blur(0px)' : 'blur(10px)',
           transition: 'all 800ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-          animation: showLogo ? 'logoGlow 3s ease-in-out infinite' : 'none'
+          position: 'relative'
         }}>
+
+          {/* Animated Gradient Border */}
+          <div style={{
+            position: 'absolute',
+            top: '-15px',
+            left: '-15px',
+            width: '230px',
+            height: '230px',
+            borderRadius: '50%',
+            background: `conic-gradient(from 0deg,
+              #00d4ff 0deg,
+              #0099ff 60deg,
+              #4d79ff 120deg,
+              #8c52ff 180deg,
+              #b833ff 240deg,
+              #ff33cc 300deg,
+              #00d4ff 360deg
+            )`,
+            animation: showLogo ? 'rotateGradient 4s linear infinite' : 'none',
+            opacity: showLogo ? 0.8 : 0,
+            transition: 'opacity 1s ease-in-out',
+            zIndex: 1
+          }}>
+            {/* Inner mask for border effect */}
+            <div style={{
+              position: 'absolute',
+              top: '6px',
+              left: '6px',
+              width: '218px',
+              height: '218px',
+              borderRadius: '50%',
+              background: '#000000'
+            }} />
+          </div>
+
+          {/* Pulsing Ring 1 */}
+          <div style={{
+            position: 'absolute',
+            top: '-10px',
+            left: '-10px',
+            width: '220px',
+            height: '220px',
+            borderRadius: '50%',
+            border: '2px solid rgba(0, 212, 255, 0.3)',
+            animation: showLogo ? 'pulseRing 2s ease-out infinite' : 'none',
+            opacity: showLogo ? 1 : 0,
+            transition: 'opacity 1s ease-in-out 0.5s',
+            zIndex: 0
+          }} />
+
+          {/* Pulsing Ring 2 */}
+          <div style={{
+            position: 'absolute',
+            top: '-10px',
+            left: '-10px',
+            width: '220px',
+            height: '220px',
+            borderRadius: '50%',
+            border: '2px solid rgba(140, 82, 255, 0.2)',
+            animation: showLogo ? 'pulseRing 2s ease-out infinite 1s' : 'none',
+            opacity: showLogo ? 1 : 0,
+            transition: 'opacity 1s ease-in-out 0.8s',
+            zIndex: 0
+          }} />
+
+          {/* Main Logo */}
           <img
             src="/images/omnia-icon.png"
             alt="Omnia AI Icon"
@@ -108,7 +201,14 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
               maxWidth: '60vw',
               objectFit: 'contain',
               borderRadius: '50%',
-              boxShadow: '0 0 50px rgba(0, 212, 255, 0.3)'
+              boxShadow: `
+                0 0 30px rgba(0, 212, 255, 0.4),
+                0 0 60px rgba(140, 82, 255, 0.3),
+                inset 0 0 30px rgba(255, 255, 255, 0.1)
+              `,
+              position: 'relative',
+              zIndex: 2,
+              animation: showLogo ? 'logoGlow 3s ease-in-out infinite' : 'none'
             }}
           />
         </div>
