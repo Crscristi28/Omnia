@@ -120,7 +120,7 @@ const OmniaSplashScreen = ({ isVisible, onComplete }) => {
         {/* Logo Container with Enhanced Effects */}
         <div style={{
           marginBottom: '100px',
-          marginTop: '-80px',
+          marginTop: window.innerHeight > window.innerWidth ? '-120px' : '-80px', // Portrait: higher, Landscape: normal
           opacity: showLogo ? 1 : 0,
           transform: showLogo ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(20px)',
           filter: showLogo ? 'blur(0px)' : 'blur(10px)',
