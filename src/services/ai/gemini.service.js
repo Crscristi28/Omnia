@@ -371,11 +371,14 @@ You are now in a specialized mode for generating, editing, and combining images.
   // Simplified search message (if needed)
   getSearchMessage(language) {
     const messages = {
-      'cs': 'Hledám přes Google...',
-      'en': 'Looking it up via Google...',
-      'ro': 'Caut prin Google...'
+      'cs': 'Hledám...',
+      'en': 'Searching...',
+      'ro': 'Caut...',
+      'de': 'Suche...',
+      'ru': 'Ищу...',
+      'pl': 'Szukam...'
     };
-    return messages[language] || 'Searching via Google...';
+    return messages[language] || 'Searching...';
   }
 };
 
