@@ -1663,6 +1663,7 @@ function AppContent() {
         
         // 🚀 TRUE PROGRESSIVE STREAMING - Omnia Plan Implementation
         let geminiSources = [];
+        let generatedImages = []; // For tool-generated images
         const botMessageId = generateMessageId();
         const botTimestamp = Date.now() + 100; // +100ms to ensure bot comes after user
         
@@ -1685,19 +1686,30 @@ function AppContent() {
         
         const result = await geminiService.sendMessage(
           messagesWithUser,
-          (chunk, isStreamingParam, sources = []) => {
+          (chunk, isStreamingParam, extra = []) => {
             // Add chunk to buffer immediately
             rawChunkBuffer += chunk;
-            
+
             // Split into words (including punctuation) - keep whitespace+bullets together
             const newWords = rawChunkBuffer.split(/(\s+[•\-*]\s*|\s+|[.,!?;:()\[\]{}'"""''„"]+)/);
             rawChunkBuffer = newWords.pop() || ''; // Last part might be incomplete word
-            
+
             // Add complete words to queue
             wordQueue.push(...newWords.filter(w => w !== ''));
-            
-            if (sources.length > 0) {
-              geminiSources = sources;
+
+            // Handle both sources and images from extra parameter
+            if (Array.isArray(extra) && extra.length > 0) {
+              // Old format: sources as array
+              geminiSources = extra;
+            } else if (extra && typeof extra === 'object') {
+              // New format: object with sources and/or images
+              if (extra.sources && extra.sources.length > 0) {
+                geminiSources = extra.sources;
+              }
+              if (extra.images && extra.images.length > 0) {
+                generatedImages = extra.images;
+                console.log('🎨 Images received in normal mode:', extra.images.length);
+              }
             }
             
             // Set stream finished flag
@@ -1794,7 +1806,63 @@ function AppContent() {
         sourcesToSave = sources;
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
-        
+
+        // Also check result.images from the final return value (tool calls)
+        if (result && result.images && result.images.length > 0) {
+          generatedImages = result.images;
+          console.log('🎨 Final result images received:', result.images.length);
+        }
+
+        // Process images if generated via tool call
+        if (generatedImages && generatedImages.length > 0) {
+          console.log('🎨 Processing', generatedImages.length, 'generated images in normal mode');
+
+          let imageData = generatedImages[0];
+
+          // Check if image needs to be uploaded to Supabase
+          if (imageData.base64 && imageData.mimeType) {
+            console.log('🎨 Uploading generated image to Supabase...');
+
+            try {
+              const base64Response = await fetch(`data:${imageData.mimeType};base64,${imageData.base64}`);
+              const imageBlob = await base64Response.blob();
+
+              const formData = new FormData();
+              formData.append('file', imageBlob, 'generated-image.png');
+
+              const uploadResponse = await fetch('/api/upload-image', {
+                method: 'POST',
+                body: formData
+              });
+
+              if (uploadResponse.ok) {
+                const uploadResult = await uploadResponse.json();
+                imageData = { url: uploadResult.url, mimeType: imageData.mimeType };
+                console.log('✅ Generated image uploaded to Supabase:', uploadResult.url);
+              } else {
+                console.error('❌ Failed to upload generated image');
+              }
+            } catch (uploadError) {
+              console.error('💥 Error uploading generated image:', uploadError);
+            }
+          }
+
+          // Update the last bot message with the image
+          setTimeout(() => {
+            setMessages(currentMessages => {
+              const lastMessage = currentMessages[currentMessages.length - 1];
+              if (lastMessage && lastMessage.sender === 'bot') {
+                const updatedMessage = {
+                  ...lastMessage,
+                  generatedImage: imageData
+                };
+                return [...currentMessages.slice(0, -1), updatedMessage];
+              }
+              return currentMessages;
+            });
+          }, 100);
+        }
+
         // Messages already updated via streaming, just check auto-save
         // COMMENTED OUT - This was causing flash effect by duplicating the message
         // const currentMessages = [...messagesWithUser, { 

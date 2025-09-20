@@ -100,7 +100,13 @@ export default async function handler(req, res) {
 
     // Analyze user's last message to determine intent
     const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
-    const imageKeywords = ['generate', 'create', 'make', 'draw', 'image', 'picture', 'illustration', 'photo', 'artwork'];
+    const imageKeywords = [
+      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render',
+      'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
+      'obrázek', 'obrázky', 'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej',
+      'car', 'house', 'landscape', 'portrait', 'animal', 'cat', 'dog', 'tree',
+      'vánoční', 'christmas', 'logo', 'icon', 'banner', 'poster', 'wallpaper'
+    ];
     const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
 
     let tools = [];
