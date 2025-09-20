@@ -1184,10 +1184,7 @@ function AppContent() {
       setStopStreamingRef(null);
     }
 
-    const detectedLang = detectLanguage(finalTextInput);
-    if (detectedLang !== userLanguage) {
-      setUserLanguage(detectedLang);
-    }
+    // Language detection removed - let Gemini handle language naturally via system prompt
 
     mobileAudioManager.stop();
     setIsAudioPlaying(false);
@@ -1309,7 +1306,7 @@ function AppContent() {
               setIsSearching(true);
               setTimeout(() => setIsSearching(false), 3000);
             },
-            detectedLang,
+            null, // Let Gemini handle language detection
             [], // documents
             true // imageMode = true
           );
@@ -1740,7 +1737,7 @@ function AppContent() {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
           },
-          detectedLang,
+          null, // Let Gemini handle language detection
           documentsToPassToGemini
         );
         
@@ -2854,7 +2851,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           setIsSearching(true);
           setTimeout(() => setIsSearching(false), 3000);
         },
-        detectedLang,
+        null, // Let Gemini handle language detection
         filteredActiveDocs.map(doc => {
           if (doc.type === 'gemini-file') {
             return { geminiFileUri: doc.uri, name: doc.name };
