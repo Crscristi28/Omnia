@@ -96,7 +96,14 @@ const geminiService = {
                   }
                 }
                 else if (data.error) {
-                  throw new Error(data.message || 'Streaming error');
+                  // Check if this is a rollback error (429, server issues, etc.)
+                  if (data.rollback) {
+                    const rollbackError = new Error(data.message || 'Service error - please try again');
+                    rollbackError.isRollback = true; // Mark for App.jsx rollback handling
+                    throw rollbackError;
+                  } else {
+                    throw new Error(data.message || 'Streaming error');
+                  }
                 }
 
               } catch (parseError) {
