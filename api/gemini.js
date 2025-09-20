@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { requestId, messages, system, max_tokens = 8000, language, documents = [], imageMode = false } = req.body;
+    const { requestId, messages, system, max_tokens = 8000, documents = [], imageMode = false } = req.body;
     
     // Log request ID for debugging concurrent requests
     console.log('🔄 [GEMINI] Processing request ID:', requestId || 'NO_ID');
@@ -41,9 +41,6 @@ export default async function handler(req, res) {
     });
     console.log('✅ Vertex AI initialized without workaround [ID:', requestId, ']');
 
-    // Get last user message
-    const lastMessage = messages[messages.length - 1];
-    
     // Prepare messages for Gemini (without system instruction in contents)
     // Note: Frontend already provides isolated chat messages, so use all messages from current chat
     const geminiMessages = messages
@@ -98,44 +95,40 @@ export default async function handler(req, res) {
     // No forced language instruction needed - Gemini is smart enough
     let finalSystemInstruction = systemInstruction;
 
-    // Prepare tools based on mode
+    // Prepare tools - ALWAYS provide both (Omnia will choose)
     let tools = [];
-    
-    if (imageMode) {
-      console.log('🎨 [GEMINI] Image mode detected, adding ONLY generation tools (no search)');
-      
-      // Add ONLY image generation function (no Google Search in image mode)
-      tools.push({
-        functionDeclarations: [{
-          name: "generate_image",
-          description: "Generate a new image from text description",
-          parameters: {
-            type: "object",
-            properties: {
-              prompt: {
-                type: "string",
-                description: "Detailed description of the image to generate"
-              },
-              imageCount: {
-                type: "integer",
-                description: "Number of images to generate (1-4)",
-                default: 1
-              }
+
+    console.log('🧠 [GEMINI] Providing BOTH tools - Omnia will choose based on user intent');
+
+    // Always add Google Search tool
+    tools.push({
+      google_search: {}
+    });
+
+    // Always add image generation tool
+    tools.push({
+      functionDeclarations: [{
+        name: "generate_image",
+        description: "Generate a new image from text description",
+        parameters: {
+          type: "object",
+          properties: {
+            prompt: {
+              type: "string",
+              description: "Detailed description of the image to generate"
             },
-            required: ["prompt"]
-          }
-        }]
-      });
-      
-      console.log('🔍 [DEBUG] Image mode - tools array:', JSON.stringify(tools, null, 2));
-    } else {
-      // Normal mode - only Google Search
-      tools.push({
-        google_search: {}
-      });
-      
-      console.log('🔍 [DEBUG] Normal mode - Google Search only');
-    }
+            imageCount: {
+              type: "integer",
+              description: "Number of images to generate (1-4)",
+              default: 1
+            }
+          },
+          required: ["prompt"]
+        }
+      }]
+    });
+
+    console.log('🔍 [DEBUG] Auto mode - both tools available:', tools.length);
     
     // Initialize model with proper system instruction and tools
     console.log('🤖 [GEMINI] Initializing model with tools:', tools.length);
