@@ -15,22 +15,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { requestId, messages, system, max_tokens = 8000, language, documents = [], imageMode = false, testMode } = req.body;
-
-    // 🧪 TEMPORARY TEST CODE - Simulate 429 error for testing rollback
-    if (testMode === '429') {
-      console.log('🧪 [TEST] Simulating 429 error for rollback testing');
-      const errorResponse = {
-        requestId: requestId,
-        error: true,
-        rollback: true,
-        message: '⏳ Too many requests. Please try again in a moment.'
-      };
-      console.log('🧪 [TEST] Sending error response:', errorResponse);
-      res.write(JSON.stringify(errorResponse) + '\n');
-      console.log('🧪 [TEST] Ending response stream');
-      return res.end();
-    }
+    const { requestId, messages, system, max_tokens = 8000, language, documents = [], imageMode = false } = req.body;
     
     // Log request ID for debugging concurrent requests
     console.log('🔄 [GEMINI] Processing request ID:', requestId || 'NO_ID');

@@ -27,8 +27,7 @@ const geminiService = {
           max_tokens: 8000,
           language: detectedLanguage,
           documents: documents,
-          imageMode: imageMode,
-          testMode: typeof window !== 'undefined' && localStorage.getItem('test-429') === 'true' ? '429' : undefined // 🧪 TEST MODE
+          imageMode: imageMode
         })
       });
 
@@ -97,15 +96,12 @@ const geminiService = {
                   }
                 }
                 else if (data.error) {
-                  console.log('🚨 [GEMINI] Error received in stream:', data);
                   // Check if this is a rollback error (429, server issues, etc.)
                   if (data.rollback) {
-                    console.log('🔄 [GEMINI] Throwing rollback error:', data.message);
                     const rollbackError = new Error(data.message || 'Service error - please try again');
                     rollbackError.isRollback = true; // Mark for App.jsx rollback handling
                     throw rollbackError;
                   } else {
-                    console.log('🚨 [GEMINI] Throwing regular error:', data.message);
                     throw new Error(data.message || 'Streaming error');
                   }
                 }
@@ -113,7 +109,6 @@ const geminiService = {
               } catch (parseError) {
                 // Re-throw rollback errors - don't swallow them
                 if (parseError.isRollback) {
-                  console.log('🔄 [GEMINI] Re-throwing rollback error:', parseError.message);
                   throw parseError;
                 }
                 // Continue for actual JSON parse errors
