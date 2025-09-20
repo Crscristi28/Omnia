@@ -1342,8 +1342,14 @@ function AppContent() {
               
               // Store final response text
               responseText = currentDisplayedTextImage;
-              
+
               console.log('🎯 Image mode progressive streaming animation complete');
+
+              // Save to DB after animation completes (same as normal chat)
+              setTimeout(async () => {
+                const finalMessages = messagesRef.current;
+                await checkAutoSave(finalMessages, activeChatId);
+              }, 100);
             }
           }, 30); // 30ms for smooth word-by-word animation (same as normal mode)
           
