@@ -20,12 +20,15 @@ export default async function handler(req, res) {
     // 🧪 TEMPORARY TEST CODE - Simulate 429 error for testing rollback
     if (testMode === '429') {
       console.log('🧪 [TEST] Simulating 429 error for rollback testing');
-      res.write(JSON.stringify({
+      const errorResponse = {
         requestId: requestId,
         error: true,
         rollback: true,
         message: '⏳ Too many requests. Please try again in a moment.'
-      }) + '\n');
+      };
+      console.log('🧪 [TEST] Sending error response:', errorResponse);
+      res.write(JSON.stringify(errorResponse) + '\n');
+      console.log('🧪 [TEST] Ending response stream');
       return res.end();
     }
     

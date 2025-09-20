@@ -97,12 +97,15 @@ const geminiService = {
                   }
                 }
                 else if (data.error) {
+                  console.log('🚨 [GEMINI] Error received in stream:', data);
                   // Check if this is a rollback error (429, server issues, etc.)
                   if (data.rollback) {
+                    console.log('🔄 [GEMINI] Throwing rollback error:', data.message);
                     const rollbackError = new Error(data.message || 'Service error - please try again');
                     rollbackError.isRollback = true; // Mark for App.jsx rollback handling
                     throw rollbackError;
                   } else {
+                    console.log('🚨 [GEMINI] Throwing regular error:', data.message);
                     throw new Error(data.message || 'Streaming error');
                   }
                 }
