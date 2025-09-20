@@ -20,14 +20,15 @@ const geminiService = {
         headers: { 
           'Content-Type': 'application/json; charset=utf-8'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           requestId: requestId,
           messages: geminiMessages,
           system: systemPrompt,
           max_tokens: 8000,
           language: detectedLanguage,
           documents: documents,
-          imageMode: imageMode
+          imageMode: imageMode,
+          testMode: typeof window !== 'undefined' && localStorage.getItem('test-429') === 'true' ? '429' : undefined // 🧪 TEST MODE
         })
       });
 
