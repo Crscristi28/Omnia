@@ -1343,9 +1343,9 @@ function AppContent() {
 
               console.log('🎯 Image mode progressive streaming animation complete');
 
-              // DELAYED DISPLAY: Now show the image after text is complete
+              // INSTANT DISPLAY: Show image immediately from buffer (base64)
               if (processedImageData) {
-                console.log('📷 [DISPLAY] Adding image to message after text completion');
+                console.log('📷 [INSTANT] Adding image to message from buffer');
                 setMessages(prev => prev.map(msg =>
                   msg.id === imageGenBotMessageId
                     ? {
@@ -1358,11 +1358,47 @@ function AppContent() {
                 ));
               }
 
-              // Save to DB after animation completes (same as normal chat)
+              // Save to DB AFTER image is displayed (ensures complete data)
               setTimeout(async () => {
                 const finalMessages = messagesRef.current;
                 await checkAutoSave(finalMessages, activeChatId);
-              }, 100);
+
+                // AFTER save, upload to Supabase in background
+                if (processedImageData && processedImageData.base64) {
+                  console.log('📤 [BACKGROUND] Starting Supabase upload after save');
+                  try {
+                    const base64String = processedImageData.base64.startsWith('data:')
+                      ? processedImageData.base64
+                      : `data:${processedImageData.mimeType};base64,${processedImageData.base64}`;
+
+                    const imageTimestamp = Date.now();
+                    const uploadResult = await uploadBase64ToSupabaseStorage(
+                      base64String,
+                      `generated-${imageTimestamp}.png`,
+                      'generated-images'
+                    );
+
+                    console.log('✅ [BACKGROUND] Supabase upload complete:', uploadResult.fileName);
+
+                    // Update message with storage URL for future use
+                    setMessages(prev => prev.map(msg =>
+                      msg.id === imageGenBotMessageId
+                        ? {
+                            ...msg,
+                            image: {
+                              ...msg.image,
+                              storageUrl: uploadResult.publicUrl,
+                              storagePath: uploadResult.path
+                            }
+                          }
+                        : msg
+                    ));
+                  } catch (uploadError) {
+                    console.error('❌ [BACKGROUND] Supabase upload failed:', uploadError);
+                    // Image is still saved in DB with base64, so not critical
+                  }
+                }
+              }, 300); // Longer delay to ensure image is in message before save
             }
           }, 15); // 15ms for faster word-by-word animation
           
@@ -1371,73 +1407,26 @@ function AppContent() {
             generatedImages = result.images;
           }
           
-          // Process images if generated via tool call
+          // Process images if generated via tool call - PREPARE BUFFER ONLY
           if (generatedImages && generatedImages.length > 0) {
-            // Upload generated image to Supabase Storage
             let imageData = generatedImages[0];
-            let storageUrl = null;
-            let storagePath = null;
-            
-            // Convert base64 to data URI if needed
-            const base64String = imageData.base64.startsWith('data:') 
-              ? imageData.base64 
-              : `data:${imageData.mimeType};base64,${imageData.base64}`;
-              
-            // INSTANT UPLOAD: Upload generated image immediately (no queue)
             const imageTimestamp = Date.now();
-            
-            console.log('📤 [INSTANT] Uploading generated image immediately to prevent data loss');
-            
-            // Upload to Supabase immediately
-            try {
-              const uploadResult = await uploadBase64ToSupabaseStorage(
-                base64String,
-                `generated-${imageTimestamp}.png`,
-                'generated-images'
-              );
-              
-              console.log('✅ [INSTANT] Generated image uploaded:', uploadResult.fileName);
-              console.log('📷 [DELAYED] Image processed, will display after text completion');
 
-              // DELAYED DISPLAY: Store processed image data for later display
-              processedImageData = {
-                mimeType: imageData.mimeType,
-                width: imageData.width,
-                height: imageData.height,
-                storageUrl: uploadResult.publicUrl,
-                base64: imageData.base64, // Fallback only
-                storagePath: uploadResult.path,
-                timestamp: imageTimestamp
-              };
-              
-            } catch (uploadError) {
-              console.error('❌ [INSTANT] Failed to upload generated image:', uploadError);
+            // Convert base64 to data URI if needed
+            const base64String = imageData.base64.startsWith('data:')
+              ? imageData.base64
+              : `data:${imageData.mimeType};base64,${imageData.base64}`;
 
-              // DELAYED DISPLAY: Store image data with base64 fallback
-              processedImageData = {
-                mimeType: imageData.mimeType,
-                width: imageData.width,
-                height: imageData.height,
-                base64: imageData.base64,
-                timestamp: imageTimestamp
-              };
-            }
+            console.log('📷 [BUFFER] Image ready for instant display, upload will happen after save');
 
-            // DISPLAY IMAGE: Check if animation is already complete, then show immediately
-            // This handles race condition where animation completes before upload
-            if (processedImageData && wordQueueImage.length === 0) {
-              console.log('📷 [DISPLAY] Animation already complete, showing image now');
-              setMessages(prev => prev.map(msg =>
-                msg.id === imageGenBotMessageId
-                  ? {
-                      ...msg,
-                      text: currentDisplayedTextImage || responseText,
-                      image: processedImageData,
-                      isStreaming: false
-                    }
-                  : msg
-              ));
-            }
+            // BUFFER: Store image data for instant display (no upload yet)
+            processedImageData = {
+              mimeType: imageData.mimeType,
+              width: imageData.width,
+              height: imageData.height,
+              base64: base64String,
+              timestamp: imageTimestamp
+            };
 
             // Hide loading indicators same as normal chat
             setLoading(false);
