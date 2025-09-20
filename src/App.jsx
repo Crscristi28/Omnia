@@ -1856,6 +1856,7 @@ function AppContent() {
         stack: err.stack 
       });
       console.error('💥 API call error:', err);
+      console.log('🔍 [DEBUG] Error caught in App.jsx catch block:', err.message, 'isRollback:', err.isRollback);
       
       // 🔄 ROLLBACK: ANY error should trigger rollback to prevent stuck span indicator
       // Remove the user and bot messages with span indicator from state
