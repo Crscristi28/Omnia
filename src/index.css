@@ -69,14 +69,14 @@ ul, ol {
   -moz-osx-font-smoothing: grayscale;
 
   /* 🎨 iOS 26 IAV Fix - Dynamic theme colors */
-  --app-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
-  --app-bg-solid: #000428;
+  --app-bg-gradient: linear-gradient(135deg, #000000, #004e92, #009ffd);
+  --app-bg-solid: #000000;
 }
 
 /* Light Mode Theme Colors */
 [data-theme="light"] {
-  --app-bg-gradient: linear-gradient(135deg, #000428, #004e92, #009ffd);
-  --app-bg-solid: #000428;
+  --app-bg-gradient: linear-gradient(135deg, #000000, #004e92, #009ffd);
+  --app-bg-solid: #000000;
 }
 
 /* Dark Mode Theme Colors (explicit) */
