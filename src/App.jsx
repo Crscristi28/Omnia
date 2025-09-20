@@ -1261,6 +1261,7 @@ function AppContent() {
           // Call Gemini with imageMode flag instead of direct Imagen
           let responseText = '';
           let generatedImages = [];
+          let processedImageData = null; // Store processed image for delayed display
           
           // Word-by-word animation variables (same as normal mode)
           let rawChunkBufferImage = '';
@@ -1345,6 +1346,21 @@ function AppContent() {
 
               console.log('🎯 Image mode progressive streaming animation complete');
 
+              // DELAYED DISPLAY: Now show the image after text is complete
+              if (processedImageData) {
+                console.log('📷 [DISPLAY] Adding image to message after text completion');
+                setMessages(prev => prev.map(msg =>
+                  msg.id === imageGenBotMessageId
+                    ? {
+                        ...msg,
+                        text: currentDisplayedTextImage,
+                        image: processedImageData,
+                        isStreaming: false
+                      }
+                    : msg
+                ));
+              }
+
               // Save to DB after animation completes (same as normal chat)
               setTimeout(async () => {
                 const finalMessages = messagesRef.current;
@@ -1384,50 +1400,30 @@ function AppContent() {
               );
               
               console.log('✅ [INSTANT] Generated image uploaded:', uploadResult.fileName);
-              console.log('🎬 [NO-LAG] Showing image only after upload completion');
-              
-              // Show image ONLY after upload is complete (prevents lag)
-              setMessages(prev => prev.map(msg => 
-                msg.id === imageGenBotMessageId 
-                  ? {
-                      ...msg,
-                      text: responseText,
-                      image: {
-                        // Essential metadata
-                        mimeType: imageData.mimeType,
-                        width: imageData.width,
-                        height: imageData.height,
-                        // Use Supabase URL (no base64 = no lag during upload)
-                        storageUrl: uploadResult.publicUrl,
-                        base64: imageData.base64, // Fallback only
-                        storagePath: uploadResult.path,
-                        timestamp: imageTimestamp
-                      },
-                      isStreaming: false
-                    }
-                  : msg
-              ));
+              console.log('📷 [DELAYED] Image processed, will display after text completion');
+
+              // DELAYED DISPLAY: Store processed image data for later display
+              processedImageData = {
+                mimeType: imageData.mimeType,
+                width: imageData.width,
+                height: imageData.height,
+                storageUrl: uploadResult.publicUrl,
+                base64: imageData.base64, // Fallback only
+                storagePath: uploadResult.path,
+                timestamp: imageTimestamp
+              };
               
             } catch (uploadError) {
               console.error('❌ [INSTANT] Failed to upload generated image:', uploadError);
-              
-              // Still update message with base64 (display works, just no persistence)
-              setMessages(prev => prev.map(msg => 
-                msg.id === imageGenBotMessageId 
-                  ? {
-                      ...msg,
-                      text: responseText,
-                      image: {
-                        mimeType: imageData.mimeType,
-                        width: imageData.width,
-                        height: imageData.height,
-                        base64: imageData.base64,
-                        timestamp: imageTimestamp
-                      },
-                      isStreaming: false
-                    }
-                  : msg
-              ));
+
+              // DELAYED DISPLAY: Store image data with base64 fallback
+              processedImageData = {
+                mimeType: imageData.mimeType,
+                width: imageData.width,
+                height: imageData.height,
+                base64: imageData.base64,
+                timestamp: imageTimestamp
+              };
             }
 
             // Hide loading indicators same as normal chat
