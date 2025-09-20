@@ -1832,7 +1832,12 @@ function AppContent() {
               );
 
               if (uploadResult && uploadResult.publicUrl) {
-                imageData = { url: uploadResult.publicUrl, mimeType: imageData.mimeType };
+                imageData = {
+                  storageUrl: uploadResult.publicUrl,  // Use storageUrl like image mode does
+                  storagePath: uploadResult.path,
+                  mimeType: imageData.mimeType,
+                  timestamp: imageTimestamp
+                };
                 console.log('✅ Generated image uploaded to Supabase:', uploadResult.publicUrl);
               } else {
                 console.error('❌ Failed to upload generated image - no public URL');
@@ -1855,7 +1860,7 @@ function AppContent() {
                   ...lastMessage,
                   image: imageData  // Use 'image' to match MessageItem.jsx expectations
                 };
-                console.log('✅ Updated bot message with image:', imageData.url);
+                console.log('✅ Updated bot message with image:', imageData.storageUrl);
                 return [...currentMessages.slice(0, -1), updatedMessage];
               }
               console.log('❌ Could not update message - no bot message found');
