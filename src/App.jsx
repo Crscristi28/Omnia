@@ -1364,7 +1364,7 @@ function AppContent() {
                 await checkAutoSave(finalMessages, activeChatId);
               }, 100);
             }
-          }, 30); // 30ms for smooth word-by-word animation (same as normal mode)
+          }, 15); // 15ms for faster word-by-word animation
           
           // Also check result.images from the final return value
           if (result && result.images && result.images.length > 0) {
@@ -1795,7 +1795,7 @@ function AppContent() {
             
             console.log('🎯 Progressive streaming animation complete');
           }
-        }, 30); // 30ms for smooth word-by-word animation
+        }, 15); // 15ms for faster word-by-word animation
         
         // Use final result for saving
         responseText = result.text;
@@ -2914,7 +2914,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           
           console.log('🎯 [DOCS] Progressive streaming animation complete');
         }
-      }, 30); // 30ms for smooth word-by-word animation (same as normal streaming)
+      }, 15); // 15ms for faster word-by-word animation
       
       // Update uploadedDocuments state AFTER successful AI response
       if (processedDocuments.length > 0) {
