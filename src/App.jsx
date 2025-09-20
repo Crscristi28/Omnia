@@ -1425,7 +1425,7 @@ function AppContent() {
 
             // DISPLAY IMAGE: Check if animation is already complete, then show immediately
             // This handles race condition where animation completes before upload
-            if (processedImageData && !isStreamFinishedImage) {
+            if (processedImageData && wordQueueImage.length === 0) {
               console.log('📷 [DISPLAY] Animation already complete, showing image now');
               setMessages(prev => prev.map(msg =>
                 msg.id === imageGenBotMessageId
