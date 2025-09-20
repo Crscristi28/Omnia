@@ -1423,13 +1423,7 @@ function AppContent() {
                   : msg
               ));
             }
-            
-            // 🔄 Check auto-save after image generation
-            setTimeout(async () => {
-              const finalMessages = messagesRef.current;
-              await checkAutoSave(finalMessages, activeChatId);
-            }, 100);
-            
+
             // Hide loading indicators same as normal chat
             setLoading(false);
             setStreaming(false);
