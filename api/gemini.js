@@ -105,8 +105,8 @@ export default async function handler(req, res) {
 
     let tools = [];
 
-    if (imageMode || wantsImage) {
-      // Image generation mode - only provide image tool
+    if (imageMode) {
+      // Explicit image mode (🎨 button) - only provide image tool
       tools.push({
         functionDeclarations: [{
           name: "generate_image",
@@ -128,13 +128,37 @@ export default async function handler(req, res) {
           }
         }]
       });
-      console.log('🎨 [GEMINI] Image mode - providing image generation tool');
+      console.log('🎨 [GEMINI] Explicit image mode - providing image generation tool');
+    } else if (wantsImage) {
+      // Auto-detected image request in normal chat - provide image tool
+      tools.push({
+        functionDeclarations: [{
+          name: "generate_image",
+          description: "Generate a new image from text description. Use this when user explicitly asks for image generation.",
+          parameters: {
+            type: "object",
+            properties: {
+              prompt: {
+                type: "string",
+                description: "Detailed description of the image to generate"
+              },
+              imageCount: {
+                type: "integer",
+                description: "Number of images to generate (1-4)",
+                default: 1
+              }
+            },
+            required: ["prompt"]
+          }
+        }]
+      });
+      console.log('🎨 [GEMINI] Auto-detected image request - providing image generation tool');
     } else {
       // Default mode - provide Google Search for current data
       tools.push({
         google_search: {}
       });
-      console.log('🔍 [GEMINI] Search mode - providing Google Search tool');
+      console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
