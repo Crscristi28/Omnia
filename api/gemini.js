@@ -95,40 +95,49 @@ export default async function handler(req, res) {
     // No forced language instruction needed - Gemini is smart enough
     let finalSystemInstruction = systemInstruction;
 
-    // Prepare tools - ALWAYS provide both (Omnia will choose)
+    // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
+    // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
+
+    // Analyze user's last message to determine intent
+    const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
+    const imageKeywords = ['generate', 'create', 'make', 'draw', 'image', 'picture', 'illustration', 'photo', 'artwork'];
+    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+
     let tools = [];
 
-    console.log('🧠 [GEMINI] Providing BOTH tools - Omnia will choose based on user intent');
-
-    // Always add Google Search tool
-    tools.push({
-      google_search: {}
-    });
-
-    // Always add image generation tool
-    tools.push({
-      functionDeclarations: [{
-        name: "generate_image",
-        description: "Generate a new image from text description",
-        parameters: {
-          type: "object",
-          properties: {
-            prompt: {
-              type: "string",
-              description: "Detailed description of the image to generate"
+    if (imageMode || wantsImage) {
+      // Image generation mode - only provide image tool
+      tools.push({
+        functionDeclarations: [{
+          name: "generate_image",
+          description: "Generate a new image from text description",
+          parameters: {
+            type: "object",
+            properties: {
+              prompt: {
+                type: "string",
+                description: "Detailed description of the image to generate"
+              },
+              imageCount: {
+                type: "integer",
+                description: "Number of images to generate (1-4)",
+                default: 1
+              }
             },
-            imageCount: {
-              type: "integer",
-              description: "Number of images to generate (1-4)",
-              default: 1
-            }
-          },
-          required: ["prompt"]
-        }
-      }]
-    });
+            required: ["prompt"]
+          }
+        }]
+      });
+      console.log('🎨 [GEMINI] Image mode - providing image generation tool');
+    } else {
+      // Default mode - provide Google Search for current data
+      tools.push({
+        google_search: {}
+      });
+      console.log('🔍 [GEMINI] Search mode - providing Google Search tool');
+    }
 
-    console.log('🔍 [DEBUG] Auto mode - both tools available:', tools.length);
+    console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
     
     // Initialize model with proper system instruction and tools
     console.log('🤖 [GEMINI] Initializing model with tools:', tools.length);
