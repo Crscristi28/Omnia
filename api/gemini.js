@@ -85,9 +85,15 @@ export default async function handler(req, res) {
       }
     }
 
-    // Use the complete system prompt sent from frontend
-    const systemInstruction = system || "Jsi Omnia, pokročilý AI asistent. Odpovídej přesně a informativně.";
-    
+    // Use the complete system prompt sent from frontend (required)
+    const systemInstruction = system;
+
+    if (!systemInstruction) {
+      console.error('❌ [GEMINI] No system prompt received from frontend');
+      res.write(JSON.stringify({ requestId, error: true, message: 'System prompt required' }) + '\n');
+      return res.end();
+    }
+
     // Let Gemini respond in the same language as user's question naturally
     // No forced language instruction needed - Gemini is smart enough
     let finalSystemInstruction = systemInstruction;
