@@ -111,6 +111,12 @@ const geminiService = {
                 }
 
               } catch (parseError) {
+                // Re-throw rollback errors - don't swallow them
+                if (parseError.isRollback) {
+                  console.log('🔄 [GEMINI] Re-throwing rollback error:', parseError.message);
+                  throw parseError;
+                }
+                // Continue for actual JSON parse errors
                 continue;
               }
             }
