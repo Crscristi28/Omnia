@@ -1423,6 +1423,22 @@ function AppContent() {
               };
             }
 
+            // DISPLAY IMAGE: Check if animation is already complete, then show immediately
+            // This handles race condition where animation completes before upload
+            if (processedImageData && !isStreamFinishedImage) {
+              console.log('📷 [DISPLAY] Animation already complete, showing image now');
+              setMessages(prev => prev.map(msg =>
+                msg.id === imageGenBotMessageId
+                  ? {
+                      ...msg,
+                      text: currentDisplayedTextImage || responseText,
+                      image: processedImageData,
+                      isStreaming: false
+                    }
+                  : msg
+              ));
+            }
+
             // Hide loading indicators same as normal chat
             setLoading(false);
             setStreaming(false);
