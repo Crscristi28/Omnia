@@ -1358,46 +1358,10 @@ function AppContent() {
                 ));
               }
 
-              // Save to DB AFTER image is displayed (ensures complete data)
+              // Save to DB AFTER image is displayed
               setTimeout(async () => {
                 const finalMessages = messagesRef.current;
                 await checkAutoSave(finalMessages, activeChatId);
-
-                // AFTER save, upload to Supabase in background
-                if (processedImageData && processedImageData.base64) {
-                  console.log('📤 [BACKGROUND] Starting Supabase upload after save');
-                  try {
-                    const base64String = processedImageData.base64.startsWith('data:')
-                      ? processedImageData.base64
-                      : `data:${processedImageData.mimeType};base64,${processedImageData.base64}`;
-
-                    const imageTimestamp = Date.now();
-                    const uploadResult = await uploadBase64ToSupabaseStorage(
-                      base64String,
-                      `generated-${imageTimestamp}.png`,
-                      'generated-images'
-                    );
-
-                    console.log('✅ [BACKGROUND] Supabase upload complete:', uploadResult.fileName);
-
-                    // Update message with storage URL for future use
-                    setMessages(prev => prev.map(msg =>
-                      msg.id === imageGenBotMessageId
-                        ? {
-                            ...msg,
-                            image: {
-                              ...msg.image,
-                              storageUrl: uploadResult.publicUrl,
-                              storagePath: uploadResult.path
-                            }
-                          }
-                        : msg
-                    ));
-                  } catch (uploadError) {
-                    console.error('❌ [BACKGROUND] Supabase upload failed:', uploadError);
-                    // Image is still saved in DB with base64, so not critical
-                  }
-                }
               }, 300); // Longer delay to ensure image is in message before save
             }
           }, 15); // 15ms for faster word-by-word animation
@@ -1417,16 +1381,38 @@ function AppContent() {
               ? imageData.base64
               : `data:${imageData.mimeType};base64,${imageData.base64}`;
 
-            console.log('📷 [BUFFER] Image ready for instant display, upload will happen after save');
+            console.log('📤 [UPLOAD] Uploading image immediately, will display when ready');
 
-            // BUFFER: Store image data for instant display (no upload yet)
-            processedImageData = {
-              mimeType: imageData.mimeType,
-              width: imageData.width,
-              height: imageData.height,
-              base64: base64String,
-              timestamp: imageTimestamp
-            };
+            // UPLOAD FIRST (async) - no base64 in browser
+            uploadBase64ToSupabaseStorage(
+              base64String,
+              `generated-${imageTimestamp}.png`,
+              'generated-images'
+            ).then(uploadResult => {
+              console.log('✅ [UPLOAD] Image uploaded, storing for display');
+
+              // Store image data for display
+              processedImageData = {
+                mimeType: imageData.mimeType,
+                width: imageData.width,
+                height: imageData.height,
+                storageUrl: uploadResult.publicUrl,
+                storagePath: uploadResult.path,
+                timestamp: imageTimestamp
+              };
+
+              // If animation already done, show immediately
+              if (wordQueueImage.length === 0) {
+                console.log('📷 [INSTANT] Animation done, showing image now');
+                setMessages(prev => prev.map(msg =>
+                  msg.id === imageGenBotMessageId
+                    ? {...msg, image: processedImageData, isStreaming: false}
+                    : msg
+                ));
+              }
+            }).catch(uploadError => {
+              console.error('❌ [UPLOAD] Failed:', uploadError.message);
+            });
 
             // Hide loading indicators same as normal chat
             setLoading(false);
