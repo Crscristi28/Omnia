@@ -1824,23 +1824,18 @@ function AppContent() {
             console.log('🎨 Uploading generated image to Supabase...');
 
             try {
-              const base64Response = await fetch(`data:${imageData.mimeType};base64,${imageData.base64}`);
-              const imageBlob = await base64Response.blob();
+              const imageTimestamp = Date.now();
+              const uploadResult = await uploadBase64ToSupabaseStorage(
+                imageData.base64,
+                `generated-${imageTimestamp}.png`,
+                'generated-images'
+              );
 
-              const formData = new FormData();
-              formData.append('file', imageBlob, 'generated-image.png');
-
-              const uploadResponse = await fetch('/api/upload-image', {
-                method: 'POST',
-                body: formData
-              });
-
-              if (uploadResponse.ok) {
-                const uploadResult = await uploadResponse.json();
-                imageData = { url: uploadResult.url, mimeType: imageData.mimeType };
-                console.log('✅ Generated image uploaded to Supabase:', uploadResult.url);
+              if (uploadResult && uploadResult.publicUrl) {
+                imageData = { url: uploadResult.publicUrl, mimeType: imageData.mimeType };
+                console.log('✅ Generated image uploaded to Supabase:', uploadResult.publicUrl);
               } else {
-                console.error('❌ Failed to upload generated image');
+                console.error('❌ Failed to upload generated image - no public URL');
               }
             } catch (uploadError) {
               console.error('💥 Error uploading generated image:', uploadError);
