@@ -242,10 +242,7 @@ export default async function handler(req, res) {
       });
       console.log('📄 [GEMINI] Auto-detected PDF request - providing PDF generation tool');
     } else {
-      // Default mode - provide Google Search + PDF generation
-      tools.push({
-        google_search: {}
-      });
+      // Default mode - provide PDF generation (Google Search removed due to Vertex AI limitation)
       tools.push({
         functionDeclarations: [{
           name: "generate_pdf",
@@ -272,7 +269,7 @@ export default async function handler(req, res) {
           }
         }]
       });
-      console.log('🔍 [GEMINI] Default mode - providing Google Search + PDF generation tools');
+      console.log('📄 [GEMINI] Default mode - providing PDF generation tool');
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
