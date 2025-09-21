@@ -85,6 +85,18 @@ const geminiService = {
                     }
                   }
                 }
+                else if (data.type === 'pdf_generated') {
+                  console.log('📄 PDF received from tool call:', data.title);
+                  const pdfData = {
+                    title: data.title,
+                    base64: data.base64,
+                    filename: data.filename
+                  };
+                  if (onStreamUpdate) {
+                    // Pass PDF as third parameter
+                    onStreamUpdate('', false, { pdf: pdfData });
+                  }
+                }
                 else if (data.type === 'completed') {
                   if (data.webSearchUsed) {
                     sourcesExtracted = this.extractGoogleSources(data);

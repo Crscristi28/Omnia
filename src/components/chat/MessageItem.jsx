@@ -252,7 +252,10 @@ const MessageItem = ({
           
           {/* 🎨 GENERATED IMAGE - Display after text with loading skeleton */}
           {msg.image && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
-          
+
+          {/* 📄 GENERATED PDF - Display download link */}
+          {msg.pdf && <GeneratedPdfDownload msg={msg} />}
+
           {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
           <div style={{ 
             display: 'flex', 
@@ -341,6 +344,97 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
         }}
       />
 
+    </div>
+  );
+};
+
+// 📄 Generated PDF Download Component
+const GeneratedPdfDownload = ({ msg }) => {
+  const handleDownload = () => {
+    if (msg.pdf && msg.pdf.base64) {
+      // Convert base64 to blob and download
+      const byteCharacters = atob(msg.pdf.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <div style={{
+      paddingTop: '1rem',
+      paddingBottom: '0.5rem'
+    }}>
+      <div
+        onClick={handleDownload}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px 16px',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
+          borderRadius: '12px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          maxWidth: '300px'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+          e.target.style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+          e.target.style.transform = 'translateY(0)';
+        }}
+      >
+        {/* PDF Icon */}
+        <div style={{
+          fontSize: '24px',
+          color: '#3b82f6'
+        }}>
+          📄
+        </div>
+
+        {/* PDF Info */}
+        <div style={{ flex: 1 }}>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#fff',
+            marginBottom: '2px'
+          }}>
+            {msg.pdf.title || 'Generated Document'}
+          </div>
+          <div style={{
+            fontSize: '12px',
+            color: 'rgba(255, 255, 255, 0.7)'
+          }}>
+            Click to download PDF
+          </div>
+        </div>
+
+        {/* Download Icon */}
+        <div style={{
+          fontSize: '16px',
+          color: '#3b82f6'
+        }}>
+          ⬇️
+        </div>
+      </div>
     </div>
   );
 };

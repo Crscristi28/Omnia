@@ -1664,6 +1664,7 @@ function AppContent() {
         // 🚀 TRUE PROGRESSIVE STREAMING - Omnia Plan Implementation
         let geminiSources = [];
         let generatedImages = []; // For tool-generated images
+        let generatedPdfs = []; // For tool-generated PDFs
         const botMessageId = generateMessageId();
         const botTimestamp = Date.now() + 100; // +100ms to ensure bot comes after user
         
@@ -1744,6 +1745,11 @@ function AppContent() {
                     console.error('💥 Parallel upload failed:', error);
                   });
                 }
+              }
+              // Handle PDF generation from tool calls
+              if (extra.pdf) {
+                generatedPdfs = [extra.pdf];
+                console.log('📄 PDF received:', extra.pdf.title);
               }
             }
             
@@ -1892,8 +1898,30 @@ function AppContent() {
                   const finalMessages = messagesRef.current;
                   await checkAutoSave(finalMessages, activeChatId);
                 }, 50);
-              } else {
-                // No images, save immediately
+              }
+
+              // Process PDFs after images
+              if (generatedPdfs && generatedPdfs.length > 0) {
+                const pdfData = generatedPdfs[0];
+                console.log('📄 Processing PDF:', pdfData.title);
+
+                // Update message with PDF data
+                setMessages(currentMessages => {
+                  const lastMessage = currentMessages[currentMessages.length - 1];
+                  if (lastMessage && lastMessage.sender === 'bot') {
+                    const updatedMessage = {
+                      ...lastMessage,
+                      pdf: pdfData
+                    };
+                    console.log('✅ PDF added to message');
+                    return [...currentMessages.slice(0, -1), updatedMessage];
+                  }
+                  return currentMessages;
+                });
+              }
+
+              // If no images or PDFs, save immediately
+              if ((!generatedImages || generatedImages.length === 0) && (!generatedPdfs || generatedPdfs.length === 0)) {
                 const finalMessages = messagesRef.current;
                 await checkAutoSave(finalMessages, activeChatId);
               }
