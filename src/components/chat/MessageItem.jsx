@@ -352,6 +352,7 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
 const GeneratedPdfView = ({ msg, onDocumentView }) => {
   const [showPdf, setShowPdf] = React.useState(false);
   const [pdfDataUrl, setPdfDataUrl] = React.useState('');
+  const [longPressTimer, setLongPressTimer] = React.useState(null);
 
   const handleViewPdf = () => {
     if (msg.pdf && msg.pdf.base64) {
@@ -375,6 +376,58 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
     }
   };
 
+  const handleTouchStart = (e) => {
+    // Start long press timer
+    const timer = setTimeout(() => {
+      // Long press detected - prepare for native context menu
+      if (msg.pdf && msg.pdf.base64) {
+        try {
+          const jsonString = atob(msg.pdf.base64);
+          const byteArray = JSON.parse(jsonString);
+          const uint8Array = new Uint8Array(Object.keys(byteArray).length);
+          Object.keys(byteArray).forEach(key => {
+            uint8Array[parseInt(key)] = byteArray[key];
+          });
+          const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
+          const realBase64 = btoa(binaryString);
+          const dataUrl = `data:application/pdf;base64,${realBase64}`;
+
+          // Create invisible link for native context menu
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
+          link.style.position = 'absolute';
+          link.style.left = '-9999px';
+          document.body.appendChild(link);
+
+          // Trigger context menu on the link
+          const contextEvent = new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: e.touches[0].clientX,
+            clientY: e.touches[0].clientY
+          });
+          link.dispatchEvent(contextEvent);
+
+          setTimeout(() => document.body.removeChild(link), 100);
+        } catch (error) {
+          console.error('❌ Long press PDF error:', error);
+        }
+      }
+    }, 500); // 500ms for long press
+
+    setLongPressTimer(timer);
+  };
+
+  const handleTouchEnd = () => {
+    // Clear long press timer
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
   return (
     <div style={{
       paddingTop: '1rem',
@@ -382,6 +435,8 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
     }}>
       <div
         onClick={handleViewPdf}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
           display: 'flex',
           alignItems: 'center',
