@@ -354,27 +354,42 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
     if (msg.pdf && msg.pdf.base64) {
       console.log('🔍 [DEBUG] PDF base64 length:', msg.pdf.base64.length);
       console.log('🔍 [DEBUG] PDF base64 start:', msg.pdf.base64.substring(0, 50));
-      console.log('🔍 [DEBUG] PDF full object:', msg.pdf);
 
-      // Clean base64 - remove any prefixes or whitespace
-      let cleanBase64 = msg.pdf.base64;
-      if (cleanBase64.startsWith('data:')) {
-        cleanBase64 = cleanBase64.split(',')[1];
+      // The base64 is actually a JSON byte array, need to convert to real PDF
+      try {
+        // Decode the base64 to get the JSON string
+        const jsonString = atob(msg.pdf.base64);
+        const byteArray = JSON.parse(jsonString);
+
+        console.log('🔍 [DEBUG] Parsed byte array length:', Object.keys(byteArray).length);
+
+        // Convert byte array object to Uint8Array
+        const uint8Array = new Uint8Array(Object.keys(byteArray).length);
+        Object.keys(byteArray).forEach(key => {
+          uint8Array[parseInt(key)] = byteArray[key];
+        });
+
+        // Convert to real base64
+        const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
+        const realBase64 = btoa(binaryString);
+
+        console.log('🔍 [DEBUG] Real PDF base64 length:', realBase64.length);
+        console.log('🔍 [DEBUG] Real PDF starts with:', realBase64.substring(0, 20));
+
+        const dataUrl = `data:application/pdf;base64,${realBase64}`;
+
+        onDocumentView({
+          isOpen: true,
+          document: {
+            url: dataUrl,
+            name: msg.pdf.title || 'Generated PDF',
+            mimeType: 'application/pdf',
+            base64: realBase64
+          }
+        });
+      } catch (error) {
+        console.error('❌ [DEBUG] PDF conversion error:', error);
       }
-      cleanBase64 = cleanBase64.replace(/\s/g, '');
-
-      const dataUrl = `data:application/pdf;base64,${cleanBase64}`;
-      console.log('🔍 [DEBUG] Final data URL length:', dataUrl.length);
-
-      onDocumentView({
-        isOpen: true,
-        document: {
-          url: dataUrl,
-          name: msg.pdf.title || 'Generated PDF',
-          mimeType: 'application/pdf',
-          base64: cleanBase64
-        }
-      });
     }
   };
 
