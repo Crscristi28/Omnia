@@ -1684,20 +1684,10 @@ function AppContent() {
           timestamp: botTimestamp
         }]);
 
-        // 🌍 LANGUAGE DETECTION - Do this BEFORE Gemini call
-        const detectedLang = detectLanguage(userMessageText || 'Document');
-        console.log('🔍 [DETECTION-DEBUG] Detection result:', {
-          inputText: userMessageText,
-          detectionResult: detectedLang,
-          previousUserLanguage: userLanguage
-        });
-        setUserLanguage(detectedLang);
-
         // 🔍 DEBUG: What we're sending to Gemini
         console.log('📤 [FRONTEND-DEBUG] Sending to Gemini:', {
           messagesCount: messagesWithUser.length,
           lastUserMessage: messagesWithUser[messagesWithUser.length - 1]?.text?.substring(0, 100),
-          detectedLanguage: detectedLang, // Use fresh detection result!
           timestamp: new Date().toISOString()
         });
 
@@ -1785,7 +1775,6 @@ function AppContent() {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
           },
-          detectedLang, // Use fresh detection result instead of stale state
           documentsToPassToGemini
         );
         
@@ -2766,25 +2755,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     
     // Now send to AI with text and the processed documents
     if (text.trim() || processedDocuments.length > 0) {
-      
-      const detectedLang = detectLanguage(text || 'Document');
-
-      // 🔍 DEBUG: Language detection result BEFORE setting state
-      console.log('🔍 [DETECTION-DEBUG] Detection result:', {
-        inputText: text,
-        detectionResult: detectedLang,
-        previousUserLanguage: userLanguage
-      });
-
-      setUserLanguage(detectedLang);
-
-      // 🔍 DEBUG: Language detection chain
-      console.log('🌍 [FRONTEND-DEBUG] Language Detection Chain:', {
-        userInput: text,
-        detectedLanguage: detectedLang,
-        inputLength: text?.length || 0,
-        timestamp: new Date().toISOString()
-      });
+      // Let Gemini auto-detect language from input
       
       // Use the cleaned messages if cleanup happened, otherwise use current
       const messagesWithUser = currentMessagesWithUser || [...currentMessages, userMessage];
@@ -2987,7 +2958,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           setIsSearching(true);
           setTimeout(() => setIsSearching(false), 3000);
         },
-        null, // Let Gemini handle language detection
         filteredActiveDocs.map(doc => {
           if (doc.type === 'gemini-file') {
             return { geminiFileUri: doc.uri, name: doc.name };
