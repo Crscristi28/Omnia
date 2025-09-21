@@ -253,8 +253,8 @@ const MessageItem = ({
           {/* 🎨 GENERATED IMAGE - Display after text with loading skeleton */}
           {msg.image && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
-          {/* 📄 GENERATED PDF - Display download link */}
-          {msg.pdf && <GeneratedPdfDownload msg={msg} />}
+          {/* 📄 GENERATED PDF - Display view link */}
+          {msg.pdf && <GeneratedPdfView msg={msg} onDocumentView={onDocumentView} />}
 
           {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
           <div style={{ 
@@ -348,18 +348,20 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
   );
 };
 
-// 📄 Generated PDF Download Component
-const GeneratedPdfDownload = ({ msg }) => {
-  const handleDownload = () => {
+// 📄 Generated PDF View Component
+const GeneratedPdfView = ({ msg, onDocumentView }) => {
+  const handleViewPdf = () => {
     if (msg.pdf && msg.pdf.base64) {
-      // Direct base64 data URL download - no blob objects!
       const dataUrl = `data:application/pdf;base64,${msg.pdf.base64}`;
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      onDocumentView({
+        isOpen: true,
+        document: {
+          url: dataUrl,
+          name: msg.pdf.title || 'Generated PDF',
+          mimeType: 'application/pdf',
+          base64: msg.pdf.base64
+        }
+      });
     }
   };
 
@@ -369,7 +371,7 @@ const GeneratedPdfDownload = ({ msg }) => {
       paddingBottom: '0.5rem'
     }}>
       <div
-        onClick={handleDownload}
+        onClick={handleViewPdf}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -413,16 +415,16 @@ const GeneratedPdfDownload = ({ msg }) => {
             fontSize: '12px',
             color: 'rgba(255, 255, 255, 0.7)'
           }}>
-            Click to download PDF
+            Click to view PDF
           </div>
         </div>
 
-        {/* Download Icon */}
+        {/* View Icon */}
         <div style={{
           fontSize: '16px',
           color: '#3b82f6'
         }}>
-          ⬇️
+          👁️
         </div>
       </div>
     </div>
