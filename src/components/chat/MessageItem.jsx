@@ -352,24 +352,14 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
 const GeneratedPdfDownload = ({ msg }) => {
   const handleDownload = () => {
     if (msg.pdf && msg.pdf.base64) {
-      // Convert base64 to blob and download
-      const byteCharacters = atob(msg.pdf.base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
-
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
+      // Direct base64 data URL download - no blob objects!
+      const dataUrl = `data:application/pdf;base64,${msg.pdf.base64}`;
       const link = document.createElement('a');
-      link.href = url;
+      link.href = dataUrl;
       link.download = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
     }
   };
 
