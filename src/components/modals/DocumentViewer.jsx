@@ -7,6 +7,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Download, FileText, File } from 'lucide-react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Set up PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const DocumentViewer = ({ 
   isOpen, 
@@ -17,6 +23,8 @@ const DocumentViewer = ({
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
 
   // UI texts
   const texts = {
@@ -265,17 +273,73 @@ const DocumentViewer = ({
                 flex: 1,
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: '12px',
-                overflow: 'hidden'
+                overflow: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '1rem'
               }}>
-                <iframe
-                  src={`${document.url || document.base64}#toolbar=1&navpanes=1&scrollbar=1`}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none'
-                  }}
-                  title={document.name}
-                />
+                <Document
+                  file={document.url || document.base64}
+                  onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                  onLoadError={(error) => setError(error.message)}
+                  loading={
+                    <div style={{ color: '#666', padding: '2rem' }}>
+                      Loading PDF...
+                    </div>
+                  }
+                >
+                  <Page
+                    pageNumber={pageNumber}
+                    width={Math.min(window.innerWidth - 100, 800)}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                </Document>
+
+                {numPages > 1 && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    marginTop: '1rem',
+                    color: '#333'
+                  }}>
+                    <button
+                      onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
+                      disabled={pageNumber <= 1}
+                      style={{
+                        padding: '8px 12px',
+                        background: pageNumber <= 1 ? '#ccc' : '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: pageNumber <= 1 ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Previous
+                    </button>
+
+                    <span>
+                      Page {pageNumber} of {numPages}
+                    </span>
+
+                    <button
+                      onClick={() => setPageNumber(Math.min(numPages, pageNumber + 1))}
+                      disabled={pageNumber >= numPages}
+                      style={{
+                        padding: '8px 12px',
+                        background: pageNumber >= numPages ? '#ccc' : '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: pageNumber >= numPages ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
