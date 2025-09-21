@@ -1972,6 +1972,7 @@ function AppContent() {
               }
 
               // Process PDFs after images
+              console.log('🔍 [DEBUG] generatedPdfs:', generatedPdfs, 'length:', generatedPdfs?.length);
               if (generatedPdfs && generatedPdfs.length > 0) {
                 const pdfData = generatedPdfs[0];
                 console.log('📄 Processing PDF:', pdfData.title);
