@@ -1683,12 +1683,21 @@ function AppContent() {
           isStreaming: true,
           timestamp: botTimestamp
         }]);
-        
+
+        // 🌍 LANGUAGE DETECTION - Do this BEFORE Gemini call
+        const detectedLang = detectLanguage(userMessageText || 'Document');
+        console.log('🔍 [DETECTION-DEBUG] Detection result:', {
+          inputText: userMessageText,
+          detectionResult: detectedLang,
+          previousUserLanguage: userLanguage
+        });
+        setUserLanguage(detectedLang);
+
         // 🔍 DEBUG: What we're sending to Gemini
         console.log('📤 [FRONTEND-DEBUG] Sending to Gemini:', {
           messagesCount: messagesWithUser.length,
           lastUserMessage: messagesWithUser[messagesWithUser.length - 1]?.text?.substring(0, 100),
-          detectedLanguage: userLanguage, // Use userLanguage state instead of detectedLang
+          detectedLanguage: detectedLang, // Use fresh detection result!
           timestamp: new Date().toISOString()
         });
 
@@ -1776,7 +1785,7 @@ function AppContent() {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
           },
-          userLanguage, // Use detected language instead of null
+          detectedLang, // Use fresh detection result instead of stale state
           documentsToPassToGemini
         );
         
