@@ -99,8 +99,8 @@ const DocumentViewer = ({
           break;
 
         case 'pdf':
-          // For PDF, we'll show PDF.js viewer
-          setContent('PDF_VIEWER');
+          // PDF files should use the dedicated PdfViewer component
+          setContent('PDF_USE_DEDICATED_VIEWER');
           break;
 
         case 'word':
@@ -259,23 +259,27 @@ const DocumentViewer = ({
               </div>
             )}
 
-            {/* PDF viewer */}
-            {fileType === 'pdf' && content === 'PDF_VIEWER' && (
+            {/* PDF redirect notice */}
+            {fileType === 'pdf' && content === 'PDF_USE_DEDICATED_VIEWER' && (
               <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
                 flex: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderRadius: '12px',
-                overflow: 'hidden'
+                gap: '1rem',
+                color: 'white',
+                textAlign: 'center'
               }}>
-                <iframe
-                  src={`${document.url || document.base64}#toolbar=1&navpanes=1&scrollbar=1`}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none'
-                  }}
-                  title={document.name}
-                />
+                <FileText size={64} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                <div>
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '18px' }}>
+                    PDF Document
+                  </h3>
+                  <p style={{ margin: 0, opacity: 0.8, fontSize: '14px' }}>
+                    PDF files use dedicated viewer. Close this modal and try again.
+                  </p>
+                </div>
               </div>
             )}
 

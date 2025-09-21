@@ -143,6 +143,10 @@ const MessageItem = ({
                         url: attachment.previewUrl || attachment.storageUrl || attachment.base64,
                         name: attachment.name
                       });
+                    } else if (viewerType === 'pdf') {
+                      // Use dedicated PdfViewer for uploaded PDFs too
+                      // For now, show info that it should use the dedicated viewer
+                      alert('PDF files should be viewed in dedicated viewer. This will be implemented.');
                     } else {
                       onDocumentView({
                         isOpen: true,
