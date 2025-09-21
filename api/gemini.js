@@ -469,7 +469,8 @@ export default async function handler(req, res) {
                   const { title, content, documentType = 'document' } = part.functionCall.args;
 
                   // Call PDF generation API
-                  const pdfResponse = await fetch('http://localhost:3001/generate-pdf', {
+                  const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
+                  const pdfResponse = await fetch(`${baseUrl}/api/generate-pdf`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'
