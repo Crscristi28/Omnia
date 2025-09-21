@@ -166,25 +166,15 @@ function AppContent() {
   // 🔄 Sync dirty tracking - for 30s incremental sync
   const [syncDirtyChats, setSyncDirtyChats] = useState(new Set());
   
-  // 📦 UPLOAD QUEUE SYSTEM - Smart delayed uploads
-  const [uploadQueue, setUploadQueue] = useState([]);
+  // ❌ REMOVED: Upload queue - using immediate upload only
   const [isAIStreaming, setIsAIStreaming] = useState(false);
   
   // 🔄 Sync AI streaming state with main streaming state
   useEffect(() => {
     setIsAIStreaming(streaming);
     
-    // Only process generated image uploads when AI streaming ends (user files handled in InputBar)
-    if (!streaming && uploadQueue.length > 0) {
-      console.log('🎯 [UPLOAD-TRIGGER] AI streaming ended, processing generated image uploads in 2s');
-      setTimeout(() => {
-        const imageQueue = uploadQueue.filter(item => item.type === 'generated_image');
-        if (imageQueue.length > 0) {
-          processUploadQueue(0);
-        }
-      }, 2000);
-    }
-  }, [streaming, uploadQueue]);
+    // ❌ REMOVED: Queue system for generated images - now using immediate upload only
+  }, [streaming]);
 
   // 🎬 SPLASH SCREEN STATE - PWA startup animation
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -417,69 +407,11 @@ function AppContent() {
 // 🔔 NOTIFICATION SYSTEM - Initialize with setIsSearching callback
   const { showNotification } = createNotificationSystem(setIsSearching);
   
-  // 📦 UPLOAD QUEUE MANAGEMENT
-  const addToUploadQueue = (file, type, messageTimestamp, attachmentIndex, chatId) => {
-    const queueItem = {
-      id: `${type}_${Date.now()}_${Math.random()}`,
-      file,
-      type, // 'user_file' or 'generated_image'
-      messageTimestamp,
-      attachmentIndex,
-      chatId,
-      addedAt: Date.now()
-    };
-    
-    setUploadQueue(prev => [...prev, queueItem]);
-    console.log(`📦 [UPLOAD-QUEUE] Added ${type}:`, queueItem.id);
-  };
+  // ❌ REMOVED: Upload queue management - using immediate upload only
   
-  const processUploadQueue = async (delay = 0) => {
-    if (uploadQueue.length === 0) return;
-    
-    console.log(`📦 [UPLOAD-QUEUE] Processing ${uploadQueue.length} items after ${delay}ms delay`);
-    
-    setTimeout(async () => {
-      const queueToProcess = [...uploadQueue];
-      setUploadQueue([]); // Clear queue
-      
-      for (const item of queueToProcess) {
-        try {
-          if (item.type === 'generated_image') {
-            await processGeneratedImageUpload(item);
-          }
-          // ❌ REMOVED: user_file processing - now handled by background upload
-        } catch (error) {
-          console.error(`📦 [UPLOAD-QUEUE] Failed to upload ${item.id}:`, error);
-        }
-      }
-    }, delay);
-  };
-  
-  // ❌ REMOVED: processUserFileUpload - now handled by background upload in InputBar
-  
-  const processGeneratedImageUpload = async (item) => {
-    console.log(`🎨 [DELAYED-UPLOAD] Processing generated image:`, item.id);
-    
-    const uploadResult = await uploadBase64ToSupabaseStorage(
-      item.file.base64Data, 
-      item.file.fileName, 
-      'generated-images'
-    );
-    
-    // Update message with storage URL using image timestamp
-    setMessages(prev => prev.map(msg => 
-      msg.image && msg.image.timestamp === item.messageTimestamp ? {
-        ...msg,
-        image: {
-          ...msg.image,
-          storageUrl: uploadResult.publicUrl,
-          storagePath: uploadResult.path
-        }
-      } : msg
-    ));
-    
-    console.log(`✅ [DELAYED-UPLOAD] Generated image uploaded:`, uploadResult.fileName);
-  };
+  // ❌ REMOVED: Upload queue system for generated images - using immediate upload only
+  // ❌ REMOVED: processUploadQueue - no longer needed
+  // ❌ REMOVED: processGeneratedImageUpload - images upload immediately after tool call
 
   // 🔗 SOURCES MODAL HANDLERS (UNCHANGED)
   const handleSourcesClick = (sources) => {
