@@ -16,14 +16,16 @@ import { getViewerType } from '../../utils/fileTypeUtils';
 // Import styles
 import * as styles from '../../styles/ChatStyles.js';
 
-const MessageItem = ({ 
-  msg, 
-  index, 
-  onPreviewImage, 
-  onDocumentView, 
-  onSourcesClick, 
-  onAudioStateChange 
+const MessageItem = ({
+  msg,
+  index,
+  onPreviewImage,
+  onDocumentView,
+  onSourcesClick,
+  onAudioStateChange
 }) => {
+  // State for uploaded PDF viewer
+  const [uploadedPdfData, setUploadedPdfData] = useState(null);
   // Extract styles from ChatStyles.js
   const { 
     userMessageContainerStyle, 
@@ -144,9 +146,12 @@ const MessageItem = ({
                         name: attachment.name
                       });
                     } else if (viewerType === 'pdf') {
-                      // Use dedicated PdfViewer for uploaded PDFs too
-                      // For now, show info that it should use the dedicated viewer
-                      alert('PDF files should be viewed in dedicated viewer. This will be implemented.');
+                      // Use dedicated PdfViewer for uploaded PDFs
+                      setUploadedPdfData({
+                        url: attachment.previewUrl || attachment.storageUrl || attachment.base64,
+                        name: attachment.name,
+                        base64: attachment.base64
+                      });
                     } else {
                       onDocumentView({
                         isOpen: true,
@@ -258,8 +263,16 @@ const MessageItem = ({
           {/* 🎨 GENERATED IMAGE - Display after text with loading skeleton */}
           {msg.image && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
-          {/* 📄 GENERATED PDF - Display view link */}
-          {msg.pdf && <GeneratedPdfView msg={msg} onDocumentView={onDocumentView} />}
+          {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
+          {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
+          {uploadedPdfData && (
+            <PdfViewComponent
+              msg={msg}
+              onDocumentView={onDocumentView}
+              uploadedPdfData={uploadedPdfData}
+              onCloseUploadedPdf={() => setUploadedPdfData(null)}
+            />
+          )}
 
           {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
           <div style={{ 
@@ -353,15 +366,19 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
   );
 };
 
-// 📄 Generated PDF View Component
-const GeneratedPdfView = ({ msg, onDocumentView }) => {
+// 📄 PDF View Component (for both generated and uploaded PDFs)
+const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onCloseUploadedPdf = null }) => {
   const [showCleanPdf, setShowCleanPdf] = React.useState(false);
   const [pdfDataUrl, setPdfDataUrl] = React.useState('');
   const [longPressTimer, setLongPressTimer] = React.useState(null);
 
+  // Determine if this is generated or uploaded PDF
+  const isGeneratedPdf = !!msg.pdf;
+  const isUploadedPdf = !!uploadedPdfData;
+
   const handleViewPdf = () => {
-    if (msg.pdf && msg.pdf.base64) {
-      // Convert JSON byte array to real PDF base64
+    if (isGeneratedPdf && msg.pdf && msg.pdf.base64) {
+      // Convert JSON byte array to real PDF base64 (for generated PDFs)
       try {
         const jsonString = atob(msg.pdf.base64);
         const byteArray = JSON.parse(jsonString);
@@ -376,8 +393,13 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
         setPdfDataUrl(dataUrl);
         setShowCleanPdf(true);
       } catch (error) {
-        console.error('❌ PDF conversion error:', error);
+        console.error('❌ Generated PDF conversion error:', error);
       }
+    } else if (isUploadedPdf && uploadedPdfData) {
+      // Use uploaded PDF data directly
+      const url = uploadedPdfData.url || uploadedPdfData.base64;
+      setPdfDataUrl(url);
+      setShowCleanPdf(true);
     }
   };
 
@@ -385,7 +407,10 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
     // Start long press timer
     const timer = setTimeout(() => {
       // Long press detected - prepare for native context menu
-      if (msg.pdf && msg.pdf.base64) {
+      let dataUrl = null;
+      let filename = 'document.pdf';
+
+      if (isGeneratedPdf && msg.pdf && msg.pdf.base64) {
         try {
           const jsonString = atob(msg.pdf.base64);
           const byteArray = JSON.parse(jsonString);
@@ -395,30 +420,37 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
           });
           const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
           const realBase64 = btoa(binaryString);
-          const dataUrl = `data:application/pdf;base64,${realBase64}`;
-
-          // Create invisible link for native context menu
-          const link = document.createElement('a');
-          link.href = dataUrl;
-          link.download = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
-          link.style.position = 'absolute';
-          link.style.left = '-9999px';
-          document.body.appendChild(link);
-
-          // Trigger context menu on the link
-          const contextEvent = new MouseEvent('contextmenu', {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-            clientX: e.touches[0].clientX,
-            clientY: e.touches[0].clientY
-          });
-          link.dispatchEvent(contextEvent);
-
-          setTimeout(() => document.body.removeChild(link), 100);
+          dataUrl = `data:application/pdf;base64,${realBase64}`;
+          filename = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
         } catch (error) {
-          console.error('❌ Long press PDF error:', error);
+          console.error('❌ Long press generated PDF error:', error);
+          return;
         }
+      } else if (isUploadedPdf && uploadedPdfData) {
+        dataUrl = uploadedPdfData.url || uploadedPdfData.base64;
+        filename = uploadedPdfData.name || 'document.pdf';
+      }
+
+      if (dataUrl) {
+        // Create invisible link for native context menu
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = filename;
+        link.style.position = 'absolute';
+        link.style.left = '-9999px';
+        document.body.appendChild(link);
+
+        // Trigger context menu on the link
+        const contextEvent = new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          clientX: e.touches[0].clientX,
+          clientY: e.touches[0].clientY
+        });
+        link.dispatchEvent(contextEvent);
+
+        setTimeout(() => document.body.removeChild(link), 100);
       }
     }, 500); // 500ms for long press
 
@@ -479,7 +511,7 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
             color: '#fff',
             marginBottom: '2px'
           }}>
-            {msg.pdf.title || 'Generated Document'}
+{isGeneratedPdf ? (msg.pdf.title || 'Generated Document') : (uploadedPdfData?.name || 'PDF Document')}
           </div>
           <div style={{
             fontSize: '12px',
@@ -501,10 +533,15 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
       {/* Clean PDF Viewer */}
       <PdfViewer
         isOpen={showCleanPdf}
-        onClose={() => setShowCleanPdf(false)}
+        onClose={() => {
+          setShowCleanPdf(false);
+          if (isUploadedPdf && onCloseUploadedPdf) {
+            onCloseUploadedPdf();
+          }
+        }}
         pdfData={{
           url: pdfDataUrl,
-          title: msg.pdf.title || 'Generated PDF'
+          title: isGeneratedPdf ? (msg.pdf.title || 'Generated PDF') : (uploadedPdfData?.name || 'PDF Document')
         }}
       />
     </div>
