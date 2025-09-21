@@ -352,14 +352,27 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
 const GeneratedPdfView = ({ msg, onDocumentView }) => {
   const handleViewPdf = () => {
     if (msg.pdf && msg.pdf.base64) {
-      const dataUrl = `data:application/pdf;base64,${msg.pdf.base64}`;
+      console.log('🔍 [DEBUG] PDF base64 length:', msg.pdf.base64.length);
+      console.log('🔍 [DEBUG] PDF base64 start:', msg.pdf.base64.substring(0, 50));
+      console.log('🔍 [DEBUG] PDF full object:', msg.pdf);
+
+      // Clean base64 - remove any prefixes or whitespace
+      let cleanBase64 = msg.pdf.base64;
+      if (cleanBase64.startsWith('data:')) {
+        cleanBase64 = cleanBase64.split(',')[1];
+      }
+      cleanBase64 = cleanBase64.replace(/\s/g, '');
+
+      const dataUrl = `data:application/pdf;base64,${cleanBase64}`;
+      console.log('🔍 [DEBUG] Final data URL length:', dataUrl.length);
+
       onDocumentView({
         isOpen: true,
         document: {
           url: dataUrl,
           name: msg.pdf.title || 'Generated PDF',
           mimeType: 'application/pdf',
-          base64: msg.pdf.base64
+          base64: cleanBase64
         }
       });
     }
