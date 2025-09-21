@@ -25,7 +25,7 @@ const PdfViewer = ({
         position: 'fixed',
         inset: 0,
         backgroundColor: '#ffffff',  // Clean white background
-        zIndex: 9999,
+        zIndex: 999999,  // 🔧 FIX: Much higher z-index to go OVER Omnia UI
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -58,7 +58,7 @@ const PdfViewer = ({
           width: '60px',
           height: '60px',
           cursor: 'pointer',
-          zIndex: 10000,
+          zIndex: 9999999,  // Even higher than PDF container
           backgroundColor: 'transparent'
         }}
         title="Click to close"
