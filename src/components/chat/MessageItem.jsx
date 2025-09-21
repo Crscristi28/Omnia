@@ -365,7 +365,7 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
         const dataUrl = `data:application/pdf;base64,${realBase64}`;
 
         // Open PDF in same window (PWA-friendly)
-        window.location.href = dataUrl;
+        window.open(dataUrl, '_self');
       } catch (error) {
         console.error('❌ PDF conversion error:', error);
       }
