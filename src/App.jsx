@@ -142,9 +142,9 @@ function AppContent() {
   // 🆕 MODEL SWITCH STATE FOR VOICE (UNCHANGED)
   const [previousModel, setPreviousModel] = useState(null);
   
-  // 🌍 LANGUAGE & UI STATE (UNCHANGED)
-  const [userLanguage, setUserLanguage] = useState('cs');
-  const [uiLanguage, setUILanguage] = useState('cs');
+  // 🌍 LANGUAGE & UI STATE - SYNC WITH UI DETECTION
+  const [userLanguage, setUserLanguage] = useState(() => sessionManager.getUILanguage());
+  const [uiLanguage, setUILanguage] = useState(() => sessionManager.getUILanguage());
   
   // 🔗 SOURCES STATE (UNCHANGED)
   const [sourcesModalOpen, setSourcesModalOpen] = useState(false);

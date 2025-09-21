@@ -34,8 +34,8 @@ const sessionManager = {
       const systemLang = navigator.language || navigator.userLanguage || 'cs';
       const langCode = systemLang.toLowerCase().split('-')[0];
       
-      // Map system language to supported languages
-      const supportedLanguages = ['cs', 'en', 'ro', 'de', 'ru', 'pl'];
+      // Map system language to supported languages - EXPANDED to 13 languages
+      const supportedLanguages = ['cs', 'en', 'ro', 'de', 'ru', 'pl', 'hu', 'sk', 'es', 'it', 'bg', 'fr', 'pt'];
       if (supportedLanguages.includes(langCode)) {
         return langCode;
       }
