@@ -481,6 +481,30 @@ function AppContent() {
     console.log(`✅ [DELAYED-UPLOAD] Generated image uploaded:`, uploadResult.fileName);
   };
 
+  const processGeneratedPdfUpload = async (item) => {
+    console.log(`📄 [DELAYED-UPLOAD] Processing generated PDF:`, item.id);
+
+    const uploadResult = await uploadBase64ToSupabaseStorage(
+      item.file.base64Data,
+      item.file.fileName,
+      'generated-pdfs-temp'
+    );
+
+    // Update message with storage URL using PDF timestamp
+    setMessages(prev => prev.map(msg =>
+      msg.pdf && msg.pdf.timestamp === item.messageTimestamp ? {
+        ...msg,
+        pdf: {
+          ...msg.pdf,
+          storageUrl: uploadResult.publicUrl,
+          storagePath: uploadResult.path
+        }
+      } : msg
+    ));
+
+    console.log(`✅ [DELAYED-UPLOAD] Generated PDF uploaded:`, uploadResult.fileName);
+  };
+
   // 🔗 SOURCES MODAL HANDLERS (UNCHANGED)
   const handleSourcesClick = (sources) => {
     console.log('🔗 Opening sources modal with:', sources.length, 'sources');

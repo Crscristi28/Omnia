@@ -190,7 +190,7 @@ class ChatSyncService {
           }));
         }
         
-        // Transform image to store only URL, not base64  
+        // Transform image to store only URL, not base64
         let imageForDB = null;
         if (msg.image) {
           if (typeof msg.image === 'string') {
@@ -205,6 +205,22 @@ class ChatSyncService {
             imageForDB = null;
           }
         }
+
+        // Transform PDF to store only URL, not base64
+        let pdfForDB = null;
+        if (msg.pdf) {
+          if (typeof msg.pdf === 'string') {
+            // If PDF is already a URL (old format), keep it
+            pdfForDB = msg.pdf;
+          } else if (msg.pdf.storageUrl) {
+            // New format - use Storage URL only (not the whole object)
+            pdfForDB = msg.pdf.storageUrl;
+          } else if (msg.pdf.base64 && !msg.pdf.storageUrl) {
+            // Fallback: if no Storage URL but has base64, skip storing (old data)
+            console.warn(`⚠️ [SYNC] PDF without Storage URL found, skipping: ${msg.uuid}`);
+            pdfForDB = null;
+          }
+        }
         
         const messageToUpload = {
           id: msg.uuid, // Use UUID from IndexedDB (stable ID)
@@ -216,7 +232,8 @@ class ChatSyncService {
           synced: true,
           type: msg.type || 'text',
           attachments: attachmentsForDB,
-          image: imageForDB
+          image: imageForDB,
+          pdf: pdfForDB
         };
 
 
@@ -414,7 +431,8 @@ class ChatSyncService {
         text: msg.content, // ✅ Supabase 'content' → IndexedDB 'text'
         type: msg.type || 'text',
         attachments: msg.attachments,
-        image: msg.image
+        image: msg.image,
+        pdf: msg.pdf
       }));
       
       // Sort messages by timestamp to ensure correct order (with secondary sort for safety)
