@@ -1688,7 +1688,7 @@ function AppContent() {
         console.log('📤 [FRONTEND-DEBUG] Sending to Gemini:', {
           messagesCount: messagesWithUser.length,
           lastUserMessage: messagesWithUser[messagesWithUser.length - 1]?.text?.substring(0, 100),
-          detectedLanguage: detectedLang,
+          detectedLanguage: userLanguage, // Use userLanguage state instead of detectedLang
           timestamp: new Date().toISOString()
         });
 
@@ -1776,7 +1776,7 @@ function AppContent() {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
           },
-          null, // Let Gemini handle language detection
+          userLanguage, // Use detected language instead of null
           documentsToPassToGemini
         );
         
