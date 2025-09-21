@@ -1709,6 +1709,48 @@ function AppContent() {
               if (extra.images && extra.images.length > 0) {
                 generatedImages = extra.images;
                 console.log('🎨 Images received in normal mode:', extra.images.length);
+
+                // Start upload immediately in parallel with text streaming
+                const imageData = extra.images[0];
+                if (imageData.base64 && imageData.mimeType) {
+                  console.log('🚀 Starting parallel upload during streaming...');
+
+                  const imageTimestamp = Date.now();
+                  uploadBase64ToSupabaseStorage(
+                    imageData.base64,
+                    `generated-${imageTimestamp}.png`,
+                    'generated-images'
+                  ).then(uploadResult => {
+                    if (uploadResult && uploadResult.publicUrl) {
+                      const uploadedImageData = {
+                        storageUrl: uploadResult.publicUrl,
+                        storagePath: uploadResult.path,
+                        mimeType: imageData.mimeType,
+                        timestamp: imageTimestamp
+                      };
+                      console.log('✅ Parallel upload completed:', uploadResult.publicUrl);
+
+                      // Update message with uploaded image immediately
+                      setMessages(currentMessages => {
+                        const lastMessage = currentMessages[currentMessages.length - 1];
+                        if (lastMessage && lastMessage.sender === 'bot') {
+                          const updatedMessage = {
+                            ...lastMessage,
+                            image: uploadedImageData
+                          };
+                          console.log('✅ Image displayed during streaming');
+                          return [...currentMessages.slice(0, -1), updatedMessage];
+                        }
+                        return currentMessages;
+                      });
+
+                      // Update generatedImages for later use
+                      generatedImages = [uploadedImageData];
+                    }
+                  }).catch(error => {
+                    console.error('💥 Parallel upload failed:', error);
+                  });
+                }
               }
             }
             
@@ -1792,15 +1834,15 @@ function AppContent() {
             
             // Process images FIRST, then save to DB
             setTimeout(async () => {
-              // Process images if generated via tool call BEFORE DB save
+              // Check if images were already processed during streaming
               if (generatedImages && generatedImages.length > 0) {
-                console.log('🎨 Processing', generatedImages.length, 'generated images in animation completion');
+                const imageData = generatedImages[0];
 
-                let imageData = generatedImages[0];
-
-                // Check if image needs to be uploaded to Supabase
-                if (imageData.base64 && imageData.mimeType) {
-                  console.log('🎨 Uploading generated image to Supabase...');
+                // If image already has storageUrl, it was uploaded during streaming
+                if (imageData.storageUrl) {
+                  console.log('✅ Image already uploaded during streaming, proceeding to save');
+                } else if (imageData.base64 && imageData.mimeType) {
+                  console.log('🎨 Fallback: uploading image in completion (parallel upload may have failed)');
 
                   try {
                     const imageTimestamp = Date.now();
@@ -1811,41 +1853,35 @@ function AppContent() {
                     );
 
                     if (uploadResult && uploadResult.publicUrl) {
-                      imageData = {
-                        storageUrl: uploadResult.publicUrl,  // Use storageUrl like image mode does
+                      const uploadedImageData = {
+                        storageUrl: uploadResult.publicUrl,
                         storagePath: uploadResult.path,
                         mimeType: imageData.mimeType,
                         timestamp: imageTimestamp
                       };
-                      console.log('✅ Generated image uploaded to Supabase:', uploadResult.publicUrl);
-                    } else {
-                      console.error('❌ Failed to upload generated image - no public URL');
+
+                      // Update message with fallback upload
+                      setMessages(currentMessages => {
+                        const lastMessage = currentMessages[currentMessages.length - 1];
+                        if (lastMessage && lastMessage.sender === 'bot') {
+                          const updatedMessage = {
+                            ...lastMessage,
+                            image: uploadedImageData
+                          };
+                          console.log('✅ Fallback image updated');
+                          return [...currentMessages.slice(0, -1), updatedMessage];
+                        }
+                        return currentMessages;
+                      });
+
+                      generatedImages = [uploadedImageData];
                     }
                   } catch (uploadError) {
-                    console.error('💥 Error uploading generated image:', uploadError);
+                    console.error('💥 Fallback upload failed:', uploadError);
                   }
                 }
 
-                // Update the last bot message with the image
-                console.log('🎨 Updating bot message with generated image...');
-                setMessages(currentMessages => {
-                  console.log('🔍 Current messages count:', currentMessages.length);
-                  const lastMessage = currentMessages[currentMessages.length - 1];
-                  console.log('🔍 Last message:', lastMessage ? `${lastMessage.sender}: ${lastMessage.text?.substring(0, 50)}...` : 'null');
-
-                  if (lastMessage && lastMessage.sender === 'bot') {
-                    const updatedMessage = {
-                      ...lastMessage,
-                      image: imageData  // Use 'image' to match MessageItem.jsx expectations
-                    };
-                    console.log('✅ Updated bot message with image:', imageData.storageUrl);
-                    return [...currentMessages.slice(0, -1), updatedMessage];
-                  }
-                  console.log('❌ Could not update message - no bot message found');
-                  return currentMessages;
-                });
-
-                // Wait a bit for state update, then save to DB
+                // Wait a bit for any state updates, then save to DB
                 setTimeout(async () => {
                   const finalMessages = messagesRef.current;
                   await checkAutoSave(finalMessages, activeChatId);
