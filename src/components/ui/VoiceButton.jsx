@@ -34,7 +34,7 @@ const VoiceButton = ({ text, onAudioStart, onAudioEnd }) => {
     try {
       setIsLoading(true);
       
-      const langToUse = detectedLanguage || 'cs';
+      const langToUse = detectedLanguage || 'en';
       
       if (onAudioStart) onAudioStart();
 

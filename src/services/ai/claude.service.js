@@ -4,7 +4,7 @@
 // 🔥 Personality-first approach + search efficiency
 
 const claudeService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'cs') {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, detectedLanguage = 'en') {
     try {
       console.log('🤖 Omnia 2.0 - Compact & Smart');
       const claudeMessages = this.prepareClaudeMessages(messages);

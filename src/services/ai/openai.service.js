@@ -5,7 +5,7 @@
 const openaiService = {
   
   // 🔧 MAIN MESSAGE SENDING METHOD (unchanged structure)
-  async sendMessage(messages, detectedLanguage = 'cs') {
+  async sendMessage(messages, detectedLanguage = 'en') {
     try {
       console.log('🧠 OpenAI GPT Enhanced with Claude-inspired language handling, language:', detectedLanguage);
       
