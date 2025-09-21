@@ -29,9 +29,6 @@ export default async function handler(req, res) {
       detectedLanguage: language,
       timestamp: new Date().toISOString()
     });
-
-    // 🔍 CRITICAL DEBUG: Log first 500 chars of system prompt
-    console.log('🔍 [SYSTEM-PROMPT-DEBUG] First 500 chars:', system?.substring(0, 500));
     
     
     // Check for required environment variables
@@ -68,15 +65,6 @@ export default async function handler(req, res) {
       const lastMessage = geminiMessages[geminiMessages.length - 1];
       const originalText = lastMessage.parts[0].text;
       const enhancedText = enhanceForSearch(originalText);
-
-      // 🔍 DEBUG: Check if enhancement adds Czech text
-      if (originalText !== enhancedText) {
-        console.log('⚠️ [ENHANCE-DEBUG] Message was enhanced:', {
-          original: originalText,
-          enhanced: enhancedText
-        });
-      }
-
       lastMessage.parts[0].text = enhancedText;
 
       // Add all documents (both files and text content)
