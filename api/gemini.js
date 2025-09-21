@@ -98,22 +98,7 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // Simple direct keyword detection - FUCK the context complexity
-    const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
-
-    // Stop signals - user wants to end current action
-    const stopKeywords = ['enough', 'stop', 'that\'s enough', 'no more', 'finish', 'done', 'that\'s all'];
-    const hasStopSignal = stopKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
-
-    // Action keywords only - words that indicate user wants to CREATE something
-    const imageKeywords = [
-      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch',
-      'do it', 'make it', 'create it', 'draw it', 'show me', 'visualize',
-      'image', 'picture', 'illustration', 'artwork', 'drawing', 'painting'
-    ];
-
-    // Direct detection only - simple and reliable
-    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword)) && !hasStopSignal;
+    // No keyword detection - let Omnia decide from prompt what tools to use
 
     let tools = [];
 
@@ -141,12 +126,15 @@ export default async function handler(req, res) {
         }]
       });
       console.log('🎨 [GEMINI] Explicit image mode - providing image generation tool');
-    } else if (wantsImage) {
-      // Auto-detected image request in normal chat - provide image tool
+    } else {
+      // Always provide BOTH tools - let Omnia decide from prompt what to use
+      tools.push({
+        google_search: {}
+      });
       tools.push({
         functionDeclarations: [{
           name: "generate_image",
-          description: "Generate a new image from text description. Use this when user explicitly asks for image generation.",
+          description: "Generate a new image from text description. Use this when user asks to create, generate, draw, or make visual content.",
           parameters: {
             type: "object",
             properties: {
@@ -164,20 +152,10 @@ export default async function handler(req, res) {
           }
         }]
       });
-      console.log('🎨 [GEMINI] Image keywords detected - providing image generation tool');
-    } else {
-      // Default mode - provide Google Search for current data
-      tools.push({
-        google_search: {}
-      });
-      if (hasStopSignal) {
-        console.log('🛑 [GEMINI] Stop signal detected - providing Google Search only');
-      } else {
-        console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
-      }
+      console.log('🧠 [GEMINI] Providing BOTH tools - Omnia will choose based on user intent');
     }
 
-    console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
+    console.log('🔧 [DEBUG] Tools provided:', tools.length);
     
     // Initialize model with proper system instruction and tools
     console.log('🤖 [GEMINI] Initializing model with tools:', tools.length);
