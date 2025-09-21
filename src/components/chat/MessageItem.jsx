@@ -1,7 +1,7 @@
 // 🎨 MessageItem.jsx - Individual message rendering component
 // ✅ Extracted from App.jsx to reduce file size and improve maintainability
 
-import React from 'react';
+import React, { useState } from 'react';
 
 // Import components that are used in message rendering
 import MessageRenderer from '../MessageRenderer';
@@ -250,38 +250,8 @@ const MessageItem = ({
             className="text-white"
           />
           
-          {/* 🎨 GENERATED IMAGE - Display after text */}
-          {msg.image && (
-            <div style={{
-              paddingTop: '1rem',
-              paddingBottom: '1rem',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              maxWidth: '100%'
-            }}>
-              <img 
-                src={msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image)}
-                alt={`Generated image for: ${msg.text}`}
-                onClick={() => {
-                  const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image);
-                  onPreviewImage({
-                    url: imageUrl,
-                    name: `Generated: ${msg.text.slice(0, 30)}...`
-                  });
-                }}
-                style={imageStyle}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'scale(1.02) translateZ(0)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'scale(1) translateZ(0)';
-                }}
-                onLoad={() => {
-                  // Image loaded - scroll handled by useEffect
-                }}
-              />
-            </div>
-          )}
+          {/* 🎨 GENERATED IMAGE - Display after text with loading skeleton */}
+          {msg.image && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
           
           {/* 🔘 ACTION BUTTONS - Always reserve space to prevent Virtuoso height jumping */}
           <div style={{ 
@@ -307,6 +277,70 @@ const MessageItem = ({
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// 🎨 Generated Image with Loading Skeleton Component
+const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image);
+
+  return (
+    <div style={{
+      paddingTop: '1rem',
+      paddingBottom: '1rem',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      maxWidth: '100%'
+    }}>
+      {/* Loading Skeleton */}
+      {!imageLoaded && (
+        <div
+          className="image-skeleton"
+          style={{
+            width: '300px',
+            height: '300px',
+            background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+            backgroundSize: '200% 100%',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '14px',
+            animation: 'shimmer-skeleton 2s infinite'
+          }}>
+          Loading image...
+        </div>
+      )}
+
+      {/* Actual Image */}
+      <img
+        src={imageUrl}
+        alt={`Generated image for: ${msg.text}`}
+        onClick={() => {
+          onPreviewImage({
+            url: imageUrl,
+            name: `Generated: ${msg.text.slice(0, 30)}...`
+          });
+        }}
+        style={{
+          ...imageStyle,
+          display: imageLoaded ? 'block' : 'none'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = 'scale(1.02) translateZ(0)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = 'scale(1) translateZ(0)';
+        }}
+        onLoad={() => {
+          setImageLoaded(true);
+        }}
+      />
+
     </div>
   );
 };

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🎨 Image Loading Skeleton Animation */
+@keyframes shimmer-skeleton {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 /* HTML5 Semantic Elements Reset - Fix irregular margins causing scroll jumping */
 main, article, section, div, aside, header, footer, nav, hgroup, search {
   margin: 0;
