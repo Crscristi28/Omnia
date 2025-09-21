@@ -1700,6 +1700,11 @@ function AppContent() {
           'export', 'download', 'file', 'soubor'
         ];
         const wantsPDF = pdfKeywords.some(keyword => lastUserText.toLowerCase().includes(keyword));
+        console.log('📄 [PDF-DEBUG] User text:', lastUserText);
+        console.log('📄 [PDF-DEBUG] Wants PDF:', wantsPDF);
+        if (wantsPDF) {
+          console.log('📄 [PDF-DEBUG] Activating pdfMode=true');
+        }
 
         const result = await geminiService.sendMessage(
           messagesWithUser,

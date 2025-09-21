@@ -27,6 +27,8 @@ export default async function handler(req, res) {
       lastUserMessage: messages?.[messages.length - 1]?.content?.substring(0, 100) || messages?.[messages.length - 1]?.text?.substring(0, 100),
       systemPromptLength: system?.length || 0,
       detectedLanguage: language,
+      imageMode,
+      pdfMode,
       timestamp: new Date().toISOString()
     });
     
