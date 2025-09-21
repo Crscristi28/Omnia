@@ -462,7 +462,7 @@ export default async function handler(req, res) {
                   const { title, content, documentType = 'document' } = part.functionCall.args;
 
                   // Call PDF generation API
-                  const pdfResponse = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://omnia-one.com' : 'http://localhost:3000'}/api/generate-pdf`, {
+                  const pdfResponse = await fetch('http://localhost:3001/generate-pdf', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'

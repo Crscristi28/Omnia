@@ -322,6 +322,33 @@ app.post('/claude-web-search', async (req, res) => {
   }
 });
 
+// PDF Generation endpoint - Import and use the Vercel function
+app.post('/generate-pdf', async (req, res) => {
+  try {
+    // Import the Vercel function
+    const { default: generatePdfHandler } = await import('../api/generate-pdf.js');
+
+    // Create mock Vercel request/response objects
+    const mockReq = {
+      method: 'POST',
+      body: req.body
+    };
+
+    const mockRes = {
+      setHeader: (name, value) => res.setHeader(name, value),
+      status: (code) => res.status(code),
+      json: (data) => res.json(data),
+      send: (data) => res.send(data),
+      end: () => res.end()
+    };
+
+    await generatePdfHandler(mockReq, mockRes);
+  } catch (error) {
+    console.error('📄 PDF generation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`🚀 Proxy server running on http://localhost:${port}`);
   console.log('📝 Available endpoints:');
@@ -331,4 +358,5 @@ app.listen(port, () => {
   console.log('  - POST /elevenlabs-stt');
   console.log('  - POST /google-tts');
   console.log('  - POST /claude-web-search');
+  console.log('  - POST /generate-pdf');
 });
