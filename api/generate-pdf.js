@@ -48,9 +48,29 @@ export default async function handler(req, res) {
           ignoreHTTPSErrors: true,
         });
       } else {
-        // Local development
+        // Local development - try to find Chrome executable
+        const possiblePaths = [
+          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', // macOS
+          '/usr/bin/google-chrome', // Linux
+          'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // Windows
+          'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' // Windows 32-bit
+        ];
+
+        let executablePath = null;
+        for (const path of possiblePaths) {
+          try {
+            if (require('fs').existsSync(path)) {
+              executablePath = path;
+              break;
+            }
+          } catch (e) {
+            // Continue trying
+          }
+        }
+
         browser = await puppeteer.launch({
           headless: true,
+          executablePath: executablePath || undefined,
           args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
       }
