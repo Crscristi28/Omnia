@@ -1,258 +1,246 @@
-// 🌍 SMART LANGUAGE DETECTION - Enhanced Czech Vocabulary
-// ✅ COMPREHENSIVE: Added 200+ Czech no-diacritics words
-// 🎯 REAL-WORLD: Perfect coverage for 80% of users typing without diacritics
-// 🔧 FIXES: "inteligence", "technologie", and other missing words
+// 🌍 ADVANCED MULTILINGUAL DETECTION SYSTEM
+// 🎯 Supports 6 languages: CS, EN, RO, DE, RU, PL
+// 📊 Multi-strategy detection: patterns, words, statistics
+// ✅ International-first approach with smart fallbacks
 
 const detectLanguage = (text) => {
-  if (!text || typeof text !== 'string') return 'en'; // Default to English for international users
-  
-  const lowerText = text.toLowerCase().trim();
-  
-  // 🔧 SHORT TEXT HANDLING - Enhanced English detection
-  if (lowerText.length < 15) { // Increased threshold
-    if (['hello', 'hi', 'hey', 'yes', 'no', 'thanks', 'tell', 'me', 'you', 'about', 'what', 'how', 'why', 'when', 'where'].some(word => lowerText.includes(word))) return 'en';
-    if (['salut', 'bună', 'mulțumesc'].some(word => lowerText.includes(word))) return 'ro';
-    if (['ahoj', 'děkuji', 'prosím', 'ano', 'ne'].some(word => lowerText.includes(word))) return 'cs';
-    return 'en'; // Default to English for international users
-  }
+  if (!text || typeof text !== 'string') return 'en';
 
-  // 1. DIACRITICS DETECTION (highest confidence)
-  if (/[áčďéěíňóřšťúůýž]/i.test(text)) return 'cs';
-  if (/[ăâîșțĂÂÎȘȚ]/i.test(text)) return 'ro';
+  const originalText = text.trim();
+  const lowerText = originalText.toLowerCase();
 
-  // 2. EXPLICIT LANGUAGE REQUESTS (highest priority)
-  const explicitCzech = [
-    'mluv česky', 'mluvte česky', 'řekni mi česky', 'odpověz česky', 'chci česky',
-    'přepni na češtinu', 'česká odpověď', 'v češtině'
-  ];
+  // 🚀 STRATEGY 1: CHARACTER PATTERN DETECTION (highest confidence)
+  if (/[áčďéěíňóřšťúůýž]/i.test(originalText)) return 'cs'; // Czech diacritics
+  if (/[ăâîșțĂÂÎȘȚ]/i.test(originalText)) return 'ro'; // Romanian diacritics
+  if (/[äöüßÄÖÜ]/i.test(originalText)) return 'de'; // German umlauts
+  if (/[а-яё]/i.test(originalText)) return 'ru'; // Cyrillic alphabet
+  if (/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/i.test(originalText)) return 'pl'; // Polish diacritics
 
-  const explicitEnglish = [
-    'speak english', 'talk english', 'answer in english', 'switch to english', 'i want english',
-    'respond in english', 'english please', 'can you speak english'
-  ];
-
-  const explicitRomanian = [
-    'vorbește română', 'răspunde în română', 'vreau română', 'schimbă la română',
-    'poți vorbi română', 'limba română'
-  ];
-
-  for (const phrase of explicitCzech) {
-    if (lowerText.includes(phrase)) return 'cs';
-  }
-  
-  for (const phrase of explicitEnglish) {
-    if (lowerText.includes(phrase)) return 'en';
-  }
-
-  for (const phrase of explicitRomanian) {
-    if (lowerText.includes(phrase)) return 'ro';
-  }
-
-  // 3. CONVERSATIONAL PHRASES (high confidence)
-  const conversationalCzech = [
-    'co děláš', 'jak se máš', 'co se děje', 'jak to jde', 'co je nového',
-    'děláš si sranda', 'myslíš si', 'co si myslíš', 'máš čas', 'můžeš mi',
-    'jak se mas', 'co delas', 'muzeme si', 'muzes mi'  // ✅ No-diacritics variants
-  ];
-
-  const conversationalEnglish = [
-    'what are you doing', 'how are you', 'what\'s up', 'how\'s it going', 'what\'s new',
-    'are you kidding', 'do you think', 'what do you think', 'can you help', 'tell me about'
-  ];
-
-  const conversationalRomanian = [
-    'ce faci', 'cum ești', 'ce mai faci', 'cum merge', 'ce e nou',
-    'îmi poți spune', 'mă poți ajuta', 'explică-mi', 'ce crezi',
-    'ce esti', 'cum esti', 'ce sti'  // ✅ No-diacritics variants
-  ];
-
-  for (const phrase of conversationalCzech) {
-    if (lowerText.includes(phrase)) return 'cs';
-  }
-  
-  for (const phrase of conversationalEnglish) {
-    if (lowerText.includes(phrase)) return 'en';
-  }
-
-  for (const phrase of conversationalRomanian) {
-    if (lowerText.includes(phrase)) return 'ro';
-  }
-
-  // 4. ENHANCED WEIGHTED WORD SCORING - COMPREHENSIVE CZECH VOCABULARY
-  const strongRomanianWords = {
-    // STRONGEST indicators (3 points)
-    'ce': 3, 'cum': 3, 'unde': 3, 'faci': 3, 'esti': 3,
-    'sunt': 3, 'multumesc': 3, 'salut': 3, 'cine': 3,
-    
-    // MEDIUM indicators (2 points)  
-    'sa': 2, 'si': 2, 'de': 2, 'la': 2, 'cu': 2,
-    'sti': 2, 'fac': 2, 'merge': 2,
-    
-    // WEAK indicators (1 point)
-    'nu': 1, 'da': 1, 'ma': 1
-  };
-  
-  const strongCzechWords = {
-    // 🔥 SUPER STRONG - Uniquely Czech (5 points)
-    'muzes': 5, 'muzeme': 5, 'dekuji': 5, 'prosim': 5, 'ahoj': 5,
-    'jsem': 5, 'jsi': 5, 'jsme': 5, 'jsou': 5, 'nejsou': 5,
-    'nevim': 5, 'chapu': 5, 'nerozumim': 5, 'pockej': 5, 'cekej': 5,
-    
-    // ⚡ VERY STRONG - Core Czech (4 points)
-    'mas': 4, 'mam': 4, 'mame': 4, 'mate': 4, 'maji': 4,
-    'vim': 4, 'znas': 4, 'neznas': 4, 'delam': 4, 'delas': 4, 'dela': 4,
-    'chci': 4, 'nechci': 4, 'potrebuju': 4, 'muzou': 4,
-    'tady': 4, 'doma': 4, 'nahore': 4, 'dole': 4, 'kolem': 4,
-    
-    // 🎯 STRONG - Very likely Czech (3 points)
-    'jak': 3, 'kdy': 3, 'kde': 3, 'kdo': 3, 'proc': 3,
-    'jaka': 3, 'jake': 3, 'takovy': 3, 'kazdy': 3, 'zadny': 3,
-    'co': 3, 'neco': 3, 'vsechno': 3, 'nekdo': 3, 'vsichni': 3,
-    'akcie': 3, 'cena': 3, 'kolik': 3, 'penize': 3, 'karta': 3,
-    'umis': 3, 'dokazes': 3, 'vim': 3, 'umi': 3,
-    'inteligence': 3, 'technologie': 3, 'aplikace': 3, 'system': 3,
-    
-    // 📚 COMPREHENSIVE CZECH VOCABULARY - No diacritics (3 points)
-    // Time & frequency
-    'ted': 3, 'dnes': 3, 'zitra': 3, 'vcera': 3, 'rano': 3, 'vecer': 3,
-    'vzdy': 3, 'nikdy': 3, 'casto': 3, 'obcas': 3, 'jeste': 3, 'uz': 3,
-    
-    // Actions & states
-    'pracuju': 3, 'pracujes': 3, 'pracuje': 3, 'muzu': 3, 'musis': 3, 'musim': 3,
-    'rekni': 3, 'rikal': 3, 'pisu': 3, 'ctu': 3, 'posloucham': 3, 'mluvim': 3,
-    'odpovim': 3, 'ptam': 3, 'chapu': 3,
-    
-    // Tech terms
-    'telefon': 3, 'pocitac': 3, 'internet': 3, 'mail': 3, 'fotka': 3,
-    'zprava': 3, 'video': 3, 'nastaveni': 3, 'soubor': 3, 'slozka': 3,
-    'heslo': 3, 'ucet': 3, 'pripojeni': 3, 'sit': 3, 'ovladani': 3,
-    
-    // Common expressions
-    'problem': 3, 'reseni': 3, 'moznost': 3, 'volba': 3, 'zmena': 3,
-    'priklad': 3, 'otazka': 3, 'odpoved': 3, 'slovo': 3, 'veta': 3,
-    
-    // Weather & environment
-    'pocasi': 3, 'teplota': 3, 'dest': 3, 'snih': 3, 'slunce': 3,
-    'vitr': 3, 'bourka': 3, 'venku': 3,
-    
-    // Transport
-    'auto': 3, 'kolo': 3, 'vlak': 3, 'tramvaj': 3, 'autobus': 3,
-    'benzin': 3, 'nafta': 3, 'motor': 3, 'brzda': 3, 'dvere': 3,
-    
-    // Food & drink
-    'jidlo': 3, 'piti': 3, 'chleba': 3, 'polevka': 3, 'vecere': 3,
-    'obed': 3, 'snidane': 3, 'restaurace': 3, 'kavarna': 3, 'pivo': 3,
-    'vino': 3, 'voda': 3, 'caj': 3, 'zelenina': 3, 'ovoce': 3, 'brambory': 3,
-    
-    // Work & business
-    'prace': 3, 'dovolena': 3, 'nemoc': 3, 'sef': 3, 'kolega': 3,
-    'smlouva': 3, 'projekt': 3, 'ukol': 3, 'termin': 3, 'schuzka': 3,
-    'prichod': 3, 'odchod': 3, 'vyplata': 3, 'prijem': 3, 'vydaje': 3,
-    
-    // Family & relationships
-    'rodina': 3, 'dite': 3, 'partner': 3, 'pritel': 3, 'pritelkyne': 3,
-    'kamarad': 3, 'babicka': 3, 'deda': 3, 'mama': 3, 'tata': 3,
-    'sestra': 3, 'bratr': 3,
-    
-    // 💬 MEDIUM indicators (2 points)
-    'delat': 2, 'rict': 2, 'viet': 2, 'stoji': 2, 'bude': 2,
-    'tam': 2, 'vedle': 2, 'blizko': 2, 'daleko': 2, 'cesta': 2,
-    'cas': 2, 'noc': 2, 'skoro': 2, 'malo': 2, 'hodne': 2,
-    'byl': 2, 'byla': 2, 'bylo': 2, 'budou': 2, 'budouci': 2,
-    'par': 2, 'dalsi': 2, 'jiny': 2, 'stejny': 2, 'normalni': 2,
-    
-    // Common words (2 points)
-    'je': 2, 'to': 2, 'na': 2, 'za': 2, 'do': 2, 'se': 2,
-    'ani': 2, 'moc': 2, 'zpet': 2, 'pryc': 2, 'vetsinou': 2,
-    'nic': 2, 'uvnitr': 2, 'smer': 2, 'vchod': 2, 'vyjezd': 2,
-    
-    // 🔹 WEAK indicators (1 point)
-    'ne': 1, 'ano': 1, 'si': 1, 'mozna': 1, 'urcite': 1,
-    'jasne': 1, 'dobre': 1, 'spatne': 1, 'super': 1, 'klid': 1,
-    'pozor': 1, 'stop': 1, 'hned': 1, 'okamzite': 1
+  // 🎯 STRATEGY 2: EXPLICIT LANGUAGE REQUESTS
+  const languageRequests = {
+    'cs': ['mluv česky', 'mluvte česky', 'řekni mi česky', 'odpověz česky', 'chci česky', 'přepni na češtinu'],
+    'en': ['speak english', 'talk english', 'answer in english', 'switch to english', 'i want english', 'respond in english'],
+    'ro': ['vorbește română', 'răspunde în română', 'vreau română', 'schimbă la română', 'limba română'],
+    'de': ['sprich deutsch', 'auf deutsch', 'deutsche antwort', 'wechsel zu deutsch', 'ich will deutsch'],
+    'ru': ['говори по-русски', 'отвечай по-русски', 'русский язык', 'переключись на русский'],
+    'pl': ['mów po polsku', 'odpowiadaj po polsku', 'język polski', 'przełącz na polski']
   };
 
-  const strongEnglishWords = {
-    // STRONGEST indicators (3 points)
-    'what': 3, 'how': 3, 'where': 3, 'when': 3, 'why': 3,
-    'doing': 3, 'think': 3, 'help': 3, 'please': 3,
-    
-    // ✅ ENHANCED: Added financial English terms
-    'price': 3, 'stock': 3, 'cost': 3, 'tesla': 2, 'google': 2,
-    'what\'s': 3, 'current': 2,
-    
-    // MEDIUM indicators (2 points)
-    'the': 2, 'and': 2, 'you': 2, 'are': 2, 'can': 2,
-    'tell': 2, 'know': 2, 'want': 2,
-    
-    // WEAK indicators (1 point)
-    'is': 1, 'it': 1, 'me': 1, 'my': 1
-  };
-
-  let czechScore = 0;
-  let romanianScore = 0;
-  let englishScore = 0;
-
-  // Calculate scores
-  Object.entries(strongCzechWords).forEach(([word, weight]) => {
-    if (lowerText.includes(word)) czechScore += weight;
-  });
-  
-  Object.entries(strongRomanianWords).forEach(([word, weight]) => {
-    if (lowerText.includes(word)) romanianScore += weight;
-  });
-
-  Object.entries(strongEnglishWords).forEach(([word, weight]) => {
-    if (lowerText.includes(word)) englishScore += weight;
-  });
-
-  // 5. ENHANCED DECISION LOGIC - Better thresholds
-  const scores = { 'cs': czechScore, 'ro': romanianScore, 'en': englishScore };
-  const maxScore = Math.max(...Object.values(scores));
-  const detectedLang = Object.keys(scores).find(key => scores[key] === maxScore);
-  
-  
-  // Enhanced decision logic with better confidence thresholds
-  if (maxScore >= 5) {
-    // Very high confidence
-    return detectedLang;
-  } else if (maxScore >= 3) {
-    // High confidence - but check for ties
-    const ties = Object.values(scores).filter(score => score === maxScore).length;
-    if (ties === 1) {
-      return detectedLang;
-    }
+  for (const [lang, phrases] of Object.entries(languageRequests)) {
+    if (phrases.some(phrase => lowerText.includes(phrase))) return lang;
   }
-  
-  // For ties or low confidence, default to Czech
-  return 'cs';
+
+  // 🔍 STRATEGY 3: SMART SHORT TEXT DETECTION
+  if (lowerText.length < 20) {
+    return detectShortText(lowerText);
+  }
+
+  // 📊 STRATEGY 4: STATISTICAL WORD ANALYSIS (for longer texts)
+  return detectLongText(lowerText);
 };
 
-// ✅ COMPREHENSIVE TEST CASES
+// 🔍 SHORT TEXT DETECTION (< 20 characters)
+const detectShortText = (lowerText) => {
+  const shortPhrases = {
+    'en': ['hello', 'hi', 'hey', 'yes', 'no', 'thanks', 'thank you', 'please', 'sorry', 'excuse me',
+           'tell', 'me', 'you', 'about', 'what', 'how', 'why', 'when', 'where', 'who', 'which',
+           'can', 'could', 'would', 'should', 'will', 'want', 'need', 'help', 'more', 'some', 'any',
+           'the', 'and', 'this', 'that', 'with', 'for', 'are', 'was', 'but', 'not', 'have', 'from'],
+
+    'cs': ['ahoj', 'čau', 'dobrý den', 'děkuji', 'díky', 'prosím', 'promiň', 'omluva', 'ano', 'ne',
+           'řekni', 'mi', 'ty', 'co', 'jak', 'proč', 'kdy', 'kde', 'kdo', 'který', 'můžeš', 'chtěl',
+           'potřebuji', 'pomoc', 'více', 'něco', 'nějaký', 'dekuji', 'prosim', 'rekni', 'muzes',
+           'potrebuji', 'vic', 'neco', 'nejaky', 'umis', 'delat', 'jsem', 'jsi', 'je', 'jsme', 'jste',
+           'jsou', 'mas', 'mam', 'mate', 'maji', 'inteligence', 'cena', 'akcie', 'kolik', 'stoji'],
+
+    'de': ['hallo', 'guten tag', 'danke', 'bitte', 'entschuldigung', 'ja', 'nein', 'wie', 'was',
+           'wo', 'wann', 'warum', 'wer', 'welche', 'können', 'möchte', 'brauche', 'hilfe', 'mehr',
+           'der', 'die', 'das', 'und', 'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'mit', 'von',
+           'zu', 'auf', 'für', 'bei', 'nach', 'über', 'durch', 'ohne', 'gegen', 'unter'],
+
+    'ro': ['salut', 'bună', 'mulțumesc', 'te rog', 'scuze', 'da', 'nu', 'cum', 'ce', 'unde',
+           'când', 'de ce', 'cine', 'care', 'poți', 'vreau', 'am nevoie', 'ajutor', 'mai mult',
+           'multumesc', 'poti', 'cand', 'esti', 'sunt', 'faci', 'sti', 'la', 'cu', 'pe', 'pentru',
+           'din', 'si', 'sa', 'de', 'ma', 'te', 'se', 'ne', 'va', 'le'],
+
+    'ru': ['привет', 'здравствуйте', 'спасибо', 'пожалуйста', 'извините', 'да', 'нет', 'как',
+           'что', 'где', 'когда', 'почему', 'кто', 'какой', 'можешь', 'хочу', 'нужно', 'помощь',
+           'и', 'в', 'не', 'на', 'я', 'быть', 'он', 'с', 'а', 'то', 'все', 'она', 'так', 'его',
+           'но', 'ты', 'к', 'у', 'же', 'вы', 'за', 'бы', 'по', 'только', 'ее', 'мне', 'было'],
+
+    'pl': ['cześć', 'dzień dobry', 'dziękuję', 'proszę', 'przepraszam', 'tak', 'nie', 'jak',
+           'co', 'gdzie', 'kiedy', 'dlaczego', 'kto', 'który', 'możesz', 'chcę', 'potrzebuję', 'pomoc',
+           'w', 'na', 'i', 'z', 'że', 'do', 'się', 'o', 'a', 'za', 'od', 'po', 'przy', 'dla',
+           'przez', 'ze', 'między', 'przed', 'nad', 'pod', 'bez', 'wraz', 'jako', 'aby', 'żeby']
+  };
+
+  // Score each language based on word matches with weighted scoring
+  const scores = {};
+  for (const [lang, words] of Object.entries(shortPhrases)) {
+    let score = 0;
+    for (const word of words) {
+      if (lowerText.includes(word)) {
+        // Give higher weight to exact matches and longer words
+        const weight = word.length >= 4 ? 2 : 1;
+        const isExactMatch = lowerText === word || lowerText.split(' ').includes(word);
+        score += isExactMatch ? weight * 2 : weight;
+      }
+    }
+    scores[lang] = score;
+  }
+
+  // Return language with highest score, or English as default
+  const maxScore = Math.max(...Object.values(scores));
+  if (maxScore > 0) {
+    const topLangs = Object.keys(scores).filter(lang => scores[lang] === maxScore);
+    // If there's a tie, prefer English, then Czech for backwards compatibility
+    if (topLangs.includes('en')) return 'en';
+    if (topLangs.includes('cs')) return 'cs';
+    return topLangs[0];
+  }
+
+  return 'en'; // Default for unclear short text
+};
+
+// 📊 LONG TEXT STATISTICAL ANALYSIS (≥ 20 characters)
+const detectLongText = (lowerText) => {
+  // Common words and patterns for statistical analysis
+  const languagePatterns = {
+    'en': {
+      words: ['the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they', 'this', 'have', 'from', 'one', 'had', 'word', 'but', 'not', 'what', 'all', 'were', 'can', 'said', 'each', 'which', 'their', 'time', 'will', 'about', 'if', 'up', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'into', 'him', 'has', 'two', 'more', 'very', 'after', 'words', 'long', 'than', 'first', 'been', 'call', 'who', 'its', 'now', 'find', 'may', 'down', 'side', 'did', 'get', 'come', 'made', 'might', 'way'],
+      patterns: /\b(is|are|was|were|the|and|you|that|for|with|his|they|this|have|from|but|not|what|all|can|said|each|which|their|time|will|about)\b/g
+    },
+
+    'cs': {
+      words: ['je', 'se', 'na', 'za', 'do', 'od', 'po', 'při', 'bez', 'před', 'mezi', 'přes', 'který', 'která', 'které', 'jeho', 'její', 'jejich', 'také', 'nebo', 'aby', 'když', 'pokud', 'jako', 'tak', 'ani', 'jak', 'co', 'kde', 'kam', 'kdy', 'proč', 'kdo', 'tom', 'tím', 'této', 'tohoto', 'této', 'všechno', 'něco', 'nějaký', 'někdo', 'někde', 'někdy', 'někam', 'tady', 'tam', 'teď', 'pak', 'potom', 'už', 'ještě', 'pouze', 'právě', 'proto', 'tedy'],
+      patterns: /\b(je|se|na|za|do|od|po|při|bez|před|mezi|přes|který|která|které|jeho|její|jejich|také|nebo|aby|když|pokud|jako|tak|ani)\b/g
+    },
+
+    'de': {
+      words: ['der', 'die', 'und', 'in', 'den', 'von', 'zu', 'das', 'mit', 'sich', 'des', 'auf', 'für', 'ist', 'im', 'dem', 'nicht', 'ein', 'eine', 'als', 'auch', 'es', 'an', 'werden', 'aus', 'er', 'hat', 'dass', 'sie', 'nach', 'wird', 'bei', 'einer', 'um', 'am', 'sind', 'noch', 'wie', 'einem', 'über', 'einen', 'so', 'zum', 'war', 'haben', 'nur', 'oder', 'aber', 'vor', 'zur', 'bis', 'mehr', 'durch', 'man', 'sein', 'wurde', 'sei', 'ins'],
+      patterns: /\b(der|die|und|in|den|von|zu|das|mit|sich|des|auf|für|ist|im|dem|nicht|ein|eine|als|auch|es|an|werden|aus|er|hat|dass|sie|nach|wird)\b/g
+    },
+
+    'ro': {
+      words: ['de', 'la', 'în', 'cu', 'pe', 'pentru', 'din', 'ca', 'să', 'se', 'un', 'o', 'și', 'nu', 'este', 'sunt', 'care', 'ce', 'mai', 'cum', 'când', 'unde', 'dacă', 'apoi', 'după', 'înainte', 'între', 'despre', 'către', 'prin', 'până', 'fără', 'asupra', 'dupa', 'inainte', 'intre', 'catre', 'printr', 'pana', 'fara', 'asupra'],
+      patterns: /\b(de|la|în|cu|pe|pentru|din|ca|să|se|un|o|și|nu|este|sunt|care|ce|mai|cum|când|unde|dacă|apoi|după|înainte|între|despre|către|prin)\b/g
+    },
+
+    'ru': {
+      words: ['в', 'и', 'не', 'на', 'я', 'быть', 'он', 'с', 'как', 'а', 'то', 'все', 'она', 'так', 'его', 'но', 'да', 'ты', 'к', 'у', 'же', 'вы', 'за', 'бы', 'по', 'только', 'ее', 'мне', 'было', 'вот', 'от', 'меня', 'еще', 'нет', 'о', 'из', 'ему', 'теперь', 'когда', 'даже', 'ну', 'вдруг', 'ли', 'если', 'уже', 'или', 'ни', 'быть', 'был', 'него', 'до', 'вас', 'нибудь', 'опять', 'уж', 'вам', 'ведь', 'там', 'потом', 'себя', 'ничего', 'ей', 'может', 'они', 'тут', 'где', 'есть', 'надо', 'ней', 'для', 'мы', 'тебя', 'их', 'чем', 'была', 'сам', 'чтоб', 'без', 'будто', 'чего', 'раз', 'тоже', 'себе', 'под', 'будет', 'ж', 'тогда', 'кто', 'этот', 'того', 'потому', 'этого', 'какой', 'совсем', 'ним', 'здесь', 'этом', 'один', 'почти', 'мой', 'тем', 'чтобы', 'нее', 'сейчас', 'были', 'куда', 'зачем', 'всех', 'никогда', 'можно', 'при', 'наконец', 'два', 'об', 'другой', 'хоть', 'после', 'над', 'больше', 'тот', 'через', 'эти', 'нас', 'про', 'всего', 'них', 'какая', 'много', 'разве', 'три', 'эту', 'моя', 'впрочем', 'хорошо', 'свою', 'этой', 'перед', 'иногда', 'лучше', 'чуть', 'том', 'нельзя', 'такой', 'им', 'более', 'всегда', 'конечно', 'всю', 'между'],
+      patterns: /\b(в|и|не|на|я|быть|он|с|как|а|то|все|она|так|его|но|да|ты|к|у|же|вы|за|бы|по|только|ее|мне|было|вот|от|меня|еще|нет|о|из)\b/g
+    },
+
+    'pl': {
+      words: ['w', 'na', 'i', 'z', 'że', 'do', 'się', 'o', 'a', 'za', 'od', 'po', 'przy', 'dla', 'przez', 'ze', 'między', 'przed', 'nad', 'pod', 'bez', 'wobec', 'wraz', 'wśród', 'jako', 'aby', 'żeby', 'gdyby', 'jeśli', 'gdy', 'kiedy', 'gdzie', 'jak', 'co', 'kto', 'który', 'jaki', 'ile', 'czy', 'nie', 'tak', 'bardzo', 'już', 'jeszcze', 'tylko', 'także', 'również', 'nawet', 'właśnie', 'może', 'chyba', 'pewnie', 'oczywiście', 'naturalnie', 'podobnie', 'inaczej', 'jednak', 'ale', 'lecz', 'oraz', 'ani', 'albo', 'lub', 'bądź', 'czyli', 'to', 'te', 'ta', 'ten', 'tego', 'tej', 'tym', 'tych', 'mój', 'moja', 'moje', 'nasz', 'nasza', 'nasze', 'jego', 'jej', 'ich'],
+      patterns: /\b(w|na|i|z|że|do|się|o|a|za|od|po|przy|dla|przez|ze|między|przed|nad|pod|bez|wobec|wraz|wśród|jako|aby|żeby|gdyby|jeśli|gdy|kiedy)\b/g
+    }
+  };
+
+  // Score each language based on word frequency and patterns
+  const scores = {};
+  for (const [lang, config] of Object.entries(languagePatterns)) {
+    let score = 0;
+
+    // Count common words
+    for (const word of config.words) {
+      const regex = new RegExp(`\\b${word}\\b`, 'g');
+      const matches = lowerText.match(regex);
+      if (matches) score += matches.length;
+    }
+
+    // Count pattern matches
+    const patternMatches = lowerText.match(config.patterns);
+    if (patternMatches) score += patternMatches.length * 2; // Patterns have higher weight
+
+    scores[lang] = score;
+  }
+
+  // Return language with highest score, with English as default
+  const maxScore = Math.max(...Object.values(scores));
+  if (maxScore > 0) {
+    return Object.keys(scores).find(lang => scores[lang] === maxScore);
+  }
+
+  return 'en'; // Default for unclear text
+};
+
+// ✅ COMPREHENSIVE TEST CASES FOR ALL 6 LANGUAGES
 const testCases = [
-  // Critical fixes
+  // ✅ ENGLISH TESTS
+  { input: "hello", expected: 'en', description: "English greeting" },
+  { input: "hey", expected: 'en', description: "English informal greeting" },
+  { input: "tell me about you", expected: 'en', description: "CRITICAL FIX: English conversation starter" },
+  { input: "what's the price of Tesla stock", expected: 'en', description: "English financial query" },
+  { input: "hello how are you doing today", expected: 'en', description: "Clear English conversation" },
+  { input: "can you help me with this", expected: 'en', description: "English help request" },
+  { input: "what are you doing", expected: 'en', description: "English question" },
+  { input: "how are you", expected: 'en', description: "English common phrase" },
+  { input: "thank you very much", expected: 'en', description: "English politeness" },
+
+  // ✅ CZECH TESTS
+  { input: "ahoj", expected: 'cs', description: "Czech greeting" },
   { input: "inteligence", expected: 'cs', description: "CRITICAL FIX: inteligence should be Czech" },
   { input: "jaka je cena akcie tesla", expected: 'cs', description: "CRITICAL FIX: Czech financial query" },
   { input: "co umis delat", expected: 'cs', description: "CRITICAL FIX: Czech capabilities query" },
-  { input: "what's the price of Tesla stock", expected: 'en', description: "English financial query" },
-  
-  // Romanian tests
-  { input: "Ce sti sa faci a cine esti tu?", expected: 'ro', description: "Romanian with single 'a'" },
-  { input: "cat costa actiunile Tesla", expected: 'ro', description: "Romanian financial query" },
-  
-  // Czech comprehensive
   { input: "muzes mi rict jak se mas dnes", expected: 'cs', description: "Czech without diacritics" },
   { input: "potrebuju pomoc s aplikaci", expected: 'cs', description: "Czech tech request" },
   { input: "kolik stoji google akcie dnes", expected: 'cs', description: "Czech price query" },
   { input: "dekuji za odpoved", expected: 'cs', description: "Czech politeness" },
-  
-  // English tests
-  { input: "hello how are you doing today", expected: 'en', description: "Clear English" },
-  { input: "can you help me with this", expected: 'en', description: "English help request" },
-  
-  // Edge cases
-  { input: "ok", expected: 'cs', description: "Short ambiguous - default Czech" },
-  { input: "ahoj jak se mas", expected: 'cs', description: "Czech greeting" }
+  { input: "ahoj jak se mas", expected: 'cs', description: "Czech greeting conversation" },
+  { input: "co se deje", expected: 'cs', description: "Czech casual question" },
+  { input: "jak to jde", expected: 'cs', description: "Czech small talk" },
+
+  // ✅ ROMANIAN TESTS
+  { input: "salut", expected: 'ro', description: "Romanian greeting" },
+  { input: "Ce sti sa faci a cine esti tu?", expected: 'ro', description: "Romanian with single 'a'" },
+  { input: "cat costa actiunile Tesla", expected: 'ro', description: "Romanian financial query" },
+  { input: "cum esti", expected: 'ro', description: "Romanian how are you" },
+  { input: "ce faci", expected: 'ro', description: "Romanian what are you doing" },
+  { input: "multumesc", expected: 'ro', description: "Romanian thank you" },
+  { input: "unde esti", expected: 'ro', description: "Romanian where are you" },
+  { input: "ce mai faci", expected: 'ro', description: "Romanian casual question" },
+
+  // ✅ GERMAN TESTS
+  { input: "hallo", expected: 'de', description: "German greeting" },
+  { input: "wie geht es dir", expected: 'de', description: "German how are you" },
+  { input: "was machst du", expected: 'de', description: "German what are you doing" },
+  { input: "danke schön", expected: 'de', description: "German thank you" },
+  { input: "guten tag", expected: 'de', description: "German good day" },
+  { input: "ich brauche hilfe", expected: 'de', description: "German help request" },
+  { input: "wo bist du", expected: 'de', description: "German where are you" },
+  { input: "können sie mir helfen", expected: 'de', description: "German polite help request" },
+
+  // ✅ RUSSIAN TESTS
+  { input: "привет", expected: 'ru', description: "Russian greeting" },
+  { input: "как дела", expected: 'ru', description: "Russian how are things" },
+  { input: "что делаешь", expected: 'ru', description: "Russian what are you doing" },
+  { input: "спасибо", expected: 'ru', description: "Russian thank you" },
+  { input: "где ты", expected: 'ru', description: "Russian where are you" },
+  { input: "помоги мне", expected: 'ru', description: "Russian help me" },
+  { input: "как тебя зовут", expected: 'ru', description: "Russian what's your name" },
+
+  // ✅ POLISH TESTS
+  { input: "cześć", expected: 'pl', description: "Polish greeting" },
+  { input: "jak się masz", expected: 'pl', description: "Polish how are you" },
+  { input: "co robisz", expected: 'pl', description: "Polish what are you doing" },
+  { input: "dziękuję", expected: 'pl', description: "Polish thank you" },
+  { input: "gdzie jesteś", expected: 'pl', description: "Polish where are you" },
+  { input: "pomóż mi", expected: 'pl', description: "Polish help me" },
+  { input: "dzień dobry", expected: 'pl', description: "Polish good day" },
+
+  // ✅ EDGE CASES & MIXED CONTENT
+  { input: "ok", expected: 'en', description: "Short ambiguous - default English" },
+  { input: "yes", expected: 'en', description: "English affirmation" },
+  { input: "no", expected: 'en', description: "English negation" },
+  { input: "123 test", expected: 'en', description: "Numbers with English" },
+  { input: "test", expected: 'en', description: "Single English word" },
+
+  // ✅ DIACRITICS TESTS
+  { input: "můžeš mi pomoct", expected: 'cs', description: "Czech with diacritics" },
+  { input: "mulțumesc foarte mult", expected: 'ro', description: "Romanian with diacritics" },
+  { input: "größer als normal", expected: 'de', description: "German with umlauts" },
+  { input: "większy niż zwykle", expected: 'pl', description: "Polish with diacritics" }
 ];
 
 // Run tests in development
