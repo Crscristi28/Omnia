@@ -9,11 +9,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Download, FileText, File } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+// Set up PDF.js worker - CDN approach (most reliable)
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const DocumentViewer = ({ 
   isOpen, 
