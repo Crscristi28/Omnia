@@ -174,12 +174,14 @@ function AppContent() {
   useEffect(() => {
     setIsAIStreaming(streaming);
     
-    // Only process generated image uploads when AI streaming ends (user files handled in InputBar)
+    // Only process generated content uploads when AI streaming ends (user files handled in InputBar)
     if (!streaming && uploadQueue.length > 0) {
-      console.log('🎯 [UPLOAD-TRIGGER] AI streaming ended, processing generated image uploads in 2s');
+      console.log('🎯 [UPLOAD-TRIGGER] AI streaming ended, processing generated content uploads in 2s');
       setTimeout(() => {
-        const imageQueue = uploadQueue.filter(item => item.type === 'generated_image');
-        if (imageQueue.length > 0) {
+        const generatedQueue = uploadQueue.filter(item =>
+          item.type === 'generated_image' || item.type === 'generated_pdf'
+        );
+        if (generatedQueue.length > 0) {
           processUploadQueue(0);
         }
       }, 2000);
@@ -422,7 +424,7 @@ function AppContent() {
     const queueItem = {
       id: `${type}_${Date.now()}_${Math.random()}`,
       file,
-      type, // 'user_file' or 'generated_image'
+      type, // 'user_file', 'generated_image', or 'generated_pdf'
       messageTimestamp,
       attachmentIndex,
       chatId,
@@ -446,6 +448,8 @@ function AppContent() {
         try {
           if (item.type === 'generated_image') {
             await processGeneratedImageUpload(item);
+          } else if (item.type === 'generated_pdf') {
+            await processGeneratedPdfUpload(item);
           }
           // ❌ REMOVED: user_file processing - now handled by background upload
         } catch (error) {
@@ -1786,8 +1790,35 @@ function AppContent() {
               }
               // Handle PDF generation from tool calls
               if (extra.pdf) {
-                generatedPdfs = [extra.pdf];
-                console.log('📄 PDF received:', extra.pdf.title);
+                const pdfData = extra.pdf;
+                const pdfTimestamp = Date.now();
+
+                console.log('📄 PDF received:', pdfData.title);
+                console.log('📤 [UPLOAD] Uploading PDF immediately, will display when ready');
+
+                // UPLOAD FIRST (async) - same as images
+                uploadBase64ToSupabaseStorage(
+                  pdfData.base64,
+                  `generated-${pdfTimestamp}-${pdfData.title.replace(/[^a-z0-9]/gi, '_')}.pdf`,
+                  'generated-pdfs-temp'
+                ).then(uploadResult => {
+                  console.log('✅ [UPLOAD] PDF uploaded, storing for display');
+
+                  // Store PDF data for display
+                  const uploadedPdfData = {
+                    title: pdfData.title,
+                    filename: pdfData.filename || `${pdfData.title}.pdf`,
+                    storageUrl: uploadResult.publicUrl,
+                    storagePath: uploadResult.path,
+                    timestamp: pdfTimestamp
+                  };
+                  console.log('✅ PDF upload completed, ready for display after streaming');
+
+                  // Don't display yet - just prepare the data for after streaming
+                  generatedPdfs = [uploadedPdfData];
+                }).catch(error => {
+                  console.error('💥 PDF upload failed:', error);
+                });
               }
             }
             

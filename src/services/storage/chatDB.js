@@ -39,6 +39,14 @@ class ChatDatabase extends Dexie {
     }).upgrade(tx => {
       // Empty migration - all data cleared before deployment
     });
+
+    // V5 Schema (Add PDF support)
+    this.version(5).stores({
+      chats: 'id, title, createdAt, updatedAt, messageCount',
+      messages: 'uuid, chatId, timestamp, sender, text, type, attachments, image, pdf, [chatId+timestamp], [chatId+uuid]'
+    }).upgrade(tx => {
+      // Migration adds pdf column - existing data preserved
+    });
   }
 }
 
