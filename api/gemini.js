@@ -91,9 +91,8 @@ export default async function handler(req, res) {
       return res.end();
     }
 
-    // Let Gemini respond in the same language as user's question naturally
-    // No forced language instruction needed - Gemini is smart enough
-    let finalSystemInstruction = systemInstruction;
+    // Add language instruction to ensure Omnia responds in user's language
+    let finalSystemInstruction = systemInstruction + '\n\n🌍 **CRITICAL:** Always respond in the EXACT same language the user writes in. Match their language perfectly.';
 
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
