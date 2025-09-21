@@ -105,14 +105,29 @@ export default async function handler(req, res) {
     const stopKeywords = ['enough', 'stop', 'that\'s enough', 'no more', 'finish', 'done', 'that\'s all'];
     const hasStopSignal = stopKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
 
-    // Image generation keywords - expanded English-only list
+    // Image generation keywords - explicit + implicit requests in all languages
     const imageKeywords = [
+      // Explicit commands (all languages)
       'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch',
+      'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej', 'navrhni',
+      'generează', 'creează', 'desenează', 'pictează', 'fă', 'realizează',
+      'erstelle', 'zeichne', 'male', 'entwirf', 'mache',
+      'создай', 'нарисуй', 'сделай', 'изобрази',
+      'stwórz', 'narysuj', 'namaluj', 'zrób',
+
+      // Visual content words
       'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
-      'visual', 'graphic', 'art', 'creative', 'visualize', 'depict', 'show',
-      'car', 'house', 'landscape', 'portrait', 'animal', 'cat', 'dog', 'tree',
-      'christmas', 'logo', 'icon', 'banner', 'poster', 'wallpaper', 'background',
-      'character', 'scene', 'concept', 'mockup', 'prototype', 'visualization'
+      'obrázek', 'fotka', 'ilustrace', 'kresba', 'malba',
+      'imagine', 'poză', 'ilustrație', 'desen', 'pictură',
+      'bild', 'foto', 'illustration', 'zeichnung', 'gemälde',
+      'изображение', 'картинка', 'фото', 'рисунок',
+      'obraz', 'zdjęcie', 'ilustracja', 'rysunek',
+
+      // Common objects that people want visualized
+      'logo', 'banner', 'poster', 'wallpaper', 'background', 'icon',
+      'car', 'auto', 'house', 'dům', 'landscape', 'krajina', 'portrait', 'portrét',
+      'animal', 'zvíře', 'cat', 'kočka', 'dog', 'pes', 'tree', 'strom',
+      'character', 'postava', 'scene', 'scéna', 'concept', 'koncept'
     ];
 
     // Direct detection only - simple and reliable
