@@ -1868,11 +1868,8 @@ function AppContent() {
         
         console.log('🎯 GEMINI FINAL SOURCES:', sources);
 
-        // Also check result.images from the final return value (tool calls)
-        if (result && result.images && result.images.length > 0) {
-          generatedImages = result.images;
-          console.log('🎨 Final result images received:', result.images.length);
-        }
+        // Images are already processed during streaming via callback
+        // No need to process them again from result.images
 
         // Messages already updated via streaming, just check auto-save
         // COMMENTED OUT - This was causing flash effect by duplicating the message
