@@ -27,7 +27,7 @@ const PdfViewer = ({
         backgroundColor: 'rgba(0, 0, 0, 0.95)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        zIndex: 999999,  // High z-index to go OVER Omnia UI
+        zIndex: 100000,  // 10x higher than highest Omnia UI (10000)
         display: 'flex',
         flexDirection: 'column',
       }}
