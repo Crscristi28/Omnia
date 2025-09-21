@@ -98,9 +98,8 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // Smart context-aware tool detection
+    // Simple direct keyword detection - FUCK the context complexity
     const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
-    const recentMessages = messages.slice(-5).map(m => (m.text || m.content || '').toLowerCase()).join(' ');
 
     // Stop signals - user wants to end current action
     const stopKeywords = ['enough', 'stop', 'that\'s enough', 'no more', 'finish', 'done', 'that\'s all'];
@@ -116,17 +115,8 @@ export default async function handler(req, res) {
       'character', 'scene', 'concept', 'mockup', 'prototype', 'visualization'
     ];
 
-    // Agreement signals - user agrees to previous suggestion
-    const agreementKeywords = ['yes', 'sure', 'okay', 'ok', 'let\'s do it', 'go ahead', 'sounds good'];
-    const hasAgreement = agreementKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
-
-    // Context analysis - check if bot recently mentioned image capabilities
-    const botMentionedImages = recentMessages.includes('image') || recentMessages.includes('visual') || recentMessages.includes('generate');
-
-    // Determine if user wants image generation
-    const directImageRequest = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
-    const contextualImageRequest = botMentionedImages && hasAgreement && !hasStopSignal;
-    const wantsImage = (directImageRequest || contextualImageRequest) && !hasStopSignal;
+    // Direct detection only - simple and reliable
+    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword)) && !hasStopSignal;
 
     let tools = [];
 
@@ -177,8 +167,7 @@ export default async function handler(req, res) {
           }
         }]
       });
-      const detectionReason = directImageRequest ? 'direct keywords' : 'contextual agreement';
-      console.log(`🎨 [GEMINI] Image request detected (${detectionReason}) - providing image generation tool`);
+      console.log('🎨 [GEMINI] Image keywords detected - providing image generation tool');
     } else {
       // Default mode - provide Google Search for current data
       tools.push({
