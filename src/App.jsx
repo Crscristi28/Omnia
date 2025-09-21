@@ -1684,6 +1684,14 @@ function AppContent() {
           timestamp: botTimestamp
         }]);
         
+        // 🔍 DEBUG: What we're sending to Gemini
+        console.log('📤 [FRONTEND-DEBUG] Sending to Gemini:', {
+          messagesCount: messagesWithUser.length,
+          lastUserMessage: messagesWithUser[messagesWithUser.length - 1]?.text?.substring(0, 100),
+          detectedLanguage: detectedLang,
+          timestamp: new Date().toISOString()
+        });
+
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreamingParam, extra = []) => {
@@ -2752,6 +2760,14 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
       
       const detectedLang = detectLanguage(text || 'Dokument');
       setUserLanguage(detectedLang);
+
+      // 🔍 DEBUG: Language detection chain
+      console.log('🌍 [FRONTEND-DEBUG] Language Detection Chain:', {
+        userInput: text,
+        detectedLanguage: detectedLang,
+        inputLength: text?.length || 0,
+        timestamp: new Date().toISOString()
+      });
       
       // Use the cleaned messages if cleanup happened, otherwise use current
       const messagesWithUser = currentMessagesWithUser || [...currentMessages, userMessage];

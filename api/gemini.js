@@ -15,10 +15,20 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { requestId, messages, system, max_tokens = 8000, documents = [], imageMode = false } = req.body;
-    
+    const { requestId, messages, system, max_tokens = 8000, documents = [], imageMode = false, language } = req.body;
+
     // Log request ID for debugging concurrent requests
     console.log('🔄 [GEMINI] Processing request ID:', requestId || 'NO_ID');
+
+    // 🔍 DEBUG: What backend received from frontend
+    console.log('📥 [BACKEND-DEBUG] Gemini API received:', {
+      requestId,
+      messagesCount: messages?.length || 0,
+      lastUserMessage: messages?.[messages.length - 1]?.content?.substring(0, 100) || messages?.[messages.length - 1]?.text?.substring(0, 100),
+      systemPromptLength: system?.length || 0,
+      detectedLanguage: language,
+      timestamp: new Date().toISOString()
+    });
     
     
     // Check for required environment variables
@@ -212,6 +222,15 @@ export default async function handler(req, res) {
     console.log(`🚀 Sending to Gemini 2.5 Flash ${modeText}...`);
 
     // Generate response with streaming
+    // 🔍 DEBUG: What we're sending to actual Gemini model
+    console.log('🚀 [BACKEND-DEBUG] Calling Gemini with:', {
+      messagesCount: geminiMessages.length,
+      systemInstructionLength: finalSystemInstruction?.length || 0,
+      toolsCount: tools.length,
+      maxTokens: max_tokens,
+      timestamp: new Date().toISOString()
+    });
+
     const result = await generativeModel.generateContentStream({
       contents: geminiMessages,
       generationConfig: {
@@ -248,6 +267,16 @@ export default async function handler(req, res) {
             if (part.text) {
               const textChunk = part.text;
               fullText += textChunk; // Build complete text
+
+              // 🔍 DEBUG: First response chunk from Gemini
+              if (fullText.length < 100) { // Only log first chunk
+                console.log('📤 [BACKEND-DEBUG] First Gemini response chunk:', {
+                  requestId,
+                  firstChunk: textChunk.substring(0, 100),
+                  chunkLanguage: textChunk.length > 5 ? 'detected_soon' : 'too_short',
+                  timestamp: new Date().toISOString()
+                });
+              }
               
               // 🚀 ROBUST STREAMING: Send raw chunks with immediate flush
               res.write(JSON.stringify({ 
