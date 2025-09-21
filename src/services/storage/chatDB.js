@@ -253,7 +253,8 @@ const chatDB = {
           text: message.text,
           type: message.type || 'text',
           attachments: cleanAttachments,
-          image: message.image || null  // Fix: Save Imagen images too
+          image: message.image || null,  // Fix: Save Imagen images too
+          pdf: message.pdf || null       // 🔧 CRITICAL FIX: Save PDF data too!
         };
         // Use put() instead of add() for upsert behavior with UUID
         await db.messages.put(messageRecord);
@@ -361,7 +362,9 @@ const chatDB = {
         sender: message.sender,
         text: message.text,
         type: message.type || 'text',
-        attachments: cleanAttachments
+        attachments: cleanAttachments,
+        image: message.image || null,    // 🔧 CRITICAL FIX: Save image data too!
+        pdf: message.pdf || null         // 🔧 CRITICAL FIX: Save PDF data too!
       };
       
       // Save message to messages table using put for upsert
