@@ -100,11 +100,35 @@ export default async function handler(req, res) {
     // Analyze user's last message to determine intent
     const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
     const imageKeywords = [
-      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render',
+      // Action words - all languages
+      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch', 'visualize',
+      'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej', 'navrhni', 'ilustruj',
+      'generează', 'creează', 'desenează', 'pictează', 'fă', 'realizează',
+      'erstelle', 'zeichne', 'male', 'entwirf', 'mache', 'gestalte',
+      'создай', 'нарисуй', 'сделай', 'изобрази', 'нарисуй', 'создать',
+      'stwórz', 'narysuj', 'namaluj', 'zrób', 'zaprojektuj',
+
+      // Confirmation/agreement words - all languages
+      'ano', 'yes', 'jo', 'ok', 'okay', 'sure', 'do it', 'uděl to', 'tak jo', 'prosím',
+      'da', 'sigur', 'să facem', 'hai să', 'te rog',
+      'ja', 'sicher', 'mach es', 'los geht\'s', 'bitte',
+      'да', 'конечно', 'давай', 'сделай это', 'пожалуйста',
+      'tak', 'pewnie', 'zrób to', 'chodźmy', 'proszę',
+      'sounds good', 'let\'s do it', 'go ahead', 'please do',
+
+      // Image content words - all languages
       'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
-      'obrázek', 'obrázky', 'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej',
-      'car', 'house', 'landscape', 'portrait', 'animal', 'cat', 'dog', 'tree',
-      'vánoční', 'christmas', 'logo', 'icon', 'banner', 'poster', 'wallpaper'
+      'obrázek', 'obrázky', 'ilustrace', 'fotka', 'kresba', 'malba',
+      'imagine', 'poză', 'ilustrație', 'desen', 'pictură', 'grafică',
+      'bild', 'foto', 'illustration', 'zeichnung', 'gemälde', 'grafik',
+      'изображение', 'картинка', 'фото', 'рисунок', 'иллюстрация',
+      'obraz', 'zdjęcie', 'ilustracja', 'rysunek', 'malarstwo',
+
+      // Visual objects
+      'logo', 'icon', 'banner', 'poster', 'wallpaper', 'character', 'scene', 'concept',
+      'car', 'auto', 'house', 'dům', 'landscape', 'krajina', 'portrait', 'portrét',
+      'animal', 'zvíře', 'cat', 'kočka', 'dog', 'pes', 'tree', 'strom',
+      'vánoční', 'christmas'
     ];
     const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
 
