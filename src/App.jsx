@@ -1794,6 +1794,8 @@ function AppContent() {
                 const pdfTimestamp = Date.now();
 
                 console.log('📄 PDF received:', pdfData.title);
+                console.log('🔍 [DEBUG] PDF base64 length:', pdfData.base64?.length);
+                console.log('🔍 [DEBUG] PDF base64 start:', pdfData.base64?.substring(0, 50));
                 console.log('📤 [UPLOAD] Uploading PDF immediately, will display when ready');
 
                 // UPLOAD FIRST (async) - same as images
