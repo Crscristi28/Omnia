@@ -10,7 +10,10 @@ import { X, Download, FileText, File } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 // Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 const DocumentViewer = ({ 
   isOpen, 
@@ -278,7 +281,7 @@ const DocumentViewer = ({
                 padding: '1rem'
               }}>
                 <Document
-                  file={document.url || document.base64}
+                  file={{ data: document.url || document.base64 }}
                   onLoadSuccess={({ numPages }) => setNumPages(numPages)}
                   onLoadError={(error) => setError(error.message)}
                   loading={
