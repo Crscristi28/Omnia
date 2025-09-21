@@ -143,7 +143,7 @@ function AppContent() {
   const [previousModel, setPreviousModel] = useState(null);
   
   // 🌍 LANGUAGE & UI STATE (UNCHANGED)
-  const [userLanguage, setUserLanguage] = useState('cs');
+  const [userLanguage, setUserLanguage] = useState('en');
   const [uiLanguage, setUILanguage] = useState('cs');
   
   // 🔗 SOURCES STATE (UNCHANGED)
@@ -1074,7 +1074,7 @@ function AppContent() {
       
       sessionManager.clearSession();
       setMessages([]);
-      setUserLanguage('cs');
+      setUserLanguage('en');
       
       // 📄 Clear document states to prevent context leakage
       setActiveDocumentContexts([]);
@@ -2758,7 +2758,7 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     // Now send to AI with text and the processed documents
     if (text.trim() || processedDocuments.length > 0) {
       
-      const detectedLang = detectLanguage(text || 'Dokument');
+      const detectedLang = detectLanguage(text || 'Document');
       setUserLanguage(detectedLang);
 
       // 🔍 DEBUG: Language detection chain
