@@ -143,7 +143,7 @@ function AppContent() {
   const [previousModel, setPreviousModel] = useState(null);
   
   // 🌍 LANGUAGE & UI STATE (UNCHANGED)
-  const [userLanguage, setUserLanguage] = useState('en');
+  const [userLanguage, setUserLanguage] = useState('cs');
   const [uiLanguage, setUILanguage] = useState('cs');
   
   // 🔗 SOURCES STATE (UNCHANGED)
@@ -2759,6 +2759,14 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
     if (text.trim() || processedDocuments.length > 0) {
       
       const detectedLang = detectLanguage(text || 'Document');
+
+      // 🔍 DEBUG: Language detection result BEFORE setting state
+      console.log('🔍 [DETECTION-DEBUG] Detection result:', {
+        inputText: text,
+        detectionResult: detectedLang,
+        previousUserLanguage: userLanguage
+      });
+
       setUserLanguage(detectedLang);
 
       // 🔍 DEBUG: Language detection chain
