@@ -469,7 +469,9 @@ export default async function handler(req, res) {
                   const { title, content, documentType = 'document' } = part.functionCall.args;
 
                   // Call PDF generation API
-                  const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
+                  const baseUrl = process.env.NODE_ENV === 'production' ?
+                    `https://${process.env.VERCEL_URL || 'omnia-one.com'}` :
+                    'http://localhost:3001';
                   const pdfResponse = await fetch(`${baseUrl}/api/generate-pdf`, {
                     method: 'POST',
                     headers: {
