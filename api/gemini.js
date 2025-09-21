@@ -150,6 +150,18 @@ export default async function handler(req, res) {
     ];
     const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
 
+    // Check for PDF generation intent
+    const pdfKeywords = [
+      'pdf', 'document', 'report', 'generate pdf', 'create pdf', 'make pdf',
+      'vytvoř pdf', 'vygeneruj pdf', 'dokument', 'zpráva', 'report',
+      'generează pdf', 'creează document', 'raport',
+      'erstelle pdf', 'generiere pdf', 'dokument', 'bericht',
+      'создай pdf', 'сгенерируй pdf', 'документ', 'отчет',
+      'stwórz pdf', 'wygeneruj pdf', 'dokument', 'raport',
+      'export', 'download', 'file', 'soubor', 'fișier', 'datei', 'файл', 'plik'
+    ];
+    const wantsPDF = pdfKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+
     let tools = [];
 
     if (imageMode) {
@@ -200,6 +212,35 @@ export default async function handler(req, res) {
         }]
       });
       console.log('🎨 [GEMINI] Auto-detected image request - providing image generation tool');
+    } else if (wantsPDF) {
+      // Auto-detected PDF request - provide PDF generation tool
+      tools.push({
+        functionDeclarations: [{
+          name: "generate_pdf",
+          description: "Generate a PDF document from markdown content. Use this when user asks for documents, reports, or PDF files.",
+          parameters: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string",
+                description: "Title of the PDF document"
+              },
+              content: {
+                type: "string",
+                description: "Full markdown content for the document with proper formatting (headers, lists, tables, etc.)"
+              },
+              documentType: {
+                type: "string",
+                description: "Type of document for styling",
+                enum: ["report", "invoice", "cv", "document"],
+                default: "document"
+              }
+            },
+            required: ["title", "content"]
+          }
+        }]
+      });
+      console.log('📄 [GEMINI] Auto-detected PDF request - providing PDF generation tool');
     } else {
       // Default mode - provide Google Search for current data
       tools.push({
@@ -387,6 +428,85 @@ export default async function handler(req, res) {
                   }) + '\n');
                   if (typeof res.flush === 'function') { res.flush(); }
                   return; // End stream after error
+                }
+              } else if (part.functionCall.name === 'generate_pdf') {
+                try {
+                  console.log('📄 [DEBUG] Calling PDF generation API...');
+
+                  const { title, content, documentType = 'document' } = part.functionCall.args;
+
+                  // Call PDF generation API
+                  const pdfResponse = await fetch(`${process.env.NODE_ENV === 'production' ? 'https://omnia-one.com' : 'http://localhost:3000'}/api/generate-pdf`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      title,
+                      content,
+                      documentType
+                    })
+                  });
+
+                  if (pdfResponse.ok) {
+                    const contentType = pdfResponse.headers.get('content-type');
+
+                    if (contentType && contentType.includes('application/pdf')) {
+                      // PDF generated successfully
+                      const pdfBuffer = await pdfResponse.arrayBuffer();
+                      const base64PDF = Buffer.from(pdfBuffer).toString('base64');
+
+                      // Send PDF to client
+                      res.write(JSON.stringify({
+                        requestId,
+                        type: 'pdf_generated',
+                        title,
+                        base64: base64PDF,
+                        filename: `${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+                      }) + '\n');
+                      if (typeof res.flush === 'function') { res.flush(); }
+
+                      console.log('✅ [GEMINI] PDF generated successfully:', title);
+                      return; // End stream after PDF generation
+
+                    } else {
+                      // HTML fallback received
+                      const fallbackData = await pdfResponse.json();
+
+                      res.write(JSON.stringify({
+                        requestId,
+                        type: 'pdf_fallback',
+                        title,
+                        html: fallbackData.html,
+                        message: 'PDF content ready (HTML format)'
+                      }) + '\n');
+                      if (typeof res.flush === 'function') { res.flush(); }
+
+                      console.log('📄 [GEMINI] PDF fallback (HTML) sent:', title);
+                      return;
+                    }
+                  } else {
+                    const errorText = await pdfResponse.text();
+                    console.error('❌ [GEMINI] PDF API failed:', pdfResponse.status, errorText);
+
+                    res.write(JSON.stringify({
+                      requestId,
+                      type: 'error',
+                      message: `PDF generation failed: ${pdfResponse.status} - ${errorText}`
+                    }) + '\n');
+                    if (typeof res.flush === 'function') { res.flush(); }
+                    return;
+                  }
+                } catch (pdfError) {
+                  console.error('💥 [GEMINI] PDF call error:', pdfError);
+
+                  res.write(JSON.stringify({
+                    requestId,
+                    type: 'error',
+                    message: `PDF generation failed: ${pdfError.message}`
+                  }) + '\n');
+                  if (typeof res.flush === 'function') { res.flush(); }
+                  return;
                 }
               }
             }
