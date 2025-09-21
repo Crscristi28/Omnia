@@ -24,20 +24,58 @@ const PdfViewer = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: '#ffffff',  // Clean white background
-        zIndex: 999999,  // 🔧 FIX: Much higher z-index to go OVER Omnia UI
+        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        zIndex: 999999,  // High z-index to go OVER Omnia UI
         display: 'flex',
         flexDirection: 'column',
       }}
+      onClick={onClose}
     >
-      {/* Full-screen PDF Content - NO UI ELEMENTS */}
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '1rem 1.5rem',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div style={{
+          color: 'white',
+          fontSize: '18px',
+          fontWeight: '500'
+        }}>
+          {pdfData?.title || 'PDF Document'}
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            color: 'white',
+            padding: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '20px'
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* PDF Content */}
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           flex: 1,
-          overflow: 'hidden',
-          backgroundColor: '#ffffff',
-          height: '100vh',
-          width: '100vw'
+          overflow: 'auto',
+          padding: '1rem',
+          backgroundColor: 'white'
         }}
       >
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
@@ -47,22 +85,6 @@ const PdfViewer = ({
           />
         </Worker>
       </div>
-
-      {/* Invisible close area - click anywhere to close */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '60px',
-          height: '60px',
-          cursor: 'pointer',
-          zIndex: 9999999,  // Even higher than PDF container
-          backgroundColor: 'transparent'
-        }}
-        title="Click to close"
-      />
     </div>
   );
 };
