@@ -1989,6 +1989,12 @@ function AppContent() {
                   }
                   return currentMessages;
                 });
+
+                // Wait a bit for PDF state updates, then save to DB
+                setTimeout(async () => {
+                  const finalMessages = messagesRef.current;
+                  await checkAutoSave(finalMessages, activeChatId);
+                }, 50);
               }
 
               // If no images or PDFs, save immediately
