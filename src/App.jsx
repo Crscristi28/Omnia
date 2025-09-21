@@ -1852,26 +1852,24 @@ function AppContent() {
             }
           }
 
-          // Update the last bot message with the image - reduced timeout for faster processing
-          setTimeout(() => {
-            console.log('🎨 Updating bot message with generated image...');
-            setMessages(currentMessages => {
-              console.log('🔍 Current messages count:', currentMessages.length);
-              const lastMessage = currentMessages[currentMessages.length - 1];
-              console.log('🔍 Last message:', lastMessage ? `${lastMessage.sender}: ${lastMessage.text?.substring(0, 50)}...` : 'null');
+          // Update the last bot message with the image immediately
+          console.log('🎨 Updating bot message with generated image...');
+          setMessages(currentMessages => {
+            console.log('🔍 Current messages count:', currentMessages.length);
+            const lastMessage = currentMessages[currentMessages.length - 1];
+            console.log('🔍 Last message:', lastMessage ? `${lastMessage.sender}: ${lastMessage.text?.substring(0, 50)}...` : 'null');
 
-              if (lastMessage && lastMessage.sender === 'bot') {
-                const updatedMessage = {
-                  ...lastMessage,
-                  image: imageData  // Use 'image' to match MessageItem.jsx expectations
-                };
-                console.log('✅ Updated bot message with image:', imageData.storageUrl);
-                return [...currentMessages.slice(0, -1), updatedMessage];
-              }
-              console.log('❌ Could not update message - no bot message found');
-              return currentMessages;
-            });
-          }, 50); // Reduced from 100ms to 50ms to ensure it runs before DB save
+            if (lastMessage && lastMessage.sender === 'bot') {
+              const updatedMessage = {
+                ...lastMessage,
+                image: imageData  // Use 'image' to match MessageItem.jsx expectations
+              };
+              console.log('✅ Updated bot message with image:', imageData.storageUrl);
+              return [...currentMessages.slice(0, -1), updatedMessage];
+            }
+            console.log('❌ Could not update message - no bot message found');
+            return currentMessages;
+          });
         }
 
         // Messages already updated via streaming, just check auto-save
