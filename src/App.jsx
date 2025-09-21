@@ -1796,17 +1796,26 @@ function AppContent() {
                 console.log('📄 PDF received:', pdfData.title);
                 console.log('🔍 [DEBUG] PDF base64 length:', pdfData.base64?.length);
                 console.log('🔍 [DEBUG] PDF base64 start:', pdfData.base64?.substring(0, 50));
-                console.log('📤 [UPLOAD] Uploading PDF immediately, will display when ready');
 
-                // UPLOAD FIRST (async) - same as images
+                // IMMEDIATELY assign PDF data (like images) - this fixes timing issue
+                generatedPdfs = [{
+                  title: pdfData.title,
+                  filename: pdfData.filename || `${pdfData.title}.pdf`,
+                  base64: pdfData.base64, // Keep original base64 for processing
+                  timestamp: pdfTimestamp
+                }];
+                console.log('✅ [PDF] generatedPdfs assigned immediately:', generatedPdfs.length);
+
+                // Start upload immediately in parallel with text streaming (like images)
+                console.log('🚀 Starting parallel PDF upload during streaming...');
                 uploadBase64ToSupabaseStorage(
                   pdfData.base64,
                   `generated-${pdfTimestamp}-${pdfData.title.replace(/[^a-z0-9]/gi, '_')}.pdf`,
                   'generated-pdfs-temp'
                 ).then(uploadResult => {
-                  console.log('✅ [UPLOAD] PDF uploaded, storing for display');
+                  console.log('✅ [UPLOAD] PDF uploaded, updating with storage URLs');
 
-                  // Store PDF data for display
+                  // Update the already-assigned PDF data with storage URLs
                   const uploadedPdfData = {
                     title: pdfData.title,
                     filename: pdfData.filename || `${pdfData.title}.pdf`,
@@ -1816,7 +1825,7 @@ function AppContent() {
                   };
                   console.log('✅ PDF upload completed, ready for display after streaming');
 
-                  // Don't display yet - just prepare the data for after streaming
+                  // Update generatedPdfs with storage data (like images)
                   generatedPdfs = [uploadedPdfData];
                 }).catch(error => {
                   console.error('💥 PDF upload failed:', error);
