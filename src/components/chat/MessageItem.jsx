@@ -494,64 +494,13 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
         </div>
       </div>
 
-      {/* PDF Modal Overlay */}
-      {showPdf && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          {/* Close Button */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            padding: '20px'
-          }}>
-            <button
-              onClick={() => setShowPdf(false)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                color: 'white',
-                fontSize: '20px',
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* PDF Iframe */}
-          <iframe
-            src={pdfDataUrl}
-            style={{
-              flex: 1,
-              border: 'none',
-              margin: '0 20px 20px 20px',
-              borderRadius: '8px'
-            }}
-            title={msg.pdf.title || 'PDF Document'}
-          />
-        </div>
-      )}
-
-      {/* NEW: Clean PDF Viewer */}
+      {/* Clean PDF Viewer */}
       <PdfViewer
         isOpen={showCleanPdf}
         onClose={() => setShowCleanPdf(false)}
         pdfData={{
           url: pdfDataUrl,
-          title: msg.pdf?.title || 'Generated PDF',
-          base64: msg.pdf?.base64
+          title: msg.pdf.title || 'Generated PDF'
         }}
       />
     </div>

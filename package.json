@@ -18,6 +18,8 @@
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.21.0",
     "@heroicons/react": "^2.2.0",
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
     "@sparticuz/chromium": "^138.0.2",
     "@supabase/supabase-js": "^2.56.0",
     "@uiw/react-md-editor": "^4.0.8",

@@ -2,6 +2,12 @@
 // Using @react-pdf-viewer/core library for professional PDF viewing
 
 import React from 'react';
+import { Viewer, Worker } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+
+// Import styles
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 const PdfViewer = ({
   isOpen,
@@ -9,6 +15,9 @@ const PdfViewer = ({
   pdfData, // { url, title, base64 }
 }) => {
   if (!isOpen) return null;
+
+  // Create the default layout plugin
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   return (
     <div
@@ -66,25 +75,15 @@ const PdfViewer = ({
           flex: 1,
           overflow: 'auto',
           padding: '1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
+          backgroundColor: 'white'
         }}
       >
-        {/* TODO: Replace with @react-pdf-viewer component */}
-        <div style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: '12px',
-          padding: '2rem',
-          textAlign: 'center',
-          color: '#333'
-        }}>
-          <h3>Clean PDF Viewer</h3>
-          <p>@react-pdf-viewer library will be installed here</p>
-          <p>Title: {pdfData?.title}</p>
-          <p>Data available: {pdfData?.url ? 'Yes' : 'No'}</p>
-        </div>
+        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+          <Viewer
+            fileUrl={pdfData?.url}
+            plugins={[defaultLayoutPluginInstance]}
+          />
+        </Worker>
       </div>
     </div>
   );
