@@ -5,7 +5,7 @@
 import { profileService } from '../profile/profileService.js';
 
 const geminiService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, documents = [], imageMode = false) {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, documents = [], imageMode = false, pdfMode = false) {
     try {
       // Generate unique request ID for concurrent user isolation
       const requestId = Date.now() + '-' + Math.random().toString(36).substring(2, 11);
@@ -26,7 +26,8 @@ const geminiService = {
           system: systemPrompt,
           max_tokens: 8000,
           documents: documents,
-          imageMode: imageMode
+          imageMode: imageMode,
+          pdfMode: pdfMode
         })
       });
 

@@ -1692,6 +1692,15 @@ function AppContent() {
           timestamp: new Date().toISOString()
         });
 
+        // 📄 PDF Detection - check if user wants PDF generation
+        const lastUserText = messagesWithUser[messagesWithUser.length - 1]?.text || '';
+        const pdfKeywords = [
+          'pdf', 'document', 'report', 'generate pdf', 'create pdf', 'make pdf',
+          'vytvoř pdf', 'vygeneruj pdf', 'dokument', 'zpráva', 'report',
+          'export', 'download', 'file', 'soubor'
+        ];
+        const wantsPDF = pdfKeywords.some(keyword => lastUserText.toLowerCase().includes(keyword));
+
         const result = await geminiService.sendMessage(
           messagesWithUser,
           (chunk, isStreamingParam, extra = []) => {
@@ -1781,7 +1790,9 @@ function AppContent() {
             setIsSearching(true);
             setTimeout(() => setIsSearching(false), 3000);
           },
-          documentsToPassToGemini
+          documentsToPassToGemini,
+          false, // imageMode
+          wantsPDF // pdfMode
         );
         
         // Start animation interval immediately for progressive streaming
