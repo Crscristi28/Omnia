@@ -377,25 +377,25 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
   const isUploadedPdf = !!uploadedPdfData;
 
   const handleViewPdf = () => {
-    if (isGeneratedPdf && msg.pdf && msg.pdf.base64) {
-      // Convert JSON byte array to real PDF base64 (for generated PDFs)
-      try {
-        const jsonString = atob(msg.pdf.base64);
-        const byteArray = JSON.parse(jsonString);
-        const uint8Array = new Uint8Array(Object.keys(byteArray).length);
-        Object.keys(byteArray).forEach(key => {
-          uint8Array[parseInt(key)] = byteArray[key];
-        });
-        const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
-        const realBase64 = btoa(binaryString);
-        const dataUrl = `data:application/pdf;base64,${realBase64}`;
+    if (isGeneratedPdf && msg.pdf) {
+      console.log('🔍 [PDF-VIEWER] Opening generated PDF:', msg.pdf);
 
+      // Check if we have storageUrl (preferred) or base64
+      if (msg.pdf.storageUrl) {
+        console.log('📄 [PDF-VIEWER] Using Supabase storage URL');
+        setPdfDataUrl(msg.pdf.storageUrl);
+        setShowCleanPdf(true);
+      } else if (msg.pdf.base64) {
+        console.log('📄 [PDF-VIEWER] Using base64 data (already processed)');
+        // PDF base64 is already processed in App.jsx - use directly
+        const dataUrl = `data:application/pdf;base64,${msg.pdf.base64}`;
         setPdfDataUrl(dataUrl);
         setShowCleanPdf(true);
-      } catch (error) {
-        console.error('❌ Generated PDF conversion error:', error);
+      } else {
+        console.error('❌ [PDF-VIEWER] No PDF data available');
       }
     } else if (isUploadedPdf && uploadedPdfData) {
+      console.log('📄 [PDF-VIEWER] Using uploaded PDF data');
       // Use uploaded PDF data directly
       const url = uploadedPdfData.url || uploadedPdfData.base64;
       setPdfDataUrl(url);
