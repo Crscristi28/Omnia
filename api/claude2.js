@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     if (!API_KEY) {
       res.write(JSON.stringify({
         error: true,
-        message: 'Claude API key není nastaven'
+        message: 'Claude API key not configured'
       }) + '\n');
       return res.end();
     }
@@ -156,7 +156,7 @@ export default async function handler(req, res) {
       // Send search notification
       res.write(JSON.stringify({
         type: 'search_start',
-        message: '🔍 Vyhledávám aktuální informace...'
+        message: '🔍 Searching for current information...'
       }) + '\n');
       
       // Small delay to simulate search

@@ -36,7 +36,7 @@ export default async function handler(req) {
         JSON.stringify({ 
           success: false,
           error: 'Configuration error',
-          message: 'ElevenLabs API key není nastaven'
+          message: 'ElevenLabs API key not configured'
         }), 
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

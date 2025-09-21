@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     if (!API_KEY) {
       return res.status(500).json({
         success: false,
-        error: 'Claude API key není nastaven'
+        error: 'Claude API key not configured'
       });
     }
 

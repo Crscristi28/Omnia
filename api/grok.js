@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const API_KEY = process.env.GROK_API_KEY;
     
     if (!API_KEY) {
-      res.write(JSON.stringify({ error: true, message: 'Grok API key není nastaven' }) + '\n');
+      res.write(JSON.stringify({ error: true, message: 'Grok API key not configured' }) + '\n');
       return res.end();
     }
 
@@ -140,7 +140,7 @@ function needsRealTimeData(query) {
     'weather', 'počasí', 'teplota', 'temperatura', 
     'news', 'zprávy', 'breaking', 'latest',
     'bitcoin', 'crypto', 'ethereum', 'btc', 'eth',
-    'current', 'aktuální', 'teď', 'now', 'dnes', 'today',
+    'current', 'now', 'today',
     'exchange', 'rate', 'měna', 'dollar', 'euro'
   ];
   

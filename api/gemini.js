@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     
     // Check for required environment variables
     if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      res.write(JSON.stringify({ requestId, error: true, message: 'Google Cloud credentials nejsou kompletní' }) + '\n');
+      res.write(JSON.stringify({ requestId, error: true, message: 'Google Cloud credentials are incomplete' }) + '\n');
       return res.end();
     }
 
@@ -253,7 +253,7 @@ export default async function handler(req, res) {
         if (item.candidates && item.candidates[0].groundingMetadata) {
           const extractedSources = extractSources(item.candidates[0].groundingMetadata);
           if (extractedSources.length > 0 && !searchNotified) {
-            res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
+            res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Searching for current data via Google...' }) + '\n');
             if (typeof res.flush === 'function') { res.flush(); }
             sources = extractedSources;
             searchNotified = true;
@@ -463,15 +463,15 @@ export default async function handler(req, res) {
 // 🔍 ENHANCE SEARCH WITH TIMESTAMP
 function enhanceForSearch(query) {
   if (needsCurrentData(query)) {
-    const currentTime = new Date().toLocaleString('cs-CZ', { 
+    const currentTime = new Date().toLocaleString('en-US', {
       timeZone: 'Europe/Prague',
       year: 'numeric',
-      month: 'numeric', 
+      month: 'numeric',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
-    return `${query}\n\nAktuální čas: ${currentTime}`;
+    return `${query}\n\nCurrent time: ${currentTime}`;
   }
   return query;
 }
@@ -479,7 +479,7 @@ function enhanceForSearch(query) {
 // 🎯 CURRENT DATA DETECTION
 function needsCurrentData(query) {
   const keywords = [
-    'aktuální', 'current', 'nejnovější', 'latest', 'teď', 'now', 'dnes', 'today',
+    'current', 'latest', 'now', 'today',
     'cena', 'price', 'kurz', 'stock', 'akcie', 'shares', 'bitcoin', 'crypto',
     'počasí', 'weather', 'zprávy', 'news', 'breaking', 'exchange', 'rate',
     'dollar', 'euro', 'koruna', 'ethereum', 'btc', 'eth', 'teplota'

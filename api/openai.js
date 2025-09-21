@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       console.error('❌ OPENAI_API_KEY not set');
       return res.status(500).json({ 
         error: 'Configuration error',
-        message: 'OpenAI API key není nastaven'
+        message: 'OpenAI API key not configured'
       });
     }
 
