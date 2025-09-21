@@ -242,11 +242,37 @@ export default async function handler(req, res) {
       });
       console.log('📄 [GEMINI] Auto-detected PDF request - providing PDF generation tool');
     } else {
-      // Default mode - provide Google Search for current data
+      // Default mode - provide Google Search + PDF generation
       tools.push({
         google_search: {}
       });
-      console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
+      tools.push({
+        functionDeclarations: [{
+          name: "generate_pdf",
+          description: "Generate a PDF document from markdown content. Use this when user asks for documents, reports, or PDF files.",
+          parameters: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string",
+                description: "Title of the PDF document"
+              },
+              content: {
+                type: "string",
+                description: "Full markdown content for the document with proper formatting (headers, lists, tables, etc.)"
+              },
+              documentType: {
+                type: "string",
+                description: "Type of document for styling",
+                enum: ["report", "invoice", "cv", "document"],
+                default: "document"
+              }
+            },
+            required: ["title", "content"]
+          }
+        }]
+      });
+      console.log('🔍 [GEMINI] Default mode - providing Google Search + PDF generation tools');
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
