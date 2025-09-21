@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import MessageRenderer from '../MessageRenderer';
 import { SourcesButton } from '../sources';
 import { VoiceButton, CopyButton, ChatOmniaLogo } from '../ui';
+import PdfViewer from '../PdfViewer';
 
 // Import utilities
 import { detectLanguage } from '../../utils/text';
@@ -350,7 +351,7 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
 
 // 📄 Generated PDF View Component
 const GeneratedPdfView = ({ msg, onDocumentView }) => {
-  const [showPdf, setShowPdf] = React.useState(false);
+  const [showCleanPdf, setShowCleanPdf] = React.useState(false);
   const [pdfDataUrl, setPdfDataUrl] = React.useState('');
   const [longPressTimer, setLongPressTimer] = React.useState(null);
 
@@ -369,7 +370,7 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
         const dataUrl = `data:application/pdf;base64,${realBase64}`;
 
         setPdfDataUrl(dataUrl);
-        setShowPdf(true);
+        setShowCleanPdf(true);
       } catch (error) {
         console.error('❌ PDF conversion error:', error);
       }
@@ -542,6 +543,17 @@ const GeneratedPdfView = ({ msg, onDocumentView }) => {
           />
         </div>
       )}
+
+      {/* NEW: Clean PDF Viewer */}
+      <PdfViewer
+        isOpen={showCleanPdf}
+        onClose={() => setShowCleanPdf(false)}
+        pdfData={{
+          url: pdfDataUrl,
+          title: msg.pdf?.title || 'Generated PDF',
+          base64: msg.pdf?.base64
+        }}
+      />
     </div>
   );
 };
