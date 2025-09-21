@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     
     // Check for required environment variables
     if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      res.write(JSON.stringify({ requestId, error: true, message: 'Google Cloud credentials nejsou kompletní' }) + '\n');
+      res.write(JSON.stringify({ requestId, error: true, message: 'Google Cloud credentials not configured' }) + '\n');
       return res.end();
     }
 
@@ -98,16 +98,35 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // Analyze user's last message to determine intent
+    // Smart context-aware tool detection
     const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
+    const recentMessages = messages.slice(-5).map(m => (m.text || m.content || '').toLowerCase()).join(' ');
+
+    // Stop signals - user wants to end current action
+    const stopKeywords = ['enough', 'stop', 'that\'s enough', 'no more', 'finish', 'done', 'that\'s all'];
+    const hasStopSignal = stopKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+
+    // Image generation keywords - expanded English-only list
     const imageKeywords = [
-      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render',
+      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch',
       'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
-      'obrázek', 'obrázky', 'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej',
+      'visual', 'graphic', 'art', 'creative', 'visualize', 'depict', 'show',
       'car', 'house', 'landscape', 'portrait', 'animal', 'cat', 'dog', 'tree',
-      'vánoční', 'christmas', 'logo', 'icon', 'banner', 'poster', 'wallpaper'
+      'christmas', 'logo', 'icon', 'banner', 'poster', 'wallpaper', 'background',
+      'character', 'scene', 'concept', 'mockup', 'prototype', 'visualization'
     ];
-    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+
+    // Agreement signals - user agrees to previous suggestion
+    const agreementKeywords = ['yes', 'sure', 'okay', 'ok', 'let\'s do it', 'go ahead', 'sounds good'];
+    const hasAgreement = agreementKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+
+    // Context analysis - check if bot recently mentioned image capabilities
+    const botMentionedImages = recentMessages.includes('image') || recentMessages.includes('visual') || recentMessages.includes('generate');
+
+    // Determine if user wants image generation
+    const directImageRequest = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+    const contextualImageRequest = botMentionedImages && hasAgreement && !hasStopSignal;
+    const wantsImage = (directImageRequest || contextualImageRequest) && !hasStopSignal;
 
     let tools = [];
 
@@ -158,13 +177,18 @@ export default async function handler(req, res) {
           }
         }]
       });
-      console.log('🎨 [GEMINI] Auto-detected image request - providing image generation tool');
+      const detectionReason = directImageRequest ? 'direct keywords' : 'contextual agreement';
+      console.log(`🎨 [GEMINI] Image request detected (${detectionReason}) - providing image generation tool`);
     } else {
       // Default mode - provide Google Search for current data
       tools.push({
         google_search: {}
       });
-      console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
+      if (hasStopSignal) {
+        console.log('🛑 [GEMINI] Stop signal detected - providing Google Search only');
+      } else {
+        console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
+      }
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
@@ -185,9 +209,9 @@ export default async function handler(req, res) {
       contents: geminiMessages,
       generationConfig: {
         maxOutputTokens: max_tokens,
-        temperature: 0.5,  // Sníženo pro rychlejší odpovědi
-        topP: 0.7,         // Sníženo pro méně exploration
-        topK: 20           // Sníženo pro rychlejší sampling
+        temperature: 0.5,  // Reduced for faster responses
+        topP: 0.7,         // Reduced for less exploration
+        topK: 20           // Reduced for faster sampling
       }
     });
     
@@ -203,7 +227,7 @@ export default async function handler(req, res) {
         if (item.candidates && item.candidates[0].groundingMetadata) {
           const extractedSources = extractSources(item.candidates[0].groundingMetadata);
           if (extractedSources.length > 0 && !searchNotified) {
-            res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Vyhledávám aktuální data přes Google...' }) + '\n');
+            res.write(JSON.stringify({ requestId, type: 'search_start', message: '🔍 Searching current data via Google...' }) + '\n');
             if (typeof res.flush === 'function') { res.flush(); }
             sources = extractedSources;
             searchNotified = true;
@@ -411,7 +435,7 @@ function enhanceForSearch(query) {
       hour: '2-digit',
       minute: '2-digit'
     });
-    return `${query}\n\nAktuální čas: ${currentTime}`;
+    return `${query}\n\nCurrent time: ${currentTime}`;
   }
   return query;
 }

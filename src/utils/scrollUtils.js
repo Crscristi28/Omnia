@@ -20,12 +20,12 @@ export const scrollToUserMessageAt = (virtuosoRef, userMessageIndex) => {
 // 🔼 SCROLL TO LATEST MESSAGE - Show latest message at TOP of viewport (legacy)
 export const scrollToLatestMessage = (virtuosoRef, messages) => {
   if (virtuosoRef.current && messages.length > 0) {
-    const latestMessageIndex = messages.length - 1; // Index poslední přidané zprávy
+    const latestMessageIndex = messages.length - 1; // Index of latest added message
     
     console.log(`🔼 Scrolling to latest message at index: ${latestMessageIndex}`);
     
     virtuosoRef.current.scrollToIndex({
-      index: latestMessageIndex, // Index poslední přidané zprávy
+      index: latestMessageIndex, // Index of latest added message
       align: 'start',
       behavior: 'smooth' // Pro plynulou animaci skrolování
     });

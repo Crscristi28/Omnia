@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     
     // Check for required environment variables - same as gemini.js
     if (!process.env.GOOGLE_CLOUD_PROJECT_ID || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      return res.status(500).json({ error: 'Google Cloud credentials nejsou kompletní' });
+      return res.status(500).json({ error: 'Google Cloud credentials not configured' });
     }
 
     // Parse JSON credentials - same as gemini.js
