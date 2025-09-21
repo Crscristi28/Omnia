@@ -1728,23 +1728,9 @@ function AppContent() {
                         mimeType: imageData.mimeType,
                         timestamp: imageTimestamp
                       };
-                      console.log('✅ Parallel upload completed:', uploadResult.publicUrl);
+                      console.log('✅ Parallel upload completed, ready for display after streaming');
 
-                      // Update message with uploaded image immediately
-                      setMessages(currentMessages => {
-                        const lastMessage = currentMessages[currentMessages.length - 1];
-                        if (lastMessage && lastMessage.sender === 'bot') {
-                          const updatedMessage = {
-                            ...lastMessage,
-                            image: uploadedImageData
-                          };
-                          console.log('✅ Image displayed during streaming');
-                          return [...currentMessages.slice(0, -1), updatedMessage];
-                        }
-                        return currentMessages;
-                      });
-
-                      // Update generatedImages for later use
+                      // Don't display yet - just prepare the data for after streaming
                       generatedImages = [uploadedImageData];
                     }
                   }).catch(error => {
@@ -1838,9 +1824,23 @@ function AppContent() {
               if (generatedImages && generatedImages.length > 0) {
                 const imageData = generatedImages[0];
 
-                // If image already has storageUrl, it was uploaded during streaming
+                // Display image after streaming (whether uploaded during streaming or as fallback)
                 if (imageData.storageUrl) {
-                  console.log('✅ Image already uploaded during streaming, proceeding to save');
+                  console.log('✅ Image already uploaded during streaming, displaying now');
+
+                  // Display the pre-uploaded image
+                  setMessages(currentMessages => {
+                    const lastMessage = currentMessages[currentMessages.length - 1];
+                    if (lastMessage && lastMessage.sender === 'bot') {
+                      const updatedMessage = {
+                        ...lastMessage,
+                        image: imageData
+                      };
+                      console.log('✅ Pre-uploaded image displayed after streaming');
+                      return [...currentMessages.slice(0, -1), updatedMessage];
+                    }
+                    return currentMessages;
+                  });
                 } else if (imageData.base64 && imageData.mimeType) {
                   console.log('🎨 Fallback: uploading image in completion (parallel upload may have failed)');
 
