@@ -4,15 +4,16 @@
 // 🔧 FIXES: "inteligence", "technologie", and other missing words
 
 const detectLanguage = (text) => {
-  if (!text || typeof text !== 'string') return 'cs';
+  if (!text || typeof text !== 'string') return 'en'; // Default to English for international users
   
   const lowerText = text.toLowerCase().trim();
   
-  // 🔧 SHORT TEXT HANDLING - Less aggressive detection
-  if (lowerText.length < 10) {
-    if (['hello', 'hi', 'yes', 'no', 'thanks'].some(word => lowerText.includes(word))) return 'en';
+  // 🔧 SHORT TEXT HANDLING - Enhanced English detection
+  if (lowerText.length < 15) { // Increased threshold
+    if (['hello', 'hi', 'hey', 'yes', 'no', 'thanks', 'tell', 'me', 'you', 'about', 'what', 'how', 'why', 'when', 'where'].some(word => lowerText.includes(word))) return 'en';
     if (['salut', 'bună', 'mulțumesc'].some(word => lowerText.includes(word))) return 'ro';
-    return 'cs'; // Default for short unclear text
+    if (['ahoj', 'děkuji', 'prosím', 'ano', 'ne'].some(word => lowerText.includes(word))) return 'cs';
+    return 'en'; // Default to English for international users
   }
 
   // 1. DIACRITICS DETECTION (highest confidence)
