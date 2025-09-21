@@ -1790,10 +1790,15 @@ function AppContent() {
               )
             );
             
-            // Save to DB after animation completes
+            // Save to DB after animation completes AND after potential image processing
             setTimeout(async () => {
-              const finalMessages = messagesRef.current;
-              await checkAutoSave(finalMessages, activeChatId);
+              // Wait extra time if images were generated to ensure they're processed first
+              const extraDelay = generatedImages && generatedImages.length > 0 ? 150 : 0;
+
+              setTimeout(async () => {
+                const finalMessages = messagesRef.current;
+                await checkAutoSave(finalMessages, activeChatId);
+              }, extraDelay);
             }, 100);
             
             console.log('🎯 Progressive streaming animation complete');
@@ -1847,7 +1852,7 @@ function AppContent() {
             }
           }
 
-          // Update the last bot message with the image
+          // Update the last bot message with the image - reduced timeout for faster processing
           setTimeout(() => {
             console.log('🎨 Updating bot message with generated image...');
             setMessages(currentMessages => {
@@ -1866,7 +1871,7 @@ function AppContent() {
               console.log('❌ Could not update message - no bot message found');
               return currentMessages;
             });
-          }, 100);
+          }, 50); // Reduced from 100ms to 50ms to ensure it runs before DB save
         }
 
         // Messages already updated via streaming, just check auto-save
