@@ -80,13 +80,16 @@ export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket
     }
     const byteArray = new Uint8Array(byteNumbers);
     
-    // Detect MIME type from data URI or use default
+    // Detect MIME type from data URI or infer from filename
     let mimeType = 'application/octet-stream';
     if (base64Data.startsWith('data:')) {
       const match = base64Data.match(/^data:(.*?);base64,/);
       if (match) {
         mimeType = match[1];
       }
+    } else if (fileName.toLowerCase().endsWith('.pdf')) {
+      // Infer MIME type for PDF files when not in data URI
+      mimeType = 'application/pdf';
     }
     
     const blob = new Blob([byteArray], { type: mimeType });
