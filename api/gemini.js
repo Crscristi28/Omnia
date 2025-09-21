@@ -105,12 +105,11 @@ export default async function handler(req, res) {
     const stopKeywords = ['enough', 'stop', 'that\'s enough', 'no more', 'finish', 'done', 'that\'s all'];
     const hasStopSignal = stopKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
 
-    // Simple English keywords - Omnia will understand multilingual requests via prompt
+    // Action keywords only - words that indicate user wants to CREATE something
     const imageKeywords = [
       'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch',
-      'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
-      'logo', 'banner', 'poster', 'wallpaper', 'background', 'icon',
-      'car', 'house', 'landscape', 'portrait', 'animal', 'cat', 'dog', 'tree'
+      'do it', 'make it', 'create it', 'draw it', 'show me', 'visualize',
+      'image', 'picture', 'illustration', 'artwork', 'drawing', 'painting'
     ];
 
     // Direct detection only - simple and reliable
