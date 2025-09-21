@@ -116,6 +116,14 @@ export default async function handler(req, res) {
       'tak', 'pewnie', 'zrób to', 'chodźmy', 'proszę',
       'sounds good', 'let\'s do it', 'go ahead', 'please do',
 
+      // Request variations - all languages
+      'similar', 'another', 'one more', 'more', 'next', 'show it', 'show me',
+      'podobný', 'další', 'ještě jeden', 'víc', 'ukaž', 'ukaž mi',
+      'similar', 'alt', 'încă unul', 'mai mult', 'arată-mi',
+      'ähnlich', 'noch ein', 'mehr', 'zeig mir',
+      'похожий', 'еще один', 'покажи', 'покажи мне',
+      'podobny', 'jeszcze jeden', 'więcej', 'pokaż mi',
+
       // Image content words - all languages
       'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
       'obrázek', 'obrázky', 'ilustrace', 'fotka', 'kresba', 'malba',
