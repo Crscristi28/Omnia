@@ -1797,11 +1797,47 @@ function AppContent() {
                 console.log('🔍 [DEBUG] PDF base64 length:', pdfData.base64?.length);
                 console.log('🔍 [DEBUG] PDF base64 start:', pdfData.base64?.substring(0, 50));
 
+                // 🚨 CRITICAL FIX: Convert JSON byte array to proper base64
+                let processedBase64;
+                try {
+                  // Check if the base64 data is actually a JSON-encoded byte array
+                  const decodedData = atob(pdfData.base64);
+                  if (decodedData.startsWith('{"0":')) {
+                    console.log('🔧 [PDF-FIX] Detected JSON byte array, converting to proper base64...');
+                    const jsonData = JSON.parse(decodedData);
+
+                    // Convert JSON object {"0": 37, "1": 80, ...} to Uint8Array
+                    const keys = Object.keys(jsonData).map(Number).sort((a, b) => a - b);
+                    const byteArray = new Uint8Array(keys.length);
+                    keys.forEach((key, index) => {
+                      byteArray[index] = jsonData[key];
+                    });
+
+                    // Convert to proper base64
+                    const binaryString = Array.from(byteArray).map(byte => String.fromCharCode(byte)).join('');
+                    processedBase64 = btoa(binaryString);
+                    console.log('✅ [PDF-FIX] Converted to proper base64, length:', processedBase64.length);
+
+                    // Verify PDF header
+                    const verifyBytes = atob(processedBase64);
+                    const headerCheck = verifyBytes.substring(0, 4);
+                    console.log('🔍 [PDF-FIX] Header verification:', headerCheck, headerCheck === '%PDF' ? '✅' : '❌');
+                  } else {
+                    // It's already proper base64
+                    processedBase64 = pdfData.base64;
+                    console.log('✅ [PDF-FIX] Base64 already in correct format');
+                  }
+                } catch (error) {
+                  // If parsing fails, use original data
+                  console.warn('⚠️ [PDF-FIX] Could not parse as JSON, using original:', error.message);
+                  processedBase64 = pdfData.base64;
+                }
+
                 // IMMEDIATELY assign PDF data (like images) - this fixes timing issue
                 generatedPdfs = [{
                   title: pdfData.title,
                   filename: pdfData.filename || `${pdfData.title}.pdf`,
-                  base64: pdfData.base64, // Keep original base64 for processing
+                  base64: processedBase64, // Use processed base64
                   timestamp: pdfTimestamp
                 }];
                 console.log('✅ [PDF] generatedPdfs assigned immediately:', generatedPdfs.length);
@@ -1809,7 +1845,7 @@ function AppContent() {
                 // Start upload immediately in parallel with text streaming (like images)
                 console.log('🚀 Starting parallel PDF upload during streaming...');
                 uploadBase64ToSupabaseStorage(
-                  pdfData.base64,
+                  processedBase64, // Use processed base64 for upload
                   `generated-${pdfTimestamp}-${pdfData.title.replace(/[^a-z0-9]/gi, '_')}.pdf`,
                   'generated-pdfs-temp'
                 ).then(uploadResult => {
