@@ -411,21 +411,9 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
       let filename = 'document.pdf';
 
       if (isGeneratedPdf && msg.pdf && msg.pdf.base64) {
-        try {
-          const jsonString = atob(msg.pdf.base64);
-          const byteArray = JSON.parse(jsonString);
-          const uint8Array = new Uint8Array(Object.keys(byteArray).length);
-          Object.keys(byteArray).forEach(key => {
-            uint8Array[parseInt(key)] = byteArray[key];
-          });
-          const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
-          const realBase64 = btoa(binaryString);
-          dataUrl = `data:application/pdf;base64,${realBase64}`;
-          filename = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
-        } catch (error) {
-          console.error('❌ Long press generated PDF error:', error);
-          return;
-        }
+        // PDF base64 is already properly processed in App.jsx - use directly
+        dataUrl = `data:application/pdf;base64,${msg.pdf.base64}`;
+        filename = msg.pdf.filename || `${msg.pdf.title || 'document'}.pdf`;
       } else if (isUploadedPdf && uploadedPdfData) {
         dataUrl = uploadedPdfData.url || uploadedPdfData.base64;
         filename = uploadedPdfData.name || 'document.pdf';
