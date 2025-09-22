@@ -509,13 +509,6 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
           </div>
         </div>
 
-        {/* View Icon */}
-        <div style={{
-          fontSize: '16px',
-          color: '#3b82f6'
-        }}>
-          👁️
-        </div>
       </div>
 
       {/* Clean PDF Viewer */}
