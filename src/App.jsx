@@ -1711,11 +1711,6 @@ function AppContent() {
           timestamp: botTimestamp
         }]);
 
-        // 🔍 DEBUG: What we're sending to Gemini
-          messagesCount: messagesWithUser.length,
-          lastUserMessage: messagesWithUser[messagesWithUser.length - 1]?.text?.substring(0, 100),
-          timestamp: new Date().toISOString()
-        });
 
         // 📄 PDF Detection - check if user wants PDF generation
         const lastUserText = messagesWithUser[messagesWithUser.length - 1]?.text || '';
