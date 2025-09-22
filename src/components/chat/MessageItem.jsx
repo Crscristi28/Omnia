@@ -523,6 +523,7 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
         isOpen={showCleanPdf}
         onClose={() => {
           setShowCleanPdf(false);
+          setPdfDataUrl(null); // 🧹 MEMORY: Clear data URL from state to free RAM
           if (isUploadedPdf && onCloseUploadedPdf) {
             onCloseUploadedPdf();
           }
