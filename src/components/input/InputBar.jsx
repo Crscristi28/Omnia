@@ -344,10 +344,7 @@ const InputBar = ({
 
   // Handle document upload to chips ONLY
   const handleDocumentUploadToChips = (event) => {
-    console.log('📄 Document(s) selected for chips:', event);
-    
     const files = Array.from(event.target.files || []);
-    console.log(`🔍 Processing ${files.length} file(s)`);
     
     files.forEach((file, index) => {
       
