@@ -500,8 +500,11 @@ export default async function handler(req, res) {
                       console.log('📄 [DEBUG] PDF buffer size:', pdfBuffer.byteLength);
                       console.log('📄 [DEBUG] First 10 bytes:', Array.from(uint8Array.slice(0, 10)));
 
-                      // Use Array.from for cleaner conversion
-                      const binaryString = String.fromCharCode(...uint8Array);
+                      // Fix for Vercel: Convert ArrayBuffer to base64 without Buffer
+                      let binaryString = '';
+                      for (let i = 0; i < uint8Array.length; i++) {
+                        binaryString += String.fromCharCode(uint8Array[i]);
+                      }
                       const base64PDF = btoa(binaryString);
 
                       console.log('📄 [DEBUG] Binary string length:', binaryString.length);
