@@ -350,13 +350,6 @@ const InputBar = ({
     console.log(`🔍 Processing ${files.length} file(s)`);
     
     files.forEach((file, index) => {
-      // Debug file properties
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        sizeType: typeof file.size,
-        hasSize: file.hasOwnProperty('size')
-      });
       
       // Format file size properly
       let formattedSize = 'Unknown size';
@@ -370,9 +363,6 @@ const InputBar = ({
         } else {
           formattedSize = `${(sizeInBytes / (1024 * 1024)).toFixed(1)}MB`;
         }
-        
-      } else {
-      }
       
       // Enhanced chip structure for background upload
       const docChip = {
