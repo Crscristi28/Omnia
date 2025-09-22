@@ -206,11 +206,15 @@ class ChatSyncService {
           }
         }
 
-        // Transform PDF to store only URL (like images)
+        // Transform PDF to minimal object (like images) with offline support
         let pdfForDB = null;
         if (msg.pdf && msg.pdf.storageUrl) {
-          pdfForDB = msg.pdf.storageUrl;  // Store only URL string
-          console.log(`📄 [SYNC] Storing PDF URL: ${msg.pdf.title}`);
+          pdfForDB = {
+            title: msg.pdf.title || 'Generated PDF',
+            storageUrl: msg.pdf.storageUrl,
+            base64: msg.pdf.base64 || null  // Optional offline fallback
+          };
+          console.log(`📄 [SYNC] Storing PDF object: ${msg.pdf.title}`);
         } else if (msg.pdf && !msg.pdf.storageUrl) {
           // Skip PDF without Storage URL (like images)
           console.warn(`⚠️ [SYNC] PDF without Storage URL found, skipping: ${msg.uuid}`);
