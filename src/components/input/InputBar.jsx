@@ -363,7 +363,8 @@ const InputBar = ({
         } else {
           formattedSize = `${(sizeInBytes / (1024 * 1024)).toFixed(1)}MB`;
         }
-      
+      }
+
       // Enhanced chip structure for background upload
       const docChip = {
         id: Date.now() + index, // Unique ID for each file
