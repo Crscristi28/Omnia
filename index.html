@@ -26,6 +26,15 @@
   <meta property="og:type" content="website" />
   
   <title>Omnia - AI Asistent</title>
+
+  <!-- FOUC Fix: Detect theme BEFORE React loads -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('omnia-theme');
+      const isDark = savedTheme === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>
