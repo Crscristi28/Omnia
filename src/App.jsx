@@ -2048,12 +2048,6 @@ function AppContent() {
 
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
-        // 🔍 DEBUG: Check TTS conditions (removed showVoiceScreen requirement)
-          fromVoice,
-          responseText: responseText ? `"${responseText.substring(0, 50)}..."` : 'null',
-          responseLength: responseText?.length || 0,
-          willPlayTTS: !!(fromVoice && responseText)
-        });
         
         if (fromVoice && responseText) {
           console.log('🎵 Gemini response complete, processing voice...');
