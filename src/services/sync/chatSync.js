@@ -206,32 +206,15 @@ class ChatSyncService {
           }
         }
 
-        // Transform PDF to store metadata + URL (if available)
+        // Transform PDF to store only URL (like images)
         let pdfForDB = null;
-        if (msg.pdf) {
-          if (typeof msg.pdf === 'string') {
-            // If PDF is already a URL (old format), keep it
-            pdfForDB = msg.pdf;
-          } else if (msg.pdf.storageUrl) {
-            // Preferred: use Storage URL + metadata (no base64 to save space)
-            pdfForDB = {
-              title: msg.pdf.title,
-              filename: msg.pdf.filename,
-              storageUrl: msg.pdf.storageUrl,
-              storagePath: msg.pdf.storagePath,
-              timestamp: msg.pdf.timestamp
-            };
-            console.log(`📄 [SYNC] Storing PDF with Storage URL: ${msg.pdf.title}`);
-          } else if (msg.pdf.base64 && !msg.pdf.storageUrl) {
-            // Fallback: Upload still in progress, store minimal data for retry
-            pdfForDB = {
-              title: msg.pdf.title,
-              filename: msg.pdf.filename,
-              timestamp: msg.pdf.timestamp,
-              uploadPending: true // Flag to indicate upload may still be processing
-            };
-            console.log(`⏳ [SYNC] Storing PDF metadata (upload pending): ${msg.pdf.title}`);
-          }
+        if (msg.pdf && msg.pdf.storageUrl) {
+          pdfForDB = msg.pdf.storageUrl;  // Store only URL string
+          console.log(`📄 [SYNC] Storing PDF URL: ${msg.pdf.title}`);
+        } else if (msg.pdf && !msg.pdf.storageUrl) {
+          // Skip PDF without Storage URL (like images)
+          console.warn(`⚠️ [SYNC] PDF without Storage URL found, skipping: ${msg.uuid}`);
+          pdfForDB = null;
         }
         
         const messageToUpload = {

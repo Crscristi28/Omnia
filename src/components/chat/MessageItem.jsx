@@ -380,14 +380,18 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
     if (isGeneratedPdf && msg.pdf) {
       console.log('🔍 [PDF-VIEWER] Opening generated PDF:', msg.pdf);
 
-      // Check if we have storageUrl (preferred) or base64
-      if (msg.pdf.storageUrl) {
-        console.log('📄 [PDF-VIEWER] Using Supabase storage URL');
+      // msg.pdf is now a simple URL string (like images)
+      if (typeof msg.pdf === 'string') {
+        console.log('📄 [PDF-VIEWER] Using storage URL string');
+        setPdfDataUrl(msg.pdf);
+        setShowCleanPdf(true);
+      } else if (msg.pdf.storageUrl) {
+        // Backward compatibility: object format
+        console.log('📄 [PDF-VIEWER] Using legacy object format');
         setPdfDataUrl(msg.pdf.storageUrl);
         setShowCleanPdf(true);
       } else if (msg.pdf.base64) {
-        console.log('📄 [PDF-VIEWER] Using base64 data (already processed)');
-        // PDF base64 is already processed in App.jsx - use directly
+        console.log('📄 [PDF-VIEWER] Using base64 fallback');
         const dataUrl = `data:application/pdf;base64,${msg.pdf.base64}`;
         setPdfDataUrl(dataUrl);
         setShowCleanPdf(true);
@@ -499,7 +503,7 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
             color: '#fff',
             marginBottom: '2px'
           }}>
-{isGeneratedPdf ? (msg.pdf.title || 'Generated Document') : (uploadedPdfData?.name || 'PDF Document')}
+{isGeneratedPdf ? (typeof msg.pdf === 'string' ? 'Generated PDF' : (msg.pdf.title || 'Generated Document')) : (uploadedPdfData?.name || 'PDF Document')}
           </div>
           <div style={{
             fontSize: '12px',
@@ -523,7 +527,7 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
         }}
         pdfData={{
           url: pdfDataUrl,
-          title: isGeneratedPdf ? (msg.pdf.title || 'Generated PDF') : (uploadedPdfData?.name || 'PDF Document')
+          title: isGeneratedPdf ? (typeof msg.pdf === 'string' ? 'Generated PDF' : (msg.pdf.title || 'Generated PDF')) : (uploadedPdfData?.name || 'PDF Document')
         }}
       />
     </div>
