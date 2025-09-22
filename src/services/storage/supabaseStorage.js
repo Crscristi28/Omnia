@@ -67,11 +67,24 @@ export async function uploadToSupabaseStorage(file, bucket = 'attachments') {
  * @param {string} bucket - Bucket name
  * @returns {Promise<Object>} Upload result with public URL
  */
+// 🧠 Memory monitoring helper
+function logMemoryUsage(label) {
+  if (performance.memory) {
+    const used = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+    const total = (performance.memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
+    console.log(`🧠 [MEMORY] ${label}: ${used}MB used / ${total}MB total`);
+  } else {
+    console.log(`🧠 [MEMORY] ${label}: performance.memory not available`);
+  }
+}
+
 export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket = 'attachments') {
   try {
+    logMemoryUsage(`BEFORE upload ${fileName}`);
 
     // Remove data URI prefix if present
     const base64 = base64Data.replace(/^data:.*?;base64,/, '');
+    logMemoryUsage('AFTER base64 cleanup');
 
     // Validate base64 format
     if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
@@ -87,6 +100,7 @@ export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
+    logMemoryUsage('AFTER byteArray creation');
 
     // Check PDF header (should start with %PDF)
     if (fileName.toLowerCase().endsWith('.pdf')) {
@@ -109,12 +123,17 @@ export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket
     }
 
     const blob = new Blob([byteArray], { type: mimeType });
+    logMemoryUsage('AFTER blob creation');
 
     // Create File object from blob
     const file = new File([blob], fileName, { type: mimeType });
+    logMemoryUsage('AFTER file creation');
 
     // Upload using the regular upload function
-    return await uploadToSupabaseStorage(file, bucket);
+    const result = await uploadToSupabaseStorage(file, bucket);
+    logMemoryUsage('AFTER upload completed');
+
+    return result;
     
   } catch (error) {
     console.error('❌ [STORAGE] Base64 upload failed:', error);
