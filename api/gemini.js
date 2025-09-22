@@ -490,7 +490,17 @@ export default async function handler(req, res) {
                     if (contentType && contentType.includes('application/pdf')) {
                       // PDF generated successfully
                       const pdfBuffer = await pdfResponse.arrayBuffer();
-                      const base64PDF = Buffer.from(pdfBuffer).toString('base64');
+
+                      // Fix for Vercel: Convert ArrayBuffer to base64 without Buffer
+                      const uint8Array = new Uint8Array(pdfBuffer);
+                      let binaryString = '';
+                      for (let i = 0; i < uint8Array.length; i++) {
+                        binaryString += String.fromCharCode(uint8Array[i]);
+                      }
+                      const base64PDF = btoa(binaryString);
+
+                      console.log('📄 [DEBUG] PDF base64 first 100 chars:', base64PDF.substring(0, 100));
+                      console.log('📄 [DEBUG] PDF base64 should start with "JVBERi" for %PDF header');
 
                       // Send PDF to client
                       res.write(JSON.stringify({
