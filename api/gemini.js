@@ -487,6 +487,8 @@ export default async function handler(req, res) {
                   if (pdfResponse.ok) {
                     const contentType = pdfResponse.headers.get('content-type');
                     console.log('📄 [DEBUG] PDF response content-type:', contentType);
+                    console.log('📄 [DEBUG] PDF response status:', pdfResponse.status);
+                    console.log('📄 [DEBUG] PDF response headers:', Object.fromEntries(pdfResponse.headers.entries()));
 
                     // Check if it's actually a PDF or JSON fallback
                     if (contentType && contentType.includes('application/pdf')) {
@@ -495,11 +497,15 @@ export default async function handler(req, res) {
 
                       // Fix for Vercel: Convert ArrayBuffer to base64 without Buffer
                       const uint8Array = new Uint8Array(pdfBuffer);
-                      let binaryString = '';
-                      for (let i = 0; i < uint8Array.length; i++) {
-                        binaryString += String.fromCharCode(uint8Array[i]);
-                      }
+                      console.log('📄 [DEBUG] PDF buffer size:', pdfBuffer.byteLength);
+                      console.log('📄 [DEBUG] First 10 bytes:', Array.from(uint8Array.slice(0, 10)));
+
+                      // Use Array.from for cleaner conversion
+                      const binaryString = String.fromCharCode(...uint8Array);
                       const base64PDF = btoa(binaryString);
+
+                      console.log('📄 [DEBUG] Binary string length:', binaryString.length);
+                      console.log('📄 [DEBUG] First 20 chars of binary:', binaryString.substring(0, 20));
 
                       console.log('📄 [DEBUG] PDF base64 first 100 chars:', base64PDF.substring(0, 100));
                       console.log('📄 [DEBUG] PDF base64 should start with "JVBERi" for %PDF header');
