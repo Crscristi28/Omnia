@@ -40,13 +40,30 @@ export default async function handler(req, res) {
 
       if (isProduction) {
         // Vercel production
+        console.log('🚀 [PDF] Launching Puppeteer on Vercel...');
+        console.log('🔧 [PDF] Chromium args:', chromium.args);
+
+        const execPath = await chromium.executablePath();
+        console.log('📂 [PDF] Chromium executable path:', execPath);
+
         browser = await puppeteer.launch({
-          args: chromium.args,
+          args: [
+            ...chromium.args,
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-dev-shm-usage',
+            '--single-process',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding'
+          ],
           defaultViewport: chromium.defaultViewport,
-          executablePath: await chromium.executablePath(),
+          executablePath: execPath,
           headless: chromium.headless,
           ignoreHTTPSErrors: true,
+          timeout: 30000, // 30 second timeout
         });
+        console.log('✅ [PDF] Browser launched successfully on Vercel');
       } else {
         // Local development - try to find Chrome executable
         const possiblePaths = [
@@ -75,10 +92,19 @@ export default async function handler(req, res) {
         });
       }
 
+      console.log('📄 [PDF] Creating new page...');
       const page = await browser.newPage();
-      await page.setContent(fullHTML, { waitUntil: 'networkidle0' });
 
-      // Generate PDF
+      // Set shorter timeout for page operations on Vercel
+      page.setDefaultTimeout(isProduction ? 15000 : 30000);
+
+      console.log('📝 [PDF] Setting HTML content...');
+      await page.setContent(fullHTML, {
+        waitUntil: 'networkidle0',
+        timeout: isProduction ? 10000 : 30000
+      });
+
+      console.log('🖨️ [PDF] Generating PDF buffer...');
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: false,
@@ -87,8 +113,10 @@ export default async function handler(req, res) {
           right: '2cm',
           bottom: '2cm',
           left: '2cm'
-        }
+        },
+        timeout: isProduction ? 15000 : 30000
       });
+      console.log('✅ [PDF] PDF buffer generated, size:', pdfBuffer.length);
 
       await browser.close();
 
@@ -102,16 +130,24 @@ export default async function handler(req, res) {
     } catch (puppeteerError) {
       if (browser) await browser.close();
 
-      console.error('❌ [PDF] Puppeteer error:', puppeteerError);
+      // Detailed error logging for debugging
+      console.error('❌ [PDF] Puppeteer error details:', {
+        message: puppeteerError.message,
+        stack: puppeteerError.stack,
+        name: puppeteerError.name,
+        isProduction: process.env.NODE_ENV === 'production',
+        runtime: process.env.VERCEL ? 'vercel' : 'local'
+      });
 
       // Fallback: return HTML for client-side generation
       return res.status(200).json({
         success: true,
         title,
         html: fullHTML,
-        message: 'PDF content generated (HTML fallback)',
+        message: `PDF content generated (HTML fallback due to: ${puppeteerError.message})`,
         type: 'html',
-        fallback: true
+        fallback: true,
+        error: puppeteerError.message
       });
     }
 
