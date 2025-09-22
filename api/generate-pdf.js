@@ -125,7 +125,7 @@ export default async function handler(req, res) {
       res.setHeader('Content-Disposition', `attachment; filename="${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf"`);
 
       console.log('✅ [PDF] Generated successfully:', title);
-      return res.status(200).send(pdfBuffer);
+      return res.status(200).end(pdfBuffer);
 
     } catch (puppeteerError) {
       if (browser) await browser.close();
