@@ -98,6 +98,20 @@ const geminiService = {
                     onStreamUpdate('', false, { pdf: pdfData });
                   }
                 }
+                else if (data.type === 'pdf_fallback') {
+                  console.log('📄 PDF fallback received (HTML format):', data.title);
+                  console.log('⚠️ Puppeteer failed on Vercel, falling back to HTML content');
+
+                  // Show user message about fallback
+                  const fallbackMessage = '⚠️ PDF generation temporarily unavailable on Vercel (Puppeteer limitations). PDF content generated as HTML format.';
+                  if (onStreamUpdate) {
+                    onStreamUpdate(fallbackMessage, false, {
+                      fallbackMessage: true,
+                      htmlContent: data.html,
+                      title: data.title
+                    });
+                  }
+                }
                 else if (data.type === 'completed') {
                   if (data.webSearchUsed) {
                     sourcesExtracted = this.extractGoogleSources(data);

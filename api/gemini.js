@@ -486,7 +486,9 @@ export default async function handler(req, res) {
 
                   if (pdfResponse.ok) {
                     const contentType = pdfResponse.headers.get('content-type');
+                    console.log('📄 [DEBUG] PDF response content-type:', contentType);
 
+                    // Check if it's actually a PDF or JSON fallback
                     if (contentType && contentType.includes('application/pdf')) {
                       // PDF generated successfully
                       const pdfBuffer = await pdfResponse.arrayBuffer();
