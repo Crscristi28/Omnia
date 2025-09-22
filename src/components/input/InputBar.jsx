@@ -351,7 +351,6 @@ const InputBar = ({
     
     files.forEach((file, index) => {
       // Debug file properties
-      console.log(`🔍 DEBUG - File ${index + 1}:`, {
         name: file.name,
         size: file.size,
         type: file.type,
@@ -363,7 +362,6 @@ const InputBar = ({
       let formattedSize = 'Unknown size';
       if (file.size !== undefined && file.size !== null && typeof file.size === 'number' && !isNaN(file.size)) {
         const sizeInBytes = file.size;
-        console.log(`🔍 DEBUG - File ${index + 1} size in bytes:`, sizeInBytes);
         
         if (sizeInBytes < 1024) {
           formattedSize = `${sizeInBytes}B`;
@@ -373,9 +371,7 @@ const InputBar = ({
           formattedSize = `${(sizeInBytes / (1024 * 1024)).toFixed(1)}MB`;
         }
         
-        console.log(`🔍 DEBUG - File ${index + 1} formatted size:`, formattedSize);
       } else {
-        console.log(`🔍 DEBUG - Invalid file.size for file ${index + 1}:`, file.size, typeof file.size);
       }
       
       // Enhanced chip structure for background upload

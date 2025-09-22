@@ -1581,7 +1581,6 @@ function AppContent() {
         // ❌ REMOVED: Save after OpenAI response (to prevent race conditions)
         
         // 🔍 DEBUG: Check TTS conditions for GPT
-        console.log('🔍 [DEBUG] GPT TTS Conditions:', { fromVoice, responseText: !!responseText });
         
         if (fromVoice && responseText) {
           console.log('🎵 GPT response complete, processing voice...');
@@ -1589,7 +1588,6 @@ function AppContent() {
             await processVoiceResponse(responseText, detectedLang);
           }, 500);
         } else {
-          console.log('❌ [DEBUG] GPT TTS skipped');
         }
       }
       else if (model === 'grok-3') {
@@ -1714,7 +1712,6 @@ function AppContent() {
         }]);
 
         // 🔍 DEBUG: What we're sending to Gemini
-        console.log('📤 [FRONTEND-DEBUG] Sending to Gemini:', {
           messagesCount: messagesWithUser.length,
           lastUserMessage: messagesWithUser[messagesWithUser.length - 1]?.text?.substring(0, 100),
           timestamp: new Date().toISOString()
@@ -1728,10 +1725,7 @@ function AppContent() {
           'export', 'download', 'file', 'soubor'
         ];
         const wantsPDF = pdfKeywords.some(keyword => lastUserText.toLowerCase().includes(keyword));
-        console.log('📄 [PDF-DEBUG] User text:', lastUserText);
-        console.log('📄 [PDF-DEBUG] Wants PDF:', wantsPDF);
         if (wantsPDF) {
-          console.log('📄 [PDF-DEBUG] Activating pdfMode=true');
         }
 
         const result = await geminiService.sendMessage(
@@ -1794,8 +1788,6 @@ function AppContent() {
                 const pdfTimestamp = Date.now();
 
                 console.log('📄 PDF received:', pdfData.title);
-                console.log('🔍 [DEBUG] PDF base64 length:', pdfData.base64?.length);
-                console.log('🔍 [DEBUG] PDF base64 start:', pdfData.base64?.substring(0, 50));
 
                 // ✅ SIMPLIFIED: Backend already sends correct base64, no conversion needed
                 let processedBase64 = pdfData.base64;
@@ -1995,7 +1987,6 @@ function AppContent() {
               }
 
               // Process PDFs after images
-              console.log('🔍 [DEBUG] generatedPdfs:', generatedPdfs, 'length:', generatedPdfs?.length);
               if (generatedPdfs && generatedPdfs.length > 0) {
                 const pdfData = generatedPdfs[0];
                 console.log('📄 Processing PDF:', pdfData.title);
@@ -2063,7 +2054,6 @@ function AppContent() {
         // ❌ REMOVED: Save after Gemini response (to prevent race conditions)
         
         // 🔍 DEBUG: Check TTS conditions (removed showVoiceScreen requirement)
-        console.log('🔍 [DEBUG] TTS Conditions Check:', {
           fromVoice,
           responseText: responseText ? `"${responseText.substring(0, 50)}..."` : 'null',
           responseLength: responseText?.length || 0,
@@ -2076,7 +2066,6 @@ function AppContent() {
             await processVoiceResponse(responseText, detectedLang);
           }, 500);
         } else {
-          console.log('❌ [DEBUG] TTS skipped - conditions not met');
         }
       }
 
@@ -2493,8 +2482,6 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
   const safeDocuments = documents || [];
   
   console.log('📤 Sending with documents:', text, safeDocuments);
-  console.log('🔍 DEBUG - text.trim():', `"${text.trim()}"`, 'length:', text.trim().length);
-  console.log('🔍 DEBUG - safeDocuments.length:', safeDocuments.length);
   
   if (!text.trim() && safeDocuments.length === 0) return;
   if (currentLoading || currentStreaming) return;

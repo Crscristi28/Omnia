@@ -69,15 +69,9 @@ export async function uploadToSupabaseStorage(file, bucket = 'attachments') {
  */
 export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket = 'attachments') {
   try {
-    console.log(`🔍 [STORAGE-DEBUG] Uploading ${fileName} to ${bucket}`);
-    console.log(`🔍 [STORAGE-DEBUG] Original base64 length: ${base64Data?.length}`);
-    console.log(`🔍 [STORAGE-DEBUG] Base64 starts with data URI:`, base64Data?.startsWith('data:'));
-    console.log(`🔍 [STORAGE-DEBUG] Base64 preview: ${base64Data?.substring(0, 100)}...`);
 
     // Remove data URI prefix if present
     const base64 = base64Data.replace(/^data:.*?;base64,/, '');
-    console.log(`🔍 [STORAGE-DEBUG] Clean base64 length: ${base64.length}`);
-    console.log(`🔍 [STORAGE-DEBUG] Clean base64 preview: ${base64.substring(0, 50)}...`);
 
     // Validate base64 format
     if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
@@ -87,19 +81,16 @@ export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket
 
     // Convert base64 to blob
     const byteCharacters = atob(base64);
-    console.log(`🔍 [STORAGE-DEBUG] Decoded byte length: ${byteCharacters.length}`);
 
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    console.log(`🔍 [STORAGE-DEBUG] Byte array length: ${byteArray.length}`);
 
     // Check PDF header (should start with %PDF)
     if (fileName.toLowerCase().endsWith('.pdf')) {
       const firstBytes = new TextDecoder().decode(byteArray.slice(0, 4));
-      console.log(`🔍 [STORAGE-DEBUG] PDF header check: "${firstBytes}" (should be "%PDF")`);
       if (firstBytes !== '%PDF') {
         console.error('❌ [STORAGE-DEBUG] Invalid PDF header! Expected "%PDF", got:', firstBytes);
       }
@@ -116,14 +107,11 @@ export async function uploadBase64ToSupabaseStorage(base64Data, fileName, bucket
       // Infer MIME type for PDF files when not in data URI
       mimeType = 'application/pdf';
     }
-    console.log(`🔍 [STORAGE-DEBUG] Detected MIME type: ${mimeType}`);
 
     const blob = new Blob([byteArray], { type: mimeType });
-    console.log(`🔍 [STORAGE-DEBUG] Created blob size: ${blob.size} bytes`);
 
     // Create File object from blob
     const file = new File([blob], fileName, { type: mimeType });
-    console.log(`🔍 [STORAGE-DEBUG] Created file: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
     // Upload using the regular upload function
     return await uploadToSupabaseStorage(file, bucket);
