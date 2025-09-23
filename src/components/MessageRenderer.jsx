@@ -119,7 +119,10 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
                 color: 'inherit'
               }}
               data-color-mode="dark"
-              remarkPlugins={[remarkMath, remarkGfm]}
+              remarkPlugins={[
+                [remarkMath, { singleDollarTextMath: false }], // Disable $...$ for prices, keep $$...$$ for math
+                remarkGfm
+              ]}
               rehypePlugins={[rehypeKatex]}
             />
           )
