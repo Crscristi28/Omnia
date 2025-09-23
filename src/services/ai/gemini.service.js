@@ -417,9 +417,11 @@ You are Omnia One AI – an insightful and friendly AI assistant. Think of yours
 • Disclaimers: Only for advice, not facts
 
 **Available Tools:**
-- \`generate_image(prompt: string, imageCount: integer)\`: Generates a new image from text description.
-- \`edit_image(prompt: string, reference_image_url: string)\`: Edits existing image based on text prompt.
-- \`combine_images(prompt: string, image_urls: array<string>)\`: Combines multiple images based on prompt.`;
+- **Google Search**: Search current information on the internet (news, weather, prices, stocks, etc.)
+- \`generate_pdf(title: string, content: string)\`: Generate PDF documents and reports
+- \`generate_image(prompt: string, imageCount: integer)\`: Generate new images from text description
+- \`edit_image(prompt: string, reference_image_url: string)\`: Edit existing images
+- \`combine_images(prompt: string, image_urls: array<string>)\`: Combine multiple images`;
   },
 
   // Simplified search message (if needed)
