@@ -11,15 +11,6 @@ import { findYouTubeUrls } from '../utils/youtube';
 import { YouTubeEmbed } from './ui';
 
 
-// Escape dollar signs in prices to prevent LaTeX parsing
-const escapePricesInText = (text) => {
-  if (!text) return '';
-
-  // Regex to match price patterns: $number or $number.number
-  // But NOT mathematical expressions like $x$ or $\pi$
-  return text.replace(/\$(\d+(?:\.\d{1,2})?)\b/g, '\\$$1');
-};
-
 // Aggressive preprocessing for better visual during streaming
 const preprocessStreamingText = (text) => {
   if (!text) return '';
@@ -105,9 +96,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   
   // Parse content into segments for YouTube embed support
   const segments = React.useMemo(() => {
-    // First escape prices to prevent LaTeX conflicts
-    const contentWithEscapedPrices = escapePricesInText(content);
-    return parseContentSegments(contentWithEscapedPrices);
+    return parseContentSegments(content);
   }, [content]);
 
   // Unified rendering - same for streaming and final
@@ -131,7 +120,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
               }}
               data-color-mode="dark"
               remarkPlugins={[
-                [remarkMath, { singleDollarTextMath: true }], // Enable $...$ for math, prices are escaped
+                [remarkMath, { singleDollarTextMath: false }], // Disable $...$ to prevent price overflow, use $$...$$ for math
                 remarkGfm
               ]}
               rehypePlugins={[rehypeKatex]}
