@@ -11,15 +11,24 @@ import { findYouTubeUrls } from '../utils/youtube';
 import { YouTubeEmbed } from './ui';
 
 
+// Escape dollar signs in prices to prevent LaTeX parsing
+const escapePricesInText = (text) => {
+  if (!text) return '';
+
+  // Regex to match price patterns: $number or $number.number
+  // But NOT mathematical expressions like $x$ or $\pi$
+  return text.replace(/\$(\d+(?:\.\d{1,2})?)\b/g, '\\$$1');
+};
+
 // Aggressive preprocessing for better visual during streaming
 const preprocessStreamingText = (text) => {
   if (!text) return '';
-  
+
   // More comprehensive replacements
   let processed = text
     // Bullets
     .replace(/^[\s]*[•·∙‣⁃]\s*/gm, '• ')  // Normalize all bullet types
-    .replace(/\n[\s]*[•·∙‣⁃]\s*/g, '\n• ') 
+    .replace(/\n[\s]*[•·∙‣⁃]\s*/g, '\n• ')
     .replace(/^[\s]*[*-]\s+/gm, '• ')     // Convert * and - to bullets
     .replace(/\n[\s]*[*-]\s+/g, '\n• ')
     // Bold text
@@ -29,7 +38,7 @@ const preprocessStreamingText = (text) => {
     // Code blocks (temporary simplification)
     .replace(/```[\s\S]*?```/g, '[Code block]')
     .replace(/`([^`]+)`/g, '$1');         // Remove inline code markers
-    
+
   return processed;
 };
 
@@ -96,7 +105,9 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   
   // Parse content into segments for YouTube embed support
   const segments = React.useMemo(() => {
-    return parseContentSegments(content);
+    // First escape prices to prevent LaTeX conflicts
+    const contentWithEscapedPrices = escapePricesInText(content);
+    return parseContentSegments(contentWithEscapedPrices);
   }, [content]);
 
   // Unified rendering - same for streaming and final
@@ -120,7 +131,7 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
               }}
               data-color-mode="dark"
               remarkPlugins={[
-                [remarkMath, { singleDollarTextMath: false }], // Disable $...$ for prices, keep $$...$$ for math
+                [remarkMath, { singleDollarTextMath: true }], // Enable $...$ for math, prices are escaped
                 remarkGfm
               ]}
               rehypePlugins={[rehypeKatex]}
