@@ -653,17 +653,67 @@ function enhanceForSearch(query) {
   return query;
 }
 
-// 🎯 CURRENT DATA DETECTION
+// 🎯 CURRENT DATA DETECTION - MULTILINGUAL SUPPORT
 function needsCurrentData(query) {
   const keywords = [
-    'current', 'latest', 'now', 'today',
-    'cena', 'price', 'kurz', 'stock', 'akcie', 'shares', 'bitcoin', 'crypto',
-    'počasí', 'weather', 'zprávy', 'news', 'breaking', 'exchange', 'rate',
-    'dollar', 'euro', 'koruna', 'ethereum', 'btc', 'eth', 'teplota'
+    // Time indicators - English
+    'current', 'latest', 'now', 'today', 'tomorrow', 'yesterday', 'week', 'month', 'year',
+    'this week', 'next week', 'last week', 'this month', 'next month', 'recent', 'updated',
+
+    // Time indicators - Czech
+    'aktuální', 'nejnovější', 'teď', 'nyní', 'dnes', 'zítra', 'včera', 'týden', 'měsíc', 'rok',
+    'tento týden', 'příští týden', 'minulý týden', 'tento měsíc', 'příští měsíc', 'nedávný',
+
+    // Time indicators - Romanian
+    'actual', 'recent', 'acum', 'azi', 'mâine', 'ieri', 'săptămână', 'lună', 'an',
+    'săptămâna aceasta', 'săptămâna viitoare', 'luna aceasta', 'luna viitoare',
+
+    // Time indicators - German
+    'aktuell', 'neueste', 'jetzt', 'heute', 'morgen', 'gestern', 'woche', 'monat', 'jahr',
+    'diese woche', 'nächste woche', 'dieser monat', 'nächster monat',
+
+    // Time indicators - Russian
+    'текущий', 'последний', 'сейчас', 'сегодня', 'завтра', 'вчера', 'неделя', 'месяц', 'год',
+    'на этой неделе', 'на следующей неделе', 'в этом месяце',
+
+    // Time indicators - Polish
+    'aktualny', 'najnowszy', 'teraz', 'dzisiaj', 'jutro', 'wczoraj', 'tydzień', 'miesiąc', 'rok',
+    'w tym tygodniu', 'w przyszłym tygodniu', 'w tym miesiącu',
+
+    // Weather - All languages
+    'weather', 'počasí', 'vremea', 'wetter', 'погода', 'pogoda',
+    'temperature', 'teplota', 'temperatură', 'temperatur', 'температура', 'temperatura',
+    'forecast', 'předpověď', 'prognoză', 'vorhersage', 'прогноз', 'prognoza',
+    'rain', 'déšť', 'ploaie', 'regen', 'дождь', 'deszcz',
+    'snow', 'sníh', 'zăpadă', 'schnee', 'снег', 'śnieg',
+
+    // Financial - All languages
+    'price', 'cena', 'preț', 'preis', 'цена', 'cena',
+    'stock', 'akcie', 'acțiuni', 'aktien', 'акции', 'akcje',
+    'shares', 'podíly', 'părți', 'anteile', 'доли', 'udziały',
+    'exchange', 'směna', 'schimb', 'börse', 'обмен', 'giełda',
+    'rate', 'kurz', 'curs', 'kurs', 'курс', 'kurs',
+    'market', 'trh', 'piață', 'markt', 'рынок', 'rynek',
+
+    // Cryptocurrencies
+    'bitcoin', 'ethereum', 'crypto', 'btc', 'eth', 'cryptocurrency',
+
+    // Currencies
+    'dollar', 'euro', 'koruna', 'crown', 'leu', 'zloty', 'рубль', 'crown',
+    'usd', 'eur', 'czk', 'ron', 'pln', 'rub',
+
+    // News - All languages
+    'news', 'zprávy', 'știri', 'nachrichten', 'новости', 'wiadomości',
+    'breaking', 'čerstvé', 'urgent', 'eilmeldung', 'срочно', 'pilne',
+    'headlines', 'titulky', 'titluri', 'schlagzeilen', 'заголовки', 'nagłówki',
+
+    // General current info
+    'information', 'informace', 'informații', 'informationen', 'информация', 'informacje',
+    'data', 'údaje', 'date', 'daten', 'данные', 'dane'
   ];
-  
-  return keywords.some(keyword => 
-    query.toLowerCase().includes(keyword)
+
+  return keywords.some(keyword =>
+    query.toLowerCase().includes(keyword.toLowerCase())
   );
 }
 
