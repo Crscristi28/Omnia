@@ -1749,33 +1749,50 @@ function AppContent() {
                 generatedImages = extra.images;
                 console.log('🎨 Images received in normal mode:', extra.images.length);
 
-                // Start upload immediately in parallel with text streaming
-                const imageData = extra.images[0];
-                if (imageData.base64 && imageData.mimeType) {
-                  console.log('🚀 Starting parallel upload during streaming...');
+                // Start upload immediately in parallel with text streaming for ALL images
+                console.log(`🚀 Starting parallel upload for ${extra.images.length} images during streaming...`);
 
-                  const imageTimestamp = Date.now();
-                  uploadBase64ToSupabaseStorage(
-                    imageData.base64,
-                    `generated-${imageTimestamp}.png`,
-                    'generated-images'
-                  ).then(uploadResult => {
-                    if (uploadResult && uploadResult.publicUrl) {
-                      const uploadedImageData = {
-                        storageUrl: uploadResult.publicUrl,
-                        storagePath: uploadResult.path,
-                        mimeType: imageData.mimeType,
-                        timestamp: imageTimestamp
-                      };
-                      console.log('✅ Parallel upload completed, ready for display after streaming');
+                const uploadPromises = extra.images.map(async (imageData, index) => {
+                  if (imageData.base64 && imageData.mimeType) {
+                    console.log(`🚀 Starting parallel upload for image ${index + 1}/${extra.images.length}...`);
 
-                      // Don't display yet - just prepare the data for after streaming
-                      generatedImages = [uploadedImageData];
+                    try {
+                      const imageTimestamp = Date.now();
+                      const uploadResult = await uploadBase64ToSupabaseStorage(
+                        imageData.base64,
+                        `generated-${imageTimestamp}-${index}.png`,
+                        'generated-images'
+                      );
+
+                      if (uploadResult && uploadResult.publicUrl) {
+                        console.log(`✅ Image ${index + 1} upload completed`);
+                        return {
+                          storageUrl: uploadResult.publicUrl,
+                          storagePath: uploadResult.path,
+                          mimeType: imageData.mimeType,
+                          timestamp: imageTimestamp,
+                          index: index
+                        };
+                      }
+                    } catch (error) {
+                      console.error(`💥 Image ${index + 1} upload failed:`, error);
+                      return null;
                     }
-                  }).catch(error => {
-                    console.error('💥 Parallel upload failed:', error);
-                  });
-                }
+                  }
+                  return null;
+                });
+
+                // Wait for all uploads to complete
+                Promise.all(uploadPromises).then(uploadResults => {
+                  const successfulUploads = uploadResults.filter(result => result !== null);
+                  console.log(`✅ All parallel uploads completed: ${successfulUploads.length}/${extra.images.length} successful`);
+
+                  // Don't display yet - just prepare the data for after streaming
+                  // Sort by index to maintain original order
+                  generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
+                }).catch(error => {
+                  console.error('💥 Parallel uploads failed:', error);
+                });
               }
               // Handle PDF generation from tool calls
               if (extra.pdf) {
@@ -1915,63 +1932,89 @@ function AppContent() {
             setTimeout(async () => {
               // Check if images were already processed during streaming
               if (generatedImages && generatedImages.length > 0) {
-                const imageData = generatedImages[0];
+                // Check if all images have been uploaded during streaming
+                const allImagesHaveStorageUrl = generatedImages.every(img => img.storageUrl);
 
-                // Display image after streaming (whether uploaded during streaming or as fallback)
-                if (imageData.storageUrl) {
-                  console.log('✅ Image already uploaded during streaming, displaying now');
+                if (allImagesHaveStorageUrl) {
+                  console.log(`✅ ${generatedImages.length} images already uploaded during streaming, displaying now`);
 
-                  // Display the pre-uploaded image
+                  // Display all pre-uploaded images
                   setMessages(currentMessages => {
                     const lastMessage = currentMessages[currentMessages.length - 1];
                     if (lastMessage && lastMessage.sender === 'bot') {
                       const updatedMessage = {
                         ...lastMessage,
-                        image: imageData
+                        // Use conditional logic: single image vs multiple images
+                        ...(generatedImages.length === 1
+                          ? { image: generatedImages[0] }    // Single image - use existing 'image' field
+                          : { images: generatedImages }      // Multiple images - use 'images' array
+                        )
                       };
-                      console.log('✅ Pre-uploaded image displayed after streaming');
+                      console.log(`✅ ${generatedImages.length} pre-uploaded images displayed after streaming`);
                       return [...currentMessages.slice(0, -1), updatedMessage];
                     }
                     return currentMessages;
                   });
-                } else if (imageData.base64 && imageData.mimeType) {
-                  console.log('🎨 Fallback: uploading image in completion (parallel upload may have failed)');
+                } else {
+                  // Some images need fallback upload (parallel uploads may have failed)
+                  console.log(`🎨 Fallback: uploading ${generatedImages.length} images in completion...`);
 
-                  try {
-                    const imageTimestamp = Date.now();
-                    const uploadResult = await uploadBase64ToSupabaseStorage(
-                      imageData.base64,
-                      `generated-${imageTimestamp}.png`,
-                      'generated-images'
-                    );
+                  const uploadPromises = generatedImages.map(async (imageData, index) => {
+                    if (imageData.storageUrl) {
+                      // Already uploaded
+                      return imageData;
+                    } else if (imageData.base64 && imageData.mimeType) {
+                      console.log(`🎨 Fallback: uploading image ${index + 1}/${generatedImages.length}...`);
 
-                    if (uploadResult && uploadResult.publicUrl) {
-                      const uploadedImageData = {
-                        storageUrl: uploadResult.publicUrl,
-                        storagePath: uploadResult.path,
-                        mimeType: imageData.mimeType,
-                        timestamp: imageTimestamp
-                      };
+                      try {
+                        const imageTimestamp = Date.now();
+                        const uploadResult = await uploadBase64ToSupabaseStorage(
+                          imageData.base64,
+                          `generated-${imageTimestamp}-${index}.png`,
+                          'generated-images'
+                        );
 
-                      // Update message with fallback upload
-                      setMessages(currentMessages => {
-                        const lastMessage = currentMessages[currentMessages.length - 1];
-                        if (lastMessage && lastMessage.sender === 'bot') {
-                          const updatedMessage = {
-                            ...lastMessage,
-                            image: uploadedImageData
+                        if (uploadResult && uploadResult.publicUrl) {
+                          return {
+                            storageUrl: uploadResult.publicUrl,
+                            storagePath: uploadResult.path,
+                            mimeType: imageData.mimeType,
+                            timestamp: imageTimestamp,
+                            index: index
                           };
-                          console.log('✅ Fallback image updated');
-                          return [...currentMessages.slice(0, -1), updatedMessage];
                         }
-                        return currentMessages;
-                      });
-
-                      generatedImages = [uploadedImageData];
+                      } catch (uploadError) {
+                        console.error(`💥 Fallback upload failed for image ${index + 1}:`, uploadError);
+                        return null;
+                      }
                     }
-                  } catch (uploadError) {
-                    console.error('💥 Fallback upload failed:', uploadError);
-                  }
+                    return null;
+                  });
+
+                  Promise.all(uploadPromises).then(uploadResults => {
+                    const successfulUploads = uploadResults.filter(result => result !== null);
+                    const sortedImages = successfulUploads.sort((a, b) => a.index - b.index);
+
+                    // Update message with all fallback uploads
+                    setMessages(currentMessages => {
+                      const lastMessage = currentMessages[currentMessages.length - 1];
+                      if (lastMessage && lastMessage.sender === 'bot') {
+                        const updatedMessage = {
+                          ...lastMessage,
+                          // Use conditional logic: single image vs multiple images
+                          ...(sortedImages.length === 1
+                            ? { image: sortedImages[0] }    // Single image - use existing 'image' field
+                            : { images: sortedImages }      // Multiple images - use 'images' array
+                          )
+                        };
+                        console.log(`✅ ${sortedImages.length} fallback images displayed`);
+                        return [...currentMessages.slice(0, -1), updatedMessage];
+                      }
+                      return currentMessages;
+                    });
+
+                    generatedImages = sortedImages;
+                  });
                 }
 
                 // Wait a bit for any state updates, then save to DB

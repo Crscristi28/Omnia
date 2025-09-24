@@ -260,8 +260,12 @@ const MessageItem = ({
             className="text-white"
           />
           
-          {/* 🎨 GENERATED IMAGE - Display after text with loading skeleton */}
-          {msg.image && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}
+          {/* Single image - use existing component */}
+          {msg.image && !msg.images && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+
+          {/* Multiple images - use gallery component */}
+          {msg.images && msg.images.length > 0 && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
           {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
@@ -530,6 +534,95 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
           title: isGeneratedPdf ? (msg.pdf.title || 'Generated PDF') : (uploadedPdfData?.name || 'PDF Document')
         }}
       />
+    </div>
+  );
+};
+
+// 🎨 Generated Images Gallery Component for Multiple Images
+const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
+  const [loadedImages, setLoadedImages] = useState(new Set());
+
+  const images = msg.images || [];
+  const imageCount = images.length;
+
+  const handleImageLoad = (index) => {
+    setLoadedImages(prev => new Set([...prev, index]));
+  };
+
+  const getGridClass = () => {
+    switch (imageCount) {
+      case 2: return 'grid-cols-2';
+      case 3: return 'grid-cols-3';
+      case 4: return 'grid-cols-2';
+      default: return 'grid-cols-1';
+    }
+  };
+
+  return (
+    <div style={{
+      paddingTop: '1rem',
+      paddingBottom: '1rem',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      maxWidth: '100%'
+    }}>
+      <div className={`grid gap-2 ${getGridClass()}`} style={{ maxWidth: '600px' }}>
+        {images.map((image, index) => {
+          const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image);
+          const isLoaded = loadedImages.has(index);
+
+          return (
+            <div key={index} className="relative">
+              {/* Loading Skeleton */}
+              {!isLoaded && (
+                <div
+                  className="image-skeleton absolute inset-0 z-10"
+                  style={{
+                    background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                    backgroundSize: '200% 100%',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: '12px',
+                    animation: 'shimmer-skeleton 2s infinite',
+                    minHeight: imageCount === 4 ? '140px' : '200px'
+                  }}>
+                  {index + 1}
+                </div>
+              )}
+
+              {/* Actual Image */}
+              <img
+                src={imageUrl}
+                alt={`Generated image ${index + 1} for: ${msg.text}`}
+                onClick={() => {
+                  onPreviewImage({
+                    url: imageUrl,
+                    name: `Generated ${index + 1}: ${msg.text.slice(0, 30)}...`
+                  });
+                }}
+                onLoad={() => handleImageLoad(index)}
+                style={{
+                  width: '100%',
+                  height: imageCount === 4 ? '140px' : '200px',
+                  objectFit: 'cover',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  opacity: isLoaded ? 1 : 0,
+                  ...imageStyle
+                }}
+                onError={(e) => {
+                  console.error(`Failed to load image ${index + 1}:`, imageUrl);
+                  handleImageLoad(index); // Remove skeleton even on error
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
