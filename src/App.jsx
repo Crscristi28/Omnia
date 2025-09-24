@@ -1436,7 +1436,7 @@ function AppContent() {
               }
             });
 
-            Promise.all(uploadPromises).then(results => {
+            Promise.all(uploadPromises).then(async results => {
               const successfulUploads = results.filter(result => result !== null);
               const sortedImages = successfulUploads.sort((a, b) => a.index - b.index);
 
@@ -1454,6 +1454,11 @@ function AppContent() {
                     : msg
                 ));
               }
+
+              // Save to DB after image uploads completed (image generation mode)
+              console.log('💾 [DB] Saving to IndexedDB after image generation uploads completed');
+              const finalMessages = messagesRef.current;
+              await checkAutoSave(finalMessages, activeChatId);
             });
 
             // Hide loading indicators same as normal chat
@@ -1795,12 +1800,17 @@ function AppContent() {
                 });
 
                 // Wait for all uploads to complete
-                Promise.all(uploadPromises).then(uploadResults => {
+                Promise.all(uploadPromises).then(async uploadResults => {
                   const successfulUploads = uploadResults.filter(result => result !== null);
                   console.log(`✅ All parallel uploads completed: ${successfulUploads.length}/${extra.images.length} successful`);
 
                   // Update generatedImages with upload results
                   generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
+
+                  // Save to DB after images are uploaded and ready
+                  console.log('💾 [DB] Saving to IndexedDB after image uploads completed');
+                  const finalMessages = messagesRef.current;
+                  await checkAutoSave(finalMessages, activeChatId);
                 });
               }
               // Handle PDF generation from tool calls
@@ -1998,7 +2008,7 @@ function AppContent() {
                     return null;
                   });
 
-                  Promise.all(uploadPromises).then(results => {
+                  Promise.all(uploadPromises).then(async results => {
                     const successfulUploads = results.filter(result => result !== null);
                     console.log(`✅ Fallback complete: ${successfulUploads.length}/${generatedImages.length} images uploaded`);
 
@@ -2017,15 +2027,17 @@ function AppContent() {
                         }
                         return currentMessages;
                       });
+
+                      // Save to DB after fallback images are uploaded and displayed
+                      console.log('💾 [DB] Saving to IndexedDB after fallback image uploads completed');
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
                     }
                   });
                 }
 
-                // Wait a bit for any state updates, then save to DB
-                setTimeout(async () => {
-                  const finalMessages = messagesRef.current;
-                  await checkAutoSave(finalMessages, activeChatId);
-                }, 50);
+                // NOTE: IndexedDB save now handled in image upload completion callbacks above
+                // This ensures images are fully uploaded before saving to database
               }
 
               // Process PDFs after images
