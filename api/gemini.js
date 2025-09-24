@@ -109,66 +109,19 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // Analyze user's last message to determine intent
-    const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
-    const imageKeywords = [
-      // Action words - all languages
-      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch', 'visualize',
-      'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej', 'navrhni', 'ilustruj',
-      'generează', 'creează', 'desenează', 'pictează', 'fă', 'realizează',
-      'erstelle', 'zeichne', 'male', 'entwirf', 'mache', 'gestalte',
-      'создай', 'нарисуй', 'сделай', 'изобрази', 'нарисуй', 'создать',
-      'stwórz', 'narysuj', 'namaluj', 'zrób', 'zaprojektuj',
+    // 🔍 SEARCH AS TRUE DEFAULT - Always provide Google Search tool
+    // Only override for explicit image/PDF button modes
 
-      // Confirmation/agreement words - all languages
-      'ano', 'yes', 'jo', 'ok', 'okay', 'sure', 'do it', 'uděl to', 'tak jo', 'prosím',
-      'da', 'sigur', 'să facem', 'hai să', 'te rog',
-      'ja', 'sicher', 'mach es', 'los geht\'s', 'bitte',
-      'да', 'конечно', 'давай', 'сделай это', 'пожалуйста',
-      'tak', 'pewnie', 'zrób to', 'chodźmy', 'proszę',
-      'sounds good', 'let\'s do it', 'go ahead', 'please do',
+    // DEFAULT: Always provide Google Search
+    let tools = [{
+      google_search: {}
+    }];
+    console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
 
-      // Request variations - all languages
-      'similar', 'another', 'one more', 'more', 'next', 'show it', 'show me',
-      'podobný', 'další', 'ještě jeden', 'víc', 'ukaž', 'ukaž mi',
-      'similar', 'alt', 'încă unul', 'mai mult', 'arată-mi',
-      'ähnlich', 'noch ein', 'mehr', 'zeig mir',
-      'похожий', 'еще один', 'покажи', 'покажи мне',
-      'podobny', 'jeszcze jeden', 'więcej', 'pokaż mi',
-
-      // Image content words - all languages
-      'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
-      'obrázek', 'obrázky', 'ilustrace', 'fotka', 'kresba', 'malba',
-      'imagine', 'poză', 'ilustrație', 'desen', 'pictură', 'grafică',
-      'bild', 'foto', 'illustration', 'zeichnung', 'gemälde', 'grafik',
-      'изображение', 'картинка', 'фото', 'рисунок', 'иллюстрация',
-      'obraz', 'zdjęcie', 'ilustracja', 'rysunek', 'malarstwo',
-
-      // Visual objects
-      'logo', 'icon', 'banner', 'poster', 'wallpaper', 'character', 'scene', 'concept',
-      'car', 'auto', 'house', 'dům', 'landscape', 'krajina', 'portrait', 'portrét',
-      'animal', 'zvíře', 'cat', 'kočka', 'dog', 'pes', 'tree', 'strom',
-      'vánoční', 'christmas'
-    ];
-    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
-
-    // Check for PDF generation intent
-    const pdfKeywords = [
-      'pdf', 'document', 'report', 'generate pdf', 'create pdf', 'make pdf',
-      'vytvoř pdf', 'vygeneruj pdf', 'dokument', 'zpráva', 'report',
-      'generează pdf', 'creează document', 'raport',
-      'erstelle pdf', 'generiere pdf', 'dokument', 'bericht',
-      'создай pdf', 'сгенерируй pdf', 'документ', 'отчет',
-      'stwórz pdf', 'wygeneruj pdf', 'dokument', 'raport',
-      'export', 'download', 'file', 'soubor', 'fișier', 'datei', 'файл', 'plik'
-    ];
-    const wantsPDF = pdfKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
-
-    let tools = [];
-
+    // OVERRIDE only for explicit button modes
     if (imageMode) {
-      // Explicit image mode (🎨 button) - only provide image tool
-      tools.push({
+      // Explicit image mode (🎨 button) - override with image tool
+      tools = [{
         functionDeclarations: [{
           name: "generate_image",
           description: "Generate a new image from text description",
@@ -188,11 +141,11 @@ export default async function handler(req, res) {
             required: ["prompt"]
           }
         }]
-      });
-      console.log('🎨 [GEMINI] Explicit image mode - providing image generation tool');
+      }];
+      console.log('🎨 [GEMINI] Explicit image mode - overriding with image generation tool');
     } else if (pdfMode) {
-      // Explicit PDF mode - only provide PDF generation tool
-      tools.push({
+      // Explicit PDF mode - override with PDF tool
+      tools = [{
         functionDeclarations: [{
           name: "generate_pdf",
           description: "Generate a PDF document from markdown content. Use this when user asks for documents, reports, or PDF files.",
@@ -217,67 +170,8 @@ export default async function handler(req, res) {
             required: ["title", "content"]
           }
         }]
-      });
-      console.log('📄 [GEMINI] Explicit PDF mode - providing PDF generation tool');
-    } else if (wantsImage) {
-      // Auto-detected image request in normal chat - provide image tool
-      tools.push({
-        functionDeclarations: [{
-          name: "generate_image",
-          description: "Generate a new image from text description. Use this when user explicitly asks for image generation.",
-          parameters: {
-            type: "object",
-            properties: {
-              prompt: {
-                type: "string",
-                description: "Detailed description of the image to generate"
-              },
-              imageCount: {
-                type: "integer",
-                description: "Number of images to generate (1-4)",
-                default: 1
-              }
-            },
-            required: ["prompt"]
-          }
-        }]
-      });
-      console.log('🎨 [GEMINI] Auto-detected image request - providing image generation tool');
-    } else if (wantsPDF) {
-      // Auto-detected PDF request - provide PDF generation tool
-      tools.push({
-        functionDeclarations: [{
-          name: "generate_pdf",
-          description: "Generate a PDF document from markdown content. Use this when user asks for documents, reports, or PDF files.",
-          parameters: {
-            type: "object",
-            properties: {
-              title: {
-                type: "string",
-                description: "Title of the PDF document"
-              },
-              content: {
-                type: "string",
-                description: "Full markdown content for the document with proper formatting (headers, lists, tables, etc.)"
-              },
-              documentType: {
-                type: "string",
-                description: "Type of document for styling",
-                enum: ["report", "invoice", "cv", "document"],
-                default: "document"
-              }
-            },
-            required: ["title", "content"]
-          }
-        }]
-      });
-      console.log('📄 [GEMINI] Auto-detected PDF request - providing PDF generation tool');
-    } else {
-      // Default mode - provide Google Search for current data
-      tools.push({
-        google_search: {}
-      });
-      console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
+      }];
+      console.log('📄 [GEMINI] Explicit PDF mode - overriding with PDF generation tool');
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
@@ -290,9 +184,9 @@ export default async function handler(req, res) {
       tools: tools
     });
 
-    const modeText = imageMode ? 'with IMAGE GENERATION tools' :
-                    pdfMode ? 'with PDF GENERATION tools' :
-                    'with Google Search grounding';
+    const modeText = imageMode ? 'with IMAGE GENERATION tool (overridden)' :
+                    pdfMode ? 'with PDF GENERATION tool (overridden)' :
+                    'with GOOGLE SEARCH tool (default)';
     console.log(`🚀 Sending to Gemini 2.5 Flash ${modeText}...`);
 
     // Generate response with streaming
