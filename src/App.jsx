@@ -1955,6 +1955,12 @@ function AppContent() {
                     }
                     return currentMessages;
                   });
+
+                  // Save to DB after images are displayed
+                  setTimeout(async () => {
+                    const finalMessages = messagesRef.current;
+                    await checkAutoSave(finalMessages, activeChatId);
+                  }, 50);
                 } else {
                   // Some images need fallback upload (parallel uploads may have failed)
                   console.log(`🎨 Fallback: uploading ${generatedImages.length} images in completion...`);
@@ -2014,14 +2020,14 @@ function AppContent() {
                     });
 
                     generatedImages = sortedImages;
+
+                    // Save to DB after fallback images are displayed
+                    setTimeout(async () => {
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
+                    }, 50);
                   });
                 }
-
-                // Wait a bit for any state updates, then save to DB
-                setTimeout(async () => {
-                  const finalMessages = messagesRef.current;
-                  await checkAutoSave(finalMessages, activeChatId);
-                }, 50);
               }
 
               // Process PDFs after images
