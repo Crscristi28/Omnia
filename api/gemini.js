@@ -124,13 +124,6 @@ export default async function handler(req, res) {
       'создай', 'нарисуй', 'сделай', 'изобрази', 'нарисуй', 'создать',
       'stwórz', 'narysuj', 'namaluj', 'zrób', 'zaprojektuj',
 
-      // Confirmation/agreement words - all languages
-      'ano', 'yes', 'jo', 'ok', 'okay', 'sure', 'do it', 'uděl to', 'tak jo', 'prosím',
-      'da', 'sigur', 'să facem', 'hai să', 'te rog',
-      'ja', 'sicher', 'mach es', 'los geht\'s', 'bitte',
-      'да', 'конечно', 'давай', 'сделай это', 'пожалуйста',
-      'tak', 'pewnie', 'zrób to', 'chodźmy', 'proszę',
-      'sounds good', 'let\'s do it', 'go ahead', 'please do',
 
       // Request variations - all languages
       'similar', 'another', 'one more', 'more', 'next', 'show it', 'show me',
