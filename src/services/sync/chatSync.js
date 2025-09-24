@@ -206,6 +206,30 @@ class ChatSyncService {
           }
         }
 
+        // Transform images array to store only URLs, not base64
+        let imagesForDB = null;
+        if (msg.images && Array.isArray(msg.images)) {
+          imagesForDB = msg.images.map(image => {
+            if (typeof image === 'string') {
+              // If image is already a URL (old format), keep it
+              return image;
+            } else if (image.storageUrl) {
+              // New format - use Storage URL only (not the whole object)
+              return image.storageUrl;
+            } else if (image.base64 && !image.storageUrl) {
+              // Fallback: if no Storage URL but has base64, skip storing (old data)
+              console.warn(`⚠️ [SYNC] Image in images array without Storage URL found, skipping: ${msg.uuid}`);
+              return null;
+            }
+            return null;
+          }).filter(url => url !== null); // Remove null entries
+
+          // If no valid images, set to null
+          if (imagesForDB.length === 0) {
+            imagesForDB = null;
+          }
+        }
+
         // Transform PDF to minimal object (like images) with offline support
         let pdfForDB = null;
         if (msg.pdf && msg.pdf.storageUrl) {
@@ -232,6 +256,7 @@ class ChatSyncService {
           type: msg.type || 'text',
           attachments: attachmentsForDB,
           image: imageForDB,
+          images: imagesForDB,
           pdf: pdfForDB
         };
 
@@ -431,6 +456,7 @@ class ChatSyncService {
         type: msg.type || 'text',
         attachments: msg.attachments,
         image: msg.image,
+        images: msg.images,
         pdf: msg.pdf
       }));
       
