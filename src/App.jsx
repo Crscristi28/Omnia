@@ -1807,8 +1807,22 @@ function AppContent() {
                   // Update generatedImages with upload results
                   generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
 
-                  // Save to DB after images are uploaded and ready
-                  console.log('💾 [DB] Saving to IndexedDB after image uploads completed');
+                  // UPDATE UI WITH UPLOADED IMAGES
+                  setMessages(currentMessages => {
+                    const lastMessage = currentMessages[currentMessages.length - 1];
+                    if (lastMessage && lastMessage.sender === 'bot') {
+                      const updatedMessage = {
+                        ...lastMessage,
+                        images: generatedImages
+                      };
+                      console.log(`✅ UI updated with ${generatedImages.length} images`);
+                      return [...currentMessages.slice(0, -1), updatedMessage];
+                    }
+                    return currentMessages;
+                  });
+
+                  // Save to DB after images are uploaded and displayed
+                  console.log('💾 [DB] Saving to IndexedDB after image uploads completed and UI updated');
                   const finalMessages = messagesRef.current;
                   await checkAutoSave(finalMessages, activeChatId);
                 });
