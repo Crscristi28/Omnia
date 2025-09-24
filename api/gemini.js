@@ -109,12 +109,11 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // Analyze FULL CONTEXT to determine intent (not just last message)
-    const fullContext = messages
-      .filter(msg => msg.sender === 'user')
-      .map(msg => msg.text || msg.content || '')
-      .join(' ')
-      .toLowerCase();
+    // For tool detection, use CURRENT MESSAGE only (not full history)
+    // Full context would include old image/PDF requests and cause false positives
+    const currentMessage = (messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '').toLowerCase();
+
+    console.log(`🔍 [DEBUG] Current message: "${currentMessage}"`);
     const imageKeywords = [
       // Action words - all languages
       'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch', 'visualize',
@@ -147,11 +146,10 @@ export default async function handler(req, res) {
       'animal', 'zvíře', 'cat', 'kočka', 'dog', 'pes', 'tree', 'strom',
       'vánoční', 'christmas'
     ];
-    const wantsImage = imageKeywords.some(keyword => fullContext.includes(keyword));
-    console.log(`🔍 [DEBUG] Full context: "${fullContext.substring(0, 200)}..."`);
+    const wantsImage = imageKeywords.some(keyword => currentMessage.includes(keyword));
     console.log(`🎨 [DEBUG] Image detection: ${wantsImage}`);
     if (wantsImage) {
-      const matchedKeywords = imageKeywords.filter(keyword => fullContext.includes(keyword));
+      const matchedKeywords = imageKeywords.filter(keyword => currentMessage.includes(keyword));
       console.log(`🎨 [DEBUG] Matched image keywords: ${matchedKeywords.join(', ')}`);
     }
 
@@ -165,10 +163,10 @@ export default async function handler(req, res) {
       'stwórz pdf', 'wygeneruj pdf', 'dokument', 'raport',
       'export', 'download', 'file', 'soubor', 'fișier', 'datei', 'файл', 'plik'
     ];
-    const wantsPDF = pdfKeywords.some(keyword => fullContext.includes(keyword));
+    const wantsPDF = pdfKeywords.some(keyword => currentMessage.includes(keyword));
     console.log(`📄 [DEBUG] PDF detection: ${wantsPDF}`);
     if (wantsPDF) {
-      const matchedKeywords = pdfKeywords.filter(keyword => fullContext.includes(keyword));
+      const matchedKeywords = pdfKeywords.filter(keyword => currentMessage.includes(keyword));
       console.log(`📄 [DEBUG] Matched PDF keywords: ${matchedKeywords.join(', ')}`);
     }
 
