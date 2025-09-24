@@ -379,7 +379,22 @@ const chatDB = {
         delete cleaned.previewUrl;
         return cleaned;
       }) : null;
-      
+
+      // Clean images array for IndexedDB (same logic as in saveChatV2)
+      const cleanImages = message.images ? message.images.map(img => {
+        const cleaned = { ...img };
+        // Remove base64 data to prevent circular references and reduce size
+        delete cleaned.base64;
+        delete cleaned.mimeType; // Not needed after upload
+        // Keep only essential data: storageUrl, storagePath, timestamp, index
+        return {
+          storageUrl: cleaned.storageUrl,
+          storagePath: cleaned.storagePath,
+          timestamp: cleaned.timestamp,
+          index: cleaned.index
+        };
+      }) : null;
+
       const messageRecord = {
         uuid: message.uuid || crypto.randomUUID(), // UUID as primary key
         chatId: chatId,
@@ -389,6 +404,7 @@ const chatDB = {
         type: message.type || 'text',
         attachments: cleanAttachments,
         image: message.image || null,    // 🔧 CRITICAL FIX: Save image data too!
+        images: cleanImages,             // 🔧 CRITICAL FIX: Save multiple images array!
         pdf: message.pdf || null         // 🔧 CRITICAL FIX: Save PDF data too!
       };
       
