@@ -142,7 +142,7 @@ export default async function handler(req, res) {
       tools = [{
         functionDeclarations: [{
           name: "generate_image",
-          description: "Generate a new image from text description",
+          description: "Generate a new image from text description. Use this when user asks for drawings, illustrations, pictures, artwork, visual content, logos, designs, sketches, or any visual representation.",
           parameters: {
             type: "object",
             properties: {
@@ -166,7 +166,7 @@ export default async function handler(req, res) {
       tools = [{
         functionDeclarations: [{
           name: "generate_image",
-          description: "Generate a new image from text description",
+          description: "Generate a new image from text description. Use this when user asks for drawings, illustrations, pictures, artwork, visual content, logos, designs, sketches, or any visual representation.",
           parameters: {
             type: "object",
             properties: {
@@ -190,7 +190,7 @@ export default async function handler(req, res) {
       tools = [{
         functionDeclarations: [{
           name: "generate_pdf",
-          description: "Generate a PDF document from markdown content",
+          description: "Generate a PDF document from markdown content. Use this when user asks you to create documents, reports, summaries, analyses, write-ups, export content, format text as document, or any content that should be saved as a PDF file.",
           parameters: {
             type: "object",
             properties: {
