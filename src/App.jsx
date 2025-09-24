@@ -1979,7 +1979,7 @@ function AppContent() {
               // If no images or PDFs, save immediately
               if ((!generatedImages || generatedImages.length === 0) && (!generatedPdfs || generatedPdfs.length === 0)) {
                 const finalMessages = messagesRef.current;
-                await checkAutoSave(finalMessages, activeChatId);
+                checkAutoSave(finalMessages, activeChatId);
               }
             }, 100);
             
