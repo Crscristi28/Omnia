@@ -106,68 +106,39 @@ export default async function handler(req, res) {
     // Add language instruction to ensure Omnia responds in user's language
     let finalSystemInstruction = systemInstruction + '\n\n🌍 **CRITICAL:** Always respond in the EXACT same language the user writes in. Match their language perfectly.';
 
-    // 🤖 INTELLIGENT TOOL SELECTION - Let Gemini decide which tools to use
-    // Provide all tools and let Gemini's intelligence choose the appropriate one
+    // 🎯 SMART TOOL SELECTION - Search as default with intelligent overrides
+    // Google API limitation: can only send one tool type at a time
 
-    // Always provide ALL tools to Gemini - let it decide intelligently which to use
-    let tools = [
-      // Image generation tool
-      {
-        functionDeclarations: [{
-          name: "generate_image",
-          description: "Generate a new image from text description. Use when user asks for visual content, drawings, illustrations, or images.",
-          parameters: {
-            type: "object",
-            properties: {
-              prompt: {
-                type: "string",
-                description: "Detailed description of the image to generate"
-              },
-              imageCount: {
-                type: "integer",
-                description: "Number of images to generate (1-4)",
-                default: 1
-              }
-            },
-            required: ["prompt"]
-          }
-        }]
-      },
-      // PDF generation tool
-      {
-        functionDeclarations: [{
-          name: "generate_pdf",
-          description: "Generate a PDF document from markdown content. Use when user asks for documents, reports, or PDF files.",
-          parameters: {
-            type: "object",
-            properties: {
-              title: {
-                type: "string",
-                description: "Title of the PDF document"
-              },
-              content: {
-                type: "string",
-                description: "Full markdown content for the document with proper formatting (headers, lists, tables, etc.)"
-              },
-              documentType: {
-                type: "string",
-                description: "Type of document for styling",
-                enum: ["report", "invoice", "cv", "document"],
-                default: "document"
-              }
-            },
-            required: ["title", "content"]
-          }
-        }]
-      },
-      // Google Search tool
-      {
-        google_search: {}
-      }
+    // Analyze user message for specific tool needs
+    const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
+
+    // Specific image keywords (only clear image requests)
+    const imageKeywords = [
+      'nakresli', 'namaluj', 'vytvoř obrázek', 'vygeneruj obrázek', 'nakreslíš',
+      'draw', 'paint', 'create image', 'generate image', 'make image', 'sketch',
+      'desenează', 'pictează', 'creează imagine', 'fă imagine',
+      'zeichne', 'male', 'erstelle bild', 'generiere bild', 'mache bild',
+      'нарисуй', 'создай изображение', 'сгенерируй картинку',
+      'narysuj', 'namaluj', 'stwórz obraz', 'wygeneruj obrazek'
     ];
 
-    // OVERRIDE only for explicit image button mode
+    // Specific PDF keywords (only clear PDF requests)
+    const pdfKeywords = [
+      'vytvoř pdf', 'vygeneruj pdf', 'udělej dokument', 'exportuj pdf',
+      'create pdf', 'generate pdf', 'make document', 'export pdf',
+      'creează pdf', 'generează document', 'fă pdf',
+      'erstelle pdf', 'generiere pdf', 'mache dokument',
+      'создай pdf', 'сгенерируй документ',
+      'stwórz pdf', 'wygeneruj dokument'
+    ];
+
+    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+    const wantsPDF = pdfKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+
+    let tools = [];
+
     if (imageMode) {
+      // Explicit image mode (🎨 button)
       tools = [{
         functionDeclarations: [{
           name: "generate_image",
@@ -189,9 +160,66 @@ export default async function handler(req, res) {
           }
         }]
       }];
-      console.log('🎨 [GEMINI] Explicit image mode - providing only image generation tool');
+      console.log('🎨 [GEMINI] Image mode - providing image generation tool');
+    } else if (wantsImage) {
+      // User wants image generation
+      tools = [{
+        functionDeclarations: [{
+          name: "generate_image",
+          description: "Generate a new image from text description",
+          parameters: {
+            type: "object",
+            properties: {
+              prompt: {
+                type: "string",
+                description: "Detailed description of the image to generate"
+              },
+              imageCount: {
+                type: "integer",
+                description: "Number of images to generate (1-4)",
+                default: 1
+              }
+            },
+            required: ["prompt"]
+          }
+        }]
+      }];
+      console.log('🎨 [GEMINI] Detected image request - providing image generation tool');
+    } else if (wantsPDF) {
+      // User wants PDF generation
+      tools = [{
+        functionDeclarations: [{
+          name: "generate_pdf",
+          description: "Generate a PDF document from markdown content",
+          parameters: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string",
+                description: "Title of the PDF document"
+              },
+              content: {
+                type: "string",
+                description: "Full markdown content for the document with proper formatting (headers, lists, tables, etc.)"
+              },
+              documentType: {
+                type: "string",
+                description: "Type of document for styling",
+                enum: ["report", "invoice", "cv", "document"],
+                default: "document"
+              }
+            },
+            required: ["title", "content"]
+          }
+        }]
+      }];
+      console.log('📄 [GEMINI] Detected PDF request - providing PDF generation tool');
     } else {
-      console.log('🤖 [GEMINI] Providing all tools - letting Gemini decide intelligently');
+      // DEFAULT: Google Search for everything else
+      tools = [{
+        google_search: {}
+      }];
+      console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
     }
 
     console.log('🔧 [DEBUG] Tools provided to Gemini:', tools.length);
@@ -204,8 +232,10 @@ export default async function handler(req, res) {
       tools: tools
     });
 
-    const modeText = imageMode ? 'with IMAGE GENERATION tools only' :
-                    'with ALL TOOLS (intelligent selection)';
+    const modeText = imageMode ? 'with IMAGE GENERATION tool' :
+                    wantsImage ? 'with IMAGE GENERATION tool (detected)' :
+                    wantsPDF ? 'with PDF GENERATION tool (detected)' :
+                    'with GOOGLE SEARCH tool (default)';
     console.log(`🚀 Sending to Gemini 2.5 Flash ${modeText}...`);
 
     // Generate response with streaming
