@@ -281,7 +281,8 @@ export default async function handler(req, res) {
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
-    
+    console.log('🔧 [DEBUG] Tools provided to Gemini:', JSON.stringify(tools, null, 2));
+
     // Initialize model with proper system instruction and tools
     console.log('🤖 [GEMINI] Initializing model with tools:', tools.length);
     const generativeModel = vertexAI.getGenerativeModel({
@@ -323,6 +324,8 @@ export default async function handler(req, res) {
     // Process stream in real-time with robust error handling
     try {
       for await (const item of result.stream) {
+        console.log('🔄 [STREAM-DEBUG] Received item from Gemini:', JSON.stringify(item, null, 2));
+
         // Process grounding metadata (sources) as soon as they arrive
         if (item.candidates && item.candidates[0].groundingMetadata) {
           const extractedSources = extractSources(item.candidates[0].groundingMetadata);
@@ -334,6 +337,15 @@ export default async function handler(req, res) {
           }
         }
         
+        // Check for function calls (tool usage)
+        if (item.candidates && item.candidates[0].content.parts) {
+          for (const part of item.candidates[0].content.parts) {
+            if (part.functionCall) {
+              console.log('🔧 [TOOL-DEBUG] Gemini is calling function:', JSON.stringify(part.functionCall, null, 2));
+            }
+          }
+        }
+
         // Process text parts
         if (item.candidates && item.candidates[0].content.parts) {
           for (const part of item.candidates[0].content.parts) {
