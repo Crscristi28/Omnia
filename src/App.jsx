@@ -1286,7 +1286,7 @@ function AppContent() {
           // Call Gemini with imageMode flag instead of direct Imagen
           let responseText = '';
           let generatedImages = [];
-          let processedImageData = null; // Store processed image for delayed display
+          let processedImagesData = []; // Store processed images for delayed display
           
           // Word-by-word animation variables (same as normal mode)
           let rawChunkBufferImage = '';
@@ -1371,15 +1371,15 @@ function AppContent() {
 
               console.log('🎯 Image mode progressive streaming animation complete');
 
-              // INSTANT DISPLAY: Show image immediately from buffer (base64)
-              if (processedImageData) {
-                console.log('📷 [INSTANT] Adding image to message from buffer');
+              // INSTANT DISPLAY: Show images immediately from buffer (base64)
+              if (processedImagesData.length > 0) {
+                console.log(`📷 [INSTANT] Adding ${processedImagesData.length} images to message from buffer`);
                 setMessages(prev => prev.map(msg =>
                   msg.id === imageGenBotMessageId
                     ? {
                         ...msg,
                         text: currentDisplayedTextImage,
-                        image: processedImageData,
+                        images: processedImagesData,
                         isStreaming: false
                       }
                     : msg
@@ -1399,47 +1399,61 @@ function AppContent() {
             generatedImages = result.images;
           }
           
-          // Process images if generated via tool call - PREPARE BUFFER ONLY
+          // Process ALL images if generated via tool call
           if (generatedImages && generatedImages.length > 0) {
-            let imageData = generatedImages[0];
-            const imageTimestamp = Date.now();
+            console.log(`📤 [UPLOAD] Processing ${generatedImages.length} images...`);
 
-            // Convert base64 to data URI if needed
-            const base64String = imageData.base64.startsWith('data:')
-              ? imageData.base64
-              : `data:${imageData.mimeType};base64,${imageData.base64}`;
+            const processedImages = [];
+            const uploadPromises = generatedImages.map(async (imageData, index) => {
+              const imageTimestamp = Date.now();
 
-            console.log('📤 [UPLOAD] Uploading image immediately, will display when ready');
+              // Convert base64 to data URI if needed
+              const base64String = imageData.base64.startsWith('data:')
+                ? imageData.base64
+                : `data:${imageData.mimeType};base64,${imageData.base64}`;
 
-            // UPLOAD FIRST (async) - no base64 in browser
-            uploadBase64ToSupabaseStorage(
-              base64String,
-              `generated-${imageTimestamp}.png`,
-              'generated-images'
-            ).then(uploadResult => {
-              console.log('✅ [UPLOAD] Image uploaded, storing for display');
+              try {
+                const uploadResult = await uploadBase64ToSupabaseStorage(
+                  base64String,
+                  `generated-${imageTimestamp}-${index}.png`,
+                  'generated-images'
+                );
 
-              // Store image data for display
-              processedImageData = {
-                mimeType: imageData.mimeType,
-                width: imageData.width,
-                height: imageData.height,
-                storageUrl: uploadResult.publicUrl,
-                storagePath: uploadResult.path,
-                timestamp: imageTimestamp
-              };
+                console.log(`✅ [UPLOAD] Image ${index + 1}/${generatedImages.length} uploaded`);
+
+                return {
+                  mimeType: imageData.mimeType,
+                  width: imageData.width,
+                  height: imageData.height,
+                  storageUrl: uploadResult.publicUrl,
+                  storagePath: uploadResult.path,
+                  timestamp: imageTimestamp,
+                  index: index
+                };
+              } catch (uploadError) {
+                console.error(`❌ [UPLOAD] Image ${index + 1} failed:`, uploadError.message);
+                return null;
+              }
+            });
+
+            Promise.all(uploadPromises).then(results => {
+              const successfulUploads = results.filter(result => result !== null);
+              const sortedImages = successfulUploads.sort((a, b) => a.index - b.index);
+
+              console.log(`✅ [UPLOAD] ${successfulUploads.length}/${generatedImages.length} images processed`);
+
+              // Store for delayed display if animation is still running
+              processedImagesData = sortedImages;
 
               // If animation already done, show immediately
               if (wordQueueImage.length === 0) {
-                console.log('📷 [INSTANT] Animation done, showing image now');
+                console.log('📷 [INSTANT] Animation done, showing images now');
                 setMessages(prev => prev.map(msg =>
                   msg.id === imageGenBotMessageId
-                    ? {...msg, image: processedImageData, isStreaming: false}
+                    ? {...msg, images: sortedImages, isStreaming: false}
                     : msg
                 ));
               }
-            }).catch(uploadError => {
-              console.error('❌ [UPLOAD] Failed:', uploadError.message);
             });
 
             // Hide loading indicators same as normal chat
@@ -1749,33 +1763,45 @@ function AppContent() {
                 generatedImages = extra.images;
                 console.log('🎨 Images received in normal mode:', extra.images.length);
 
-                // Start upload immediately in parallel with text streaming
-                const imageData = extra.images[0];
-                if (imageData.base64 && imageData.mimeType) {
-                  console.log('🚀 Starting parallel upload during streaming...');
+                // Start upload for ALL images immediately in parallel with text streaming
+                const uploadPromises = extra.images.map(async (imageData, index) => {
+                  if (imageData.base64 && imageData.mimeType) {
+                    console.log(`🚀 Starting parallel upload for image ${index + 1}/${extra.images.length}...`);
 
-                  const imageTimestamp = Date.now();
-                  uploadBase64ToSupabaseStorage(
-                    imageData.base64,
-                    `generated-${imageTimestamp}.png`,
-                    'generated-images'
-                  ).then(uploadResult => {
-                    if (uploadResult && uploadResult.publicUrl) {
-                      const uploadedImageData = {
-                        storageUrl: uploadResult.publicUrl,
-                        storagePath: uploadResult.path,
-                        mimeType: imageData.mimeType,
-                        timestamp: imageTimestamp
-                      };
-                      console.log('✅ Parallel upload completed, ready for display after streaming');
+                    const imageTimestamp = Date.now();
+                    try {
+                      const uploadResult = await uploadBase64ToSupabaseStorage(
+                        imageData.base64,
+                        `generated-${imageTimestamp}-${index}.png`,
+                        'generated-images'
+                      );
 
-                      // Don't display yet - just prepare the data for after streaming
-                      generatedImages = [uploadedImageData];
+                      if (uploadResult && uploadResult.publicUrl) {
+                        console.log(`✅ Image ${index + 1} upload completed`);
+                        return {
+                          storageUrl: uploadResult.publicUrl,
+                          storagePath: uploadResult.path,
+                          mimeType: imageData.mimeType,
+                          timestamp: imageTimestamp,
+                          index: index
+                        };
+                      }
+                    } catch (error) {
+                      console.error(`💥 Image ${index + 1} upload failed:`, error);
+                      return null;
                     }
-                  }).catch(error => {
-                    console.error('💥 Parallel upload failed:', error);
-                  });
-                }
+                  }
+                  return null;
+                });
+
+                // Wait for all uploads to complete
+                Promise.all(uploadPromises).then(uploadResults => {
+                  const successfulUploads = uploadResults.filter(result => result !== null);
+                  console.log(`✅ All parallel uploads completed: ${successfulUploads.length}/${extra.images.length} successful`);
+
+                  // Update generatedImages with upload results
+                  generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
+                });
               }
               // Handle PDF generation from tool calls
               if (extra.pdf) {
@@ -1915,63 +1941,84 @@ function AppContent() {
             setTimeout(async () => {
               // Check if images were already processed during streaming
               if (generatedImages && generatedImages.length > 0) {
-                const imageData = generatedImages[0];
+                console.log(`🎨 Processing ${generatedImages.length} images after streaming...`);
 
-                // Display image after streaming (whether uploaded during streaming or as fallback)
-                if (imageData.storageUrl) {
-                  console.log('✅ Image already uploaded during streaming, displaying now');
+                // Check if all images were already uploaded during streaming
+                const preUploadedImages = generatedImages.filter(img => img.storageUrl);
 
-                  // Display the pre-uploaded image
+                if (preUploadedImages.length === generatedImages.length) {
+                  console.log('✅ All images already uploaded during streaming, displaying now');
+
+                  // Display all pre-uploaded images
                   setMessages(currentMessages => {
                     const lastMessage = currentMessages[currentMessages.length - 1];
                     if (lastMessage && lastMessage.sender === 'bot') {
                       const updatedMessage = {
                         ...lastMessage,
-                        image: imageData
+                        images: generatedImages
                       };
-                      console.log('✅ Pre-uploaded image displayed after streaming');
+                      console.log(`✅ ${generatedImages.length} pre-uploaded images displayed after streaming`);
                       return [...currentMessages.slice(0, -1), updatedMessage];
                     }
                     return currentMessages;
                   });
-                } else if (imageData.base64 && imageData.mimeType) {
-                  console.log('🎨 Fallback: uploading image in completion (parallel upload may have failed)');
+                } else {
+                  // Some images need fallback upload
+                  console.log(`🎨 Fallback: uploading ${generatedImages.length} images in completion...`);
 
-                  try {
-                    const imageTimestamp = Date.now();
-                    const uploadResult = await uploadBase64ToSupabaseStorage(
-                      imageData.base64,
-                      `generated-${imageTimestamp}.png`,
-                      'generated-images'
-                    );
+                  const uploadPromises = generatedImages.map(async (imageData, index) => {
+                    if (imageData.storageUrl) {
+                      // Already uploaded
+                      return imageData;
+                    } else if (imageData.base64 && imageData.mimeType) {
+                      console.log(`🎨 Fallback: uploading image ${index + 1}/${generatedImages.length}...`);
 
-                    if (uploadResult && uploadResult.publicUrl) {
-                      const uploadedImageData = {
-                        storageUrl: uploadResult.publicUrl,
-                        storagePath: uploadResult.path,
-                        mimeType: imageData.mimeType,
-                        timestamp: imageTimestamp
-                      };
+                      try {
+                        const imageTimestamp = Date.now();
+                        const uploadResult = await uploadBase64ToSupabaseStorage(
+                          imageData.base64,
+                          `generated-${imageTimestamp}-${index}.png`,
+                          'generated-images'
+                        );
 
-                      // Update message with fallback upload
+                        if (uploadResult && uploadResult.publicUrl) {
+                          return {
+                            storageUrl: uploadResult.publicUrl,
+                            storagePath: uploadResult.path,
+                            mimeType: imageData.mimeType,
+                            timestamp: imageTimestamp,
+                            index: index
+                          };
+                        }
+                      } catch (uploadError) {
+                        console.error(`💥 Fallback upload failed for image ${index + 1}:`, uploadError);
+                        return null;
+                      }
+                    }
+                    return null;
+                  });
+
+                  Promise.all(uploadPromises).then(results => {
+                    const successfulUploads = results.filter(result => result !== null);
+                    console.log(`✅ Fallback complete: ${successfulUploads.length}/${generatedImages.length} images uploaded`);
+
+                    if (successfulUploads.length > 0) {
+                      const sortedImages = successfulUploads.sort((a, b) => a.index - b.index);
+
                       setMessages(currentMessages => {
                         const lastMessage = currentMessages[currentMessages.length - 1];
                         if (lastMessage && lastMessage.sender === 'bot') {
                           const updatedMessage = {
                             ...lastMessage,
-                            image: uploadedImageData
+                            images: sortedImages
                           };
-                          console.log('✅ Fallback image updated');
+                          console.log(`✅ ${sortedImages.length} fallback images displayed`);
                           return [...currentMessages.slice(0, -1), updatedMessage];
                         }
                         return currentMessages;
                       });
-
-                      generatedImages = [uploadedImageData];
                     }
-                  } catch (uploadError) {
-                    console.error('💥 Fallback upload failed:', uploadError);
-                  }
+                  });
                 }
 
                 // Wait a bit for any state updates, then save to DB
@@ -2179,17 +2226,23 @@ function AppContent() {
     const slides = [];
     
     messages.forEach(msg => {
-      // Generated images (from image mode)
-      if (msg.image) {
-        const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : null);
+      // Generated images - support both single (legacy) and multiple (new)
+      const images = msg.images || (msg.image ? [msg.image] : []);
+
+      images.forEach((image, index) => {
+        const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : null);
         if (imageUrl) {
+          const title = images.length > 1
+            ? `Generated ${index + 1}/${images.length}: ${msg.text.slice(0, 30)}...`
+            : `Generated: ${msg.text.slice(0, 30)}...`;
+
           slides.push({
             src: imageUrl,
-            alt: `Generated: ${msg.text.slice(0, 30)}...`,
-            title: `Generated: ${msg.text.slice(0, 30)}...`
+            alt: title,
+            title: title
           });
         }
-      }
+      });
       
       // User uploaded attachments (images)
       if (msg.attachments) {

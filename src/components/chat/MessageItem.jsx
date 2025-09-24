@@ -260,8 +260,8 @@ const MessageItem = ({
             className="text-white"
           />
           
-          {/* 🎨 GENERATED IMAGE - Display after text with loading skeleton */}
-          {msg.image && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}
+          {(msg.image || msg.images) && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
           {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
@@ -302,27 +302,85 @@ const MessageItem = ({
   );
 };
 
-// 🎨 Generated Image with Loading Skeleton Component
-const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
+// 🎨 Generated Images Gallery Component (supports single or multiple images)
+const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
+  // Support both single image (legacy) and multiple images (new)
+  const images = msg.images || (msg.image ? [msg.image] : []);
 
-  const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image);
+  if (images.length === 0) return null;
 
+  // Single image - use original layout
+  if (images.length === 1) {
+    return <SingleImageWithSkeleton image={images[0]} msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />;
+  }
+
+  // Multiple images - use gallery grid
   return (
     <div style={{
       paddingTop: '1rem',
       paddingBottom: '1rem',
+      maxWidth: '100%'
+    }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: images.length === 2 ? '1fr 1fr' :
+                            images.length === 3 ? '1fr 1fr 1fr' :
+                            '1fr 1fr', // 4 images: 2x2 grid
+        gridTemplateRows: images.length === 4 ? '1fr 1fr' : 'auto',
+        gap: '0.5rem',
+        borderRadius: '12px',
+        overflow: 'hidden'
+      }}>
+        {images.map((image, index) => (
+          <SingleImageWithSkeleton
+            key={index}
+            image={image}
+            msg={msg}
+            onPreviewImage={onPreviewImage}
+            imageStyle={{
+              ...imageStyle,
+              width: '100%',
+              height: images.length === 4 ? '150px' : '200px',
+              objectFit: 'cover'
+            }}
+            index={index}
+          />
+        ))}
+      </div>
+      {images.length > 1 && (
+        <div style={{
+          textAlign: 'center',
+          marginTop: '0.5rem',
+          color: 'rgba(255, 255, 255, 0.6)',
+          fontSize: '12px'
+        }}>
+          {images.length} images generated
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Single Image Component (used by gallery)
+const SingleImageWithSkeleton = ({ image, msg, onPreviewImage, imageStyle, index = 0 }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image);
+
+  return (
+    <div style={{
       borderRadius: '12px',
       overflow: 'hidden',
-      maxWidth: '100%'
+      position: 'relative',
+      width: '100%'
     }}>
       {/* Loading Skeleton */}
       {!imageLoaded && (
         <div
           className="image-skeleton"
           style={{
-            width: '300px',
-            height: '300px',
+            width: '100%',
+            height: imageStyle?.height || '300px',
             background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
             backgroundSize: '200% 100%',
             borderRadius: '12px',
@@ -340,16 +398,17 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
       {/* Actual Image */}
       <img
         src={imageUrl}
-        alt={`Generated image for: ${msg.text}`}
+        alt={`Generated image ${index + 1} for: ${msg.text}`}
         onClick={() => {
           onPreviewImage({
             url: imageUrl,
-            name: `Generated: ${msg.text.slice(0, 30)}...`
+            name: `Generated ${index + 1}: ${msg.text.slice(0, 30)}...`
           });
         }}
         style={{
           ...imageStyle,
-          display: imageLoaded ? 'block' : 'none'
+          display: imageLoaded ? 'block' : 'none',
+          cursor: 'pointer'
         }}
         onMouseEnter={(e) => {
           e.target.style.transform = 'scale(1.02) translateZ(0)';
@@ -361,7 +420,6 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
           setImageLoaded(true);
         }}
       />
-
     </div>
   );
 };
