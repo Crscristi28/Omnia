@@ -47,6 +47,15 @@ class ChatDatabase extends Dexie {
     }).upgrade(tx => {
       // Migration adds pdf column - existing data preserved
     });
+
+    // V6 Schema (Add multiple images support)
+    this.version(6).stores({
+      chats: 'id, title, createdAt, updatedAt, messageCount',
+      messages: 'uuid, chatId, timestamp, sender, text, type, attachments, image, images, pdf, [chatId+timestamp], [chatId+uuid]'
+    }).upgrade(tx => {
+      // Migration adds images array column - existing data preserved
+      // Backwards compatible: keeps both 'image' (singular) and 'images' (array)
+    });
   }
 }
 
@@ -254,6 +263,7 @@ const chatDB = {
           type: message.type || 'text',
           attachments: cleanAttachments,
           image: message.image || null,  // Fix: Save Imagen images too
+          images: message.images || null, // 🔧 CRITICAL FIX: Save multiple images array!
           pdf: message.pdf || null       // 🔧 CRITICAL FIX: Save PDF data too!
         };
         // Use put() instead of add() for upsert behavior with UUID
