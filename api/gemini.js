@@ -148,6 +148,12 @@ export default async function handler(req, res) {
       'vánoční', 'christmas'
     ];
     const wantsImage = imageKeywords.some(keyword => fullContext.includes(keyword));
+    console.log(`🔍 [DEBUG] Full context: "${fullContext.substring(0, 200)}..."`);
+    console.log(`🎨 [DEBUG] Image detection: ${wantsImage}`);
+    if (wantsImage) {
+      const matchedKeywords = imageKeywords.filter(keyword => fullContext.includes(keyword));
+      console.log(`🎨 [DEBUG] Matched image keywords: ${matchedKeywords.join(', ')}`);
+    }
 
     // Check for PDF generation intent
     const pdfKeywords = [
@@ -160,6 +166,14 @@ export default async function handler(req, res) {
       'export', 'download', 'file', 'soubor', 'fișier', 'datei', 'файл', 'plik'
     ];
     const wantsPDF = pdfKeywords.some(keyword => fullContext.includes(keyword));
+    console.log(`📄 [DEBUG] PDF detection: ${wantsPDF}`);
+    if (wantsPDF) {
+      const matchedKeywords = pdfKeywords.filter(keyword => fullContext.includes(keyword));
+      console.log(`📄 [DEBUG] Matched PDF keywords: ${matchedKeywords.join(', ')}`);
+    }
+
+    // Debug frontend parameters
+    console.log(`🔧 [DEBUG] Frontend parameters - imageMode: ${imageMode}, pdfMode: ${pdfMode}`);
 
     let tools = [];
 
@@ -278,6 +292,11 @@ export default async function handler(req, res) {
     }
 
     console.log('🔧 [DEBUG] Single tool type provided:', tools.length);
+    console.log('🔧 [DEBUG] Tools configuration:', JSON.stringify(tools, null, 2));
+
+    // Log final decision
+    const toolType = wantsImage ? 'IMAGE' : wantsPDF ? 'PDF' : 'SEARCH';
+    console.log(`🎯 [DEBUG] FINAL TOOL DECISION: ${toolType}`);
     
     // Initialize model with proper system instruction and tools
     console.log('🤖 [GEMINI] Initializing model with tools:', tools.length);
