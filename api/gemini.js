@@ -109,8 +109,12 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // Analyze user's last message to determine intent
-    const lastUserMessage = messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '';
+    // Analyze FULL CONTEXT to determine intent (not just last message)
+    const fullContext = messages
+      .filter(msg => msg.sender === 'user')
+      .map(msg => msg.text || msg.content || '')
+      .join(' ')
+      .toLowerCase();
     const imageKeywords = [
       // Action words - all languages
       'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch', 'visualize',
@@ -150,7 +154,7 @@ export default async function handler(req, res) {
       'animal', 'zvíře', 'cat', 'kočka', 'dog', 'pes', 'tree', 'strom',
       'vánoční', 'christmas'
     ];
-    const wantsImage = imageKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+    const wantsImage = imageKeywords.some(keyword => fullContext.includes(keyword));
 
     // Check for PDF generation intent
     const pdfKeywords = [
@@ -162,7 +166,7 @@ export default async function handler(req, res) {
       'stwórz pdf', 'wygeneruj pdf', 'dokument', 'raport',
       'export', 'download', 'file', 'soubor', 'fișier', 'datei', 'файл', 'plik'
     ];
-    const wantsPDF = pdfKeywords.some(keyword => lastUserMessage.toLowerCase().includes(keyword));
+    const wantsPDF = pdfKeywords.some(keyword => fullContext.includes(keyword));
 
     let tools = [];
 
