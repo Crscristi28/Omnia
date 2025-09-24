@@ -1946,42 +1946,41 @@ function AppContent() {
                   : msg
               )
             );
-            
+
             // NOTE: Image processing now handled entirely in parallel upload Promise.all above
             // This eliminates race conditions and duplicate uploads
 
-              // Process PDFs after images
-              if (generatedPdfs && generatedPdfs.length > 0) {
-                const pdfData = generatedPdfs[0];
-                console.log('📄 Processing PDF:', pdfData.title);
+            // Process PDFs after images
+            if (generatedPdfs && generatedPdfs.length > 0) {
+              const pdfData = generatedPdfs[0];
+              console.log('📄 Processing PDF:', pdfData.title);
 
-                // Update message with PDF data
-                setMessages(currentMessages => {
-                  const lastMessage = currentMessages[currentMessages.length - 1];
-                  if (lastMessage && lastMessage.sender === 'bot') {
-                    const updatedMessage = {
-                      ...lastMessage,
-                      pdf: pdfData
-                    };
-                    console.log('✅ PDF added to message');
-                    return [...currentMessages.slice(0, -1), updatedMessage];
-                  }
-                  return currentMessages;
-                });
+              // Update message with PDF data
+              setMessages(currentMessages => {
+                const lastMessage = currentMessages[currentMessages.length - 1];
+                if (lastMessage && lastMessage.sender === 'bot') {
+                  const updatedMessage = {
+                    ...lastMessage,
+                    pdf: pdfData
+                  };
+                  console.log('✅ PDF added to message');
+                  return [...currentMessages.slice(0, -1), updatedMessage];
+                }
+                return currentMessages;
+              });
 
-                // Wait a bit for PDF state updates, then save to DB
-                setTimeout(async () => {
-                  const finalMessages = messagesRef.current;
-                  await checkAutoSave(finalMessages, activeChatId);
-                }, 50);
-              }
-
-              // If no images or PDFs, save immediately
-              if ((!generatedImages || generatedImages.length === 0) && (!generatedPdfs || generatedPdfs.length === 0)) {
+              // Wait a bit for PDF state updates, then save to DB
+              setTimeout(async () => {
                 const finalMessages = messagesRef.current;
-                checkAutoSave(finalMessages, activeChatId);
-              }
-            }, 100);
+                await checkAutoSave(finalMessages, activeChatId);
+              }, 50);
+            }
+
+            // If no images or PDFs, save immediately
+            if ((!generatedImages || generatedImages.length === 0) && (!generatedPdfs || generatedPdfs.length === 0)) {
+              const finalMessages = messagesRef.current;
+              checkAutoSave(finalMessages, activeChatId);
+            }
             
             console.log('🎯 Progressive streaming animation complete');
           }
