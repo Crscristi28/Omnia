@@ -275,7 +275,7 @@ export default async function handler(req, res) {
     } else {
       // Default mode - provide Google Search for current data
       tools.push({
-        googleSearchRetrieval: {}
+        google_search: {}
       });
       console.log('🔍 [GEMINI] Default mode - providing Google Search tool');
     }
