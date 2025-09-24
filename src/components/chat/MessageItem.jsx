@@ -549,12 +549,12 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
     setLoadedImages(prev => new Set([...prev, index]));
   };
 
-  const getGridClass = () => {
+  const getGridStyle = () => {
     switch (imageCount) {
-      case 2: return 'grid-cols-2';
-      case 3: return 'grid-cols-3';
-      case 4: return 'grid-cols-2';
-      default: return 'grid-cols-1';
+      case 2: return { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' };
+      case 3: return { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' };
+      case 4: return { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' };
+      default: return { display: 'grid', gridTemplateColumns: '1fr', gap: '8px' };
     }
   };
 
@@ -566,18 +566,24 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
       overflow: 'hidden',
       maxWidth: '100%'
     }}>
-      <div className={`grid gap-2 ${getGridClass()}`} style={{ maxWidth: '600px' }}>
+      <div style={{ ...getGridStyle(), maxWidth: '600px' }}>
         {images.map((image, index) => {
           const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image);
           const isLoaded = loadedImages.has(index);
 
           return (
-            <div key={index} className="relative">
+            <div key={index} style={{ position: 'relative' }}>
               {/* Loading Skeleton */}
               {!isLoaded && (
                 <div
-                  className="image-skeleton absolute inset-0 z-10"
+                  className="image-skeleton"
                   style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 10,
                     background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
                     backgroundSize: '200% 100%',
                     borderRadius: '8px',
