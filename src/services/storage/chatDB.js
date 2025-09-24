@@ -253,6 +253,21 @@ const chatDB = {
           delete cleaned.previewUrl;
           return cleaned;
         }) : null;
+
+        // Clean images array for IndexedDB (remove base64, keep only storage URLs)
+        const cleanImages = message.images ? message.images.map(img => {
+          const cleaned = { ...img };
+          // Remove base64 data to prevent circular references and reduce size
+          delete cleaned.base64;
+          delete cleaned.mimeType; // Not needed after upload
+          // Keep only essential data: storageUrl, storagePath, timestamp, index
+          return {
+            storageUrl: cleaned.storageUrl,
+            storagePath: cleaned.storagePath,
+            timestamp: cleaned.timestamp,
+            index: cleaned.index
+          };
+        }) : null;
         
         const messageRecord = {
           uuid: uuid, // UUID as primary key
@@ -263,7 +278,7 @@ const chatDB = {
           type: message.type || 'text',
           attachments: cleanAttachments,
           image: message.image || null,  // Fix: Save Imagen images too
-          images: message.images || null, // 🔧 CRITICAL FIX: Save multiple images array!
+          images: cleanImages, // 🔧 CRITICAL FIX: Save cleaned multiple images array!
           pdf: message.pdf || null       // 🔧 CRITICAL FIX: Save PDF data too!
         };
         // Use put() instead of add() for upsert behavior with UUID
