@@ -1936,31 +1936,73 @@ function AppContent() {
                 const allImagesHaveStorageUrl = generatedImages.every(img => img.storageUrl);
 
                 if (allImagesHaveStorageUrl) {
-                  console.log(`✅ ${generatedImages.length} images already uploaded during streaming, displaying now`);
+                  console.log(`✅ ${generatedImages.length} images already uploaded during streaming, progressive display starting`);
 
-                  // Display all pre-uploaded images
-                  setMessages(currentMessages => {
-                    const lastMessage = currentMessages[currentMessages.length - 1];
-                    if (lastMessage && lastMessage.sender === 'bot') {
-                      const updatedMessage = {
-                        ...lastMessage,
-                        // Use conditional logic: single image vs multiple images
-                        ...(generatedImages.length === 1
-                          ? { image: generatedImages[0] }    // Single image - use existing 'image' field
-                          : { images: generatedImages }      // Multiple images - use 'images' array
-                        )
-                      };
-                      console.log(`✅ ${generatedImages.length} pre-uploaded images displayed after streaming`);
-                      return [...currentMessages.slice(0, -1), updatedMessage];
-                    }
-                    return currentMessages;
-                  });
+                  // For single image, display immediately (no change)
+                  if (generatedImages.length === 1) {
+                    setMessages(currentMessages => {
+                      const lastMessage = currentMessages[currentMessages.length - 1];
+                      if (lastMessage && lastMessage.sender === 'bot') {
+                        const updatedMessage = {
+                          ...lastMessage,
+                          image: generatedImages[0]
+                        };
+                        console.log(`✅ Single image displayed after streaming`);
+                        return [...currentMessages.slice(0, -1), updatedMessage];
+                      }
+                      return currentMessages;
+                    });
 
-                  // Save to DB after images are displayed
-                  setTimeout(async () => {
-                    const finalMessages = messagesRef.current;
-                    await checkAutoSave(finalMessages, activeChatId);
-                  }, 50);
+                    // Save to DB after single image
+                    setTimeout(async () => {
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
+                    }, 50);
+                  } else {
+                    // For multiple images, progressive reveal
+                    // First, show empty grid
+                    setMessages(currentMessages => {
+                      const lastMessage = currentMessages[currentMessages.length - 1];
+                      if (lastMessage && lastMessage.sender === 'bot') {
+                        const updatedMessage = {
+                          ...lastMessage,
+                          images: [] // Empty grid initially
+                        };
+                        return [...currentMessages.slice(0, -1), updatedMessage];
+                      }
+                      return currentMessages;
+                    });
+
+                    // Then reveal images progressively
+                    let revealedCount = 0;
+                    generatedImages.forEach((imageData, index) => {
+                      setTimeout(() => {
+                        setMessages(currentMessages => {
+                          const lastMessage = currentMessages[currentMessages.length - 1];
+                          if (lastMessage && lastMessage.sender === 'bot') {
+                            const currentImages = lastMessage.images || [];
+                            const updatedImages = [...currentImages, imageData];
+                            const updatedMessage = {
+                              ...lastMessage,
+                              images: updatedImages
+                            };
+                            console.log(`✅ Image ${index + 1}/${generatedImages.length} revealed progressively`);
+                            return [...currentMessages.slice(0, -1), updatedMessage];
+                          }
+                          return currentMessages;
+                        });
+
+                        revealedCount++;
+                        // Save to DB after all images are revealed
+                        if (revealedCount === generatedImages.length) {
+                          setTimeout(async () => {
+                            const finalMessages = messagesRef.current;
+                            await checkAutoSave(finalMessages, activeChatId);
+                          }, 50);
+                        }
+                      }, index * 500); // 500ms delay between each image
+                    });
+                  }
                 } else {
                   // Some images need fallback upload (parallel uploads may have failed)
                   console.log(`🎨 Fallback: uploading ${generatedImages.length} images in completion...`);
