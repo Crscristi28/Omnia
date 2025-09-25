@@ -265,7 +265,7 @@ const MessageItem = ({
           {msg.image && !msg.images && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* Multiple images - use gallery component */}
-          {msg.images && msg.images.length > 0 && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {msg.images && Array.isArray(msg.images) && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
           {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
@@ -568,7 +568,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
     }}>
       <div style={{ ...getGridStyle(), maxWidth: '600px' }}>
         {images.map((image, index) => {
-          const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image);
+          const imageUrl = image ? (image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image)) : null;
           const isLoaded = loadedImages.has(index);
 
           return (
@@ -600,7 +600,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
               )}
 
               {/* Actual Image */}
-              <img
+              {imageUrl && <img
                 src={imageUrl}
                 alt={`Generated image ${index + 1} for: ${msg.text}`}
                 onClick={() => {
@@ -624,7 +624,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
                   console.error(`Failed to load image ${index + 1}:`, imageUrl);
                   handleImageLoad(index); // Remove skeleton even on error
                 }}
-              />
+              />}
             </div>
           );
         })}
