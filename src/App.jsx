@@ -1931,8 +1931,8 @@ function AppContent() {
                       sources: geminiSources,
                       ...(shouldShowSkeleton && (
                         generatedImages.length === 1
-                          ? { image: null } // Single image skeleton
-                          : { images: Array(generatedImages.length).fill(null) } // Multiple images skeleton
+                          ? { image: { loading: true } } // Single image skeleton
+                          : { images: Array(generatedImages.length).fill().map((_, index) => ({ loading: true, index })) } // Multiple images skeleton
                       ))
                     }
                   : msg

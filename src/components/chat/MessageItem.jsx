@@ -310,7 +310,7 @@ const MessageItem = ({
 const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const imageUrl = msg.image ? (msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image)) : null;
+  const imageUrl = msg.image && !msg.image.loading ? (msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image)) : null;
 
   return (
     <div style={{
@@ -571,7 +571,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
     }}>
       <div style={{ ...getGridStyle(), maxWidth: '600px' }}>
         {images.map((image, index) => {
-          const imageUrl = image ? (image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image)) : null;
+          const imageUrl = image && !image.loading ? (image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image)) : null;
           const isLoaded = loadedImages.has(index);
 
           return (
