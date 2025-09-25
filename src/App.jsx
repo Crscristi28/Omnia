@@ -1928,8 +1928,10 @@ function AppContent() {
             }
             
             // Normal completion - stream had content
-            // Finalize message and show generating indicator if images expected
-            const shouldShowGenerating = generatedImages && generatedImages.length > 0;
+            // Finalize message and show generating indicator if images expected AND not already uploaded
+            const shouldShowGenerating = generatedImages &&
+                                        generatedImages.length > 0 &&
+                                        !generatedImages.every(img => img.storageUrl);
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId
