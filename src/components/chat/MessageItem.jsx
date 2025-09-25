@@ -261,11 +261,15 @@ const MessageItem = ({
           />
           
           {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}
+          {/* Image placeholders - show immediately after text completion */}
+          {msg.showImagePlaceholders && msg.expectedImageCount && (
+            <ImagePlaceholder expectedImageCount={msg.expectedImageCount} />
+          )}
           {/* Single image - use existing component */}
-          {msg.image && !msg.images && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {msg.image && !msg.images && !msg.showImagePlaceholders && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* Multiple images - use gallery component */}
-          {msg.images && msg.images.length > 0 && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {msg.images && msg.images.length > 0 && !msg.showImagePlaceholders && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
           {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
@@ -628,6 +632,67 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+};
+
+// 🎨 Image Placeholder Component - Shows immediately after text completion
+const ImagePlaceholder = ({ expectedImageCount }) => {
+  const getGridStyle = () => {
+    if (expectedImageCount === 1) {
+      return { display: 'block' };
+    } else if (expectedImageCount === 2) {
+      return {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '8px'
+      };
+    } else if (expectedImageCount === 3) {
+      return {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        gap: '8px'
+      };
+    } else if (expectedImageCount === 4) {
+      return {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '1fr 1fr',
+        gap: '8px'
+      };
+    }
+    return { display: 'block' };
+  };
+
+  const getPlaceholderStyle = () => ({
+    width: '100%',
+    height: expectedImageCount === 4 ? '140px' : expectedImageCount === 1 ? '300px' : '200px',
+    background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+    backgroundSize: '200% 100%',
+    borderRadius: expectedImageCount === 1 ? '12px' : '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: expectedImageCount === 1 ? '14px' : '12px',
+    animation: 'shimmer-skeleton 2s infinite'
+  });
+
+  return (
+    <div style={{
+      paddingTop: '1rem',
+      paddingBottom: '1rem',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      maxWidth: expectedImageCount === 1 ? '100%' : '600px'
+    }}>
+      <div style={getGridStyle()}>
+        {Array.from({ length: expectedImageCount }, (_, index) => (
+          <div key={index} style={getPlaceholderStyle()}>
+            {expectedImageCount === 1 ? 'Generating image...' : `${index + 1}`}
+          </div>
+        ))}
       </div>
     </div>
   );

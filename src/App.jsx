@@ -1361,7 +1361,13 @@ function AppContent() {
               setMessages(prev =>
                 prev.map(msg =>
                   msg.id === imageGenBotMessageId
-                    ? { ...msg, text: currentDisplayedTextImage, isStreaming: false }
+                    ? {
+                        ...msg,
+                        text: currentDisplayedTextImage,
+                        isStreaming: false,
+                        showImagePlaceholders: true,
+                        expectedImageCount: 1
+                      }
                     : msg
                 )
               );
@@ -1380,7 +1386,8 @@ function AppContent() {
                         ...msg,
                         text: currentDisplayedTextImage,
                         image: processedImageData,
-                        isStreaming: false
+                        isStreaming: false,
+                        showImagePlaceholders: false
                       }
                     : msg
                 ));
@@ -1434,7 +1441,7 @@ function AppContent() {
                 console.log('📷 [INSTANT] Animation done, showing image now');
                 setMessages(prev => prev.map(msg =>
                   msg.id === imageGenBotMessageId
-                    ? {...msg, image: processedImageData, isStreaming: false}
+                    ? {...msg, image: processedImageData, isStreaming: false, showImagePlaceholders: false}
                     : msg
                 ));
               }
@@ -1919,11 +1926,18 @@ function AppContent() {
             }
             
             // Normal completion - stream had content
-            // Finalize message
+            // Finalize message - show placeholders immediately if images are expected
+            const shouldShowPlaceholders = generatedImages && generatedImages.length > 0;
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId
-                  ? { ...msg, isStreaming: false, sources: geminiSources }
+                  ? {
+                      ...msg,
+                      isStreaming: false,
+                      sources: geminiSources,
+                      showImagePlaceholders: shouldShowPlaceholders,
+                      expectedImageCount: shouldShowPlaceholders ? generatedImages.length : undefined
+                    }
                   : msg
               )
             );
@@ -1945,7 +1959,8 @@ function AppContent() {
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          image: generatedImages[0]
+                          image: generatedImages[0],
+                          showImagePlaceholders: false // Hide placeholders when real image arrives
                         };
                         console.log(`✅ Single image displayed after streaming`);
                         return [...currentMessages.slice(0, -1), updatedMessage];
@@ -1966,7 +1981,8 @@ function AppContent() {
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          images: [] // Empty grid initially
+                          images: [], // Empty grid initially
+                          showImagePlaceholders: false // Hide placeholders when real images start showing
                         };
                         return [...currentMessages.slice(0, -1), updatedMessage];
                       }
