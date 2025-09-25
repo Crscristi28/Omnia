@@ -2022,7 +2022,6 @@ function AppContent() {
                     };
 
                     waitForUploadsAndReveal();
-                    });
                   }
                 } else {
                   // Some images need fallback upload (parallel uploads may have failed)
