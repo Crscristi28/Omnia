@@ -667,7 +667,7 @@ const ImagePlaceholder = ({ expectedImageCount }) => {
 
   const getPlaceholderStyle = () => ({
     width: expectedImageCount === 1 ? '300px' : '100%',
-    height: expectedImageCount === 4 ? '140px' : expectedImageCount === 1 ? '300px' : '200px',
+    height: expectedImageCount === 1 ? '300px' : (expectedImageCount === 4 ? '140px' : '200px'),
     background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
     backgroundSize: '200% 100%',
     borderRadius: expectedImageCount === 1 ? '12px' : '8px',
