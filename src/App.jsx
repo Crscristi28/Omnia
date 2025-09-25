@@ -1749,6 +1749,20 @@ function AppContent() {
                 generatedImages = extra.images;
                 console.log('🎨 Images received in normal mode:', extra.images.length);
 
+                // Show placeholders IMMEDIATELY when images are received (during streaming)
+                console.log(`🖼️ [PLACEHOLDER] Showing ${extra.images.length} placeholders immediately`);
+                setMessages(currentMessages => {
+                  const lastMessage = currentMessages[currentMessages.length - 1];
+                  if (lastMessage && lastMessage.sender === 'bot') {
+                    const updatedMessage = {
+                      ...lastMessage,
+                      imagePlaceholderCount: extra.images.length
+                    };
+                    return [...currentMessages.slice(0, -1), updatedMessage];
+                  }
+                  return currentMessages;
+                });
+
                 // Start upload immediately in parallel with text streaming for ALL images
                 console.log(`🚀 Starting parallel upload for ${extra.images.length} images during streaming...`);
 
@@ -1960,16 +1974,15 @@ function AppContent() {
                     }, 50);
                   } else {
                     // For multiple images, progressive reveal
-                    // First, show placeholders/skeletons
+                    // Initialize empty images array (placeholders already shown during streaming)
                     setMessages(currentMessages => {
                       const lastMessage = currentMessages[currentMessages.length - 1];
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          images: [], // Empty array for images
-                          imagePlaceholderCount: generatedImages.length // Show N skeletons
+                          images: [] // Empty array for images - placeholders already shown
                         };
-                        console.log(`🖼️ [PLACEHOLDER] Showing ${generatedImages.length} image skeletons`);
+                        console.log(`🎨 Starting progressive reveal for ${generatedImages.length} images`);
                         return [...currentMessages.slice(0, -1), updatedMessage];
                       }
                       return currentMessages;
