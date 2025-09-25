@@ -685,9 +685,9 @@ const ImagePlaceholder = ({ expectedImageCount }) => {
       paddingBottom: '1rem',
       borderRadius: '12px',
       overflow: 'hidden',
-      maxWidth: expectedImageCount === 1 ? '100%' : '600px'
+      maxWidth: '100%'
     }}>
-      <div style={getGridStyle()}>
+      <div style={{ ...getGridStyle(), maxWidth: expectedImageCount === 1 ? 'none' : '600px' }}>
         {Array.from({ length: expectedImageCount }, (_, index) => (
           <div key={index} style={getPlaceholderStyle()}>
             {expectedImageCount === 1 ? 'Generating image...' : `${index + 1}`}
