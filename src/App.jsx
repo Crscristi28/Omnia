@@ -1787,6 +1787,15 @@ function AppContent() {
                   const successfulUploads = uploadResults.filter(result => result !== null);
                   console.log(`✅ All parallel uploads completed: ${successfulUploads.length}/${extra.images.length} successful`);
 
+                  // Hide generating indicator now that uploads are done
+                  setMessages(prev =>
+                    prev.map(msg =>
+                      msg.id === botMessageId
+                        ? { ...msg, generatingImages: false }
+                        : msg
+                    )
+                  );
+
                   // Don't display yet - just prepare the data for after streaming
                   // Sort by index to maintain original order
                   generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
@@ -1919,11 +1928,20 @@ function AppContent() {
             }
             
             // Normal completion - stream had content
-            // Finalize message
+            // Finalize message and show generating indicator if images expected
+            const shouldShowGenerating = generatedImages && generatedImages.length > 0;
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId
-                  ? { ...msg, isStreaming: false, sources: geminiSources }
+                  ? {
+                      ...msg,
+                      isStreaming: false,
+                      sources: geminiSources,
+                      ...(shouldShowGenerating && {
+                        generatingImages: true,
+                        expectedImageCount: generatedImages.length
+                      })
+                    }
                   : msg
               )
             );
