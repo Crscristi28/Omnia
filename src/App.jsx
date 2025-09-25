@@ -2091,7 +2091,6 @@ function AppContent() {
                   });
                 }
               }
-              }
 
               // Process PDFs after images
               if (generatedPdfs && generatedPdfs.length > 0) {
