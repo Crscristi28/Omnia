@@ -640,29 +640,12 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
 // 🎨 Image Placeholder Component - Shows immediately after text completion
 const ImagePlaceholder = ({ expectedImageCount }) => {
   const getGridStyle = () => {
-    if (expectedImageCount === 1) {
-      return { display: 'block' };
-    } else if (expectedImageCount === 2) {
-      return {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '8px'
-      };
-    } else if (expectedImageCount === 3) {
-      return {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
-        gap: '8px'
-      };
-    } else if (expectedImageCount === 4) {
-      return {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gridTemplateRows: '1fr 1fr',
-        gap: '8px'
-      };
+    switch (expectedImageCount) {
+      case 2: return { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' };
+      case 3: return { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' };
+      case 4: return { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' };
+      default: return { display: 'grid', gridTemplateColumns: '1fr', gap: '8px' };
     }
-    return { display: 'block' };
   };
 
   const getPlaceholderStyle = () => ({
