@@ -14,9 +14,12 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 
-// 🖼️ YARL - Yet Another React Lightbox
+// 🖼️ YARL - Yet Another React Lightbox with plugins
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Download from "yet-another-react-lightbox/plugins/download";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
 
 // 🔧 IMPORT SERVICES (MODULAR)
 import { claudeService, openaiService, grokService, geminiService } from './services/ai';
@@ -2288,9 +2291,9 @@ function AppContent() {
   // Create slides array from all images in current conversation
   const getAllImagesFromChat = useCallback(() => {
     const slides = [];
-    
+
     messages.forEach(msg => {
-      // Generated images (from image mode)
+      // Generated single image (from image mode)
       if (msg.image) {
         const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : null);
         if (imageUrl) {
@@ -2301,7 +2304,21 @@ function AppContent() {
           });
         }
       }
-      
+
+      // Generated multiple images (2-4 images from tool)
+      if (msg.images && msg.images.length > 0) {
+        msg.images.forEach((image, index) => {
+          const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image);
+          if (imageUrl) {
+            slides.push({
+              src: imageUrl,
+              alt: `Generated ${index + 1}: ${msg.text.slice(0, 30)}...`,
+              title: `Generated ${index + 1}: ${msg.text.slice(0, 30)}...`
+            });
+          }
+        });
+      }
+
       // User uploaded attachments (images)
       if (msg.attachments) {
         msg.attachments.forEach(attachment => {
@@ -2318,7 +2335,7 @@ function AppContent() {
         });
       }
     });
-    
+
     return slides;
   }, [messages]);
 
@@ -3770,12 +3787,20 @@ const virtuosoComponents = React.useMemo(() => ({
         input:focus { outline: none !important; }
       `}</style>
       
-      {/* 🖼️ YARL LIGHTBOX - Modern image viewer with navigation */}
+      {/* 🖼️ YARL LIGHTBOX - Modern image viewer with zoom, download & fullscreen */}
       <Lightbox
         open={lightboxState.open}
         close={closeLightbox}
         slides={lightboxState.slides.length > 0 ? lightboxState.slides : getAllImagesFromChat()}
         index={lightboxState.index}
+        plugins={[Zoom, Download, Fullscreen]}
+        zoom={{
+          maxZoomPixelRatio: 3,      // Maximum 3x zoom
+          zoomInMultiplier: 2,        // Zoom speed
+          doubleTapDelay: 300,        // Double tap for zoom on mobile
+          doubleClickDelay: 300,      // Double click for zoom on desktop
+          scrollToZoom: true          // Mouse wheel zoom
+        }}
       />
       
       {/* 📄 DOCUMENT VIEWER */}
