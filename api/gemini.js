@@ -109,28 +109,23 @@ export default async function handler(req, res) {
     // 🚨 GOOGLE API LIMITATION: Can't mix tool types (search + function calls)
     // Solution: Use system prompt to guide Omnia's choice, then provide only one tool type
 
-    // For tool detection, use CURRENT MESSAGE only (not full history)
+    // For tool detection, use CURRENT USER REQUEST only (not full history)
     // Full context would include old image/PDF requests and cause false positives
-    const currentMessage = (messages[messages.length - 1]?.text || messages[messages.length - 1]?.content || '').toLowerCase();
+    // Find the last USER message (not bot response)
+    const lastUserMessage = messages.filter(msg => msg.sender === 'user').pop();
+    const currentMessage = (lastUserMessage?.text || lastUserMessage?.content || '').toLowerCase();
 
     console.log(`🔍 [DEBUG] Current message: "${currentMessage}"`);
     const imageKeywords = [
       // Action words - all languages
-      'generate', 'create', 'make', 'draw', 'paint', 'design', 'render', 'sketch', 'visualize',
-      'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'udělej', 'navrhni', 'ilustruj',
+      'generate', 'create', 'make', 'draw', 'paint', 'render', 'sketch', 'visualize',
+      'vytvoř', 'vytvořit', 'nakresli', 'namaluj', 'navrhni', 'ilustruj',
       'generează', 'creează', 'desenează', 'pictează', 'fă', 'realizează',
       'erstelle', 'zeichne', 'male', 'entwirf', 'mache', 'gestalte',
       'создай', 'нарисуй', 'сделай', 'изобрази', 'нарисуй', 'создать',
       'stwórz', 'narysuj', 'namaluj', 'zrób', 'zaprojektuj',
 
 
-      // Request variations - all languages
-      'similar', 'another', 'one more', 'more', 'next', 'show it', 'show me',
-      'podobný', 'další', 'ještě jeden', 'víc', 'ukaž', 'ukaž mi',
-      'similar', 'alt', 'încă unul', 'mai mult', 'arată-mi',
-      'ähnlich', 'noch ein', 'mehr', 'zeig mir',
-      'похожий', 'еще один', 'покажи', 'покажи мне',
-      'podobny', 'jeszcze jeden', 'więcej', 'pokaż mi',
 
       // Image content words - all languages
       'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
@@ -141,10 +136,7 @@ export default async function handler(req, res) {
       'obraz', 'zdjęcie', 'ilustracja', 'rysunek', 'malarstwo',
 
       // Visual objects
-      'logo', 'icon', 'banner', 'poster', 'wallpaper', 'character', 'scene', 'concept',
-      'car', 'auto', 'house', 'dům', 'landscape', 'krajina', 'portrait', 'portrét',
-      'animal', 'zvíře', 'cat', 'kočka', 'dog', 'pes', 'tree', 'strom',
-      'vánoční', 'christmas'
+      'logo', 'icon', 'banner', 'poster', 'wallpaper'
     ];
     const wantsImage = imageKeywords.some(keyword => currentMessage.includes(keyword));
     console.log(`🎨 [DEBUG] Image detection: ${wantsImage}`);
@@ -156,7 +148,7 @@ export default async function handler(req, res) {
     // Check for PDF generation intent
     const pdfKeywords = [
       'pdf', 'document', 'report', 'generate pdf', 'create pdf', 'make pdf',
-      'vytvoř pdf', 'vygeneruj pdf', 'dokument', 'zpráva', 'report',
+      'vytvoř pdf', 'vygeneruj pdf', 'dokument', 'report',
       'generează pdf', 'creează document', 'raport',
       'erstelle pdf', 'generiere pdf', 'dokument', 'bericht',
       'создай pdf', 'сгенерируй pdf', 'документ', 'отчет',
