@@ -1921,6 +1921,7 @@ function AppContent() {
             // Normal completion - stream had content
             // Finalize message - show skeleton immediately if images are expected
             const shouldShowSkeleton = generatedImages && generatedImages.length > 0;
+            console.log('🎯 Skeleton debug:', { shouldShowSkeleton, generatedImagesLength: generatedImages?.length });
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId

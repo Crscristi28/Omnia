@@ -545,6 +545,9 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
   const images = msg.images || [];
   const imageCount = images.length;
 
+  // Debug log
+  console.log('🎨 GeneratedImagesGallery render:', { imageCount, images });
+
   const handleImageLoad = (index) => {
     setLoadedImages(prev => new Set([...prev, index]));
   };
