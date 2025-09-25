@@ -1919,11 +1919,17 @@ function AppContent() {
             }
             
             // Normal completion - stream had content
-            // Finalize message
+            // Finalize message - show skeleton immediately if images are expected
+            const shouldShowSkeleton = generatedImages && generatedImages.length > 0;
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId
-                  ? { ...msg, isStreaming: false, sources: geminiSources }
+                  ? {
+                      ...msg,
+                      isStreaming: false,
+                      sources: geminiSources,
+                      ...(shouldShowSkeleton && { images: [] }) // Show skeleton immediately
+                    }
                   : msg
               )
             );
