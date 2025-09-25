@@ -597,7 +597,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontSize: '12px',
                     animation: 'shimmer-skeleton 2s infinite',
-                    height: imageCount === 4 ? '140px' : '200px'
+                    height: imageCount >= 3 ? '140px' : '200px'
                   }}>
                   {index + 1}
                 </div>
@@ -616,7 +616,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
                 onLoad={() => handleImageLoad(index)}
                 style={{
                   width: '100%',
-                  height: imageCount === 4 ? '140px' : '200px',
+                  height: imageCount >= 3 ? '140px' : '200px',
                   objectFit: 'cover',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -650,7 +650,7 @@ const ImagePlaceholder = ({ expectedImageCount }) => {
 
   const getPlaceholderStyle = () => ({
     width: expectedImageCount === 1 ? '300px' : '100%',
-    height: expectedImageCount === 1 ? '300px' : (expectedImageCount === 4 ? '140px' : '200px'),
+    height: expectedImageCount === 1 ? '300px' : (expectedImageCount >= 3 ? '140px' : '200px'),
     background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
     backgroundSize: '200% 100%',
     borderRadius: expectedImageCount === 1 ? '12px' : '8px',
