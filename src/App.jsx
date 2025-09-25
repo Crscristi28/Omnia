@@ -1947,36 +1947,53 @@ function AppContent() {
                 if (allImagesHaveStorageUrl) {
                   console.log(`✅ ${generatedImages.length} images already uploaded during streaming, progressive display starting`);
 
-                  // For single image, display immediately (no change)
+                  // For single image, first show loading skeleton, then replace
                   if (generatedImages.length === 1) {
+                    // First, show loading skeleton
                     setMessages(currentMessages => {
                       const lastMessage = currentMessages[currentMessages.length - 1];
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          image: generatedImages[0],
+                          image: { loading: true },
                           generatingImages: false // Hide generating indicator
                         };
-                        console.log(`✅ Single image displayed after streaming`);
                         return [...currentMessages.slice(0, -1), updatedMessage];
                       }
                       return currentMessages;
                     });
 
-                    // Save to DB after single image
-                    setTimeout(async () => {
-                      const finalMessages = messagesRef.current;
-                      await checkAutoSave(finalMessages, activeChatId);
-                    }, 50);
+                    // Then replace with actual image after short delay
+                    setTimeout(() => {
+                      setMessages(currentMessages => {
+                        const lastMessage = currentMessages[currentMessages.length - 1];
+                        if (lastMessage && lastMessage.sender === 'bot') {
+                          const updatedMessage = {
+                            ...lastMessage,
+                            image: generatedImages[0]
+                          };
+                          console.log(`✅ Single image displayed after streaming`);
+                          return [...currentMessages.slice(0, -1), updatedMessage];
+                        }
+                        return currentMessages;
+                      });
+
+                      // Save to DB after single image
+                      setTimeout(async () => {
+                        const finalMessages = messagesRef.current;
+                        await checkAutoSave(finalMessages, activeChatId);
+                      }, 50);
+                    }, 100);
                   } else {
                     // For multiple images, progressive reveal
-                    // First, show empty grid
+                    // First, show loading skeleton grid
                     setMessages(currentMessages => {
                       const lastMessage = currentMessages[currentMessages.length - 1];
                       if (lastMessage && lastMessage.sender === 'bot') {
+                        const loadingImages = Array(generatedImages.length).fill(null).map(() => ({ loading: true }));
                         const updatedMessage = {
                           ...lastMessage,
-                          images: [], // Empty grid initially
+                          images: loadingImages, // Loading skeleton grid
                           generatingImages: false // Hide generating indicator
                         };
                         return [...currentMessages.slice(0, -1), updatedMessage];
