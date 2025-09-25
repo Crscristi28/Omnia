@@ -261,6 +261,30 @@ const MessageItem = ({
           />
           
           {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}
+          {/* Image generation indicator - show before skeleton */}
+          {msg.generatingImages && (
+            <div style={{
+              paddingTop: '1rem',
+              paddingBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                backgroundSize: '200% 100%',
+                borderRadius: '8px',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px',
+                animation: 'shimmer-skeleton 2s infinite',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                Generating {msg.expectedImageCount || ''} image{(msg.expectedImageCount || 1) > 1 ? 's' : ''}...
+              </div>
+            </div>
+          )}
+
           {/* Single image - use existing component */}
           {msg.image && !msg.images && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 

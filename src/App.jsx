@@ -1919,11 +1919,20 @@ function AppContent() {
             }
             
             // Normal completion - stream had content
-            // Finalize message
+            // Finalize message with generating indicator if images expected
+            const shouldShowGenerating = generatedImages && generatedImages.length > 0;
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId
-                  ? { ...msg, isStreaming: false, sources: geminiSources }
+                  ? {
+                      ...msg,
+                      isStreaming: false,
+                      sources: geminiSources,
+                      ...(shouldShowGenerating && {
+                        generatingImages: true,
+                        expectedImageCount: generatedImages.length
+                      })
+                    }
                   : msg
               )
             );
@@ -1945,7 +1954,8 @@ function AppContent() {
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          image: generatedImages[0]
+                          image: generatedImages[0],
+                          generatingImages: false // Hide generating indicator
                         };
                         console.log(`✅ Single image displayed after streaming`);
                         return [...currentMessages.slice(0, -1), updatedMessage];
@@ -1966,7 +1976,8 @@ function AppContent() {
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          images: [] // Empty grid initially
+                          images: [], // Empty grid initially
+                          generatingImages: false // Hide generating indicator
                         };
                         return [...currentMessages.slice(0, -1), updatedMessage];
                       }
