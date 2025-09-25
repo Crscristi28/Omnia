@@ -593,7 +593,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontSize: '12px',
                     animation: 'shimmer-skeleton 2s infinite',
-                    minHeight: imageCount === 4 ? '140px' : '200px'
+                    height: imageCount === 4 ? '140px' : '200px'
                   }}>
                   {index + 1}
                 </div>
