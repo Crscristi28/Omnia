@@ -310,7 +310,7 @@ const MessageItem = ({
 const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const imageUrl = msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image);
+  const imageUrl = msg.image ? (msg.image.storageUrl || (msg.image.base64 ? `data:${msg.image.mimeType};base64,${msg.image.base64}` : msg.image)) : null;
 
   return (
     <div style={{
@@ -342,7 +342,7 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
       )}
 
       {/* Actual Image */}
-      <img
+      {imageUrl && <img
         src={imageUrl}
         alt={`Generated image for: ${msg.text}`}
         onClick={() => {
@@ -364,7 +364,7 @@ const GeneratedImageWithSkeleton = ({ msg, onPreviewImage, imageStyle }) => {
         onLoad={() => {
           setImageLoaded(true);
         }}
-      />
+      />}
 
     </div>
   );

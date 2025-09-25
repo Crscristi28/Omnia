@@ -1928,9 +1928,11 @@ function AppContent() {
                       ...msg,
                       isStreaming: false,
                       sources: geminiSources,
-                      ...(shouldShowSkeleton && {
-                        images: Array(generatedImages.length).fill(null) // Create placeholder array
-                      })
+                      ...(shouldShowSkeleton && (
+                        generatedImages.length === 1
+                          ? { image: null } // Single image skeleton
+                          : { images: Array(generatedImages.length).fill(null) } // Multiple images skeleton
+                      ))
                     }
                   : msg
               )
