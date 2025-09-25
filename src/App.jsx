@@ -1960,14 +1960,16 @@ function AppContent() {
                     }, 50);
                   } else {
                     // For multiple images, progressive reveal
-                    // First, show empty grid
+                    // First, show placeholders/skeletons
                     setMessages(currentMessages => {
                       const lastMessage = currentMessages[currentMessages.length - 1];
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          images: [] // Empty grid initially
+                          images: [], // Empty array for images
+                          imagePlaceholderCount: generatedImages.length // Show N skeletons
                         };
+                        console.log(`🖼️ [PLACEHOLDER] Showing ${generatedImages.length} image skeletons`);
                         return [...currentMessages.slice(0, -1), updatedMessage];
                       }
                       return currentMessages;
@@ -1984,7 +1986,11 @@ function AppContent() {
                             const updatedImages = [...currentImages, imageData];
                             const updatedMessage = {
                               ...lastMessage,
-                              images: updatedImages
+                              images: updatedImages,
+                              // Remove one placeholder as we add real image
+                              imagePlaceholderCount: lastMessage.imagePlaceholderCount
+                                ? lastMessage.imagePlaceholderCount - updatedImages.length
+                                : 0
                             };
                             console.log(`✅ Image ${index + 1}/${generatedImages.length} revealed progressively`);
                             return [...currentMessages.slice(0, -1), updatedMessage];

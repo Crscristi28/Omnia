@@ -261,11 +261,40 @@ const MessageItem = ({
           />
           
           {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}
+          {/* Single image placeholder */}
+          {msg.imagePlaceholder && !msg.image && !msg.images && (
+            <div style={{ paddingTop: '1rem' }}>
+              <div className="image-skeleton"
+                style={{
+                  width: '300px',
+                  height: '300px',
+                  background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                  backgroundSize: '200% 100%',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  fontSize: '14px',
+                  animation: 'shimmer-skeleton 2s infinite'
+                }}>
+                Generating image...
+              </div>
+            </div>
+          )}
+
           {/* Single image - use existing component */}
           {msg.image && !msg.images && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
-          {/* Multiple images - use gallery component */}
-          {msg.images && msg.images.length > 0 && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {/* Multiple images placeholders + gallery */}
+          {(msg.imagePlaceholderCount > 0 || (msg.images && msg.images.length > 0)) && (
+            <GeneratedImagesGallery
+              msg={msg}
+              onPreviewImage={onPreviewImage}
+              imageStyle={imageStyle}
+              placeholderCount={msg.imagePlaceholderCount || 0}
+            />
+          )}
 
           {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
           {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
@@ -539,24 +568,34 @@ const PdfViewComponent = ({ msg, onDocumentView, uploadedPdfData = null, onClose
 };
 
 // 🎨 Generated Images Gallery Component for Multiple Images
-const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
+const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle, placeholderCount = 0 }) => {
   const [loadedImages, setLoadedImages] = useState(new Set());
 
   const images = msg.images || [];
-  const imageCount = images.length;
+  const totalCount = Math.max(images.length, placeholderCount);
 
   const handleImageLoad = (index) => {
     setLoadedImages(prev => new Set([...prev, index]));
   };
 
   const getGridStyle = () => {
-    switch (imageCount) {
+    switch (totalCount) {
       case 2: return { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' };
       case 3: return { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' };
       case 4: return { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' };
       default: return { display: 'grid', gridTemplateColumns: '1fr', gap: '8px' };
     }
   };
+
+  // Create array for rendering (images + placeholders)
+  const renderItems = [];
+  for (let i = 0; i < totalCount; i++) {
+    if (i < images.length) {
+      renderItems.push({ type: 'image', data: images[i], index: i });
+    } else {
+      renderItems.push({ type: 'placeholder', index: i });
+    }
+  }
 
   return (
     <div style={{
@@ -567,7 +606,32 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
       maxWidth: '100%'
     }}>
       <div style={{ ...getGridStyle(), maxWidth: '600px' }}>
-        {images.map((image, index) => {
+        {renderItems.map((item, idx) => {
+          if (item.type === 'placeholder') {
+            // Show placeholder skeleton
+            return (
+              <div key={`placeholder-${idx}`}
+                className="image-skeleton"
+                style={{
+                  background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                  backgroundSize: '200% 100%',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  fontSize: '12px',
+                  animation: 'shimmer-skeleton 2s infinite',
+                  height: totalCount === 4 ? '140px' : '200px'
+                }}>
+                {idx + 1}
+              </div>
+            );
+          }
+
+          // Render actual image
+          const image = item.data;
+          const index = item.index;
           const imageUrl = image.storageUrl || (image.base64 ? `data:${image.mimeType};base64,${image.base64}` : image);
           const isLoaded = loadedImages.has(index);
 
@@ -593,7 +657,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontSize: '12px',
                     animation: 'shimmer-skeleton 2s infinite',
-                    minHeight: imageCount === 4 ? '140px' : '200px'
+                    minHeight: totalCount === 4 ? '140px' : '200px'
                   }}>
                   {index + 1}
                 </div>
@@ -612,7 +676,7 @@ const GeneratedImagesGallery = ({ msg, onPreviewImage, imageStyle }) => {
                 onLoad={() => handleImageLoad(index)}
                 style={{
                   width: '100%',
-                  height: imageCount === 4 ? '140px' : '200px',
+                  height: totalCount === 4 ? '140px' : '200px',
                   objectFit: 'cover',
                   borderRadius: '8px',
                   cursor: 'pointer',
