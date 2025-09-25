@@ -265,20 +265,17 @@ const MessageItem = ({
           {msg.generatingImages && (
             <div style={{
               paddingTop: '1rem',
-              paddingBottom: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              paddingBottom: '1rem'
             }}>
               <div style={{
-                padding: '12px 20px',
                 background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%)',
                 backgroundSize: '200% 100%',
-                borderRadius: '8px',
-                color: 'rgba(255, 255, 255, 0.7)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
                 fontSize: '14px',
                 animation: 'shimmer-skeleton 2s infinite',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
+                display: 'inline-block'
               }}>
                 Generating {msg.expectedImageCount || ''} image{(msg.expectedImageCount || 1) > 1 ? 's' : ''}...
               </div>
