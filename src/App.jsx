@@ -1932,16 +1932,15 @@ function AppContent() {
             
             // Process images FIRST, then save to DB
             setTimeout(async () => {
-              // Check if images were already processed during streaming
+              // Check if images were received from streaming
               if (generatedImages && generatedImages.length > 0) {
-                // Check if all images have been uploaded during streaming
-                const allImagesHaveStorageUrl = generatedImages.every(img => img.storageUrl);
+                console.log(`🎨 Processing ${generatedImages.length} images after text completion`);
 
-                if (allImagesHaveStorageUrl) {
-                  console.log(`✅ ${generatedImages.length} images already uploaded during streaming, progressive display starting`);
-
-                  // For single image, display immediately (no change)
-                  if (generatedImages.length === 1) {
+                // For single image, wait for upload then display
+                if (generatedImages.length === 1) {
+                  const allImagesHaveStorageUrl = generatedImages.every(img => img.storageUrl);
+                  if (allImagesHaveStorageUrl) {
+                    console.log(`✅ Single image uploaded, displaying now`);
                     setMessages(currentMessages => {
                       const lastMessage = currentMessages[currentMessages.length - 1];
                       if (lastMessage && lastMessage.sender === 'bot') {
@@ -1960,55 +1959,69 @@ function AppContent() {
                       const finalMessages = messagesRef.current;
                       await checkAutoSave(finalMessages, activeChatId);
                     }, 50);
-                  } else {
-                    // For multiple images, progressive reveal
-                    // First, show placeholders/skeletons AFTER text is done
-                    setMessages(currentMessages => {
-                      const lastMessage = currentMessages[currentMessages.length - 1];
-                      if (lastMessage && lastMessage.sender === 'bot') {
-                        const updatedMessage = {
-                          ...lastMessage,
-                          images: [], // Empty array for images
-                          imagePlaceholderCount: generatedImages.length // Show N skeletons
-                        };
-                        console.log(`🖼️ [PLACEHOLDER] Showing ${generatedImages.length} image skeletons AFTER text completion`);
-                        return [...currentMessages.slice(0, -1), updatedMessage];
-                      }
-                      return currentMessages;
-                    });
+                  }
+                } else {
+                  // For multiple images, show placeholders IMMEDIATELY (don't wait for uploads)
+                  console.log(`🖼️ [PLACEHOLDER] Showing ${generatedImages.length} image skeletons immediately after text`);
+                  setMessages(currentMessages => {
+                    const lastMessage = currentMessages[currentMessages.length - 1];
+                    if (lastMessage && lastMessage.sender === 'bot') {
+                      const updatedMessage = {
+                        ...lastMessage,
+                        images: [], // Empty array for images
+                        imagePlaceholderCount: generatedImages.length // Show N skeletons
+                      };
+                      return [...currentMessages.slice(0, -1), updatedMessage];
+                    }
+                    return currentMessages;
+                  });
 
                     // Then reveal images progressively
                     let revealedCount = 0;
-                    generatedImages.forEach((imageData, index) => {
-                      setTimeout(() => {
-                        setMessages(currentMessages => {
-                          const lastMessage = currentMessages[currentMessages.length - 1];
-                          if (lastMessage && lastMessage.sender === 'bot') {
-                            const currentImages = lastMessage.images || [];
-                            const updatedImages = [...currentImages, imageData];
-                            const updatedMessage = {
-                              ...lastMessage,
-                              images: updatedImages,
-                              // Remove one placeholder as we add real image
-                              imagePlaceholderCount: lastMessage.imagePlaceholderCount
-                                ? lastMessage.imagePlaceholderCount - updatedImages.length
-                                : 0
-                            };
-                            console.log(`✅ Image ${index + 1}/${generatedImages.length} revealed progressively`);
-                            return [...currentMessages.slice(0, -1), updatedMessage];
-                          }
-                          return currentMessages;
-                        });
+                    // Wait for uploads, then reveal progressively
+                    const waitForUploadsAndReveal = () => {
+                      const uploadedImages = generatedImages.filter(img => img.storageUrl);
+                      if (uploadedImages.length === 0) {
+                        // No uploads ready yet, wait
+                        setTimeout(waitForUploadsAndReveal, 200);
+                        return;
+                      }
 
-                        revealedCount++;
-                        // Save to DB after all images are revealed
-                        if (revealedCount === generatedImages.length) {
-                          setTimeout(async () => {
-                            const finalMessages = messagesRef.current;
-                            await checkAutoSave(finalMessages, activeChatId);
-                          }, 50);
-                        }
-                      }, index * 500); // 500ms delay between each image
+                      // Start progressive reveal of uploaded images
+                      uploadedImages.forEach((imageData, index) => {
+                        setTimeout(() => {
+                          setMessages(currentMessages => {
+                            const lastMessage = currentMessages[currentMessages.length - 1];
+                            if (lastMessage && lastMessage.sender === 'bot') {
+                              const currentImages = lastMessage.images || [];
+                              const updatedImages = [...currentImages, imageData];
+                              const updatedMessage = {
+                                ...lastMessage,
+                                images: updatedImages,
+                                // Remove one placeholder as we add real image
+                                imagePlaceholderCount: lastMessage.imagePlaceholderCount
+                                  ? lastMessage.imagePlaceholderCount - updatedImages.length
+                                  : 0
+                              };
+                              console.log(`✅ Image ${index + 1}/${uploadedImages.length} revealed progressively`);
+                              return [...currentMessages.slice(0, -1), updatedMessage];
+                            }
+                            return currentMessages;
+                          });
+
+                          revealedCount++;
+                          // Save to DB after all images are revealed
+                          if (revealedCount === uploadedImages.length) {
+                            setTimeout(async () => {
+                              const finalMessages = messagesRef.current;
+                              await checkAutoSave(finalMessages, activeChatId);
+                            }, 50);
+                          }
+                        }, index * 500); // 500ms delay between each image
+                      });
+                    };
+
+                    waitForUploadsAndReveal();
                     });
                   }
                 } else {
