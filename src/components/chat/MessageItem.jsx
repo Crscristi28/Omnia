@@ -262,14 +262,14 @@ const MessageItem = ({
           
           {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}
           {/* Image placeholders - show immediately after text completion */}
-          {msg.showImagePlaceholders && msg.expectedImageCount && (
+          {msg.showImagePlaceholders && msg.expectedImageCount && !msg.image && (!msg.images || msg.images.length === 0) && (
             <ImagePlaceholder expectedImageCount={msg.expectedImageCount} />
           )}
           {/* Single image - use existing component */}
-          {msg.image && !msg.images && !msg.showImagePlaceholders && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {msg.image && !msg.images && <GeneratedImageWithSkeleton msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* Multiple images - use gallery component */}
-          {msg.images && msg.images.length > 0 && !msg.showImagePlaceholders && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
+          {msg.images && msg.images.length > 0 && <GeneratedImagesGallery msg={msg} onPreviewImage={onPreviewImage} imageStyle={imageStyle} />}
 
           {/* 📄 PDF VIEWER - Display view link for both generated and uploaded PDFs */}
           {msg.pdf && <PdfViewComponent msg={msg} onDocumentView={onDocumentView} />}
