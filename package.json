@@ -34,6 +34,7 @@
     "puppeteer-core": "^24.22.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-simple-keyboard": "^3.8.122",
     "react-virtuoso": "^4.13.0",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",

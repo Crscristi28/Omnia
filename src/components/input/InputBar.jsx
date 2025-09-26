@@ -8,6 +8,8 @@ import { getTranslation } from '../../utils/text';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
 import { uploadDirectToGCS } from '../../services/directUpload.js';
 import { useTheme } from '../../contexts/ThemeContext';
+import Keyboard from 'react-simple-keyboard';
+import 'react-simple-keyboard/build/css/index.css';
 
 // Using Lucide React icons instead of custom SVG components
 
@@ -177,6 +179,7 @@ const InputBar = ({
   const [localInput, setLocalInput] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [showTestKeyboard, setShowTestKeyboard] = useState(false);
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
@@ -948,6 +951,39 @@ const InputBar = ({
         </div>
       </div>
 
+      {/* TEST KEYBOARD TOGGLE */}
+      <div style={{ position: 'fixed', top: '100px', right: '20px', zIndex: 9999 }}>
+        <button
+          onClick={() => setShowTestKeyboard(!showTestKeyboard)}
+          style={{
+            padding: '10px',
+            background: 'red',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px'
+          }}
+        >
+          {showTestKeyboard ? 'Hide' : 'Show'} Test Keyboard
+        </button>
+      </div>
+
+      {/* TEST KEYBOARD */}
+      {showTestKeyboard && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          background: '#000',
+          padding: '10px'
+        }}>
+          <Keyboard
+            onChange={input => setLocalInput(input)}
+            onKeyPress={button => console.log('Button pressed', button)}
+          />
+        </div>
+      )}
 
     </>
   );
