@@ -3776,7 +3776,7 @@ const virtuosoComponents = React.useMemo(() => ({
         @media (display-mode: standalone) {
           body {
             background: ${isDark
-              ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a)'
+              ? '#000000'
               : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'};
           }
         }
