@@ -1830,35 +1830,25 @@ function AppContent() {
                       await checkAutoSave(finalMessages, activeChatId);
                     }, 50);
                   } else {
-                    // Multiple images - progressive reveal
-                    let revealedCount = 0;
-                    generatedImages.forEach((imageData, index) => {
-                      setTimeout(() => {
-                        setMessages(currentMessages => {
-                          const lastMessage = currentMessages[currentMessages.length - 1];
-                          if (lastMessage && lastMessage.sender === 'bot') {
-                            const currentImages = lastMessage.images || [];
-                            const updatedImages = [...currentImages, imageData];
-                            const updatedMessage = {
-                              ...lastMessage,
-                              images: updatedImages
-                            };
-                            console.log(`✅ Image ${index + 1}/${generatedImages.length} revealed after parallel upload`);
-                            return [...currentMessages.slice(0, -1), updatedMessage];
-                          }
-                          return currentMessages;
-                        });
-
-                        revealedCount++;
-                        // Save to DB after all images are revealed
-                        if (revealedCount === generatedImages.length) {
-                          setTimeout(async () => {
-                            const finalMessages = messagesRef.current;
-                            await checkAutoSave(finalMessages, activeChatId);
-                          }, 50);
-                        }
-                      }, index * 500); // 500ms delay between each image
+                    // Multiple images - display all at once with skeletons
+                    setMessages(currentMessages => {
+                      const lastMessage = currentMessages[currentMessages.length - 1];
+                      if (lastMessage && lastMessage.sender === 'bot') {
+                        const updatedMessage = {
+                          ...lastMessage,
+                          images: generatedImages // Show all images at once
+                        };
+                        console.log(`✅ All ${generatedImages.length} images displayed at once after parallel upload`);
+                        return [...currentMessages.slice(0, -1), updatedMessage];
+                      }
+                      return currentMessages;
                     });
+
+                    // Save to DB after images are displayed
+                    setTimeout(async () => {
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
+                    }, 50);
                   }
 
                   // Mark parallel upload as complete
@@ -2052,49 +2042,25 @@ function AppContent() {
                       await checkAutoSave(finalMessages, activeChatId);
                     }, 50);
                   } else {
-                    // For multiple images, progressive reveal
-                    // First, show empty grid
+                    // For multiple images, display all at once with skeletons
                     setMessages(currentMessages => {
                       const lastMessage = currentMessages[currentMessages.length - 1];
                       if (lastMessage && lastMessage.sender === 'bot') {
                         const updatedMessage = {
                           ...lastMessage,
-                          images: [] // Empty grid initially
+                          images: generatedImages // Show all images at once
                         };
+                        console.log(`✅ All ${generatedImages.length} images displayed at once with skeletons`);
                         return [...currentMessages.slice(0, -1), updatedMessage];
                       }
                       return currentMessages;
                     });
 
-                    // Then reveal images progressively
-                    let revealedCount = 0;
-                    generatedImages.forEach((imageData, index) => {
-                      setTimeout(() => {
-                        setMessages(currentMessages => {
-                          const lastMessage = currentMessages[currentMessages.length - 1];
-                          if (lastMessage && lastMessage.sender === 'bot') {
-                            const currentImages = lastMessage.images || [];
-                            const updatedImages = [...currentImages, imageData];
-                            const updatedMessage = {
-                              ...lastMessage,
-                              images: updatedImages
-                            };
-                            console.log(`✅ Image ${index + 1}/${generatedImages.length} revealed progressively`);
-                            return [...currentMessages.slice(0, -1), updatedMessage];
-                          }
-                          return currentMessages;
-                        });
-
-                        revealedCount++;
-                        // Save to DB after all images are revealed
-                        if (revealedCount === generatedImages.length) {
-                          setTimeout(async () => {
-                            const finalMessages = messagesRef.current;
-                            await checkAutoSave(finalMessages, activeChatId);
-                          }, 50);
-                        }
-                      }, index * 500); // 500ms delay between each image
-                    });
+                    // Save to DB after images are displayed
+                    setTimeout(async () => {
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
+                    }, 50);
                   }
                 } else if (!parallelUploadInProgress.current) {
                   // Some images need fallback upload (parallel uploads may have failed) and parallel upload is not in progress
