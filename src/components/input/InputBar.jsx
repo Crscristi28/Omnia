@@ -989,11 +989,51 @@ const InputBar = ({
           background: '#000',
           padding: '10px'
         }}>
+          <style>{`
+            .myTheme .hg-button {
+              background: #555 !important;
+              color: #fff !important;
+              border: 1px solid #777 !important;
+              border-radius: 8px !important;
+              height: 50px !important;
+              font-size: 18px !important;
+              font-weight: 500 !important;
+              margin: 3px !important;
+            }
+            .myTheme .hg-button:hover {
+              background: #666 !important;
+            }
+            .myTheme .hg-button:active {
+              background: #999 !important;
+            }
+            .myTheme {
+              background: #333 !important;
+              border-radius: 12px !important;
+              padding: 10px !important;
+            }
+          `}</style>
           <Keyboard
             onChange={input => setLocalInput(input)}
             onKeyPress={button => {
               console.log('Button pressed', button);
             }}
+            layout={{
+              default: [
+                "1 2 3 4 5 6 7 8 9 0",
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{numbers} {space} {enter}"
+              ],
+              shift: [
+                "1 2 3 4 5 6 7 8 9 0",
+                "Q W E R T Y U I O P",
+                "A S D F G H J K L",
+                "{shift} Z X C V B N M {bksp}",
+                "{numbers} {space} {enter}"
+              ]
+            }}
+            theme="hg-theme-default hg-layout-default myTheme"
           />
         </div>
       )}
