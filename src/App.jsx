@@ -1806,51 +1806,12 @@ function AppContent() {
                     )
                   );
 
-                  // Sort by index to maintain original order and update UI
+                  // Sort by index to maintain original order - don't display yet
                   generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
+                  console.log(`✅ All parallel uploads completed, images prepared for display after streaming`);
 
-                  // Display images immediately after successful upload
-                  if (generatedImages.length === 1) {
-                    // Single image - display immediately
-                    setMessages(currentMessages => {
-                      const lastMessage = currentMessages[currentMessages.length - 1];
-                      if (lastMessage && lastMessage.sender === 'bot') {
-                        const updatedMessage = {
-                          ...lastMessage,
-                          image: generatedImages[0]
-                        };
-                        console.log(`✅ Single image displayed after parallel upload`);
-                        return [...currentMessages.slice(0, -1), updatedMessage];
-                      }
-                      return currentMessages;
-                    });
-
-                    // Save to DB after single image
-                    setTimeout(async () => {
-                      const finalMessages = messagesRef.current;
-                      await checkAutoSave(finalMessages, activeChatId);
-                    }, 50);
-                  } else {
-                    // Multiple images - display all at once with skeletons
-                    setMessages(currentMessages => {
-                      const lastMessage = currentMessages[currentMessages.length - 1];
-                      if (lastMessage && lastMessage.sender === 'bot') {
-                        const updatedMessage = {
-                          ...lastMessage,
-                          images: generatedImages // Show all images at once
-                        };
-                        console.log(`✅ All ${generatedImages.length} images displayed at once after parallel upload`);
-                        return [...currentMessages.slice(0, -1), updatedMessage];
-                      }
-                      return currentMessages;
-                    });
-
-                    // Save to DB after images are displayed
-                    setTimeout(async () => {
-                      const finalMessages = messagesRef.current;
-                      await checkAutoSave(finalMessages, activeChatId);
-                    }, 50);
-                  }
+                  // Don't display images here - wait for streaming to complete
+                  // Images will be displayed by completion logic
 
                   // Mark parallel upload as complete
                   parallelUploadInProgress.current = false;
