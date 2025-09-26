@@ -3,10 +3,11 @@ import React from 'react';
 
 const GlassInputContainer = ({ children }) => {
   const isMobile = window.innerWidth <= 768;
+  const isDesktop = window.innerWidth > 1024;
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
+      background: isDesktop ? 'transparent' : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.8))',
       backdropFilter: 'blur(20px)',
       padding: isMobile ? '1.2rem' : '1.6rem',
       borderTop: '1px solid rgba(255,255,255,0.1)',
