@@ -258,6 +258,7 @@ const MessageItem = ({
           <MessageRenderer
             content={msg.text || ''}
             className="text-white"
+            isSearching={msg.isSearching}
           />
           
           {/* 🎨 GENERATED IMAGES - Display after text with loading skeleton */}

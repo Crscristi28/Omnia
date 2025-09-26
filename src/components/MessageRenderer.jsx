@@ -89,7 +89,7 @@ const parseContentSegments = (content) => {
   return segments;
 };
 
-const MessageRenderer = ({ content, className = "text-white", isStreaming = false }) => {
+const MessageRenderer = ({ content, className = "text-white", isStreaming = false, isSearching = false }) => {
   // TEMPORARILY DISABLED: Transition causes scroll jumping with Virtuoso
   // const [isTransitioning, setIsTransitioning] = React.useState(false);
   // const prevStreamingRef = React.useRef(isStreaming);
@@ -106,10 +106,20 @@ const MessageRenderer = ({ content, className = "text-white", isStreaming = fals
   
   // Parse content into segments for YouTube embed support
   const segments = React.useMemo(() => {
+    let processedContent = content;
+
+    // Check if content contains shimmer HTML and update text based on isSearching flag
+    if (processedContent.includes('shimmer-skeleton') && processedContent.includes('Thinking...')) {
+      const shimmerText = isSearching ? 'Searching...' : 'Thinking...';
+      processedContent = processedContent.replace(/>(Thinking\.\.\.)</, `>${shimmerText}<`);
+    } else if (processedContent.includes('shimmer-skeleton') && processedContent.includes('Searching...') && !isSearching) {
+      processedContent = processedContent.replace(/>(Searching\.\.\.)</, '>Thinking...<');
+    }
+
     // First escape prices to prevent LaTeX conflicts
-    const contentWithEscapedPrices = escapePricesInText(content);
+    const contentWithEscapedPrices = escapePricesInText(processedContent);
     return parseContentSegments(contentWithEscapedPrices);
-  }, [content]);
+  }, [content, isSearching]);
 
   // Unified rendering - same for streaming and final
   return (
