@@ -300,7 +300,10 @@ const InputBar = ({
       console.log('⏳ Cannot send - uploads still pending');
       return;
     }
-    
+
+    // Hide keyboard when sending message (like Apple)
+    setShowTestKeyboard(false);
+
     if (pendingDocuments.length > 0) {
       // Send with documents (only if all uploads completed)
       if (onSendWithDocuments) {
@@ -554,17 +557,16 @@ const InputBar = ({
       {/* HLAVNÍ KONTEJNER */}
       <div className="input-bar-container" style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: showTestKeyboard ? '280px' : 0, // Lift when keyboard shown
         left: 0,
         right: 0,
-        transform: isMobile && isKeyboardOpen 
-          ? 'translateZ(0) translateY(0)' 
-          : 'translateZ(0)',
+        transform: 'translateZ(0)',
         padding: isMobile ? '0.5rem' : '1.5rem',
-        paddingBottom: isMobile 
-          ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
+        paddingBottom: isMobile
+          ? (showTestKeyboard ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
           : '1.5rem',
         zIndex: 10,
+        transition: 'bottom 0.3s ease', // Smooth animation
       }}>
         
         <div style={{
@@ -961,6 +963,21 @@ const InputBar = ({
       </div>
 
 
+      {/* KEYBOARD BACKDROP */}
+      {showTestKeyboard && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999
+          }}
+          onClick={() => setShowTestKeyboard(false)}
+        />
+      )}
+
       {/* OMNIA KEYBOARD */}
       {showTestKeyboard && (
         <div style={{
@@ -972,37 +989,9 @@ const InputBar = ({
           background: '#000',
           padding: '10px'
         }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '10px',
-            padding: '0 10px'
-          }}>
-            <span style={{ color: 'white', fontSize: '14px' }}>Omnia Keyboard</span>
-            <button
-              onClick={() => setShowTestKeyboard(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'white',
-                fontSize: '18px',
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
-          </div>
           <Keyboard
             onChange={input => setLocalInput(input)}
             onKeyPress={button => {
-              if (button === "{enter}") {
-                setShowTestKeyboard(false);
-                // Trigger send message if not empty
-                if (localInput.trim()) {
-                  // You might want to call send handler here
-                }
-              }
               console.log('Button pressed', button);
             }}
           />
