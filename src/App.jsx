@@ -2111,7 +2111,9 @@ function AppContent() {
                       clearInterval(waitForUpload);
 
                       // Check if parallel upload was successful (images have URLs)
+                      console.log(`🔍 Checking if ${generatedImages.length} images have URLs after parallel upload...`);
                       const allHaveUrl = generatedImages.every(img => img.storageUrl);
+                      console.log(`📊 URL check result: ${generatedImages.filter(img => img.storageUrl).length}/${generatedImages.length} images have URLs`);
 
                       if (allHaveUrl) {
                         console.log(`✅ Parallel upload successful, displaying ${generatedImages.length} images with URLs`);
