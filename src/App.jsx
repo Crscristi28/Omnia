@@ -2102,8 +2102,53 @@ function AppContent() {
                     }, 50);
                   });
                 } else {
-                  // Parallel upload is in progress, wait for it to complete before attempting fallback
-                  console.log(`⏳ Parallel upload in progress, skipping fallback upload to prevent duplicates`);
+                  // Parallel upload is in progress, wait for it to complete then display images
+                  console.log(`⏳ Waiting for parallel upload to complete before displaying images...`);
+
+                  // Poll until parallel upload is done
+                  const waitForUpload = setInterval(() => {
+                    if (!parallelUploadInProgress.current && generatedImages && generatedImages.length > 0) {
+                      clearInterval(waitForUpload);
+                      console.log(`✅ Parallel upload complete, displaying ${generatedImages.length} images`);
+
+                      // Display images now that upload is complete
+                      if (generatedImages.length === 1) {
+                        // Single image
+                        setMessages(currentMessages => {
+                          const lastMessage = currentMessages[currentMessages.length - 1];
+                          if (lastMessage && lastMessage.sender === 'bot') {
+                            const updatedMessage = {
+                              ...lastMessage,
+                              image: generatedImages[0]
+                            };
+                            console.log(`✅ Single image displayed after waiting for parallel upload`);
+                            return [...currentMessages.slice(0, -1), updatedMessage];
+                          }
+                          return currentMessages;
+                        });
+                      } else {
+                        // Multiple images
+                        setMessages(currentMessages => {
+                          const lastMessage = currentMessages[currentMessages.length - 1];
+                          if (lastMessage && lastMessage.sender === 'bot') {
+                            const updatedMessage = {
+                              ...lastMessage,
+                              images: generatedImages
+                            };
+                            console.log(`✅ All ${generatedImages.length} images displayed after waiting for parallel upload`);
+                            return [...currentMessages.slice(0, -1), updatedMessage];
+                          }
+                          return currentMessages;
+                        });
+                      }
+
+                      // Save to DB after images are displayed
+                      setTimeout(async () => {
+                        const finalMessages = messagesRef.current;
+                        await checkAutoSave(finalMessages, activeChatId);
+                      }, 50);
+                    }
+                  }, 100); // Check every 100ms
                 }
               }
 
