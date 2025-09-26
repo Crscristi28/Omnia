@@ -14,7 +14,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 // Using Lucide React icons instead of custom SVG components
 
 // iOS KEYBOARD with react-simple-keyboard
-const iOSKeyboard = ({ isOpen, value, onChange, onClose, isDark }) => {
+const iOSKeyboard = ({ isOpen, value, onChange, onClose, onSend, isDark }) => {
+  console.log('🎹 iOSKeyboard render:', { isOpen, value, isDark });
+
   if (!isOpen) return null;
 
   const keyboardContainerStyle = {
@@ -34,6 +36,10 @@ const iOSKeyboard = ({ isOpen, value, onChange, onClose, isDark }) => {
         onChange={onChange}
         onKeyPress={(button) => {
           if (button === "{enter}") {
+            // Call send function directly
+            if (onSend) {
+              onSend();
+            }
             onClose();
           }
         }}
@@ -370,9 +376,9 @@ const InputBar = ({
           activeElement.tagName === 'BUTTON' ||
           activeElement.closest('.input-bar-container')
         );
-        
+
         if (!isClickingButton) {
-          setIsKeyboardOpen(false);
+          setCustomKeyboardOpen(false);
         }
       }, 100); // Small delay to check where focus went
     }
@@ -395,6 +401,7 @@ const InputBar = ({
         onSendWithDocuments(localInput, pendingDocuments);
         setPendingDocuments([]); // Clear chips after sending
         setLocalInput(''); // Clear local input
+        setCustomKeyboardOpen(false); // Close custom keyboard after sending
         // Reset textarea size after sending
         setTimeout(() => {
           if (textareaRef.current) {
@@ -406,6 +413,7 @@ const InputBar = ({
       // Regular text-only send - pass the text up
       onSend(localInput);
       setLocalInput(''); // Clear local input after sending
+      setCustomKeyboardOpen(false); // Close custom keyboard after sending
       // Reset textarea size after sending
       setTimeout(() => {
         if (textareaRef.current) {
@@ -1046,6 +1054,7 @@ const InputBar = ({
         value={localInput}
         onChange={onKeyboardChange}
         onClose={() => setCustomKeyboardOpen(false)}
+        onSend={handleSendMessage}
         isDark={isDark}
       />
 
