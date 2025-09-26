@@ -1704,11 +1704,11 @@ function AppContent() {
         let isStreamFinished = false; // Flag for stream completion
         let currentDisplayedText = ''; // Currently displayed text
         
-        // Add bot message with animate-pulse indicator immediately
+        // Add bot message with shimmer thinking indicator immediately
         setMessages(prev => [...prev, {
           id: botMessageId,
           sender: 'bot',
-          text: '<span class="chat-loading-dots"><span></span><span></span><span></span></span>',
+          text: '<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">💭 Thinking...</div>',
           sources: [],
           isStreaming: true,
           timestamp: botTimestamp
@@ -2185,8 +2185,9 @@ function AppContent() {
       setMessages(prev => {
         // Find and remove last 2 messages (user + bot with span indicator or streaming state)
         const lastBotMessage = prev[prev.length - 1];
-        const needsRollback = lastBotMessage?.isStreaming || 
-                             lastBotMessage?.text?.includes('chat-loading-dots') || 
+        const needsRollback = lastBotMessage?.isStreaming ||
+                             lastBotMessage?.text?.includes('chat-loading-dots') ||
+                             lastBotMessage?.text?.includes('Thinking...') ||
                              lastBotMessage?.text?.includes('•') ||
                              lastBotMessage?.text === '';
         
