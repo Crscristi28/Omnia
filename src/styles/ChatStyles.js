@@ -12,8 +12,8 @@ const isMobile = window.innerWidth <= 768;
 export const messageContainerBaseStyle = {
   display: 'flex',
   paddingBottom: '1.5rem',
-  paddingLeft: window.innerWidth > 1024 ? '100px' : '0.5rem',
-  paddingRight: window.innerWidth > 1024 ? '100px' : '0.5rem'
+  paddingLeft: window.innerWidth > 1024 ? '100px' : '0',
+  paddingRight: window.innerWidth > 1024 ? '100px' : '0'
 };
 
 export const userMessageContainerStyle = {
@@ -74,9 +74,9 @@ export const userBubbleStyle = {
   margin: '0 0 0 auto'
 };
 
-// 🤖 BOT MESSAGE STYLES  
+// 🤖 BOT MESSAGE STYLES
 export const botContainerStyle = {
-  width: '95%',
+  width: '100%',
   margin: '0 auto',
   fontSize: '1rem',
   lineHeight: '1.3',
