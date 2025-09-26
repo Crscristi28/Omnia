@@ -1705,10 +1705,14 @@ function AppContent() {
         let currentDisplayedText = ''; // Currently displayed text
         
         // Add bot message with shimmer thinking indicator immediately
+        let shimmerText = 'Thinking...'; // Default
+
+        const shimmerHTML = `<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">${shimmerText}</div>`;
+
         setMessages(prev => [...prev, {
           id: botMessageId,
           sender: 'bot',
-          text: '<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">Thinking...</div>',
+          text: shimmerHTML,
           sources: [],
           isStreaming: true,
           timestamp: botTimestamp
@@ -1887,6 +1891,16 @@ function AppContent() {
           },
           () => {
             setIsSearching(true);
+            // Update shimmer text to "Searching..."
+            const searchingHTML = `<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">Searching...</div>`;
+
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === botMessageId
+                  ? { ...msg, text: searchingHTML }
+                  : msg
+              )
+            );
             setTimeout(() => setIsSearching(false), 3000);
           },
           documentsToPassToGemini,
@@ -2188,6 +2202,7 @@ function AppContent() {
         const needsRollback = lastBotMessage?.isStreaming ||
                              lastBotMessage?.text?.includes('chat-loading-dots') ||
                              lastBotMessage?.text?.includes('Thinking...') ||
+                             lastBotMessage?.text?.includes('Searching...') ||
                              lastBotMessage?.text?.includes('•') ||
                              lastBotMessage?.text === '';
         
