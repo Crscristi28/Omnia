@@ -538,7 +538,7 @@ const InputBar = ({
         right: 0,
         transform: 'translateZ(0)',
         height: needsVirtualKeyboard ? '140px' : '120px',
-        background: 'transparent',
+        background: isDark ? 'transparent' : '#0055aa',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         pointerEvents: 'none', // Allow clicks to pass through to input
