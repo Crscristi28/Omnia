@@ -1895,15 +1895,20 @@ function AppContent() {
           },
           () => {
             console.log('🔍 [DEBUG] Search callback triggered! Updating shimmer to "Searching..."');
+            console.log('🔍 [DEBUG] botMessageId:', botMessageId);
             setIsSearching(true);
             // Update shimmer text to "Searching..."
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === botMessageId && msg.isStreaming
+            setMessages(prev => {
+              console.log('🔍 [DEBUG] Current messages count:', prev.length);
+              const updated = prev.map(msg => {
+                console.log('🔍 [DEBUG] Checking message:', msg.id, 'isStreaming:', msg.isStreaming, 'matches botMessageId:', msg.id === botMessageId);
+                return msg.id === botMessageId && msg.isStreaming
                   ? { ...msg, text: getShimmerHTML("Searching...") }
-                  : msg
-              )
-            );
+                  : msg;
+              });
+              console.log('🔍 [DEBUG] Messages after search update:', updated.length);
+              return updated;
+            });
             setTimeout(() => setIsSearching(false), 3000);
           },
           () => {
