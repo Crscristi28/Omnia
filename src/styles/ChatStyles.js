@@ -70,7 +70,7 @@ export const userBubbleStyle = {
   wordBreak: 'break-word',
   overflowWrap: 'break-word',
   width: 'fit-content',
-  maxWidth: '100%',
+  maxWidth: '90%',
   margin: '0 0 0 auto'
 };
 
