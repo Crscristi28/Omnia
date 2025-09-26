@@ -131,6 +131,8 @@ function AppContent() {
   const inputRef = useRef();
   const messagesRef = useRef();
   const uploadedDocumentsRef = useRef();
+  // Ref for tracking parallel upload progress to prevent race conditions
+  const parallelUploadInProgress = useRef(false);
   
   // 🎤 VOICE STATE (UNCHANGED)
   const [showVoiceScreen, setShowVoiceScreen] = useState(false);
@@ -1762,6 +1764,7 @@ function AppContent() {
 
                 // Start upload immediately in parallel with text streaming for ALL images
                 console.log(`🚀 Starting parallel upload for ${extra.images.length} images during streaming...`);
+                parallelUploadInProgress.current = true;
 
                 const uploadPromises = extra.images.map(async (imageData, index) => {
                   if (imageData.base64 && imageData.mimeType) {
@@ -1810,8 +1813,13 @@ function AppContent() {
                   // Don't display yet - just prepare the data for after streaming
                   // Sort by index to maintain original order
                   generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
+
+                  // Mark parallel upload as complete
+                  parallelUploadInProgress.current = false;
                 }).catch(error => {
                   console.error('💥 Parallel uploads failed:', error);
+                  // Mark parallel upload as complete even on error
+                  parallelUploadInProgress.current = false;
                 });
               }
               // Handle PDF generation from tool calls
@@ -1991,7 +1999,7 @@ function AppContent() {
                 // Check if all images have been uploaded during streaming
                 const allImagesHaveStorageUrl = generatedImages.every(img => img.storageUrl);
 
-                if (allImagesHaveStorageUrl) {
+                if (allImagesHaveStorageUrl && !parallelUploadInProgress.current) {
                   console.log(`✅ ${generatedImages.length} images already uploaded during streaming, progressive display starting`);
 
                   // For single image, display immediately (no change)
@@ -2059,8 +2067,8 @@ function AppContent() {
                       }, index * 500); // 500ms delay between each image
                     });
                   }
-                } else {
-                  // Some images need fallback upload (parallel uploads may have failed)
+                } else if (!parallelUploadInProgress.current) {
+                  // Some images need fallback upload (parallel uploads may have failed) and parallel upload is not in progress
                   console.log(`🎨 Fallback: uploading ${generatedImages.length} images in completion...`);
 
                   const uploadPromises = generatedImages.map(async (imageData, index) => {
@@ -2125,6 +2133,9 @@ function AppContent() {
                       await checkAutoSave(finalMessages, activeChatId);
                     }, 50);
                   });
+                } else {
+                  // Parallel upload is in progress, wait for it to complete before attempting fallback
+                  console.log(`⏳ Parallel upload in progress, skipping fallback upload to prevent duplicates`);
                 }
               }
 
