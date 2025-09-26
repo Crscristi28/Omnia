@@ -1891,13 +1891,11 @@ function AppContent() {
           },
           () => {
             setIsSearching(true);
-            // Update shimmer text to "Searching..."
-            const searchingHTML = `<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">Searching...</div>`;
-
+            // Set isSearching flag on message (like generatingImages)
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === botMessageId
-                  ? { ...msg, text: searchingHTML }
+                  ? { ...msg, isSearching: true }
                   : msg
               )
             );
