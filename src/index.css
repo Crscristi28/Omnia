@@ -88,7 +88,7 @@ ul, ol {
 /* Dark Mode Theme Colors (explicit) */
 [data-theme="dark"] {
   --app-bg-gradient: linear-gradient(135deg, #000000, #1a1a1a, #2a2a2a);
-  --app-bg-solid: #1a1a1a;
+  --app-bg-solid: #000000;
 }
 
 /* PWA & Mobile Optimizations */
