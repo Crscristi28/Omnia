@@ -27,6 +27,7 @@
     "dexie": "^4.0.11",
     "express": "^5.1.0",
     "formidable": "^3.5.1",
+    "kioskboard": "^2.3.0",
     "lucide-react": "^0.525.0",
     "markdown-it": "^14.1.0",
     "node-fetch": "^3.3.2",

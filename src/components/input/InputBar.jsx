@@ -2,12 +2,13 @@
 // ✅ Textarea nahoře, 4 kulatá tlačítka dole
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
 import { uploadDirectToGCS } from '../../services/directUpload.js';
 import { useTheme } from '../../contexts/ThemeContext';
+import KioskBoard from 'kioskboard';
 
 // Using Lucide React icons instead of custom SVG components
 
@@ -177,10 +178,38 @@ const InputBar = ({
   const [localInput, setLocalInput] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [kioskKeyboardOpen, setKioskKeyboardOpen] = useState(false);
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
   const t = getTranslation(uiLanguage);
+
+  // Initialize KioskBoard for mobile
+  useEffect(() => {
+    if (isMobile && textareaRef.current) {
+      KioskBoard.init({
+        keysArrayOfObjects: [
+          {
+            "0": "Q", "1": "W", "2": "E", "3": "R", "4": "T", "5": "Y", "6": "U", "7": "I", "8": "O", "9": "P"
+          },
+          {
+            "0": "A", "1": "S", "2": "D", "3": "F", "4": "G", "5": "H", "6": "J", "7": "K", "8": "L"
+          },
+          {
+            "0": "Z", "1": "X", "2": "C", "3": "V", "4": "B", "5": "N", "6": "M"
+          }
+        ],
+        kioskBoardOnVirtualKeyboardOpened: () => {
+          setKioskKeyboardOpen(true);
+        },
+        kioskBoardOnVirtualKeyboardClosed: () => {
+          setKioskKeyboardOpen(false);
+        }
+      });
+
+      KioskBoard.run(textareaRef.current);
+    }
+  }, [isMobile]);
   
   // Auto-resize textarea
   const autoResize = (textarea) => {
@@ -551,17 +580,16 @@ const InputBar = ({
       {/* HLAVNÍ KONTEJNER */}
       <div className="input-bar-container" style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: kioskKeyboardOpen ? '280px' : 0, // Lift when KioskBoard is open
         left: 0,
         right: 0,
-        transform: isMobile && isKeyboardOpen 
-          ? 'translateZ(0) translateY(0)' 
-          : 'translateZ(0)',
+        transform: 'translateZ(0)',
         padding: isMobile ? '0.5rem' : '1.5rem',
-        paddingBottom: isMobile 
-          ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
+        paddingBottom: isMobile
+          ? (kioskKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
           : '1.5rem',
         zIndex: 10,
+        transition: 'bottom 0.3s ease', // Smooth animation
       }}>
         
         <div style={{
@@ -773,13 +801,16 @@ const InputBar = ({
               className="omnia-chat-input"
               ref={textareaRef}
               value={localInput}
+              inputMode={isMobile ? "none" : "text"} // Prevent iOS keyboard on mobile
               onChange={(e) => {
                 setLocalInput(e.target.value);
                 autoResize(e.target);
               }}
               onClick={(e) => {
-                // iOS PWA fix - ensure focus on click
-                if (isMobile && window.navigator.standalone) {
+                if (isMobile) {
+                  // KioskBoard will handle this
+                  e.target.focus();
+                } else if (window.navigator.standalone) {
                   e.target.focus();
                 }
               }}
@@ -948,6 +979,45 @@ const InputBar = ({
         </div>
       </div>
 
+      {/* KIOSKBOARD CUSTOM STYLING */}
+      <style>{`
+        /* KioskBoard iOS-like styling */
+        #KioskBoard-VirtualKeyboard {
+          background: #333 !important;
+          border-radius: 12px 12px 0 0 !important;
+          padding: 15px !important;
+          border: none !important;
+        }
+
+        #KioskBoard-VirtualKeyboard .kioskboard-key {
+          background: #555 !important;
+          color: #fff !important;
+          border: 1px solid #777 !important;
+          border-radius: 8px !important;
+          height: 50px !important;
+          font-size: 18px !important;
+          font-weight: 500 !important;
+          margin: 3px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
+        }
+
+        #KioskBoard-VirtualKeyboard .kioskboard-key:hover,
+        #KioskBoard-VirtualKeyboard .kioskboard-key:active {
+          background: #777 !important;
+          transform: scale(0.95) !important;
+        }
+
+        #KioskBoard-VirtualKeyboard .kioskboard-key-space {
+          background: #666 !important;
+        }
+
+        #KioskBoard-VirtualKeyboard .kioskboard-key-enter {
+          background: #007AFF !important;
+        }
+      `}</style>
 
     </>
   );
