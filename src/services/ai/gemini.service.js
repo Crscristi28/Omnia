@@ -5,7 +5,7 @@
 import { profileService } from '../profile/profileService.js';
 
 const geminiService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, documents = [], imageMode = false, pdfMode = false) {
+  async sendMessage(messages, onStreamUpdate = null, onSearchNotification = null, onImageGenerationStart = null, documents = [], imageMode = false, pdfMode = false) {
     try {
       // Generate unique request ID for concurrent user isolation
       const requestId = Date.now() + '-' + Math.random().toString(36).substring(2, 11);
@@ -74,6 +74,12 @@ const geminiService = {
                   console.log('🔍 Google Search detected for request:', requestId);
                   if (onSearchNotification) {
                     onSearchNotification(this.getSearchMessage(detectedLanguage));
+                  }
+                }
+                else if (data.type === 'image_generation_start') {
+                  console.log('🎨 Image generation start detected for request:', requestId);
+                  if (onImageGenerationStart) {
+                    onImageGenerationStart();
                   }
                 }
                 else if (data.type === 'image_generated') {

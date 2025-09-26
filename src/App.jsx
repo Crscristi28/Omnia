@@ -1707,7 +1707,11 @@ function AppContent() {
         let currentDisplayedText = ''; // Currently displayed text
         
         // Add bot message with shimmer indicator immediately
-        const shimmerHTML = `<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">Just a sec...</div>`;
+        const getShimmerHTML = (text = "Just a sec...") => {
+          return `<div style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%); background-size: 200% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; font-size: 14px; font-weight: 500; animation: shimmer-skeleton 2s infinite; display: inline-block;">${text}</div>`;
+        };
+
+        const shimmerHTML = getShimmerHTML();
 
         setMessages(prev => [...prev, {
           id: botMessageId,
@@ -1891,7 +1895,25 @@ function AppContent() {
           },
           () => {
             setIsSearching(true);
+            // Update shimmer text to "Searching..."
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === botMessageId && msg.isStreaming
+                  ? { ...msg, text: getShimmerHTML("Searching...") }
+                  : msg
+              )
+            );
             setTimeout(() => setIsSearching(false), 3000);
+          },
+          () => {
+            // Update shimmer text to "Being creative..."
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === botMessageId && msg.isStreaming
+                  ? { ...msg, text: getShimmerHTML("Being creative...") }
+                  : msg
+              )
+            );
           },
           documentsToPassToGemini,
           false, // imageMode

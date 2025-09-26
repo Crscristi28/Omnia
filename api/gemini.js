@@ -374,6 +374,14 @@ export default async function handler(req, res) {
               
               if (part.functionCall.name === 'generate_image') {
                 try {
+                  // Send image generation start event to frontend
+                  res.write(JSON.stringify({
+                    requestId,
+                    type: 'image_generation_start',
+                    message: 'Starting image generation...'
+                  }) + '\n');
+                  if (typeof res.flush === 'function') { res.flush(); }
+
                   console.log('🔍 [DEBUG] Calling Imagen API directly...');
                   
                   // Call Imagen API directly (same logic as /api/imagen.js)
