@@ -254,27 +254,6 @@ const MessageItem = ({
             </span>
           </div>
           
-          {/* 🔍 SEARCH INDICATOR - Show when AI is searching */}
-          {msg.isSearching && (
-            <div style={{
-              paddingBottom: '1rem'
-            }}>
-              <div style={{
-                background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 75%)',
-                backgroundSize: '200% 100%',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                color: 'transparent',
-                fontSize: '14px',
-                fontWeight: '500',
-                animation: 'shimmer-skeleton 2s infinite',
-                display: 'inline-block'
-              }}>
-                Searching...
-              </div>
-            </div>
-          )}
-
           {/* 📝 MESSAGE TEXT - Display first to prevent jumping */}
           <MessageRenderer
             content={msg.text || ''}
