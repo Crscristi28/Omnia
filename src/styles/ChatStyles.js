@@ -303,7 +303,7 @@ export const messagesContainerStyle = {
   display: 'flex',
   flexDirection: 'column',
   transform: 'translateZ(0)',
-  maxWidth: '1000px',
+  maxWidth: window.innerWidth > 1024 ? '100%' : '1000px',
   margin: '0 auto',
   width: '100%',
   position: 'relative',
