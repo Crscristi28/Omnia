@@ -5,6 +5,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import Keyboard from 'react-simple-keyboard';
+import 'react-simple-keyboard/build/css/index.css';
 import { getTranslation } from '../../utils/text';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
 import { uploadDirectToGCS } from '../../services/directUpload.js';
@@ -16,19 +17,23 @@ import { useTheme } from '../../contexts/ThemeContext';
 const iOSKeyboard = ({ isOpen, value, onChange, onClose, isDark }) => {
   if (!isOpen) return null;
 
+  const keyboardContainerStyle = {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    background: isDark ? '#1c1c1e' : '#f6f6f6',
+    borderRadius: '10px 10px 0 0',
+    padding: '8px'
+  };
+
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      zIndex: 1000,
-    }}>
+    <div style={keyboardContainerStyle}>
       <Keyboard
         onChange={onChange}
         onKeyPress={(button) => {
           if (button === "{enter}") {
-            // Handle send message
             onClose();
           }
         }}
@@ -47,17 +52,25 @@ const iOSKeyboard = ({ isOpen, value, onChange, onClose, isDark }) => {
           "{numbers}": "123",
           "{space}": "space"
         }}
-        theme={`hg-theme-default ${isDark ? 'ios-dark' : 'ios-light'}`}
+        theme="hg-theme-default ios-custom"
+        buttonTheme={[
+          {
+            class: "ios-key",
+            buttons: "q w e r t y u i o p a s d f g h j k l z x c v b n m"
+          },
+          {
+            class: "ios-special",
+            buttons: "{shift} {bksp} {numbers} {enter}"
+          },
+          {
+            class: "ios-space",
+            buttons: "{space}"
+          }
+        ]}
       />
 
-      <style jsx>{`
-        .hg-theme-default {
-          background: ${isDark ? '#1c1c1e' : '#f6f6f6'};
-          border-radius: 10px 10px 0 0;
-          padding: 8px;
-        }
-
-        .hg-theme-default .hg-button {
+      <style>{`
+        .ios-custom .hg-button {
           background: ${isDark ? '#3a3a3c' : '#ffffff'};
           color: ${isDark ? 'white' : 'black'};
           border: none;
@@ -69,20 +82,16 @@ const iOSKeyboard = ({ isOpen, value, onChange, onClose, isDark }) => {
           box-shadow: ${isDark ? 'none' : '0 1px 0 #b5b5b5'};
         }
 
-        .hg-theme-default .hg-button.hg-standardBtn {
-          background: ${isDark ? '#3a3a3c' : '#acb4bc'};
-          color: ${isDark ? 'white' : 'black'};
-          font-size: 16px;
+        .ios-custom .ios-special {
+          background: ${isDark ? '#3a3a3c' : '#acb4bc'} !important;
+          font-size: 16px !important;
         }
 
-        .hg-theme-default .hg-button.hg-button-space {
-          background: ${isDark ? '#ffffff' : '#ffffff'};
-          color: black;
-          font-size: 16px;
-          width: 200px;
+        .ios-custom .ios-space {
+          background: white !important;
+          color: black !important;
+          font-size: 16px !important;
         }
-
-
       `}</style>
     </div>
   );
