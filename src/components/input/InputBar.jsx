@@ -2,7 +2,7 @@
 // ✅ Textarea nahoře, 4 kulatá tlačítka dole
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
@@ -177,6 +177,7 @@ const InputBar = ({
   const [localInput, setLocalInput] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   // Modern feature detection (2025) - podle Omnia doporučení
@@ -264,6 +265,16 @@ const InputBar = ({
       autoResize(textareaRef.current);
     }
   }, [localInput]);
+
+  // Desktop detection with resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth > 1024);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Visual Viewport API keyboard detection (fallback for iOS/Android)
   React.useEffect(() => {
@@ -538,7 +549,7 @@ const InputBar = ({
         right: 0,
         transform: 'translateZ(0)',
         height: needsVirtualKeyboard ? '140px' : '120px',
-        background: isDark ? 'transparent' : '#0055aa',
+        background: isDesktop ? 'transparent' : (isDark ? 'transparent' : '#0055aa'),
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         pointerEvents: 'none', // Allow clicks to pass through to input
