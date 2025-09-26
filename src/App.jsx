@@ -105,15 +105,15 @@ function AppContent() {
     // Update apple status bar style
     const appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     if (appleStatusBar) {
-      // For dark mode use 'black', for light mode use 'default'
-      appleStatusBar.setAttribute('content', isDark ? 'black' : 'default');
+      // Use black-translucent for both modes to get full screen effect
+      appleStatusBar.setAttribute('content', 'black-translucent');
     }
 
     // 🍎 iOS 26 IAV Fix - Set data-theme for CSS variables
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
     // 🍎 PWA Fix - Force body background-color directly (bypass CSS variables)
-    document.body.style.backgroundColor = isDark ? '#1a1a1a' : '#004e92';
+    document.body.style.backgroundColor = isDark ? '#000000' : '#004e92';
   }, [isDark]);
 
   // 📊 BASIC STATE (UNCHANGED)
@@ -3417,10 +3417,10 @@ const virtuosoComponents = React.useMemo(() => ({
           ...mainContainerStyle,
           background: isListening
             ? (isDark
-              ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a, #2a2a2a)' // Dark mode active
+              ? '#000000' // Dark mode active - pure black
               : 'linear-gradient(135deg, #000428, #004e92, #009ffd, #00d4ff)') // Light mode active
             : (isDark
-              ? 'linear-gradient(135deg, #000000, #0a0a0a, #1a1a1a)' // Dark mode normal
+              ? '#000000' // Dark mode normal - pure black
               : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'), // Light mode normal
           paddingTop: isMobile ? '70px' : '90px',
           paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
