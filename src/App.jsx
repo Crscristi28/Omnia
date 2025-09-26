@@ -3558,17 +3558,17 @@ const virtuosoComponents = React.useMemo(() => ({
             : (isDark
               ? '#000000' // Dark mode normal - pure black
               : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'), // Light mode normal
-          paddingTop: isMobile ? '70px' : '90px',
+          paddingTop: isMobile ? '55px' : '70px',
           paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
         }}>
           
           {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
       <div style={{
         ...topHeaderStyle,
-        height: isMobile ? '60px' : '70px',
+        height: isMobile ? '45px' : '50px',
         padding: isMobile ? '0 1rem' : '0 2rem',
-        paddingTop: isMobile ? 'max(1rem, env(safe-area-inset-top))' : '0',
-        minHeight: isMobile ? 'calc(60px + env(safe-area-inset-top))' : '70px',
+        paddingTop: isMobile ? 'max(0.5rem, env(safe-area-inset-top))' : '0',
+        minHeight: isMobile ? 'calc(45px + env(safe-area-inset-top))' : '50px',
       }}>
         
         {/* HAMBURGER BUTTON - vlevo */}
