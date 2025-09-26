@@ -1,11 +1,21 @@
 // src/components/input/GlassInputContainer.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const GlassInputContainer = ({ children }) => {
   const { isDark } = useTheme();
-  const isMobile = window.innerWidth <= 768;
-  const isDesktop = window.innerWidth > 1024;
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth > 1024);
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div style={{
