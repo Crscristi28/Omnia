@@ -1810,9 +1810,61 @@ function AppContent() {
                     )
                   );
 
-                  // Don't display yet - just prepare the data for after streaming
-                  // Sort by index to maintain original order
+                  // Sort by index to maintain original order and update UI
                   generatedImages = successfulUploads.sort((a, b) => a.index - b.index);
+
+                  // Display images immediately after successful upload
+                  if (generatedImages.length === 1) {
+                    // Single image - display immediately
+                    setMessages(currentMessages => {
+                      const lastMessage = currentMessages[currentMessages.length - 1];
+                      if (lastMessage && lastMessage.sender === 'bot') {
+                        const updatedMessage = {
+                          ...lastMessage,
+                          image: generatedImages[0]
+                        };
+                        console.log(`✅ Single image displayed after parallel upload`);
+                        return [...currentMessages.slice(0, -1), updatedMessage];
+                      }
+                      return currentMessages;
+                    });
+
+                    // Save to DB after single image
+                    setTimeout(async () => {
+                      const finalMessages = messagesRef.current;
+                      await checkAutoSave(finalMessages, activeChatId);
+                    }, 50);
+                  } else {
+                    // Multiple images - progressive reveal
+                    let revealedCount = 0;
+                    generatedImages.forEach((imageData, index) => {
+                      setTimeout(() => {
+                        setMessages(currentMessages => {
+                          const lastMessage = currentMessages[currentMessages.length - 1];
+                          if (lastMessage && lastMessage.sender === 'bot') {
+                            const currentImages = lastMessage.images || [];
+                            const updatedImages = [...currentImages, imageData];
+                            const updatedMessage = {
+                              ...lastMessage,
+                              images: updatedImages
+                            };
+                            console.log(`✅ Image ${index + 1}/${generatedImages.length} revealed after parallel upload`);
+                            return [...currentMessages.slice(0, -1), updatedMessage];
+                          }
+                          return currentMessages;
+                        });
+
+                        revealedCount++;
+                        // Save to DB after all images are revealed
+                        if (revealedCount === generatedImages.length) {
+                          setTimeout(async () => {
+                            const finalMessages = messagesRef.current;
+                            await checkAutoSave(finalMessages, activeChatId);
+                          }, 50);
+                        }
+                      }, index * 500); // 500ms delay between each image
+                    });
+                  }
 
                   // Mark parallel upload as complete
                   parallelUploadInProgress.current = false;
