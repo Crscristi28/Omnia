@@ -179,14 +179,17 @@ const InputBar = ({
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
-  const isMobile = window.innerWidth <= 768;
+  // Modern feature detection (2025) - podle Omnia doporučení
+  const hasTouchScreen = navigator.maxTouchPoints > 0;
+  const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  const needsVirtualKeyboard = hasTouchScreen && isCoarsePointer;
   const t = getTranslation(uiLanguage);
   
   // Auto-resize textarea
   const autoResize = (textarea) => {
     if (!textarea) return;
     
-    const minHeight = isMobile ? 50 : 60;
+    const minHeight = needsVirtualKeyboard ? 50 : 60;
     const maxHeight = 200;
     
     // If empty, reset to minHeight immediately
@@ -264,13 +267,13 @@ const InputBar = ({
 
   // Simple keyboard detection - no performance-impacting resize listeners
   const handleTextareaFocus = () => {
-    if (isMobile) {
+    if (needsVirtualKeyboard) {
       setIsKeyboardOpen(true);
     }
   };
 
   const handleTextareaBlur = (e) => {
-    if (isMobile) {
+    if (needsVirtualKeyboard) {
       // Don't close keyboard if clicking on send button
       // Check if the blur is moving to a button within InputBar
       setTimeout(() => {
@@ -325,7 +328,7 @@ const InputBar = ({
   };
 
   const handleKeyDown = (e) => {
-    if (!isMobile && e.key === 'Enter' && !e.shiftKey && !isLoading && canSend) {
+    if (!needsVirtualKeyboard && e.key === 'Enter' && !e.shiftKey && !isLoading && canSend) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -494,8 +497,8 @@ const InputBar = ({
   };
 
   // UNIFIED BUTTON STYLE - KULATÉ PODLE UI.MD
-  const buttonSize = isMobile ? 36 : 44;
-  const iconSize = isMobile ? 20 : 24;
+  const buttonSize = needsVirtualKeyboard ? 36 : 44;
+  const iconSize = needsVirtualKeyboard ? 20 : 24;
 
   const buttonStyle = {
     width: buttonSize,
@@ -520,7 +523,7 @@ const InputBar = ({
         left: 0,
         right: 0,
         transform: 'translateZ(0)',
-        height: isMobile ? '140px' : '120px',
+        height: needsVirtualKeyboard ? '140px' : '120px',
         background: `linear-gradient(to top, 
           rgba(255, 255, 255, 0.08) 0%, 
           rgba(255, 255, 255, 0.06) 40%,
@@ -533,12 +536,12 @@ const InputBar = ({
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        paddingBottom: isMobile ? '18px' : '6px',
+        paddingBottom: needsVirtualKeyboard ? '18px' : '6px',
       }}>
         {/* Disclaimer text */}
         <div style={{
           color: 'rgba(255, 255, 255, 0.4)',
-          fontSize: isMobile ? '10px' : '11px',
+          fontSize: needsVirtualKeyboard ? '10px' : '11px',
           textAlign: 'center',
           fontWeight: '400',
           letterSpacing: '0.02em',
@@ -554,11 +557,11 @@ const InputBar = ({
         bottom: 0,
         left: 0,
         right: 0,
-        transform: isMobile && isKeyboardOpen 
+        transform: needsVirtualKeyboard && isKeyboardOpen 
           ? 'translateZ(0) translateY(0)' 
           : 'translateZ(0)',
-        padding: isMobile ? '0.5rem' : '1.5rem',
-        paddingBottom: isMobile 
+        padding: needsVirtualKeyboard ? '0.5rem' : '1.5rem',
+        paddingBottom: needsVirtualKeyboard 
           ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
           : '1.5rem',
         zIndex: 10,
@@ -583,7 +586,7 @@ const InputBar = ({
             boxShadow: isDark
               ? '0 12px 40px rgba(0, 0, 0, 0.8)' // Dark mode: deeper shadow
               : '0 12px 40px rgba(0, 0, 0, 0.4)', // Light mode: current shadow
-            padding: isMobile ? '1rem' : '1.5rem',
+            padding: needsVirtualKeyboard ? '1rem' : '1.5rem',
           }}>
             
             {/* DOCUMENT PREVIEW CARDS */}
@@ -779,7 +782,7 @@ const InputBar = ({
               }}
               onClick={(e) => {
                 // iOS PWA fix - ensure focus on click
-                if (isMobile && window.navigator.standalone) {
+                if (needsVirtualKeyboard && window.navigator.standalone) {
                   e.target.focus();
                 }
               }}
@@ -791,7 +794,7 @@ const InputBar = ({
               rows={1}
               style={{
                 width: '100%',
-                minHeight: isMobile ? '50px' : '60px',
+                minHeight: needsVirtualKeyboard ? '50px' : '60px',
                 maxHeight: '200px',
                 border: 'none',
                 outline: 'none',
@@ -800,7 +803,7 @@ const InputBar = ({
                   ? 'rgba(255, 255, 255, 0.95)' // Dark mode: brighter white text
                   : 'rgba(255, 255, 255, 0.9)', // Light mode: current white text
                 caretColor: 'white', // Force white cursor/caret color on all platforms
-                fontSize: isMobile ? '16px' : '18px',
+                fontSize: needsVirtualKeyboard ? '16px' : '18px',
                 fontFamily: 'inherit',
                 resize: 'none',
                 lineHeight: '1.5',
@@ -819,14 +822,14 @@ const InputBar = ({
               {/* LEFT SIDE BUTTONS */}
               <div style={{
                 display: 'flex',
-                gap: isMobile ? '8px' : '12px',
+                gap: needsVirtualKeyboard ? '8px' : '12px',
               }}>
                 {/* 1. PLUS BUTTON */}
                 <button
                   ref={plusButtonRef}
                   onClick={() => {
                     // Close keyboard first on mobile
-                    if (isMobile && textareaRef.current) {
+                    if (needsVirtualKeyboard && textareaRef.current) {
                       textareaRef.current.blur();
                     }
                     
@@ -838,7 +841,7 @@ const InputBar = ({
                       input.accept = '.pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.txt,application/pdf,image/png,image/jpeg,image/bmp,image/tiff,image/gif,text/plain';
                       input.onchange = handleDocumentUploadToChips;
                       input.click();
-                    }, isMobile ? 100 : 0);
+                    }, needsVirtualKeyboard ? 100 : 0);
                   }}
                   disabled={isLoading}
                   style={{
@@ -895,15 +898,15 @@ const InputBar = ({
               {/* RIGHT SIDE BUTTONS */}
               <div style={{
                 display: 'flex',
-                gap: isMobile ? '8px' : '12px',
+                gap: needsVirtualKeyboard ? '8px' : '12px',
               }}>
                 {/* 4. MIKROFON BUTTON */}
                 <button
                   // Mobile: hold-to-talk
-                  onTouchStart={isMobile && !isLoading && !isAudioPlaying ? onSTT : undefined}
-                  onTouchEnd={isMobile && isRecording ? onSTT : undefined}
+                  onTouchStart={needsVirtualKeyboard && !isLoading && !isAudioPlaying ? onSTT : undefined}
+                  onTouchEnd={needsVirtualKeyboard && isRecording ? onSTT : undefined}
                   // Desktop: click-to-toggle  
-                  onClick={!isMobile ? onSTT : undefined}
+                  onClick={!needsVirtualKeyboard ? onSTT : undefined}
                   disabled={isLoading || isAudioPlaying}
                   style={{
                     background: 'none',
@@ -912,7 +915,7 @@ const InputBar = ({
                     cursor: isLoading || isAudioPlaying ? 'not-allowed' : 'pointer',
                     opacity: isLoading || isAudioPlaying ? 0.5 : 1,
                   }}
-                  title={isRecording ? 'Stop Recording' : (isMobile ? 'Hold to speak' : 'Voice Input')}
+                  title={isRecording ? 'Stop Recording' : (needsVirtualKeyboard ? 'Hold to speak' : 'Voice Input')}
                 >
                   <Mic 
                     size={iconSize} 
