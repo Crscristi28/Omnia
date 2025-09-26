@@ -2109,10 +2109,15 @@ function AppContent() {
                   const waitForUpload = setInterval(() => {
                     if (!parallelUploadInProgress.current && generatedImages && generatedImages.length > 0) {
                       clearInterval(waitForUpload);
-                      console.log(`✅ Parallel upload complete, displaying ${generatedImages.length} images`);
 
-                      // Display images now that upload is complete
-                      if (generatedImages.length === 1) {
+                      // Check if parallel upload was successful (images have URLs)
+                      const allHaveUrl = generatedImages.every(img => img.storageUrl);
+
+                      if (allHaveUrl) {
+                        console.log(`✅ Parallel upload successful, displaying ${generatedImages.length} images with URLs`);
+
+                        // Display images now that upload is complete
+                        if (generatedImages.length === 1) {
                         // Single image
                         setMessages(currentMessages => {
                           const lastMessage = currentMessages[currentMessages.length - 1];
@@ -2142,11 +2147,82 @@ function AppContent() {
                         });
                       }
 
-                      // Save to DB after images are displayed
-                      setTimeout(async () => {
-                        const finalMessages = messagesRef.current;
-                        await checkAutoSave(finalMessages, activeChatId);
-                      }, 50);
+                        // Save to DB after images are displayed
+                        setTimeout(async () => {
+                          const finalMessages = messagesRef.current;
+                          await checkAutoSave(finalMessages, activeChatId);
+                        }, 50);
+                      } else {
+                        // Parallel upload failed, start fallback upload
+                        console.log(`❌ Parallel upload failed, starting fallback upload for ${generatedImages.length} images`);
+
+                        const uploadPromises = generatedImages.map(async (imageData, index) => {
+                          if (imageData.base64 && imageData.mimeType) {
+                            try {
+                              const imageTimestamp = Date.now();
+                              const uploadResult = await uploadBase64ToSupabaseStorage(
+                                imageData.base64,
+                                `generated-${imageTimestamp}-${index}.png`,
+                                'generated-images'
+                              );
+
+                              if (uploadResult && uploadResult.publicUrl) {
+                                return {
+                                  storageUrl: uploadResult.publicUrl,
+                                  storagePath: uploadResult.path,
+                                  mimeType: imageData.mimeType,
+                                  timestamp: imageTimestamp,
+                                  index: index
+                                };
+                              }
+                            } catch (error) {
+                              console.error(`💥 Fallback upload failed for image ${index + 1}:`, error);
+                            }
+                          }
+                          return null;
+                        });
+
+                        Promise.all(uploadPromises).then(results => {
+                          const successfulUploads = results.filter(result => result !== null);
+                          const sortedImages = successfulUploads.sort((a, b) => a.index - b.index);
+                          generatedImages = sortedImages;
+
+                          console.log(`✅ Fallback upload completed: ${sortedImages.length}/${generatedImages.length} successful`);
+
+                          // Now display the images with fallback URLs
+                          if (sortedImages.length === 1) {
+                            setMessages(currentMessages => {
+                              const lastMessage = currentMessages[currentMessages.length - 1];
+                              if (lastMessage && lastMessage.sender === 'bot') {
+                                const updatedMessage = {
+                                  ...lastMessage,
+                                  image: sortedImages[0]
+                                };
+                                return [...currentMessages.slice(0, -1), updatedMessage];
+                              }
+                              return currentMessages;
+                            });
+                          } else {
+                            setMessages(currentMessages => {
+                              const lastMessage = currentMessages[currentMessages.length - 1];
+                              if (lastMessage && lastMessage.sender === 'bot') {
+                                const updatedMessage = {
+                                  ...lastMessage,
+                                  images: sortedImages
+                                };
+                                return [...currentMessages.slice(0, -1), updatedMessage];
+                              }
+                              return currentMessages;
+                            });
+                          }
+
+                          // Save to DB after fallback images are displayed
+                          setTimeout(async () => {
+                            const finalMessages = messagesRef.current;
+                            await checkAutoSave(finalMessages, activeChatId);
+                          }, 50);
+                        });
+                      }
                     }
                   }, 100); // Check every 100ms
                 }
