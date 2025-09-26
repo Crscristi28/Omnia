@@ -125,7 +125,6 @@ function AppContent() {
   });
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
   const inputRef = useRef();
@@ -421,8 +420,8 @@ function AppContent() {
 // 🎯 UNCHANGED: Všechny původní funkce (TTS, STT, AI conversation)
 // 🆕 STREAMING: Modified Claude message handling with streaming effect
 
-// 🔔 NOTIFICATION SYSTEM - Initialize with setIsSearching callback
-  const { showNotification } = createNotificationSystem(setIsSearching);
+// 🔔 NOTIFICATION SYSTEM
+  const { showNotification } = createNotificationSystem();
   
   // 📦 UPLOAD QUEUE MANAGEMENT
   const addToUploadQueue = (file, type, messageTimestamp, attachmentIndex, chatId) => {
@@ -1336,11 +1335,7 @@ function AppContent() {
                 generatedImages = extra.images;
               }
             },
-            (searchMsg) => {
-              // Handle search notifications if needed
-              setIsSearching(true);
-              setTimeout(() => setIsSearching(false), 3000);
-            },
+            null, // No search callback needed
             null, // Let Gemini handle language detection
             [], // documents
             true // imageMode = true
@@ -1519,7 +1514,7 @@ function AppContent() {
             finalText = text;
             setStreaming(isStreaming);
           },
-          (searchMsg) => showNotification(searchMsg, 'info'),
+          null, // No search callback needed
           detectedLang
         );
         
@@ -1608,7 +1603,7 @@ function AppContent() {
               streamingSources = sources; // Capture sources during streaming
             }
           },
-          (searchMsg) => showNotification(searchMsg, 'info'),
+          null, // No search callback needed
           detectedLang
         );
         
@@ -1940,7 +1935,6 @@ function AppContent() {
               }
               
               // Hide loading indicators
-              setIsSearching(false);
               setLoading(false);
               setStreaming(false);
               
@@ -1953,24 +1947,7 @@ function AppContent() {
               }
             }
           },
-          () => {
-            console.log('🔍 [DEBUG] Search callback triggered! Updating shimmer to "Searching..."');
-            console.log('🔍 [DEBUG] botMessageId:', botMessageId);
-            setIsSearching(true);
-            // Update shimmer text to "Searching..."
-            setMessages(prev => {
-              console.log('🔍 [DEBUG] Current messages count:', prev.length);
-              const updated = prev.map(msg => {
-                console.log('🔍 [DEBUG] Checking message:', msg.id, 'isStreaming:', msg.isStreaming, 'matches botMessageId:', msg.id === botMessageId);
-                return msg.id === botMessageId && msg.isStreaming
-                  ? { ...msg, text: getShimmerHTML("Searching...") }
-                  : msg;
-              });
-              console.log('🔍 [DEBUG] Messages after search update:', updated.length);
-              return updated;
-            });
-            setTimeout(() => setIsSearching(false), 3000);
-          },
+          null, // No search callback needed
           () => {
             console.log('🎨 [DEBUG] Image generation callback triggered! Updating shimmer to "Being creative..."');
             // Update shimmer text to "Being creative..."
@@ -2322,7 +2299,6 @@ function AppContent() {
     } finally {
       setLoading(false);
       setStreaming(false);
-      setIsSearching(false);
       
       // ✅ SINGLE SAVE POINT - Only save when conversation is complete
       if (currentChatId && responseText && !fromVoice) {
@@ -3279,17 +3255,13 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
             }
             
             // Hide loading indicators
-            setIsSearching(false);
-            setLoading(false);
+                  setLoading(false);
             setStreaming(false);
             
             console.log('🎯 [DOCS] Stream finished, word queue has', wordQueueDocs.length, 'words');
           }
         },
-        (searchMsg) => {
-          setIsSearching(true);
-          setTimeout(() => setIsSearching(false), 3000);
-        },
+        null, // No search callback needed
         filteredActiveDocs.map(doc => {
           if (doc.type === 'gemini-file') {
             return { geminiFileUri: doc.uri, name: doc.name };
@@ -3657,7 +3629,7 @@ const virtuosoComponents = React.useMemo(() => ({
               //   }];
               // }
               return filtered;
-            }, [messages, loading, streaming, isSearching, uiLanguage])}
+            }, [messages, loading, streaming, uiLanguage])}
             itemContent={useCallback((index, msg) => (
               <MessageItem
                 msg={msg}
