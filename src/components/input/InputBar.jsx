@@ -776,17 +776,26 @@ const InputBar = ({
               className="omnia-chat-input"
               ref={textareaRef}
               value={localInput}
+              inputMode={isMobile ? "none" : "text"}
+              readOnly={isMobile}
               onChange={(e) => {
                 setLocalInput(e.target.value);
                 autoResize(e.target);
               }}
+              onFocus={(e) => {
+                if (isMobile) {
+                  setShowTestKeyboard(true);
+                } else {
+                  handleTextareaFocus(e);
+                }
+              }}
               onClick={(e) => {
-                // iOS PWA fix - ensure focus on click
-                if (isMobile && window.navigator.standalone) {
+                if (isMobile) {
+                  setShowTestKeyboard(true);
+                } else if (window.navigator.standalone) {
                   e.target.focus();
                 }
               }}
-              onFocus={handleTextareaFocus}
               onBlur={handleTextareaBlur}
               onKeyDown={handleKeyDown}
               placeholder={isRecording ? getListeningPlaceholder() : (isLoading ? t('omniaPreparingResponse') : t('chatPlaceholder'))}
@@ -951,23 +960,8 @@ const InputBar = ({
         </div>
       </div>
 
-      {/* TEST KEYBOARD TOGGLE */}
-      <div style={{ position: 'fixed', top: '100px', right: '20px', zIndex: 9999 }}>
-        <button
-          onClick={() => setShowTestKeyboard(!showTestKeyboard)}
-          style={{
-            padding: '10px',
-            background: 'red',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px'
-          }}
-        >
-          {showTestKeyboard ? 'Hide' : 'Show'} Test Keyboard
-        </button>
-      </div>
 
-      {/* TEST KEYBOARD */}
+      {/* OMNIA KEYBOARD */}
       {showTestKeyboard && (
         <div style={{
           position: 'fixed',
@@ -978,9 +972,39 @@ const InputBar = ({
           background: '#000',
           padding: '10px'
         }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px',
+            padding: '0 10px'
+          }}>
+            <span style={{ color: 'white', fontSize: '14px' }}>Omnia Keyboard</span>
+            <button
+              onClick={() => setShowTestKeyboard(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                fontSize: '18px',
+                cursor: 'pointer'
+              }}
+            >
+              ✕
+            </button>
+          </div>
           <Keyboard
             onChange={input => setLocalInput(input)}
-            onKeyPress={button => console.log('Button pressed', button)}
+            onKeyPress={button => {
+              if (button === "{enter}") {
+                setShowTestKeyboard(false);
+                // Trigger send message if not empty
+                if (localInput.trim()) {
+                  // You might want to call send handler here
+                }
+              }
+              console.log('Button pressed', button);
+            }}
           />
         </div>
       )}
