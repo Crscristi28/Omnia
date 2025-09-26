@@ -113,7 +113,7 @@ function AppContent() {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
     // 🍎 PWA Fix - Force body background-color directly (bypass CSS variables)
-    document.body.style.backgroundColor = isDark ? '#000000' : '#0066cc';
+    document.body.style.backgroundColor = isDark ? '#000000' : '#0055aa';
   }, [isDark]);
 
   // 📊 BASIC STATE (UNCHANGED)
