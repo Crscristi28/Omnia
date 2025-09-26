@@ -12,8 +12,8 @@ const isMobile = window.innerWidth <= 768;
 export const messageContainerBaseStyle = {
   display: 'flex',
   paddingBottom: '1.5rem',
-  paddingLeft: window.innerWidth > 1024 ? '100px' : '0.5rem',
-  paddingRight: window.innerWidth > 1024 ? '100px' : '0.5rem'
+  paddingLeft: window.innerWidth > 1024 ? '100px' : '0.75rem',
+  paddingRight: window.innerWidth > 1024 ? '100px' : '0.75rem'
 };
 
 export const userMessageContainerStyle = {
