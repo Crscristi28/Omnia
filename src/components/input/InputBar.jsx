@@ -2,7 +2,7 @@
 // ✅ Textarea nahoře, 4 kulatá tlačítka dole
 // ✅ Žádné experimenty, čistý jednoduchý kód
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Search, Mic, Send, AudioWaveform, FileText, Camera, Image, Palette, Sparkles } from 'lucide-react';
 import { getTranslation } from '../../utils/text';
 import { uploadToSupabaseStorage, deleteFromSupabaseStorage } from '../../services/storage/supabaseStorage.js';
@@ -11,6 +11,213 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 // Using Lucide React icons instead of custom SVG components
 
+// CUSTOM iOS KEYBOARD
+const CustomKeyboard = ({ isOpen, onKeyPress, onClose, isDark }) => {
+  if (!isOpen) return null;
+
+  const keys = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+  ];
+
+  const suggestions = ['I', 'The', "I'm"];
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: isDark ? '#1c1c1e' : '#f6f6f6',
+      borderTopLeftRadius: '10px',
+      borderTopRightRadius: '10px',
+      padding: '8px',
+      zIndex: 1000,
+    }}>
+
+      {/* Text Suggestions */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-around',
+        padding: '8px 16px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        marginBottom: '8px'
+      }}>
+        {suggestions.map((suggestion, idx) => (
+          <button
+            key={idx}
+            onClick={() => onKeyPress(suggestion + ' ')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: isDark ? '#8e8e93' : '#666',
+              fontSize: '16px',
+              cursor: 'pointer',
+              padding: '4px 8px'
+            }}
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+
+      {/* Keyboard Keys */}
+      {keys.map((row, rowIdx) => (
+        <div key={rowIdx} style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '6px',
+          marginBottom: '8px',
+          paddingLeft: rowIdx === 1 ? '15px' : rowIdx === 2 ? '30px' : '0',
+          paddingRight: rowIdx === 1 ? '15px' : rowIdx === 2 ? '30px' : '0'
+        }}>
+          {rowIdx === 2 && (
+            <button
+              onClick={() => onKeyPress('SHIFT')}
+              style={{
+                backgroundColor: isDark ? '#3a3a3c' : '#acb4bc',
+                border: 'none',
+                borderRadius: '6px',
+                color: isDark ? 'white' : 'black',
+                fontSize: '16px',
+                fontWeight: '400',
+                width: '42px',
+                height: '42px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ⇧
+            </button>
+          )}
+
+          {row.map((key) => (
+            <button
+              key={key}
+              onClick={() => onKeyPress(key)}
+              style={{
+                backgroundColor: isDark ? '#3a3a3c' : '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                color: isDark ? 'white' : 'black',
+                fontSize: '22px',
+                fontWeight: '400',
+                width: '32px',
+                height: '42px',
+                cursor: 'pointer',
+                boxShadow: isDark ? 'none' : '0 1px 0 #b5b5b5'
+              }}
+            >
+              {key}
+            </button>
+          ))}
+
+          {rowIdx === 2 && (
+            <button
+              onClick={() => onKeyPress('BACKSPACE')}
+              style={{
+                backgroundColor: isDark ? '#3a3a3c' : '#acb4bc',
+                border: 'none',
+                borderRadius: '6px',
+                color: isDark ? 'white' : 'black',
+                fontSize: '16px',
+                fontWeight: '400',
+                width: '42px',
+                height: '42px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ⌫
+            </button>
+          )}
+        </div>
+      ))}
+
+      {/* Bottom Row */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: '6px',
+        alignItems: 'center'
+      }}>
+        <button
+          onClick={() => onKeyPress('NUMBER')}
+          style={{
+            backgroundColor: isDark ? '#3a3a3c' : '#acb4bc',
+            border: 'none',
+            borderRadius: '6px',
+            color: isDark ? 'white' : 'black',
+            fontSize: '16px',
+            fontWeight: '400',
+            width: '42px',
+            height: '42px',
+            cursor: 'pointer'
+          }}
+        >
+          123
+        </button>
+
+        <button
+          onClick={() => onKeyPress('EMOJI')}
+          style={{
+            backgroundColor: isDark ? '#3a3a3c' : '#acb4bc',
+            border: 'none',
+            borderRadius: '6px',
+            color: isDark ? 'white' : 'black',
+            fontSize: '16px',
+            fontWeight: '400',
+            width: '42px',
+            height: '42px',
+            cursor: 'pointer'
+          }}
+        >
+          😀
+        </button>
+
+        <button
+          onClick={() => onKeyPress(' ')}
+          style={{
+            backgroundColor: isDark ? '#ffffff' : '#ffffff',
+            border: 'none',
+            borderRadius: '6px',
+            color: isDark ? 'black' : 'black',
+            fontSize: '16px',
+            fontWeight: '400',
+            flex: 1,
+            height: '42px',
+            cursor: 'pointer',
+            boxShadow: isDark ? 'none' : '0 1px 0 #b5b5b5'
+          }}
+        >
+          space
+        </button>
+
+        <button
+          onClick={() => onKeyPress('RETURN')}
+          style={{
+            backgroundColor: isDark ? '#3a3a3c' : '#acb4bc',
+            border: 'none',
+            borderRadius: '6px',
+            color: isDark ? 'white' : 'black',
+            fontSize: '16px',
+            fontWeight: '400',
+            width: '72px',
+            height: '42px',
+            cursor: 'pointer'
+          }}
+        >
+          return
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // PLUS MENU
 const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUpload, uiLanguage = 'cs' }) => {
@@ -177,6 +384,7 @@ const InputBar = ({
   const [localInput, setLocalInput] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [customKeyboardOpen, setCustomKeyboardOpen] = useState(false);
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
@@ -262,10 +470,24 @@ const InputBar = ({
     }
   }, [localInput]);
 
+  // Custom keyboard handler
+  const handleKeyPress = (key) => {
+    if (key === 'BACKSPACE') {
+      setLocalInput(prev => prev.slice(0, -1));
+    } else if (key === 'RETURN') {
+      handleSendMessage();
+      setCustomKeyboardOpen(false);
+    } else if (key === 'SHIFT' || key === 'NUMBER' || key === 'EMOJI') {
+      // Handle special keys later
+    } else {
+      setLocalInput(prev => prev + key);
+    }
+  };
+
   // Simple keyboard detection - no performance-impacting resize listeners
   const handleTextareaFocus = () => {
     if (isMobile) {
-      setIsKeyboardOpen(true);
+      setCustomKeyboardOpen(true);
     }
   };
 
@@ -554,12 +776,12 @@ const InputBar = ({
         bottom: 0,
         left: 0,
         right: 0,
-        transform: isMobile && isKeyboardOpen 
-          ? 'translateZ(0) translateY(0)' 
+        transform: isMobile && (isKeyboardOpen || customKeyboardOpen)
+          ? 'translateZ(0) translateY(-260px)'
           : 'translateZ(0)',
         padding: isMobile ? '0.5rem' : '1.5rem',
-        paddingBottom: isMobile 
-          ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
+        paddingBottom: isMobile
+          ? ((isKeyboardOpen || customKeyboardOpen) ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
           : '1.5rem',
         zIndex: 10,
       }}>
@@ -773,6 +995,7 @@ const InputBar = ({
               className="omnia-chat-input"
               ref={textareaRef}
               value={localInput}
+              inputMode={isMobile ? "none" : "text"}
               onChange={(e) => {
                 setLocalInput(e.target.value);
                 autoResize(e.target);
@@ -948,6 +1171,13 @@ const InputBar = ({
         </div>
       </div>
 
+      {/* Custom iOS Keyboard */}
+      <CustomKeyboard
+        isOpen={customKeyboardOpen}
+        onKeyPress={handleKeyPress}
+        onClose={() => setCustomKeyboardOpen(false)}
+        isDark={isDark}
+      />
 
     </>
   );
