@@ -306,6 +306,7 @@ export const messagesContainerStyle = {
   maxWidth: window.innerWidth > 1024 ? '100%' : '1000px',
   margin: '0 auto',
   width: '100%',
+  padding: window.innerWidth > 1024 ? '0 100px' : '0',
   position: 'relative',
   zIndex: 1
 };
