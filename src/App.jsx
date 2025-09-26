@@ -1336,7 +1336,8 @@ function AppContent() {
               }
             },
             null, // No search callback needed
-            null, // Let Gemini handle language detection
+            null, // No image generation callback needed (handled internally)
+            null, // No PDF generation callback needed
             [], // documents
             true // imageMode = true
           );
@@ -1945,6 +1946,17 @@ function AppContent() {
               prev.map(msg =>
                 msg.id === botMessageId && msg.isStreaming
                   ? { ...msg, text: getShimmerHTML("Being creative...") }
+                  : msg
+              )
+            );
+          },
+          () => {
+            console.log('📄 [DEBUG] PDF generation callback triggered! Updating shimmer to "Generating document..."');
+            // Update shimmer text to "Generating document..."
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === botMessageId && msg.isStreaming
+                  ? { ...msg, text: getShimmerHTML("Generating document...") }
                   : msg
               )
             );
@@ -3228,6 +3240,8 @@ const handleSendWithDocuments = useCallback(async (text, documents) => {
           }
         },
         null, // No search callback needed
+        null, // No image generation callback needed
+        null, // No PDF generation callback needed
         filteredActiveDocs.map(doc => {
           if (doc.type === 'gemini-file') {
             return { geminiFileUri: doc.uri, name: doc.name };

@@ -5,7 +5,7 @@
 import { profileService } from '../profile/profileService.js';
 
 const geminiService = {
-  async sendMessage(messages, onStreamUpdate = null, onSearchStart = null, onImageGenerationStart = null, documents = [], imageMode = false, pdfMode = false) {
+  async sendMessage(messages, onStreamUpdate = null, onSearchStart = null, onImageGenerationStart = null, onPdfGenerationStart = null, documents = [], imageMode = false, pdfMode = false) {
     try {
       // Generate unique request ID for concurrent user isolation
       const requestId = Date.now() + '-' + Math.random().toString(36).substring(2, 11);
@@ -80,6 +80,12 @@ const geminiService = {
                   console.log('🎨 Image generation start detected for request:', requestId);
                   if (onImageGenerationStart) {
                     onImageGenerationStart();
+                  }
+                }
+                else if (data.type === 'pdf_generation_start') {
+                  console.log('📄 PDF generation start detected for request:', requestId);
+                  if (onPdfGenerationStart) {
+                    onPdfGenerationStart();
                   }
                 }
                 else if (data.type === 'image_generated') {

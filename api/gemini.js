@@ -478,6 +478,14 @@ export default async function handler(req, res) {
                 }
               } else if (part.functionCall.name === 'generate_pdf') {
                 try {
+                  // Send PDF generation start event to frontend
+                  res.write(JSON.stringify({
+                    requestId,
+                    type: 'pdf_generation_start',
+                    message: 'Starting PDF generation...'
+                  }) + '\n');
+                  if (typeof res.flush === 'function') { res.flush(); }
+
                   console.log('📄 [DEBUG] Calling PDF generation API...');
 
                   const { title, content, documentType = 'document' } = part.functionCall.args;
