@@ -1,7 +1,9 @@
 // src/components/input/GlassInputContainer.jsx
 import React from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const GlassInputContainer = ({ children }) => {
+  const { isDark } = useTheme();
   const isMobile = window.innerWidth <= 768;
   const isDesktop = window.innerWidth > 1024;
 
