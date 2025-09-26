@@ -1894,6 +1894,7 @@ function AppContent() {
             }
           },
           () => {
+            console.log('🔍 [DEBUG] Search callback triggered! Updating shimmer to "Searching..."');
             setIsSearching(true);
             // Update shimmer text to "Searching..."
             setMessages(prev =>
@@ -1906,6 +1907,7 @@ function AppContent() {
             setTimeout(() => setIsSearching(false), 3000);
           },
           () => {
+            console.log('🎨 [DEBUG] Image generation callback triggered! Updating shimmer to "Being creative..."');
             // Update shimmer text to "Being creative..."
             setMessages(prev =>
               prev.map(msg =>
