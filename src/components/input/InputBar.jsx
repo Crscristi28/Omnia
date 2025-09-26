@@ -265,6 +265,20 @@ const InputBar = ({
     }
   }, [localInput]);
 
+  // Visual Viewport API keyboard detection (fallback for iOS/Android)
+  React.useEffect(() => {
+    if (window.visualViewport && needsVirtualKeyboard) {
+      const handleViewportChange = () => {
+        const keyboardHeight = window.innerHeight - window.visualViewport.height;
+        const isKeyboardVisible = keyboardHeight > 150; // threshold pro keyboard detection
+        setIsKeyboardOpen(isKeyboardVisible);
+      };
+
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      return () => window.visualViewport.removeEventListener('resize', handleViewportChange);
+    }
+  }, [needsVirtualKeyboard]);
+
   // Simple keyboard detection - no performance-impacting resize listeners
   const handleTextareaFocus = () => {
     if (needsVirtualKeyboard) {
