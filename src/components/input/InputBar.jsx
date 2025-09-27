@@ -182,6 +182,7 @@ const InputBar = ({
 
   // Helper function to update keyboard state both locally and in parent
   const updateKeyboardState = (isOpen) => {
+    console.log(`⌨️ [KEYBOARD] State change: ${isOpen ? 'OPEN' : 'CLOSED'}, PWA: ${window.navigator.standalone}, method: ${isOpen ? 'detected' : 'hidden'}`);
     setIsKeyboardOpen(isOpen);
     if (onKeyboardChange) {
       onKeyboardChange(isOpen);
@@ -193,6 +194,8 @@ const InputBar = ({
   const hasTouchScreen = navigator.maxTouchPoints > 0;
   const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
   const needsVirtualKeyboard = hasTouchScreen && isCoarsePointer;
+  const isPWA = window.navigator.standalone === true;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const t = getTranslation(uiLanguage);
   
   // Auto-resize textarea
@@ -288,25 +291,32 @@ const InputBar = ({
   // Visual Viewport API keyboard detection (fallback for iOS/Android)
   React.useEffect(() => {
     if (window.visualViewport && needsVirtualKeyboard) {
+      console.log(`📱 [VIEWPORT] Setting up Visual Viewport API, PWA: ${isPWA}, iOS: ${isIOS}`);
+
       const handleViewportChange = () => {
         const keyboardHeight = window.innerHeight - window.visualViewport.height;
         const isKeyboardVisible = keyboardHeight > 150; // threshold pro keyboard detection
+        console.log(`📱 [VIEWPORT] Height change - Window: ${window.innerHeight}, Viewport: ${window.visualViewport.height}, Keyboard: ${keyboardHeight}px, Visible: ${isKeyboardVisible}`);
         updateKeyboardState(isKeyboardVisible);
       };
 
       window.visualViewport.addEventListener('resize', handleViewportChange);
       return () => window.visualViewport.removeEventListener('resize', handleViewportChange);
+    } else {
+      console.log(`📱 [VIEWPORT] Visual Viewport API not available or not needed. Available: ${!!window.visualViewport}, needsVK: ${needsVirtualKeyboard}`);
     }
-  }, [needsVirtualKeyboard]);
+  }, [needsVirtualKeyboard, isPWA, isIOS]);
 
   // Simple keyboard detection - no performance-impacting resize listeners
   const handleTextareaFocus = () => {
+    console.log(`🎯 [FOCUS] Textarea focused, PWA: ${isPWA}, needsVK: ${needsVirtualKeyboard}`);
     if (needsVirtualKeyboard) {
       updateKeyboardState(true);
     }
   };
 
   const handleTextareaBlur = (e) => {
+    console.log(`👋 [BLUR] Textarea blurred, PWA: ${isPWA}, needsVK: ${needsVirtualKeyboard}`);
     if (needsVirtualKeyboard) {
       // Don't close keyboard if clicking on send button
       // Check if the blur is moving to a button within InputBar
@@ -316,7 +326,8 @@ const InputBar = ({
           activeElement.tagName === 'BUTTON' ||
           activeElement.closest('.input-bar-container')
         );
-        
+
+        console.log(`👋 [BLUR] Checking focus target: ${activeElement?.tagName}, isButton: ${isClickingButton}`);
         if (!isClickingButton) {
           updateKeyboardState(false);
         }
