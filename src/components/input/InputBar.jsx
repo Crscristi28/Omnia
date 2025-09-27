@@ -153,7 +153,7 @@ const PlusMenu = ({ isOpen, onClose, buttonRef, onImageGenerate, onDocumentUploa
   );
 };
 
-const InputBar = ({ 
+const InputBar = ({
   input,
   setInput,
   onSend,
@@ -168,6 +168,7 @@ const InputBar = ({
   isImageMode = false,
   uiLanguage = 'cs',
   onPreviewImage,
+  onKeyboardChange,
   audioLevel = 0
 }) => {
   // THEME HOOK
@@ -178,6 +179,14 @@ const InputBar = ({
   const [pendingDocuments, setPendingDocuments] = useState([]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
+
+  // Helper function to update keyboard state both locally and in parent
+  const updateKeyboardState = (isOpen) => {
+    setIsKeyboardOpen(isOpen);
+    if (onKeyboardChange) {
+      onKeyboardChange(isOpen);
+    }
+  };
   const plusButtonRef = useRef(null);
   const textareaRef = useRef(null);
   // Modern feature detection (2025) - podle Omnia doporučení
@@ -282,7 +291,7 @@ const InputBar = ({
       const handleViewportChange = () => {
         const keyboardHeight = window.innerHeight - window.visualViewport.height;
         const isKeyboardVisible = keyboardHeight > 150; // threshold pro keyboard detection
-        setIsKeyboardOpen(isKeyboardVisible);
+        updateKeyboardState(isKeyboardVisible);
       };
 
       window.visualViewport.addEventListener('resize', handleViewportChange);
@@ -293,7 +302,7 @@ const InputBar = ({
   // Simple keyboard detection - no performance-impacting resize listeners
   const handleTextareaFocus = () => {
     if (needsVirtualKeyboard) {
-      setIsKeyboardOpen(true);
+      updateKeyboardState(true);
     }
   };
 
@@ -309,7 +318,7 @@ const InputBar = ({
         );
         
         if (!isClickingButton) {
-          setIsKeyboardOpen(false);
+          updateKeyboardState(false);
         }
       }, 100); // Small delay to check where focus went
     }

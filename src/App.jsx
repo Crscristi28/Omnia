@@ -224,6 +224,7 @@ function AppContent() {
   // 🔽 SCROLL TO BOTTOM - Show button when user scrolled up
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [shouldFollowOutput, setShouldFollowOutput] = useState(true); // Follow output when chat opens
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false); // Track keyboard state from InputBar
   
   // Reset followOutput when switching chats or loading new messages
   useEffect(() => {
@@ -3717,7 +3718,7 @@ const virtuosoComponents = React.useMemo(() => ({
       </main>
 
       {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay */}
-      {showScrollToBottom && (
+      {showScrollToBottom && !isKeyboardOpen && (
         <button
           onClick={() => scrollToBottom(virtuosoRef)}
           style={{
@@ -3779,6 +3780,7 @@ const virtuosoComponents = React.useMemo(() => ({
         isImageMode={isImageMode}
         uiLanguage={uiLanguage}
         onPreviewImage={(imageData) => openSingleImageLightbox(imageData.url, imageData.name)}
+        onKeyboardChange={setIsKeyboardOpen}
         audioLevel={audioLevel}
       />
 
