@@ -3705,9 +3705,13 @@ const virtuosoComponents = React.useMemo(() => ({
               />
             ), [openLightbox, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={shouldFollowOutput ? "smooth" : false}
-            atBottomStateChange={useCallback((atBottom) => {
-              setShowScrollToBottom(!atBottom);
-            }, [setShowScrollToBottom])}
+            rangeChanged={useCallback((range) => {
+              // Hide button when user can see the last message
+              if (range && messages.length > 0) {
+                const isLastMessageVisible = range.endIndex >= (messages.length - 1);
+                setShowScrollToBottom(!isLastMessageVisible);
+              }
+            }, [messages.length, setShowScrollToBottom])}
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
