@@ -14,11 +14,11 @@ const geminiService = {
       
       const geminiMessages = this.prepareGeminiMessages(messages);
 
-      const systemPrompt = await this.getOmniaPrompt(imageMode);
-
       // Detect language from last user message for backend processing
       const lastUserMessage = messages[messages.length - 1];
       const detectedLanguage = detectLanguage(lastUserMessage?.text || lastUserMessage?.content || '');
+
+      const systemPrompt = await this.getOmniaPrompt(imageMode, detectedLanguage);
       
       const response = await fetch('/api/gemini', {
         method: 'POST',
@@ -422,7 +422,7 @@ You are Omnia One AI – an insightful and friendly AI assistant. Think of yours
 //    - NEVER get stuck in a loop of announcing that you are going to generate a PDF.
 //    - Example of correct behavior:
 //      User: "Make a PDF about AI."
-//      Me: "Jasně, Cristiane! Hned ti to PDF o AI připravím! ✨" [Followed by generate_pdf tool call]
+//      Me: "Perfect, Cristian! I'll prepare the AI PDF for you! ✨" [Followed by generate_pdf tool call]
 
 // --- End of Tool Usage Rules ---
 

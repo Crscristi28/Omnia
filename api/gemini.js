@@ -127,13 +127,13 @@ export default async function handler(req, res) {
 
 
 
-      // Image content words - all languages
-      'image', 'picture', 'illustration', 'photo', 'artwork', 'drawing', 'painting',
-      'obrázek', 'obrázky', 'ilustrace', 'fotka', 'kresba', 'malba',
-      'imagine', 'poză', 'ilustrație', 'desen', 'pictură', 'grafică',
-      'bild', 'foto', 'illustration', 'zeichnung', 'gemälde', 'grafik',
-      'изображение', 'картинка', 'фото', 'рисунок', 'иллюстрация',
-      'obraz', 'zdjęcie', 'ilustracja', 'rysunek', 'malarstwo',
+      // Image content words - all languages (singular + plural)
+      'image', 'images', 'picture', 'pictures', 'illustration', 'illustrations', 'photo', 'photos', 'artwork', 'drawing', 'drawings', 'painting', 'paintings',
+      'obrázek', 'obrázky', 'ilustrace', 'fotka', 'fotky', 'kresba', 'kresby', 'malba', 'malby',
+      'imagine', 'imagini', 'poză', 'poze', 'ilustrație', 'ilustrații', 'desen', 'desene', 'pictură', 'picturi', 'grafică', 'grafici',
+      'bild', 'bilder', 'foto', 'fotos', 'illustration', 'illustrationen', 'zeichnung', 'zeichnungen', 'gemälde', 'grafik', 'grafiken',
+      'изображение', 'изображения', 'картинка', 'картинки', 'фото', 'фотографии', 'рисунок', 'рисунки', 'иллюстрация', 'иллюстрации',
+      'obraz', 'obrazy', 'zdjęcie', 'zdjęcia', 'ilustracja', 'ilustracje', 'rysunek', 'rysunki', 'malarstwo',
 
       // Visual objects
       'logo', 'icon', 'banner', 'poster', 'wallpaper'
