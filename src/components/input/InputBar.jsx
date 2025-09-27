@@ -815,6 +815,7 @@ const InputBar = ({
               value={localInput}
               onChange={(e) => {
                 setLocalInput(e.target.value);
+                setInput(e.target.value); // Sync with App.jsx
                 autoResize(e.target);
               }}
               onClick={(e) => {
