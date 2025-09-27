@@ -3563,7 +3563,7 @@ const virtuosoComponents = React.useMemo(() => ({
             isOpen={true} // Always open on tablet/desktop
             onClose={handleSidebarClose}
             onNewChatKeepSidebar={handleNewChatKeepSidebar}
-            chatHistory={chatHistory}
+            chatHistory={chatHistories}
             onSelectChat={handleSelectChat}
             currentChatId={currentChatId}
             uiLanguage={uiLanguage}
