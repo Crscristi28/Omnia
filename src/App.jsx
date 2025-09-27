@@ -3705,35 +3705,13 @@ const virtuosoComponents = React.useMemo(() => ({
               />
             ), [openLightbox, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={shouldFollowOutput ? "smooth" : false}
-            atBottomStateChange={useCallback((atBottom) => {
-              // Custom logic: consider "near last message" as bottom, ignore 450px footer
-              if (virtuosoRef.current) {
-                try {
-                  const element = virtuosoRef.current.getScrollElement();
-                  if (element) {
-                    const scrollTop = element.scrollTop;
-                    const scrollHeight = element.scrollHeight;
-                    const clientHeight = element.clientHeight;
-
-                    // Calculate distance from true bottom
-                    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-
-                    // Consider "bottom" when within footer area (450px from bottom)
-                    // This matches where scroll button scrolls to (last message)
-                    const FOOTER_HEIGHT = 450;
-                    const isNearLastMessage = distanceFromBottom <= FOOTER_HEIGHT;
-
-                    setShowScrollToBottom(!isNearLastMessage);
-                    return;
-                  }
-                } catch (error) {
-                  console.log('📊 [SCROLL-DETECTION] Error in custom logic, falling back:', error);
-                }
+            rangeChanged={useCallback((range) => {
+              // Simple: if last message is visible, hide button
+              if (range && messages.length > 0) {
+                const isLastMessageVisible = range.endIndex >= (messages.length - 1);
+                setShowScrollToBottom(!isLastMessageVisible);
               }
-
-              // Fallback to default Virtuoso detection
-              setShowScrollToBottom(!atBottom);
-            }, [setShowScrollToBottom])}
+            }, [messages.length, setShowScrollToBottom])}
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
