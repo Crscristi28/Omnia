@@ -270,7 +270,7 @@ function AppContent() {
   const mainContentRef = useRef(null);
   const virtuosoRef = useRef(null);
   
-  const isMobile = window.innerWidth <= 768;
+  const isMobile = window.innerWidth <= 1200;
   const t = getTranslation(uiLanguage);
 
   // 💾 SAVE SELECTED MODEL TO LOCALSTORAGE

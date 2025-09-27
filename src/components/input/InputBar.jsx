@@ -598,8 +598,8 @@ const InputBar = ({
           ? 'translateZ(0) translateY(0)'
           : 'translateZ(0)',
         padding: needsVirtualKeyboard ? '0.5rem' : '1.5rem',
-        paddingBottom: needsVirtualKeyboard 
-          ? (isKeyboardOpen ? '0.5rem' : 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)')
+        paddingBottom: needsVirtualKeyboard
+          ? (isKeyboardOpen ? '0.5rem' : (window.innerWidth <= 768 ? 'calc(env(safe-area-inset-bottom, 0.5rem) + 0.5rem)' : '0.5rem'))
           : '1.5rem',
         zIndex: 10,
       }}>
