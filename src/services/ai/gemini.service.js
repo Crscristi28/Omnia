@@ -3,6 +3,7 @@
 // 🔥 Google native search grounding for current data
 
 import { profileService } from '../profile/profileService.js';
+import detectLanguage from '../../utils/text/smartLanguageDetection.js';
 
 const geminiService = {
   async sendMessage(messages, onStreamUpdate = null, onSearchStart = null, onImageGenerationStart = null, onPdfGenerationStart = null, documents = [], imageMode = false, pdfMode = false) {
@@ -12,8 +13,12 @@ const geminiService = {
       console.log('🤖 Omnia Gemini 2.5 Flash - Google Grounding [ID:', requestId, ']');
       
       const geminiMessages = this.prepareGeminiMessages(messages);
-      
+
       const systemPrompt = await this.getOmniaPrompt(imageMode);
+
+      // Detect language from last user message for backend processing
+      const lastUserMessage = messages[messages.length - 1];
+      const detectedLanguage = detectLanguage(lastUserMessage?.text || lastUserMessage?.content || '');
       
       const response = await fetch('/api/gemini', {
         method: 'POST',
@@ -27,7 +32,8 @@ const geminiService = {
           max_tokens: 8000,
           documents: documents,
           imageMode: imageMode,
-          pdfMode: pdfMode
+          pdfMode: pdfMode,
+          language: detectedLanguage
         })
       });
 
