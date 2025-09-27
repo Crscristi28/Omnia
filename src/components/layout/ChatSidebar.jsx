@@ -8,6 +8,7 @@ import { getTranslation } from '../../utils/text/translations';
 import chatDB from '../../services/storage/chatDB';
 import UserSettingsModal from '../modals/UserSettingsModal';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const ChatSidebar = ({ 
   isOpen, 
@@ -23,9 +24,12 @@ const ChatSidebar = ({
   onSignOut = () => {}, // Sign out handler
   onResetPassword = () => {} // Reset password handler
 }) => {
-  const isMobile = window.innerWidth <= 768;
+  const { deviceType, isMobile, isTablet, isDesktop, isTabletOrDesktop } = useResponsive();
   const t = getTranslation(uiLanguage);
   const { theme, isDark } = useTheme();
+
+  // Permanent sidebar on tablet landscape and desktop
+  const isPermanent = isTabletOrDesktop;
   
   // Long press state
   const [longPressTimer, setLongPressTimer] = useState(null);
@@ -152,36 +156,40 @@ const ChatSidebar = ({
     // Whether confirmed or cancelled, sidebar stays open
   };
 
-  if (!isOpen) return null;
+  // For permanent sidebar (tablet/desktop), always show
+  // For mobile, show only when isOpen
+  if (!isPermanent && !isOpen) return null;
 
   return (
     <>
-      {/* 🌫️ OVERLAY */}
-      <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
-          zIndex: 1000,
-          backdropFilter: 'blur(2px)',
-          opacity: isOpen ? 1 : 0,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-        }}
-        onClick={handleOverlayClick}
-      />
+      {/* 🌫️ OVERLAY - Only for mobile */}
+      {!isPermanent && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 1000,
+            backdropFilter: 'blur(2px)',
+            opacity: isOpen ? 1 : 0,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          onClick={handleOverlayClick}
+        />
+      )}
       
       {/* 📋 SIDEBAR */}
       <div
         style={{
-          position: 'fixed',
+          position: isPermanent ? 'relative' : 'fixed',
           top: 0,
           left: 0,
           bottom: 0,
-          width: isMobile ? '85%' : '320px',
-          maxWidth: isMobile ? '300px' : '320px',
+          width: isMobile ? '85%' : isTablet ? '280px' : '320px',
+          maxWidth: isMobile ? '300px' : isTablet ? '280px' : '320px',
           background: isDark
             ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(20, 20, 20, 0.95))' // Dark mode: black gradient
             : 'linear-gradient(135deg, rgba(0, 4, 40, 0.95), rgba(0, 78, 146, 0.90))', // Light mode: blue gradient
@@ -189,12 +197,13 @@ const ChatSidebar = ({
           WebkitBackdropFilter: 'blur(20px)',
           border: 'none',
           borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-          zIndex: 1001,
-          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          zIndex: isPermanent ? 100 : 1001,
+          transform: isPermanent ? 'none' : (isOpen ? 'translateX(0)' : 'translateX(-100%)'),
+          transition: isPermanent ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          height: isPermanent ? '100vh' : 'auto'
         }}
       >
         

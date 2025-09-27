@@ -67,6 +67,7 @@ import ResetPasswordModal from './components/auth/ResetPasswordModal.jsx'; // �
 
 // 📶 HOOKS - For offline detection
 import { useOnlineStatus } from './hooks/useOnlineStatus';
+import { useResponsive } from './hooks/useResponsive';
 
 // 🎨 THEME CONTEXT
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -269,8 +270,9 @@ function AppContent() {
   const sttRecorderRef = useRef(null);
   const mainContentRef = useRef(null);
   const virtuosoRef = useRef(null);
-  
-  const isMobile = window.innerWidth <= 768;
+
+  // 🎯 3-TIER RESPONSIVE SYSTEM
+  const { deviceType, isMobile, isTablet, isDesktop, isTabletOrDesktop } = useResponsive();
   const t = getTranslation(uiLanguage);
 
   // 💾 SAVE SELECTED MODEL TO LOCALSTORAGE
@@ -3548,8 +3550,34 @@ const virtuosoComponents = React.useMemo(() => ({
         uiLanguage={uiLanguage}
       />
 
-      {/* 🎨 MAIN APP - VŽDY renderovaná, jen možná překrytá modalem */}
+      {/* 🎨 APP LAYOUT WRAPPER - sidebar + main content */}
       <div style={{
+        display: 'flex',
+        width: '100%',
+        height: '100vh',
+        position: 'relative'
+      }}>
+        {/* PERMANENT SIDEBAR for tablet/desktop */}
+        {isTabletOrDesktop && (
+          <ChatSidebar
+            isOpen={true} // Always open on tablet/desktop
+            onClose={handleSidebarClose}
+            onNewChatKeepSidebar={handleNewChatKeepSidebar}
+            chatHistory={chatHistory}
+            onSelectChat={handleSelectChat}
+            currentChatId={currentChatId}
+            uiLanguage={uiLanguage}
+            setUILanguage={setUILanguage}
+            onChatDeleted={handleChatDeleted}
+            user={user}
+            onSignOut={handleSignOut}
+            onResetPassword={openResetPasswordModal}
+          />
+        )}
+
+        {/* MAIN CONTENT */}
+        <div style={{
+          flex: 1,
           ...mainContainerStyle,
           background: isListening
             ? (isDark
@@ -3558,30 +3586,31 @@ const virtuosoComponents = React.useMemo(() => ({
             : (isDark
               ? '#000000' // Dark mode normal - pure black
               : 'linear-gradient(135deg, #000428, #004e92, #009ffd)'), // Light mode normal
-          paddingTop: isMobile ? '55px' : '70px',
+          paddingTop: isMobile ? '55px' : isTablet ? '65px' : '70px',
           paddingBottom: '120px', // Prostor pro InputBar - sníženo z 140px
         }}>
           
           {/* 📌 FIXED TOP BUTTONS - NOTCH/DYNAMIC ISLAND AWARE */}
       <div style={{
         ...topHeaderStyle,
-        height: isMobile ? '45px' : '50px',
-        padding: isMobile ? '0 1rem' : '0 2rem',
+        height: isMobile ? '45px' : isTablet ? '48px' : '50px',
+        padding: isMobile ? '0 1rem' : isTablet ? '0 1.5rem' : '0 2rem',
         paddingTop: isMobile ? 'max(0.5rem, env(safe-area-inset-top))' : '0',
-        minHeight: isMobile ? 'calc(45px + env(safe-area-inset-top))' : '50px',
+        minHeight: isMobile ? 'calc(45px + env(safe-area-inset-top))' : isTablet ? '48px' : '50px',
       }}>
         
-        {/* HAMBURGER BUTTON - vlevo */}
-        <button
-          onClick={handleSidebarOpen}
-          disabled={loading || streaming}
-          style={{
+        {/* HAMBURGER BUTTON - vlevo (only mobile) */}
+        {isMobile && (
+          <button
+            onClick={handleSidebarOpen}
+            disabled={loading || streaming}
+            style={{
             ...hamburgerButtonStyle,
-            width: isMobile ? 40 : 44,
-            height: isMobile ? 40 : 44,
+            width: isMobile ? 40 : isTablet ? 42 : 44,
+            height: isMobile ? 40 : isTablet ? 42 : 44,
             cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
             opacity: (loading || streaming) ? 0.5 : 1,
-            fontSize: isMobile ? '20px' : '24px',
+            fontSize: isMobile ? '20px' : isTablet ? '22px' : '24px',
           }}
           onMouseEnter={(e) => {
             if (!loading && !streaming) {
@@ -3595,8 +3624,9 @@ const virtuosoComponents = React.useMemo(() => ({
           }}
           title={t('chatHistory')}
         >
-          <Menu size={isMobile ? 20 : 24} strokeWidth={2} />
-        </button>
+            <Menu size={isMobile ? 20 : isTablet ? 22 : 24} strokeWidth={2} />
+          </button>
+        )}
 
         {/* Prázdné místo uprostřed - model selector odstraněn */}
         <div style={{ flex: 1 }}></div>
@@ -3607,11 +3637,11 @@ const virtuosoComponents = React.useMemo(() => ({
           disabled={loading || streaming}
           style={{
             ...newChatButtonStyle,
-            width: isMobile ? 40 : 44,
-            height: isMobile ? 40 : 44,
+            width: isMobile ? 40 : isTablet ? 42 : 44,
+            height: isMobile ? 40 : isTablet ? 42 : 44,
             cursor: (loading || streaming) ? 'not-allowed' : 'pointer',
             opacity: (loading || streaming) ? 0.5 : 1,
-            fontSize: isMobile ? '20px' : '24px',
+            fontSize: isMobile ? '20px' : isTablet ? '22px' : '24px',
           }}
           onMouseEnter={(e) => {
             if (!loading && !streaming) {
@@ -3625,7 +3655,7 @@ const virtuosoComponents = React.useMemo(() => ({
           }}
           title={t('newChatButton')}
         >
-          <MessageCircle size={isMobile ? 20 : 24} strokeWidth={2} />
+          <MessageCircle size={isMobile ? 20 : isTablet ? 22 : 24} strokeWidth={2} />
         </button>
       </div>
 
@@ -3640,7 +3670,7 @@ const virtuosoComponents = React.useMemo(() => ({
           {messages.length === 0 && (
             <div style={{
               ...welcomeScreenStyle,
-              gap: isMobile ? '1.5rem' : '2rem'
+              gap: isMobile ? '1.5rem' : isTablet ? '1.8rem' : '2rem'
             }}>
               
               
@@ -3648,14 +3678,14 @@ const virtuosoComponents = React.useMemo(() => ({
               <div style={welcomeTextContainerStyle}>
                 <h1 className="text-shadow-lg shadow-white/30 drop-shadow-lg" style={{
                   ...welcomeTitleStyle,
-                  fontSize: isMobile ? '2rem' : '2.5rem',
+                  fontSize: isMobile ? '2rem' : isTablet ? '2.2rem' : '2.5rem',
                 }}>
                   {getTimeBasedGreeting(uiLanguage)}
                 </h1>
                 
                 <p className="text-shadow shadow-white/20 drop-shadow" style={{
                   ...welcomeSubtitleStyle,
-                  fontSize: isMobile ? '1rem' : '1.2rem',
+                  fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                 }}>
                   {welcomeTexts[uiLanguage]?.subtitle || welcomeTexts.cs.subtitle}
                 </p>
@@ -3726,8 +3756,8 @@ const virtuosoComponents = React.useMemo(() => ({
           onClick={() => scrollToBottom(virtuosoRef)}
           style={{
             position: 'fixed',
-            bottom: isMobile ? '110px' : '120px', // Above input bar
-            right: isMobile ? '20px' : '50px',
+            bottom: isMobile ? '110px' : isTablet ? '115px' : '120px', // Above input bar
+            right: isMobile ? '20px' : isTablet ? '35px' : '50px',
             transform: 'translateZ(0)',
             width: '40px',
             height: '40px',
@@ -3785,32 +3815,37 @@ const virtuosoComponents = React.useMemo(() => ({
         onPreviewImage={(imageData) => openSingleImageLightbox(imageData.url, imageData.name)}
         audioLevel={audioLevel}
       />
+      </div>
+      </div>
+      {/* END OF LAYOUT WRAPPER */}
 
-      {/* 📋 CHAT SIDEBAR - NEW! */}
-      <ChatSidebar
-        isOpen={showChatSidebar}
-        onClose={handleSidebarClose}
-        onNewChatKeepSidebar={handleNewChatKeepSidebar}
-        uiLanguage={uiLanguage}
-        setUILanguage={setUILanguage}
-        chatHistory={chatHistories}
-        onSelectChat={handleSelectChat}
-        currentChatId={currentChatId}
-        onChatDeleted={(deletedChatId) => {
-          // Remove deleted chat from current metadata without reloading all
-          setChatHistories(prev => prev.filter(chat => chat.id !== deletedChatId));
-          
-          // 🚨 CRITICAL FIX: Clear messages state if we deleted current chat
-          // This prevents async save operations from recreating deleted chat
-          if (deletedChatId === currentChatId) {
-            console.log('🗑️ Clearing messages state for deleted current chat:', deletedChatId);
-            setMessages([]);
-          }
-        }}
-        user={user}
-        onSignOut={handleSignOut}
-        onResetPassword={handleResetPassword}
-      />
+      {/* 📋 MOBILE CHAT SIDEBAR - Only for mobile */}
+      {isMobile && (
+        <ChatSidebar
+          isOpen={showChatSidebar}
+          onClose={handleSidebarClose}
+          onNewChatKeepSidebar={handleNewChatKeepSidebar}
+          uiLanguage={uiLanguage}
+          setUILanguage={setUILanguage}
+          chatHistory={chatHistories}
+          onSelectChat={handleSelectChat}
+          currentChatId={currentChatId}
+          onChatDeleted={(deletedChatId) => {
+            // Remove deleted chat from current metadata without reloading all
+            setChatHistories(prev => prev.filter(chat => chat.id !== deletedChatId));
+
+            // 🚨 CRITICAL FIX: Clear messages state if we deleted current chat
+            // This prevents async save operations from recreating deleted chat
+            if (deletedChatId === currentChatId) {
+              console.log('🗑️ Clearing messages state for deleted current chat:', deletedChatId);
+              setMessages([]);
+            }
+          }}
+          user={user}
+          onSignOut={handleSignOut}
+          onResetPassword={handleResetPassword}
+        />
+      )}
 
       {/* 🎤 VOICE SCREEN - UNCHANGED */}
       <VoiceScreen 
@@ -3959,8 +3994,6 @@ const virtuosoComponents = React.useMemo(() => ({
         uiLanguage={uiLanguage}
         position="top-left"
       />
-
-      </div>
     </>
   );
 };
