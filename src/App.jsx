@@ -3719,8 +3719,14 @@ const virtuosoComponents = React.useMemo(() => ({
             ), [openLightbox, setDocumentViewer, handleSourcesClick, setIsAudioPlaying])} // Close itemContent function
             followOutput={shouldFollowOutput ? "smooth" : false}
             atBottomStateChange={useCallback((atBottom) => {
+              // Don't update scroll button state during keyboard transitions
+              if (isKeyboardOpen) {
+                console.log(`🔽 [VIRTUOSO] Ignoring atBottom change during keyboard transition: ${atBottom}`);
+                return;
+              }
+              console.log(`🔽 [VIRTUOSO] Setting showScrollToBottom: ${!atBottom}`);
               setShowScrollToBottom(!atBottom);
-            }, [setShowScrollToBottom])}
+            }, [setShowScrollToBottom, isKeyboardOpen])}
           />
           </div>
           {/* End of Virtuoso wrapper with padding */}
