@@ -573,13 +573,29 @@ const InputBar = ({
       </div>
       
       {/* HLAVNÍ KONTEJNER */}
-      <div className="input-bar-container" style={{
+      <div
+        className="input-bar-container"
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.dataTransfer.dropEffect = 'copy';
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            const fakeEvent = { target: { files } };
+            handleDocumentUploadToChips(fakeEvent);
+          }
+        }}
+        style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        transform: needsVirtualKeyboard && isKeyboardOpen 
-          ? 'translateZ(0) translateY(0)' 
+        transform: needsVirtualKeyboard && isKeyboardOpen
+          ? 'translateZ(0) translateY(0)'
           : 'translateZ(0)',
         padding: needsVirtualKeyboard ? '0.5rem' : '1.5rem',
         paddingBottom: needsVirtualKeyboard 
