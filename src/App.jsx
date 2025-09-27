@@ -225,6 +225,18 @@ function AppContent() {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [shouldFollowOutput, setShouldFollowOutput] = useState(true); // Follow output when chat opens
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false); // Track keyboard state from InputBar
+
+  // Debug keyboard state changes
+  const handleKeyboardChange = (isOpen) => {
+    console.log(`🔽 [APP] Keyboard state received from InputBar: ${isOpen ? 'OPEN' : 'CLOSED'}, showScrollToBottom: ${showScrollToBottom}`);
+    setIsKeyboardOpen(isOpen);
+  };
+
+  // Debug scroll button visibility logic
+  useEffect(() => {
+    const shouldShow = showScrollToBottom && !isKeyboardOpen;
+    console.log(`🔽 [SCROLL-BUTTON] Visibility check: showScrollToBottom=${showScrollToBottom}, isKeyboardOpen=${isKeyboardOpen}, shouldShow=${shouldShow}`);
+  }, [showScrollToBottom, isKeyboardOpen]);
   
   // Reset followOutput when switching chats or loading new messages
   useEffect(() => {
@@ -3718,7 +3730,7 @@ const virtuosoComponents = React.useMemo(() => ({
       </main>
 
       {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay */}
-      {showScrollToBottom && !isKeyboardOpen && (
+      {(showScrollToBottom && !isKeyboardOpen) && (
         <button
           onClick={() => scrollToBottom(virtuosoRef)}
           style={{
@@ -3780,7 +3792,7 @@ const virtuosoComponents = React.useMemo(() => ({
         isImageMode={isImageMode}
         uiLanguage={uiLanguage}
         onPreviewImage={(imageData) => openSingleImageLightbox(imageData.url, imageData.name)}
-        onKeyboardChange={setIsKeyboardOpen}
+        onKeyboardChange={handleKeyboardChange}
         audioLevel={audioLevel}
       />
 
