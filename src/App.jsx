@@ -3717,7 +3717,12 @@ const virtuosoComponents = React.useMemo(() => ({
       </main>
 
       {/* 🔽 SCROLL TO BOTTOM BUTTON - Fixed position overlay */}
-      {showScrollToBottom && !input.trim() && (
+      {(() => {
+        const hasText = input.trim().length > 0;
+        const shouldShow = showScrollToBottom && !hasText;
+        console.log(`🔽 [SCROLL-BTN] input: "${input}", hasText: ${hasText}, showScrollToBottom: ${showScrollToBottom}, shouldShow: ${shouldShow}`);
+        return shouldShow;
+      })() && (
         <button
           onClick={() => scrollToBottom(virtuosoRef)}
           style={{
